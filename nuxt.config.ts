@@ -2,6 +2,10 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/image', '@nuxt/test-utils'],
 
+  components: {
+    dirs: ['@/components/_shared']
+  },
+
   devtools: {
     enabled: true
   },
