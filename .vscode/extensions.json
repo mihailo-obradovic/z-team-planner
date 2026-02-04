@@ -1,13 +1,13 @@
 {
-  "recommendations": [
-    "aaron-bond.better-comments",
-    "EditorConfig.EditorConfig",
-    "dbaeumer.vscode-eslint",
-    "antfu.iconify",
-    "esbenp.prettier-vscode",
-    "Tyriar.sort-lines",
-    "bradlc.vscode-tailwindcss",
-    "Vue.volar"
-  ],
-  "unwantedRecommendations": ["octref.vetur"]
+    "recommendations": [
+        "aaron-bond.better-comments",
+        "EditorConfig.EditorConfig",
+        "dbaeumer.vscode-eslint",
+        "antfu.iconify",
+        "esbenp.prettier-vscode",
+        "Tyriar.sort-lines",
+        "bradlc.vscode-tailwindcss",
+        "Vue.volar"
+    ],
+    "unwantedRecommendations": ["octref.vetur"]
 }
