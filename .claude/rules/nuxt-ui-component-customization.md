@@ -1,8 +1,3 @@
----
-alwaysApply: false
-description: Whenever a change to a default NuxtUI component configuration in @/config/nuxt-ui is requested
----
-
 # NuxtUI Component Customization
 
 ## Overview

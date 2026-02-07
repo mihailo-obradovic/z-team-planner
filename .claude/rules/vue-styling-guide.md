@@ -1,9 +1,7 @@
 ---
-alwaysApply: true
-description: 
-globs: **/*
+paths:
+  - '**/*'
 ---
-
 # Vue Styling Guide
 
 ## Intro

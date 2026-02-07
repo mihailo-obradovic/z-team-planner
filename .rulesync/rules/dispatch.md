@@ -1,9 +1,16 @@
 ---
-alwaysApply: true
-description: 
-globs: **/*
+root: false
+targets:
+  - '*'
+description: ''
+globs:
+  - '**/*'
+cursor:
+  alwaysApply: true
+  description: ''
+  globs:
+    - '**/*'
 ---
-
 # Dispatch
 
 ## About

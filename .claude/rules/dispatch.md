@@ -1,9 +1,7 @@
 ---
-alwaysApply: true
-description: 
-globs: **/*
+paths:
+  - '**/*'
 ---
-
 # Dispatch
 
 ## About

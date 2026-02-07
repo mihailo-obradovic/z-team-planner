@@ -1,9 +1,16 @@
 ---
-alwaysApply: true
-description: 
-globs: **/*
+root: false
+targets:
+  - '*'
+description: ''
+globs:
+  - '**/*'
+cursor:
+  alwaysApply: true
+  description: ''
+  globs:
+    - '**/*'
 ---
-
 # Tech Stack
 
 This is a Nuxt 4 project built with TypeScript. That means auto imports are available for everything that would be manually imported in a regular Vue project.
