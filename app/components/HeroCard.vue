@@ -20,7 +20,14 @@
           :key="stat"
           class="flex items-center justify-between"
         >
-          <span class="capitalize text-muted">{{ stat }}</span>
+          <span class="capitalize text-muted flex items-center gap-2">
+            <NuxtImg
+              :src="`/stat-icons/${stat}.webp`"
+              :alt="stat"
+              class="size-4"
+            />
+            {{ stat }}
+          </span>
           <div class="flex items-center gap-1 ml-4">
             <template v-if="canLevelUp">
               <UButton
