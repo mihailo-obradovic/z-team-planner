@@ -96,7 +96,7 @@ Hero Training is a gameplay mechanic in Dispatch.
 
 ### Hero Power Training
 
-Hero Power Training is a special set of powers that are unique to each hero. Each hero starts with one power, but it needs to be revealed to the player by triggering its condition (e.g. for Malevola to heal somebody, she needs to be sent on a call together with another hero who is injured). Another one can be unlocked from a choice of two options. Some powers override/upgrade the hero's starting power.
+Hero Power Training is a special set of powers that are unique to each hero. Each hero starts with one power, but it needs to be revealed to the player by triggering its condition (e.g. for Malevola to heal somebody, she needs to be sent on a call together with another hero who is injured). Another one can be unlocked from a choice of two options. Some powers override/upgrade the hero's starting power. Blonde Blazer only has her starting power.
 
 Coupé:
 
@@ -158,6 +158,10 @@ Waterboy:
 - Eager Super Sponge (override): Waterboy now gains +3 to the highest stat for that call.
 - Holy Water Spit: Waterboy no longer assigns himself. Waterboy will heal up to two heroes when sent on a call together.
 
+Blonde Blazer:
+
+- Radiant Light (starting): All heroes that pass through Blazer's radiant light gain a protective shield that defends them against one injury.
+
 ### Flight School
 
 On occasion, Blonde Blazer will bring up the opportunity during calls that the flight-capable Z-Team members need to get their license in order to fly. You can only send one during such a call to get theirs. When you get the first call, it'll be during Episode 3 (the second day's shifts) in the second half of the day. The three flight-capable members are:
@@ -166,7 +170,7 @@ On occasion, Blonde Blazer will bring up the opportunity during calls that the f
 - Flambae - Flybae: Flambae flies to call locations, greatly reducing travel time.
 - Sonar - Strong Back: If transformed, Sonar flies to call locations, greatly reducing travel time. He also carries non-flying heroes.
 
-Phenomaman starts with the ability to fly (Fly-Nomenal)
+Phenomaman starts with the ability to fly (Fly-Nomenal), as does Blonde Blazer (though it doesn't have a specific name).
 
 ## Stats
 
