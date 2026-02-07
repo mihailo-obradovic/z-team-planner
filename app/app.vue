@@ -20,6 +20,13 @@
           <u-form-field label="Episode 8 recruits" orientation="horizontal">
             <u-switch v-model="showEp8Recruits" size="sm" />
           </u-form-field>
+
+          <span class="text-sm text-muted">
+            Power trainings: {{ trainingsUsed }}/{{ MAX_POWER_TRAININGS }}
+          </span>
+          <span class="text-sm text-muted">
+            Flight trainings: {{ flightTrainingsUsed }}/{{ MAX_FLIGHT_TRAININGS }}
+          </span>
         </div>
       </template>
 
@@ -35,7 +42,9 @@
 </template>
 
 <script setup lang="ts">
-const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems } =
+import { MAX_POWER_TRAININGS, MAX_FLIGHT_TRAININGS } from '~/types/hero';
+
+const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed } =
   useHeroPlanner();
 
 useHead({
