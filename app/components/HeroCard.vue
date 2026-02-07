@@ -1,6 +1,10 @@
 <template>
   <div class="rounded-lg border border-default bg-elevated p-4">
-    <div class="aspect-square w-full rounded-md bg-accented mb-3" />
+    <NuxtImg
+      :src="`/portraits/${hero.id}.webp`"
+      :alt="hero.name"
+      class="aspect-square w-full rounded-md bg-accented mb-3 object-cover"
+    />
 
     <h3 class="text-lg font-semibold mb-2">{{ hero.name }}</h3>
 
