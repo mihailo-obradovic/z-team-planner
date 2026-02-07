@@ -5,6 +5,8 @@ export default withNuxt({
   rules: {
     'vue/multi-word-component-names': 'off',
     'vue/html-self-closing': 'off',
-    '@stylistic/semi': 'off'
+    '@stylistic/semi': 'off',
+    '@stylistic/operator-linebreak': 'off',
+    '@stylistic/member-delimiter-style': 'off'
   }
 });
