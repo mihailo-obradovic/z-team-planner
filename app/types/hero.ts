@@ -13,6 +13,9 @@ export type HeroId =
 
 export const STAT_NAMES = ['combat', 'intellect', 'vigor', 'charisma', 'mobility'] as const;
 
+export const EP3_CUT_OPTIONS = ['coupe', 'sonar'] as const satisfies readonly HeroId[];
+export const EP4_HIRE_OPTIONS = ['phenomaman', 'waterboy'] as const satisfies readonly HeroId[];
+
 export type StatName = typeof STAT_NAMES[number];
 
 export type HeroStats = Record<StatName, number>;
