@@ -12,42 +12,52 @@
     </div>
 
     <ul class="space-y-1 text-sm">
-      <li v-for="stat in STAT_NAMES" :key="stat" class="flex items-center justify-between">
+      <li
+        v-for="stat in STAT_NAMES"
+        :key="stat"
+        class="flex items-center justify-between"
+      >
         <span class="capitalize text-muted">{{ stat }}</span>
         <div class="flex items-center gap-1">
           <template v-if="canLevelUp">
             <UButton
               icon="i-lucide-minus"
               size="xs"
-              variant="ghost"
+              variant="soft"
               color="neutral"
               :disabled="statBonuses[stat] <= 0"
               @click="$emit('statDown', stat)"
             />
           </template>
-          <span class="font-medium w-5 text-center">{{ hero.startingStats[stat] + statBonuses[stat] }}</span>
+          <span class="font-medium w-5 text-center">{{
+            hero.startingStats[stat] + statBonuses[stat]
+          }}</span>
           <template v-if="canLevelUp">
             <UButton
               icon="i-lucide-plus"
               size="xs"
-              variant="ghost"
+              variant="soft"
               color="neutral"
-              :disabled="pointsRemaining <= 0 || hero.startingStats[stat] + statBonuses[stat] >= MAX_STAT_VALUE"
+              :disabled="
+                pointsRemaining <= 0 ||
+                hero.startingStats[stat] + statBonuses[stat] >= MAX_STAT_VALUE
+              "
               @click="$emit('statUp', stat)"
             />
           </template>
         </div>
       </li>
     </ul>
-
-    <div v-if="canLevelUp" class="text-xs text-muted text-center mt-2">
-      {{ pointsRemaining }} / {{ MAX_LEVEL_UPS }} points left
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { STAT_NAMES, FIXED_LEVEL_HEROES, MAX_LEVEL_UPS, MAX_STAT_VALUE } from '~/types/hero';
+import {
+  STAT_NAMES,
+  FIXED_LEVEL_HEROES,
+  MAX_LEVEL_UPS,
+  MAX_STAT_VALUE
+} from '~/types/hero';
 import type { HeroId, HeroStats, StatName } from '~/types/hero';
 
 const props = defineProps<{

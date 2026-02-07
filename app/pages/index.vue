@@ -1,17 +1,17 @@
 <template>
   <div>
     <div class="flex items-center gap-6 mb-4">
-      <UFormField label="Episode 3: Cut">
-        <USelect v-model="ep3Cut" :items="ep3CutItems" />
-      </UFormField>
+      <u-form-field label="Episode 3: Cut">
+        <u-select v-model="ep3Cut" :items="ep3CutItems" />
+      </u-form-field>
 
-      <UFormField label="Episode 4: Hire">
-        <USelect v-model="ep4Hire" :items="ep4HireItems" />
-      </UFormField>
+      <u-form-field label="Episode 4: Hire">
+        <u-select v-model="ep4Hire" :items="ep4HireItems" />
+      </u-form-field>
 
-      <UFormField label="Episode 8 recruits">
-        <USwitch v-model="showEp8Recruits" />
-      </UFormField>
+      <u-form-field label="Episode 8 recruits">
+        <u-switch v-model="showEp8Recruits" />
+      </u-form-field>
     </div>
 
     <div
@@ -48,12 +48,14 @@ const ep3Cut = ref<HeroId>('sonar');
 const ep4Hire = ref<HeroId>('waterboy');
 const showEp8Recruits = ref(true);
 
-const ZERO_STATS: HeroStats = Object.fromEntries(STAT_NAMES.map((s) => [s, 0])) as HeroStats;
+const ZERO_STATS: HeroStats = Object.fromEntries(
+  STAT_NAMES.map((s) => [s, 0])
+) as HeroStats;
 
 const heroLevelUps = ref<Partial<Record<HeroId, HeroStats>>>({});
 
 function getStatBonuses(id: HeroId): HeroStats {
-  return heroLevelUps.value[id] ?? { ...ZERO_STATS };
+  return heroLevelUps.value[id] ?? ZERO_STATS;
 }
 
 function totalAssigned(id: HeroId): number {
