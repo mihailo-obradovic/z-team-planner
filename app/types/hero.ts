@@ -16,6 +16,14 @@ export const STAT_NAMES = ['combat', 'intellect', 'vigor', 'charisma', 'mobility
 export const EP3_CUT_OPTIONS = ['coupe', 'sonar'] as const satisfies readonly HeroId[];
 export const EP4_HIRE_OPTIONS = ['phenomaman', 'waterboy'] as const satisfies readonly HeroId[];
 
+export const FIXED_LEVEL_HEROES: Partial<Record<HeroId, number>> = {
+  phenomaman: 12,
+  'blonde-blazer': 20,
+};
+
+export const MAX_LEVEL_UPS = 9;
+export const MAX_STAT_VALUE = 10;
+
 export type StatName = typeof STAT_NAMES[number];
 
 export type HeroStats = Record<StatName, number>;
