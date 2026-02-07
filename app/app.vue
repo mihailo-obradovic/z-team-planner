@@ -1,25 +1,10 @@
 <template>
   <u-app>
     <u-header>
-      <template #left>
-        <NuxtLink to="/">
-          <AppLogo class="w-auto h-6 shrink-0" />
-        </NuxtLink>
-
-        <TemplateMenu />
-      </template>
+      <template #left> Z-Team Planner </template>
 
       <template #right>
         <u-color-mode-button />
-
-        <u-button
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
       </template>
     </u-header>
 
@@ -30,9 +15,6 @@
 </template>
 
 <script setup>
-import AppLogo from '@/components/AppLogo.vue';
-import TemplateMenu from '@/components/TemplateMenu.vue';
-
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
