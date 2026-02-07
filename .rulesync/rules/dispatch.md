@@ -35,17 +35,11 @@ A few days into Robert becoming the team's newest dispatcher, Blonde Blazer, the
 
 As this then left the team short-staffed, Blonde Blazer then put forward two possible candidates to fill the slot: Waterboy, who was a hero in training, or Phenomaman, a superhero who was on indefinite leave from his own branch as he wasn't taking his break-up with Blonde Blazer very well.
 
-After a bar fight at a villain bar, the field agents bring up the question of who Robert is, and the player chooses whether Robert hides or reveal hide his identity. If Robert reveals it, Flambae will attempt to incinerate him for their past history before the other member stops him. Afterwards, other than Flambae in the choice to reveal as he had fled, they go around sharing their real names as a sign of trust.
-
 Later, Invisigal sets up a housewarming party at Robert's apartment to organize how to steal back the Astral Pulse, but the party comes to a stop when Invisigal and Chase argue about the other's reputation and she punches him. If the player chose to have Robert reveal his identity earlier, Chase will mention it during the argument, shocking every member except Flambae who comes late.
 
 After Invisigal decided to steal back the Astral Pulse by herself which led to Chase's hospitalization, the other Z-Team members held a meeting in which the majority of them felt that Invisigirl's actions were reckless and put the team's credibility at risk. Excluding Golem, the members want Invisigal to be cut from the team. Flambae will side with Invisigal if Robert revealed he is Mecha Man, and Phenomaman will abstain if he is recruited. Robert either decides to honor their request and permanently remove Invisigal from the team or refuse and continue her temporary suspension.
 
 During the final dispatch, the high number of calls leads Robert into convincing the hero he didn't recruit earlier, Phenomaman or Waterboy, into joining the team. It is also revealed that whoever was cut, Coupé or Sonar, turned back into being a super villain and joined the Red Ring. During the final stage of the dispatch, if one mission's probability check fails, the probability ball automatically moves back into the area of success to reveal Blonde Blazer helping that call and joining the roster.
-
-When the Red Ring approach Torrance SDN HQ, the Z-Team fights against the lower henchmen, but has trouble against Shroud's mecha suit. Shroud's mecha suit punches Blonde Blazer into the building, and that allows her to give her amulet to Chase as a way to throw off Shroud and his predictions. That change in plan allows the Z-Team to defeat Shroud's robot, but not him, as he manages to his hands on Beef to force Robert into giving the Astral Pulse.
-
-If Robert didn't support Invisigal enough, she kills Shroud, turns back into a villain and goes missing in action. Otherwise, she takes Shroud's bullet, causing Robert to attack Shroud in rage, giving him the decision to spare or kill Shroud; Invisigal is applauded by the team for her courageous act. Additionally, if Robert successfully defeats Coupé or Sonar in the final dispatch, he can choose to either forgive them and have them rejoin the team or choose to let the police arrest them. If Robert doesn't defeat Coupé or Sonar, Blonde Blazer will tell Robert not to waste any more time on them, and they will be arrested.
 
 ## Dispatching
 
@@ -111,7 +105,7 @@ Hero Training is a gameplay mechanic in Dispatch.
 
 ### Hero Power Training
 
-Hero Power Training is a special set of powers that are unique to each hero. Each hero starts with one power. Another one can be unlocked from a choice of two options. Some powers override/upgrade the hero's starting power.
+Hero Power Training is a special set of powers that are unique to each hero. Each hero starts with one power, but it needs to be revealed to the player by triggering its condition (e.g. for Malevola to heal somebody, she needs to be sent on a call together with another hero who is injured). Another one can be unlocked from a choice of two options. Some powers override/upgrade the hero's starting power.
 
 Coupé:
 
@@ -123,9 +117,7 @@ Flambae:
 
 - On Fire (starting): After success, Flambae gains +1 Combat and +1 Mobility. This effect stacks. All boosts reset after a failure.
 - Comet: After a success, Flambae also reduces call completion and travel time. If after two successes Flambae fails a third, he is downed.
-- Supernova: Succeeding twice will set Flambae's Combat and Mobility to max and removes rest time. After a fail, Flambae's stats drop to 1.
-
-TODO: Check if Supernova overrides On Fire.
+- Supernova (override): Succeeding twice will set Flambae's Combat and Mobility to max and removes rest time. After a fail, Flambae's stats drop to 1.
 
 Golem:
 
@@ -199,8 +191,19 @@ There are 5 stats in the game:
 
 Each of these stats affect how a hero is likely (or unlikely) to succeed in an assigned call. As a hero levels up, Skill Points are earned to help increase these stats.
 
-TODO: List all hero starting totals, note about Invisigal and Waterboy having less, and Phenomaman and Blonde Blazer having more and being at max level.
-TODO: List notes about bonus points earned through dispatcher leveling up.
+The heroes start with the following stats:
+
+| Hero      | Coupé | Flambae | Golem | Invisigal | Malevola | Phenomaman | Prism | Punch Up | Sonar | Waterboy | Blonde Blazer |
+| --------- | ----- | ------- | ----- | --------- | -------- | ---------- | ----- | -------- | ----- | -------- | ------------- |
+| Combat    | 4     | 4       | 3     | 3         | 3        | 7          | 4     | 3        | 2     | 1        | 8             |
+| Intellect | 3     | 1       | 1     | 2         | 2        | 1          | 2     | 1        | 4     | 2        | 7             |
+| Vigor     | 1     | 2       | 4     | 2         | 2        | 7          | 1     | 4        | 1     | 2        | 8             |
+| Charisma  | 1     | 2       | 2     | 1         | 3        | 2          | 4     | 3        | 3     | 1        | 6             |
+| Mobility  | 3     | 3       | 2     | 3         | 2        | 6          | 1     | 1        | 2     | 2        | 7             |
+
+Most* heroes start at level 1 with 12 points worth of fixed stats (Invisigal 11, Waterboy 8) and are able to receive 9 bonus points to distribute as they wish for each level up. Additionally, up to 4 bonus points can be earned through dispatcher leveling up and these can be assigned in addition to the regular hero level up bonus points. The points awarded for dispatcher leveling up are random.
+
+\* - Phenomaman and Blonde Blazer start at levels 12 and 20 respectively and are unable to level up further or be assigned bonus points.
 
 ### Upgrading
 
