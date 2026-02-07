@@ -3,6 +3,26 @@
     <u-header>
       <template #left> Z-Team Planner </template>
 
+      <template #default>
+        <div class="flex gap-6 items-center">
+          <u-form-field label="Episode 3: Cut" orientation="horizontal">
+            <u-select v-model="ep3Cut" :items="ep3CutItems" variant="subtle" />
+          </u-form-field>
+
+          <u-form-field label="Episode 4: Hire" orientation="horizontal">
+            <u-select
+              v-model="ep4Hire"
+              :items="ep4HireItems"
+              variant="subtle"
+            />
+          </u-form-field>
+
+          <u-form-field label="Episode 8 recruits" orientation="horizontal">
+            <u-switch v-model="showEp8Recruits" size="sm" />
+          </u-form-field>
+        </div>
+      </template>
+
       <template #right>
         <u-color-mode-button />
       </template>
@@ -14,7 +34,10 @@
   </u-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
+const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems } =
+  useHeroPlanner();
+
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
