@@ -7,6 +7,9 @@ export default withNuxt({
     'vue/html-self-closing': 'off',
     '@stylistic/semi': 'off',
     '@stylistic/operator-linebreak': 'off',
-    '@stylistic/member-delimiter-style': 'off'
+    '@stylistic/member-delimiter-style': 'off',
+    'vue/max-attributes-per-line': {
+      max: 3
+    }
   }
 });
