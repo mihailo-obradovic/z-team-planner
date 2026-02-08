@@ -1,19 +1,15 @@
 <template>
   <div
-    class="flex gap-4 rounded-lg border border-default bg-elevated p-4 w-104 justify-between"
+    class="flex gap-4 rounded-lg border border-default bg-elevated p-4 w-92 justify-between"
   >
     <div class="flex flex-col gap-2">
       <NuxtImg
         :src="portraitSrc"
         :alt="hero.name"
-        class="aspect-square size-48 rounded-md bg-accented object-cover"
+        class="aspect-square size-38 rounded-md bg-accented object-cover"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
-        <USwitch
-          v-if="hero.id === 'sonar'"
-          v-model="monsterForm"
-          size="xs"
-        />
+        <USwitch v-if="hero.id === 'sonar'" v-model="monsterForm" size="xs" />
         <UTooltip :text="`${powers[0]!.name}: ${powers[0]!.description}`">
           <UButton
             :icon="POWER_ICONS[0]"
@@ -85,7 +81,8 @@
               />
             </template>
             <span class="font-medium w-5 text-center">{{
-              hero.startingStats[resolvedStat(stat)] + statBonuses[resolvedStat(stat)]
+              hero.startingStats[resolvedStat(stat)] +
+              statBonuses[resolvedStat(stat)]
             }}</span>
             <template v-if="canLevelUp">
               <UButton
@@ -95,7 +92,8 @@
                 color="neutral"
                 :disabled="
                   pointsRemaining <= 0 ||
-                  hero.startingStats[resolvedStat(stat)] + statBonuses[resolvedStat(stat)] >=
+                  hero.startingStats[resolvedStat(stat)] +
+                    statBonuses[resolvedStat(stat)] >=
                     MAX_STAT_VALUE
                 "
                 @click="$emit('statUp', resolvedStat(stat))"
@@ -117,9 +115,19 @@ import {
   HERO_POWERS,
   HERO_FLIGHT
 } from '~/types/hero';
-import type { HeroId, HeroPowerInfo, HeroPowerState, HeroStats, StatName } from '~/types/hero';
+import type {
+  HeroId,
+  HeroPowerInfo,
+  HeroPowerState,
+  HeroStats,
+  StatName
+} from '~/types/hero';
 
-const POWER_ICONS = ['i-lucide-zap', 'i-lucide-shield', 'i-lucide-swords'] as const;
+const POWER_ICONS = [
+  'i-lucide-zap',
+  'i-lucide-shield',
+  'i-lucide-swords'
+] as const;
 
 const props = defineProps<{
   hero: {
@@ -153,7 +161,8 @@ const upgradePowers = computed((): HeroPowerInfo[] => {
 const flightInfo = computed(() => HERO_FLIGHT[props.hero.id as HeroId]);
 
 const flightLocked = computed(() => {
-  if (props.hero.id === 'blonde-blazer' || props.hero.id === 'phenomaman') return true;
+  if (props.hero.id === 'blonde-blazer' || props.hero.id === 'phenomaman')
+    return true;
   return !props.flightActive && props.flightsFull;
 });
 
