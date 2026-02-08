@@ -9,7 +9,15 @@
         class="aspect-square size-38 rounded-md bg-accented object-cover"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
-        <USwitch v-if="hero.id === 'sonar'" v-model="monsterForm" size="xs" />
+        <UTooltip v-if="hero.id === 'sonar'" :text="sonarFormTooltip">
+          <UButton
+            :icon="sonarFormIcon"
+            size="xs"
+            :variant="monsterForm ? 'soft' : 'ghost'"
+            :color="monsterForm ? 'primary' : 'neutral'"
+            @click="monsterForm = !monsterForm"
+          />
+        </UTooltip>
         <UTooltip :text="`${powers[0]!.name}: ${powers[0]!.description}`">
           <UButton
             :icon="POWER_ICONS[0]"
@@ -50,6 +58,30 @@
             "
             :disabled="flightLocked"
             @click="$emit('toggleFlight')"
+          />
+        </UTooltip>
+        <UTooltip
+          v-if="showFlambaeSupernova"
+          text="Supernova: Set Combat and Mobility to 10"
+        >
+          <UButton
+            icon="i-lucide-flame"
+            size="xs"
+            :variant="specialPowerState ? 'soft' : 'ghost'"
+            :color="specialPowerState ? 'primary' : 'neutral'"
+            @click="$emit('toggleSpecialPower')"
+          />
+        </UTooltip>
+        <UTooltip
+          v-if="showCoupeEnPointe"
+          :text="coupeTooltip"
+        >
+          <UButton
+            :icon="coupeIcon"
+            size="xs"
+            :variant="specialPowerState ? 'soft' : 'ghost'"
+            :color="specialPowerState ? 'primary' : 'neutral'"
+            @click="$emit('toggleSpecialPower')"
           />
         </UTooltip>
       </div>
@@ -98,7 +130,8 @@
             </template>
             <span class="font-medium w-5 text-center">{{
               hero.startingStats[resolvedStat(stat)] +
-              statBonuses[resolvedStat(stat)]
+              statBonuses[resolvedStat(stat)] +
+              specialPowerBonus[resolvedStat(stat)]
             }}</span>
             <template v-if="canLevelUp">
               <UButton
@@ -152,8 +185,10 @@ const props = defineProps<{
     startingStats: HeroStats;
   };
   statBonuses: HeroStats;
+  specialPowerBonus: HeroStats;
   pointsRemaining: number;
   powerStates: HeroPowerState;
+  specialPowerState: number;
   isEp8Recruit: boolean;
   trainingsFull: boolean;
   flightActive: boolean;
@@ -166,6 +201,7 @@ defineEmits<{
   resetHero: [];
   togglePower: [index: 0 | 1 | 2];
   toggleFlight: [];
+  toggleSpecialPower: [];
 }>();
 
 const powers = computed(() => HERO_POWERS[props.hero.id as HeroId]);
@@ -228,5 +264,40 @@ const totalAssigned = computed(() => {
 
 const hasPowers = computed(() => {
   return props.powerStates.some((p) => p);
+});
+
+const showFlambaeSupernova = computed(() => {
+  return props.hero.id === 'flambae' && props.powerStates[2];
+});
+
+const showCoupeEnPointe = computed(() => {
+  return props.hero.id === 'coupe' && props.powerStates[0];
+});
+
+const coupeTooltip = computed(() => {
+  const isUpgraded = props.powerStates[2];
+  const bonus = isUpgraded ? '+3' : '+1';
+
+  if (props.specialPowerState === 1) {
+    return `En Pointe: ${bonus} Combat (active)`;
+  } else if (props.specialPowerState === 2) {
+    return `En Pointe: ${bonus} Mobility (active)`;
+  } else {
+    return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
+  }
+});
+
+const coupeIcon = computed(() => {
+  if (props.specialPowerState === 1) return 'i-lucide-sword';
+  if (props.specialPowerState === 2) return 'i-lucide-footprints';
+  return 'i-lucide-sparkles';
+});
+
+const sonarFormIcon = computed(() => {
+  return monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user';
+});
+
+const sonarFormTooltip = computed(() => {
+  return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
 });
 </script>

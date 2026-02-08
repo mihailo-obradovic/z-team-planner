@@ -87,6 +87,14 @@ export function useHeroPlanner() {
     () => ({})
   );
 
+  // Special power button states
+  // For Flambae: boolean for Supernova activation
+  // For Coupe: 0 = off, 1 = +combat, 2 = +mobility
+  const heroSpecialPowers = useState<Partial<Record<HeroId, number>>>(
+    'heroSpecialPowers',
+    () => ({})
+  );
+
   function getFlightState(id: HeroId): boolean {
     if (!HERO_FLIGHT[id]) return false;
     if (id === 'blonde-blazer') return true;
@@ -135,10 +143,50 @@ export function useHeroPlanner() {
     delete heroLevelUps.value[id];
     delete heroPowers.value[id];
     delete heroFlights.value[id];
+    delete heroSpecialPowers.value[id];
+  }
+
+  function getSpecialPowerState(id: HeroId): number {
+    return heroSpecialPowers.value[id] ?? 0;
+  }
+
+  function toggleSpecialPower(id: HeroId) {
+    if (id === 'flambae') {
+      // Toggle between 0 (off) and 1 (on)
+      heroSpecialPowers.value[id] = heroSpecialPowers.value[id] ? 0 : 1;
+    } else if (id === 'coupe') {
+      // Cycle through 0 (off), 1 (+combat), 2 (+mobility)
+      const current = heroSpecialPowers.value[id] ?? 0;
+      heroSpecialPowers.value[id] = (current + 1) % 3;
+    }
+  }
+
+  function getSpecialPowerBonus(id: HeroId, stat: StatName): number {
+    const specialState = getSpecialPowerState(id);
+
+    if (id === 'flambae' && specialState === 1) {
+      // Supernova active: set combat and mobility to 10
+      if (stat === 'combat' || stat === 'mobility') {
+        const hero = heroes.value?.find((h) => h.id === id);
+        if (!hero) return 0;
+        const normalBonus = getStatBonuses(id)[stat];
+        return Math.max(0, MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus);
+      }
+    } else if (id === 'coupe' && specialState > 0) {
+      const powerStates = getPowerState(id);
+      const isUpgraded = powerStates[2]; // À la Seconde
+      const bonus = isUpgraded ? 3 : 1;
+
+      if (specialState === 1 && stat === 'combat') return bonus;
+      if (specialState === 2 && stat === 'mobility') return bonus;
+    }
+
+    return 0;
   }
 
   function resetAllPowerTrainings() {
     heroPowers.value = {};
+    heroSpecialPowers.value = {};
   }
 
   function resetAllFlightTrainings() {
@@ -148,6 +196,7 @@ export function useHeroPlanner() {
   watch(ep3Cut, (newCut) => {
     delete heroPowers.value[newCut];
     delete heroFlights.value[newCut];
+    delete heroSpecialPowers.value[newCut];
   });
 
   watch(ep4Hire, (newHire) => {
@@ -155,6 +204,7 @@ export function useHeroPlanner() {
       if (heroId !== newHire) {
         delete heroPowers.value[heroId];
         delete heroFlights.value[heroId];
+        delete heroSpecialPowers.value[heroId];
       }
     }
   });
@@ -215,6 +265,9 @@ export function useHeroPlanner() {
     flightTrainingsUsed,
     ep3CutItems,
     ep4HireItems,
-    visibleHeroes
+    visibleHeroes,
+    getSpecialPowerState,
+    toggleSpecialPower,
+    getSpecialPowerBonus
   };
 }

@@ -14,8 +14,10 @@
             :key="hero.id"
             :hero="hero"
             :stat-bonuses="getStatBonuses(hero.id)"
+            :special-power-bonus="getSpecialPowerBonusStats(hero.id)"
             :points-remaining="MAX_LEVEL_UPS - totalAssigned(hero.id)"
             :power-states="getPowerState(hero.id)"
+            :special-power-state="getSpecialPowerState(hero.id)"
             :is-ep8-recruit="isEp8Recruit(hero.id as HeroId)"
             :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
             :flight-active="getFlightState(hero.id)"
@@ -25,6 +27,7 @@
             @reset-hero="resetHero(hero.id)"
             @toggle-power="togglePower(hero.id, $event)"
             @toggle-flight="toggleFlight(hero.id)"
+            @toggle-special-power="toggleSpecialPower(hero.id)"
           />
         </div>
       </div>
@@ -37,8 +40,10 @@
           :key="hero.id"
           :hero="hero"
           :stat-bonuses="getStatBonuses(hero.id)"
+          :special-power-bonus="getSpecialPowerBonusStats(hero.id)"
           :points-remaining="MAX_LEVEL_UPS - totalAssigned(hero.id)"
           :power-states="getPowerState(hero.id)"
+          :special-power-state="getSpecialPowerState(hero.id)"
           :is-ep8-recruit="isEp8Recruit(hero.id as HeroId)"
           :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
           :flight-active="getFlightState(hero.id)"
@@ -48,6 +53,7 @@
           @reset-hero="resetHero(hero.id)"
           @toggle-power="togglePower(hero.id, $event)"
           @toggle-flight="toggleFlight(hero.id)"
+          @toggle-special-power="toggleSpecialPower(hero.id)"
         />
       </div>
     </template>
@@ -93,8 +99,22 @@ const {
   isEp8Recruit,
   getFlightState,
   toggleFlight,
-  flightTrainingsUsed
+  flightTrainingsUsed,
+  getSpecialPowerState,
+  toggleSpecialPower,
+  getSpecialPowerBonus
 } = useHeroPlanner();
+
+// Helper to get all special power bonuses as HeroStats
+function getSpecialPowerBonusStats(heroId: HeroId) {
+  return {
+    combat: getSpecialPowerBonus(heroId, 'combat'),
+    intellect: getSpecialPowerBonus(heroId, 'intellect'),
+    vigor: getSpecialPowerBonus(heroId, 'vigor'),
+    charisma: getSpecialPowerBonus(heroId, 'charisma'),
+    mobility: getSpecialPowerBonus(heroId, 'mobility')
+  };
+}
 
 const synergyPairDefs = computed((): [HeroId, HeroId][] => [
   ['flambae', 'prism'],
