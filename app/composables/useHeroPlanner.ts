@@ -135,6 +135,15 @@ export function useHeroPlanner() {
     delete heroFlights.value[newCut];
   });
 
+  watch(ep4Hire, (newHire) => {
+    for (const heroId of EP4_HIRE_OPTIONS) {
+      if (heroId !== newHire) {
+        delete heroPowers.value[heroId];
+        delete heroFlights.value[heroId];
+      }
+    }
+  });
+
   const ep3CutItems = computed(
     () =>
       heroes.value

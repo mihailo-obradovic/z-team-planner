@@ -72,7 +72,7 @@ import type { HeroId } from '~/types/hero';
 const tabs = [
   { label: 'Overview', slot: 'overview' },
   { label: 'Synergy pairs', slot: 'synergy-pairs' },
-  { label: 'Mission simulator', slot: 'mission-simulator' }
+  { label: 'Mission simulator (coming soon!)', slot: 'mission-simulator' }
 ];
 
 const {
