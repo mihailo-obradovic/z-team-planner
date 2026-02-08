@@ -22,6 +22,7 @@
             :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
             @stat-up="statUp(hero.id, $event)"
             @stat-down="statDown(hero.id, $event)"
+            @reset-hero="resetHero(hero.id)"
             @toggle-power="togglePower(hero.id, $event)"
             @toggle-flight="toggleFlight(hero.id)"
           />
@@ -44,6 +45,7 @@
           :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
           @stat-up="statUp(hero.id, $event)"
           @stat-down="statDown(hero.id, $event)"
+          @reset-hero="resetHero(hero.id)"
           @toggle-power="togglePower(hero.id, $event)"
           @toggle-flight="toggleFlight(hero.id)"
         />
@@ -84,6 +86,7 @@ const {
   totalAssigned,
   statUp,
   statDown,
+  resetHero,
   getPowerState,
   togglePower,
   trainingsUsed,

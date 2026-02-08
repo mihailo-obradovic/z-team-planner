@@ -21,12 +21,32 @@
             <u-switch v-model="showEp8Recruits" size="sm" />
           </u-form-field>
 
-          <span class="text-sm text-muted">
-            Power trainings: {{ trainingsUsed }}/{{ MAX_POWER_TRAININGS }}
-          </span>
-          <span class="text-sm text-muted">
-            Flight trainings: {{ flightTrainingsUsed }}/{{ MAX_FLIGHT_TRAININGS }}
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-muted">
+              Power trainings: {{ trainingsUsed }}/{{ MAX_POWER_TRAININGS }}
+            </span>
+            <UButton
+              v-if="trainingsUsed > 0"
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              variant="ghost"
+              color="neutral"
+              @click="resetAllPowerTrainings"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-muted">
+              Flight trainings: {{ flightTrainingsUsed }}/{{ MAX_FLIGHT_TRAININGS }}
+            </span>
+            <UButton
+              v-if="flightTrainingsUsed > 0"
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              variant="ghost"
+              color="neutral"
+              @click="resetAllFlightTrainings"
+            />
+          </div>
         </div>
       </template>
 
@@ -44,7 +64,7 @@
 <script setup lang="ts">
 import { MAX_POWER_TRAININGS, MAX_FLIGHT_TRAININGS } from '~/types/hero';
 
-const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed } =
+const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed, resetAllPowerTrainings, resetAllFlightTrainings } =
   useHeroPlanner();
 
 useHead({

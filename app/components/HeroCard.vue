@@ -58,7 +58,17 @@
     <div class="flex flex-col">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-md font-semibold">{{ hero.name }}</h3>
-        <span class="text-sm text-muted ml-4">Lv. {{ heroLevel }}</span>
+        <div class="flex items-center gap-2 ml-4">
+          <UButton
+            v-if="canLevelUp && (totalAssigned > 0 || hasPowers || flightActive)"
+            icon="i-lucide-rotate-ccw"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            @click="() => $emit('resetHero')"
+          />
+          <span class="text-sm text-muted">Lv. {{ heroLevel }}</span>
+        </div>
       </div>
 
       <ul class="flex flex-1 flex-col justify-between text-sm">
@@ -153,6 +163,7 @@ const props = defineProps<{
 defineEmits<{
   statUp: [stat: StatName];
   statDown: [stat: StatName];
+  resetHero: [];
   togglePower: [index: 0 | 1 | 2];
   toggleFlight: [];
 }>();
@@ -209,5 +220,13 @@ const heroLevel = computed(() => {
   const fixedLevel = FIXED_LEVEL_HEROES[props.hero.id as HeroId];
   if (fixedLevel !== undefined) return fixedLevel;
   return 1 + (MAX_LEVEL_UPS - props.pointsRemaining);
+});
+
+const totalAssigned = computed(() => {
+  return STAT_NAMES.reduce((sum, s) => sum + props.statBonuses[s], 0);
+});
+
+const hasPowers = computed(() => {
+  return props.powerStates.some((p) => p);
 });
 </script>

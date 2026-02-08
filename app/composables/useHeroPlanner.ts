@@ -130,6 +130,21 @@ export function useHeroPlanner() {
     bonuses[stat]--;
   }
 
+  function resetHero(id: HeroId) {
+    if (id in FIXED_LEVEL_HEROES) return;
+    delete heroLevelUps.value[id];
+    delete heroPowers.value[id];
+    delete heroFlights.value[id];
+  }
+
+  function resetAllPowerTrainings() {
+    heroPowers.value = {};
+  }
+
+  function resetAllFlightTrainings() {
+    heroFlights.value = {};
+  }
+
   watch(ep3Cut, (newCut) => {
     delete heroPowers.value[newCut];
     delete heroFlights.value[newCut];
@@ -188,6 +203,9 @@ export function useHeroPlanner() {
     totalAssigned,
     statUp,
     statDown,
+    resetHero,
+    resetAllPowerTrainings,
+    resetAllFlightTrainings,
     getPowerState,
     togglePower,
     trainingsUsed,
