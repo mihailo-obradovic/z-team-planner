@@ -41,7 +41,13 @@
             icon="i-lucide-plane"
             size="xs"
             :variant="flightActive ? 'soft' : 'ghost'"
-            :color="flightVisuallyActive ? 'primary' : (flightActive ? 'secondary' : 'neutral')"
+            :color="
+              flightVisuallyActive
+                ? 'primary'
+                : flightActive
+                  ? 'secondary'
+                  : 'neutral'
+            "
             :disabled="flightLocked"
             @click="$emit('toggleFlight')"
           />
@@ -51,7 +57,7 @@
 
     <div class="flex flex-col">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-semibold">{{ hero.name }}</h3>
+        <h3 class="text-md font-semibold">{{ hero.name }}</h3>
         <span class="text-sm text-muted ml-4">Lv. {{ heroLevel }}</span>
       </div>
 
