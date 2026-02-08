@@ -41,7 +41,7 @@
             icon="i-lucide-plane"
             size="xs"
             :variant="flightActive ? 'soft' : 'ghost'"
-            :color="flightActive ? 'primary' : 'neutral'"
+            :color="flightVisuallyActive ? 'primary' : (flightActive ? 'secondary' : 'neutral')"
             :disabled="flightLocked"
             @click="$emit('toggleFlight')"
           />
@@ -164,6 +164,12 @@ const flightLocked = computed(() => {
   if (props.hero.id === 'blonde-blazer' || props.hero.id === 'phenomaman')
     return true;
   return !props.flightActive && props.flightsFull;
+});
+
+const flightVisuallyActive = computed(() => {
+  if (props.hero.id !== 'sonar') return props.flightActive;
+  // For Sonar, flight is only visually active in monster form
+  return props.flightActive && monsterForm.value;
 });
 
 const monsterForm = ref(false);
