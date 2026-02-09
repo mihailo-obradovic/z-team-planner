@@ -129,7 +129,8 @@ function createHeroPlanner() {
     if (!heroLevelUps.value[id]) heroLevelUps.value[id] = { ...ZERO_STATS };
     const bonuses = heroLevelUps.value[id]!;
 
-    if (totalAssigned(id) >= MAX_LEVEL_UPS) return;
+    const effectiveLevelCap = MAX_LEVEL_UPS + getBonusLevel(id);
+    if (totalAssigned(id) >= effectiveLevelCap) return;
     if (hero.startingStats[stat] + bonuses[stat] >= MAX_STAT_VALUE) return;
 
     bonuses[stat]++;
