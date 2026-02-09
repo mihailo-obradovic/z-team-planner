@@ -6,7 +6,7 @@
       <NuxtImg
         :src="portraitSrc"
         :alt="hero.name"
-        class="aspect-square size-38 rounded-md bg-accented object-cover"
+        class="aspect-square size-35 rounded-md bg-accented object-cover"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
         <UTooltip v-if="hero.id === 'sonar'" :text="sonarFormTooltip">
@@ -72,10 +72,7 @@
             @click="$emit('toggleSpecialPower')"
           />
         </UTooltip>
-        <UTooltip
-          v-if="showCoupeEnPointe"
-          :text="coupeTooltip"
-        >
+        <UTooltip v-if="showCoupeEnPointe" :text="coupeTooltip">
           <UButton
             :icon="coupeIcon"
             size="xs"
@@ -90,16 +87,37 @@
     <div class="flex flex-col">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-md font-semibold">{{ hero.name }}</h3>
-        <div class="flex items-center gap-2 ml-4">
+        <div class="flex items-center gap-2 ml-2">
           <UButton
-            v-if="canLevelUp && (totalAssigned > 0 || hasPowers || flightActive)"
+            v-if="
+              canLevelUp &&
+              (totalAssigned > 0 || hasPowers || flightActive || bonusLevel > 0)
+            "
             icon="i-lucide-rotate-ccw"
             size="xs"
             variant="ghost"
             color="neutral"
             @click="() => $emit('resetHero')"
           />
-          <span class="text-sm text-muted">Lv. {{ heroLevel }}</span>
+          <span class="text-xs text-muted">Lv. {{ heroLevel }}</span>
+          <UButton
+            v-if="canLevelUp && bonusLevel === 0 && !bonusFull"
+            icon="i-lucide-circle-plus"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            @click="() => $emit('incrementBonus')"
+          />
+          <UButton
+            v-else-if="canLevelUp && bonusLevel > 0"
+            size="xs"
+            variant="soft"
+            color="primary"
+            :disabled="bonusLevel >= 4 || bonusFull"
+            @click="() => $emit('incrementBonus')"
+          >
+            <span class="text-xs font-semibold">+{{ bonusLevel }}</span>
+          </UButton>
         </div>
       </div>
 
@@ -117,7 +135,7 @@
             />
             {{ stat }}
           </span>
-          <div class="flex items-center gap-1 ml-4">
+          <div class="flex items-center gap-1 ml-2">
             <template v-if="canLevelUp">
               <UButton
                 icon="i-lucide-minus"
@@ -193,6 +211,8 @@ const props = defineProps<{
   trainingsFull: boolean;
   flightActive: boolean;
   flightsFull: boolean;
+  bonusLevel: number;
+  bonusFull: boolean;
 }>();
 
 defineEmits<{
@@ -202,6 +222,7 @@ defineEmits<{
   togglePower: [index: 0 | 1 | 2];
   toggleFlight: [];
   toggleSpecialPower: [];
+  incrementBonus: [];
 }>();
 
 const powers = computed(() => HERO_POWERS[props.hero.id as HeroId]);
@@ -255,7 +276,7 @@ const canLevelUp = computed(() => !(props.hero.id in FIXED_LEVEL_HEROES));
 const heroLevel = computed(() => {
   const fixedLevel = FIXED_LEVEL_HEROES[props.hero.id as HeroId];
   if (fixedLevel !== undefined) return fixedLevel;
-  return 1 + (MAX_LEVEL_UPS - props.pointsRemaining);
+  return 1 + (MAX_LEVEL_UPS - props.pointsRemaining) + props.bonusLevel;
 });
 
 const totalAssigned = computed(() => {

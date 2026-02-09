@@ -23,6 +23,7 @@ export const FIXED_LEVEL_HEROES: Partial<Record<HeroId, number>> = {
 
 export const MAX_LEVEL_UPS = 9;
 export const MAX_STAT_VALUE = 10;
+export const MAX_BONUS_POINTS = 4;
 
 export type StatName = typeof STAT_NAMES[number];
 

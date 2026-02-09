@@ -22,12 +22,15 @@
             :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
             :flight-active="getFlightState(hero.id)"
             :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
+            :bonus-level="getBonusLevel(hero.id)"
+            :bonus-full="bonusLevelsUsed >= MAX_BONUS_POINTS"
             @stat-up="statUp(hero.id, $event)"
             @stat-down="statDown(hero.id, $event)"
             @reset-hero="resetHero(hero.id)"
             @toggle-power="togglePower(hero.id, $event)"
             @toggle-flight="toggleFlight(hero.id)"
             @toggle-special-power="toggleSpecialPower(hero.id)"
+            @increment-bonus="incrementBonusLevel(hero.id)"
           />
         </div>
       </div>
@@ -48,12 +51,15 @@
           :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
           :flight-active="getFlightState(hero.id)"
           :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
+          :bonus-level="getBonusLevel(hero.id)"
+          :bonus-full="bonusLevelsUsed >= MAX_BONUS_POINTS"
           @stat-up="statUp(hero.id, $event)"
           @stat-down="statDown(hero.id, $event)"
           @reset-hero="resetHero(hero.id)"
           @toggle-power="togglePower(hero.id, $event)"
           @toggle-flight="toggleFlight(hero.id)"
           @toggle-special-power="toggleSpecialPower(hero.id)"
+          @increment-bonus="incrementBonusLevel(hero.id)"
         />
       </div>
     </template>
@@ -73,7 +79,8 @@ import HeroCard from '~/components/HeroCard.vue';
 import {
   MAX_LEVEL_UPS,
   MAX_POWER_TRAININGS,
-  MAX_FLIGHT_TRAININGS
+  MAX_FLIGHT_TRAININGS,
+  MAX_BONUS_POINTS
 } from '~/types/hero';
 import type { HeroId } from '~/types/hero';
 
@@ -102,7 +109,10 @@ const {
   flightTrainingsUsed,
   getSpecialPowerState,
   toggleSpecialPower,
-  getSpecialPowerBonus
+  getSpecialPowerBonus,
+  getBonusLevel,
+  incrementBonusLevel,
+  bonusLevelsUsed
 } = useHeroPlanner();
 
 // Helper to get all special power bonuses as HeroStats

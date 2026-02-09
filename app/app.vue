@@ -47,6 +47,19 @@
               @click="resetAllFlightTrainings"
             />
           </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-muted">
+              Bonus points: {{ bonusLevelsUsed }}/{{ MAX_BONUS_POINTS }}
+            </span>
+            <UButton
+              v-if="bonusLevelsUsed > 0"
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              variant="ghost"
+              color="neutral"
+              @click="resetAllBonusLevels"
+            />
+          </div>
         </div>
       </template>
 
@@ -62,9 +75,9 @@
 </template>
 
 <script setup lang="ts">
-import { MAX_POWER_TRAININGS, MAX_FLIGHT_TRAININGS } from '~/types/hero';
+import { MAX_POWER_TRAININGS, MAX_FLIGHT_TRAININGS, MAX_BONUS_POINTS } from '~/types/hero';
 
-const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed, resetAllPowerTrainings, resetAllFlightTrainings } =
+const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed, resetAllPowerTrainings, resetAllFlightTrainings, bonusLevelsUsed, resetAllBonusLevels } =
   useHeroPlanner();
 
 useHead({

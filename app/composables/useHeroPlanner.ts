@@ -8,6 +8,7 @@ import {
   MAX_LEVEL_UPS,
   MAX_POWER_TRAININGS,
   MAX_STAT_VALUE,
+  MAX_BONUS_POINTS,
   STAT_NAMES
 } from '~/types/hero';
 import type { HeroId, HeroPowerState, HeroStats, StatName } from '~/types/hero';
@@ -95,6 +96,11 @@ function createHeroPlanner() {
     () => ({})
   );
 
+  const heroBonusLevels = useState<Partial<Record<HeroId, number>>>(
+    'heroBonusLevels',
+    () => ({})
+  );
+
   function getFlightState(id: HeroId): boolean {
     if (!HERO_FLIGHT[id]) return false;
     if (id === 'blonde-blazer') return true;
@@ -144,6 +150,7 @@ function createHeroPlanner() {
     delete heroPowers.value[id];
     delete heroFlights.value[id];
     delete heroSpecialPowers.value[id];
+    delete heroBonusLevels.value[id];
   }
 
   function getSpecialPowerState(id: HeroId): number {
@@ -193,10 +200,31 @@ function createHeroPlanner() {
     heroFlights.value = {};
   }
 
+  const bonusLevelsUsed = computed(() => {
+    return Object.values(heroBonusLevels.value).reduce((sum, v) => sum + (v ?? 0), 0);
+  });
+
+  function getBonusLevel(id: HeroId): number {
+    return heroBonusLevels.value[id] ?? 0;
+  }
+
+  function incrementBonusLevel(id: HeroId) {
+    if (id in FIXED_LEVEL_HEROES) return;
+    const currentBonus = getBonusLevel(id);
+    if (currentBonus >= 4) return;
+    if (bonusLevelsUsed.value >= MAX_BONUS_POINTS) return;
+    heroBonusLevels.value[id] = currentBonus + 1;
+  }
+
+  function resetAllBonusLevels() {
+    heroBonusLevels.value = {};
+  }
+
   watch(ep3Cut, (newCut) => {
     delete heroPowers.value[newCut];
     delete heroFlights.value[newCut];
     delete heroSpecialPowers.value[newCut];
+    delete heroBonusLevels.value[newCut];
   });
 
   watch(ep4Hire, (newHire) => {
@@ -205,6 +233,7 @@ function createHeroPlanner() {
         delete heroPowers.value[heroId];
         delete heroFlights.value[heroId];
         delete heroSpecialPowers.value[heroId];
+        delete heroBonusLevels.value[heroId];
       }
     }
   });
@@ -268,7 +297,11 @@ function createHeroPlanner() {
     visibleHeroes,
     getSpecialPowerState,
     toggleSpecialPower,
-    getSpecialPowerBonus
+    getSpecialPowerBonus,
+    getBonusLevel,
+    incrementBonusLevel,
+    bonusLevelsUsed,
+    resetAllBonusLevels
   };
 }
 
