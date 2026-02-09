@@ -16,7 +16,7 @@ const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((s) => [s, 0])
 ) as HeroStats;
 
-export function useHeroPlanner() {
+function createHeroPlanner() {
   const { data: heroes } = useFetch('/api/heroes');
 
   const ep3Cut = useState<HeroId>('ep3Cut', () => 'sonar');
@@ -270,4 +270,15 @@ export function useHeroPlanner() {
     toggleSpecialPower,
     getSpecialPowerBonus
   };
+}
+
+export function useHeroPlanner() {
+  const nuxtApp = useNuxtApp();
+
+  // Cache the composable instance to avoid duplicate computeds and watchers
+  if (!(nuxtApp as any)._heroPlanner) {
+    (nuxtApp as any)._heroPlanner = createHeroPlanner();
+  }
+
+  return (nuxtApp as any)._heroPlanner as ReturnType<typeof createHeroPlanner>;
 }
