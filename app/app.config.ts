@@ -6,7 +6,7 @@ export default defineAppConfig({
   icon: { mode: 'svg', cssLayer: 'base' },
   ui: {
     colors: {
-      primary: 'green',
+      primary: 'lavender',
       neutral: 'slate'
       // secondary: 'secondary',
       // info: 'info',

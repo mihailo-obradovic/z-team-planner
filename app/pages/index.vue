@@ -1,5 +1,5 @@
 <template>
-  <UTabs :items="tabs" class="w-full">
+  <UTabs :items="tabs" class="w-full" variant="link">
     <template #overview>
       <div
         class="grid grid-cols-1 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)] justify-items-center justify-center gap-4 p-4"
