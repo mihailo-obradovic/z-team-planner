@@ -36,7 +36,9 @@
           </div>
           <div class="flex items-center gap-2">
             <span class="text-sm text-muted">
-              Flight trainings: {{ flightTrainingsUsed }}/{{ MAX_FLIGHT_TRAININGS }}
+              Flight trainings: {{ flightTrainingsUsed }}/{{
+                MAX_FLIGHT_TRAININGS
+              }}
             </span>
             <UButton
               v-if="flightTrainingsUsed > 0"
@@ -68,17 +70,38 @@
       </template>
     </u-header>
 
-    <u-main>
+    <NuxtImg
+      src="/images/background.png"
+      class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+      alt=""
+    />
+
+    <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
   </u-app>
 </template>
 
 <script setup lang="ts">
-import { MAX_POWER_TRAININGS, MAX_FLIGHT_TRAININGS, MAX_BONUS_POINTS } from '~/types/hero';
+import {
+  MAX_POWER_TRAININGS,
+  MAX_FLIGHT_TRAININGS,
+  MAX_BONUS_POINTS
+} from '~/types/hero';
 
-const { ep3Cut, ep4Hire, showEp8Recruits, ep3CutItems, ep4HireItems, trainingsUsed, flightTrainingsUsed, resetAllPowerTrainings, resetAllFlightTrainings, bonusLevelsUsed, resetAllBonusLevels } =
-  useHeroPlanner();
+const {
+  ep3Cut,
+  ep4Hire,
+  showEp8Recruits,
+  ep3CutItems,
+  ep4HireItems,
+  trainingsUsed,
+  flightTrainingsUsed,
+  resetAllPowerTrainings,
+  resetAllFlightTrainings,
+  bonusLevelsUsed,
+  resetAllBonusLevels
+} = useHeroPlanner();
 
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],

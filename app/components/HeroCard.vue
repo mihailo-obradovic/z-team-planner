@@ -251,10 +251,10 @@ const monsterForm = ref(false);
 const portraitSrc = computed(() => {
   if (props.hero.id === 'sonar') {
     return monsterForm.value
-      ? '/portraits/sonar-monster.webp'
-      : '/portraits/sonar-hybrid.webp';
+      ? '/images/portraits/sonar-monster.webp'
+      : '/images/portraits/sonar-hybrid.webp';
   }
-  return `/portraits/${props.hero.id}.webp`;
+  return `/images/portraits/${props.hero.id}.webp`;
 });
 
 const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
