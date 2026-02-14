@@ -2,7 +2,7 @@
  * Hero Type System for Z-Team Planner
  *
  * This file defines all types related to heroes in the Dispatch game.
- * It follows the game mechanics documented in .claude/rules/dispatch.md
+ * For full game mechanics, see .claude/docs/dispatch.md
  *
  * ## Design Principles
  *
@@ -19,17 +19,6 @@
  *    - Some powers override the starting power
  *    - Flight capability varies by hero type
  *    - Synergy pairs are specific combinations of heroes
- *
- * ## Type Organization
- *
- * - Hero Identifiers: HeroId union type
- * - Stats System: StatName, HeroStats, stat limits
- * - Episode Choices: Heroes that can be cut/hired
- * - Level System: Fixed vs levelable heroes, level caps
- * - Power System: Power definitions, selections, training limits
- * - Flight System: Flight capabilities and training
- * - Synergy System: Hero pair relationships and bonuses
- * - Hero Data: The main Hero interface
  */
 
 // ============================================================================
@@ -140,14 +129,11 @@ export const MAX_POWER_TRAININGS = 7;
 // ============================================================================
 
 /**
- * Flight capability varies by hero:
- * - 'innate': Always can fly (Blonde Blazer)
- * - 'conditional-power': Can fly if specific power is/isn't selected (Phenomaman loses flight with Heavily Medicated)
- * - 'trainable': Can learn to fly through Flight School (Coupe, Flambae, Sonar)
+ * Determines how/when a hero can fly. See .claude/docs/dispatch.md for flight mechanics details.
+ * - 'innate': Always can fly
+ * - 'conditional-power': Can fly based on power selection
+ * - 'trainable': Can learn through Flight School
  * - 'none': Cannot fly
- *
- * Note: Sonar's flight is 'trainable' but only visually shown when transformed - the transform
- * state is a UI concern handled in HeroCard, not a capability restriction.
  */
 export type FlightCapability =
   | { type: 'innate' }
