@@ -50,9 +50,8 @@ function createHeroPlanner() {
   }
 
   const trainingsUsed = computed(() => {
-    return Object.values(heroPowers.value).filter(
-      (p) => p && (p[1] || p[2])
-    ).length;
+    return Object.values(heroPowers.value).filter((p) => p && (p[1] || p[2]))
+      .length;
   });
 
   function isEp8Recruit(id: HeroId): boolean {
@@ -75,7 +74,12 @@ function createHeroPlanner() {
       if (powers[index]) {
         powers[index] = false;
       } else {
-        if (!powers[1] && !powers[2] && trainingsUsed.value >= MAX_POWER_TRAININGS) return;
+        if (
+          !powers[1] &&
+          !powers[2] &&
+          trainingsUsed.value >= MAX_POWER_TRAININGS
+        )
+          return;
         powers[index === 1 ? 2 : 1] = false;
         powers[index] = true;
         powers[0] = true;
@@ -109,15 +113,17 @@ function createHeroPlanner() {
   }
 
   const flightTrainingsUsed = computed(() => {
-    return FLIGHT_SCHOOL_HEROES.filter(
-      (id) => heroFlights.value[id]
-    ).length;
+    return FLIGHT_SCHOOL_HEROES.filter((id) => heroFlights.value[id]).length;
   });
 
   function toggleFlight(id: HeroId) {
     if (id === 'blonde-blazer' || id === 'phenomaman') return;
     if (!HERO_FLIGHT[id]) return;
-    if (!heroFlights.value[id] && flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS) return;
+    if (
+      !heroFlights.value[id] &&
+      flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
+    )
+      return;
     heroFlights.value[id] = !(heroFlights.value[id] ?? false);
   }
 
@@ -178,7 +184,10 @@ function createHeroPlanner() {
         const hero = heroes.value?.find((h) => h.id === id);
         if (!hero) return 0;
         const normalBonus = getStatBonuses(id)[stat];
-        return Math.max(0, MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus);
+        return Math.max(
+          0,
+          MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus
+        );
       }
     } else if (id === 'coupe' && specialState > 0) {
       const powerStates = getPowerState(id);
@@ -202,7 +211,10 @@ function createHeroPlanner() {
   }
 
   const bonusLevelsUsed = computed(() => {
-    return Object.values(heroBonusLevels.value).reduce((sum, v) => sum + (v ?? 0), 0);
+    return Object.values(heroBonusLevels.value).reduce(
+      (sum, v) => sum + (v ?? 0),
+      0
+    );
   });
 
   function getBonusLevel(id: HeroId): number {
