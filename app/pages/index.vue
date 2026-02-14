@@ -80,14 +80,14 @@
 
 <script setup lang="ts">
 import HeroCard from '~/components/HeroCard.vue';
+
 import {
   MAX_LEVEL_UPS,
   MAX_POWER_TRAININGS,
   MAX_FLIGHT_TRAININGS,
-  MAX_BONUS_POINTS,
-  BASE_SYNERGY_PAIRS,
-  CONDITIONAL_SYNERGY_PAIRS
+  MAX_BONUS_POINTS
 } from '~/types/hero';
+
 import type { HeroId } from '~/types/hero';
 
 const tabs = [
@@ -97,72 +97,34 @@ const tabs = [
 ];
 
 const {
-  visibleHeroes,
-  ep3Cut,
-  ep4Hire,
-  showEp8Recruits,
+  // Hero visibility
+  synergyPairColumns,
+  ep8RecruitHeroes,
+
+  // Hero stats
   getStatBonuses,
   totalAssigned,
   statUp,
   statDown,
-  resetHero,
+  getBonusLevel,
+  incrementBonusLevel,
+  bonusLevelsUsed,
+
+  // Powers
   getPowerState,
   togglePower,
   trainingsUsed,
   isEp8Recruit,
-  getFlightState,
-  toggleFlight,
-  flightTrainingsUsed,
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
-  getBonusLevel,
-  incrementBonusLevel,
-  bonusLevelsUsed
+
+  // Flight
+  getFlightState,
+  toggleFlight,
+  flightTrainingsUsed,
+
+  // Reset
+  resetHero
 } = useHeroPlanner();
-
-const synergyPairDefs = computed((): [HeroId, HeroId][] => {
-  const pairs: [HeroId, HeroId][] = BASE_SYNERGY_PAIRS.map((pair) => [
-    pair.hero1,
-    pair.hero2
-  ]);
-
-  // Determine which conditional pair to use based on episode choices
-  const conditionalKey =
-    `${ep3Cut.value}-cut-${ep4Hire.value}-hired` as keyof typeof CONDITIONAL_SYNERGY_PAIRS;
-
-  if (conditionalKey in CONDITIONAL_SYNERGY_PAIRS) {
-    const conditionalPair = CONDITIONAL_SYNERGY_PAIRS[conditionalKey];
-    pairs.push([conditionalPair.hero1, conditionalPair.hero2]);
-  }
-
-  return pairs;
-});
-
-const synergyPairColumns = computed(() => {
-  const heroMap = new Map(visibleHeroes.value.map((h) => [h.id, h]));
-
-  const pairs = [];
-
-  for (const [topId, bottomId] of synergyPairDefs.value) {
-    const top = heroMap.get(topId);
-    const bottom = heroMap.get(bottomId);
-
-    if (top && bottom) {
-      pairs.push({ topId, top, bottom });
-    }
-  }
-
-  return pairs;
-});
-
-const ep8RecruitHeroes = computed(() => {
-  if (!showEp8Recruits.value) {
-    return [];
-  }
-
-  const pairHeroIds = new Set<string>(synergyPairDefs.value.flat());
-
-  return visibleHeroes.value.filter((h) => !pairHeroIds.has(h.id));
-});
 </script>

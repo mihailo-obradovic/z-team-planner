@@ -81,6 +81,7 @@ export const FIXED_LEVEL_HEROES = {
 
 export const MAX_LEVEL_UPS = 9;
 export const MAX_BONUS_POINTS = 4;
+export const MAX_BONUS_LEVEL_PER_HERO = 4;
 
 // ============================================================================
 // POWER SYSTEM
@@ -379,6 +380,25 @@ export const HERO_POWERS = {
     }
   ]
 } as const satisfies Partial<Record<HeroId, HeroPowerSet>>;
+
+/**
+ * Special power mechanics for heroes with toggle-able stat bonuses.
+ * Currently only Flambae (Supernova) and Coupe (En Pointe/À la Seconde) have special powers.
+ */
+export const SPECIAL_POWER_MECHANICS = {
+  flambae: {
+    type: 'supernova' as const,
+    requiredPower: 'trainable-2' as const,
+    affectedStats: ['combat', 'mobility'] as const
+  },
+  coupe: {
+    type: 'en-pointe' as const,
+    basePower: 'starting' as const,
+    upgradePower: 'trainable-2' as const,
+    baseBonus: 1,
+    upgradeBonus: 3
+  }
+} as const satisfies Partial<Record<HeroId, any>>;
 
 /**
  * Flight capability information for each hero.
