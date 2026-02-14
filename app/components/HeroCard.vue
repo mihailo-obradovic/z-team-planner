@@ -22,8 +22,8 @@
           <UButton
             :icon="POWER_ICONS[0]"
             size="xs"
-            :variant="powerStates[0] ? 'soft' : 'ghost'"
-            :color="powerStates[0] ? 'primary' : 'neutral'"
+            :variant="powerStates.startingRevealed ? 'soft' : 'ghost'"
+            :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
             @click="$emit('togglePower', 0)"
           />
         </UTooltip>
@@ -35,9 +35,9 @@
           <UButton
             :icon="POWER_ICONS[i + 1]"
             size="xs"
-            :variant="powerStates[i + 1] ? 'soft' : 'ghost'"
-            :color="powerStates[i + 1] ? 'primary' : 'neutral'"
-            :disabled="!powerStates[i + 1] && trainingsFull"
+            :variant="powerStates.trainableSelected === (i + 1) ? 'soft' : 'ghost'"
+            :color="powerStates.trainableSelected === (i + 1) ? 'primary' : 'neutral'"
+            :disabled="powerStates.trainableSelected !== (i + 1) && trainingsFull"
             @click="$emit('togglePower', (i + 1) as 0 | 1 | 2)"
           />
         </UTooltip>
@@ -184,8 +184,8 @@ import {
 } from '~/types/hero';
 import type {
   HeroId,
-  HeroPowerInfo,
-  HeroPowerState,
+  HeroPowerDefinition,
+  HeroPowerSelection,
   HeroStats,
   StatName
 } from '~/types/hero';
@@ -205,7 +205,7 @@ const props = defineProps<{
   statBonuses: HeroStats;
   specialPowerBonus: HeroStats;
   pointsRemaining: number;
-  powerStates: HeroPowerState;
+  powerStates: HeroPowerSelection;
   specialPowerState: number;
   isEp8Recruit: boolean;
   trainingsFull: boolean;
@@ -227,12 +227,15 @@ defineEmits<{
 
 const powers = computed(() => HERO_POWERS[props.hero.id as HeroId]);
 
-const upgradePowers = computed((): HeroPowerInfo[] => {
+const upgradePowers = computed((): HeroPowerDefinition[] => {
   if (!powers.value || props.isEp8Recruit) return [];
-  return powers.value.slice(1);
+  // Filter out dummy powers (empty name means no power exists)
+  return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
-const flightInfo = computed(() => HERO_FLIGHT[props.hero.id as HeroId]);
+const flightInfo = computed(() =>
+  HERO_FLIGHT[props.hero.id as HeroId as keyof typeof HERO_FLIGHT]
+);
 
 const flightLocked = computed(() => {
   if (props.hero.id === 'blonde-blazer' || props.hero.id === 'phenomaman')
@@ -274,7 +277,10 @@ function resolvedStat(stat: StatName): StatName {
 const canLevelUp = computed(() => !(props.hero.id in FIXED_LEVEL_HEROES));
 
 const heroLevel = computed(() => {
-  const fixedLevel = FIXED_LEVEL_HEROES[props.hero.id as HeroId];
+  const fixedLevel =
+    FIXED_LEVEL_HEROES[
+      props.hero.id as HeroId as keyof typeof FIXED_LEVEL_HEROES
+    ];
   if (fixedLevel !== undefined) return fixedLevel;
   return 1 + (MAX_LEVEL_UPS - props.pointsRemaining) + props.bonusLevel;
 });
@@ -284,19 +290,22 @@ const totalAssigned = computed(() => {
 });
 
 const hasPowers = computed(() => {
-  return props.powerStates.some((p) => p);
+  return (
+    props.powerStates.startingRevealed || props.powerStates.trainableSelected > 0
+  );
 });
 
 const showFlambaeSupernova = computed(() => {
-  return props.hero.id === 'flambae' && props.powerStates[2];
+  return props.hero.id === 'flambae' && props.powerStates.trainableSelected === 2;
 });
 
 const showCoupeEnPointe = computed(() => {
-  return props.hero.id === 'coupe' && props.powerStates[0];
+  return props.hero.id === 'coupe' && props.powerStates.startingRevealed;
 });
 
 const coupeTooltip = computed(() => {
-  const isUpgraded = props.powerStates[2];
+  // À la Seconde is trainable-2
+  const isUpgraded = props.powerStates.trainableSelected === 2;
   const bonus = isUpgraded ? '+3' : '+1';
 
   if (props.specialPowerState === 1) {
