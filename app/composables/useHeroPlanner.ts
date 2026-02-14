@@ -251,6 +251,28 @@ function createHeroPlanner() {
     heroBonusLevels.value = {};
   }
 
+  // Memoized special power bonuses for all heroes to prevent unnecessary re-renders
+  const allSpecialPowerBonuses = computed(() => {
+    const result: Partial<Record<HeroId, HeroStats>> = {};
+
+    for (const hero of heroes.value ?? []) {
+      const id = hero.id as HeroId;
+      result[id] = {
+        combat: getSpecialPowerBonus(id, 'combat'),
+        intellect: getSpecialPowerBonus(id, 'intellect'),
+        vigor: getSpecialPowerBonus(id, 'vigor'),
+        charisma: getSpecialPowerBonus(id, 'charisma'),
+        mobility: getSpecialPowerBonus(id, 'mobility')
+      };
+    }
+
+    return result;
+  });
+
+  function getSpecialPowerBonusStats(id: HeroId): HeroStats {
+    return allSpecialPowerBonuses.value[id] ?? ZERO_STATS;
+  }
+
   watch(ep3Cut, (newCut) => {
     delete heroPowers.value[newCut];
     delete heroFlights.value[newCut];
@@ -329,6 +351,7 @@ function createHeroPlanner() {
     getSpecialPowerState,
     toggleSpecialPower,
     getSpecialPowerBonus,
+    getSpecialPowerBonusStats,
     getBonusLevel,
     incrementBonusLevel,
     bonusLevelsUsed,

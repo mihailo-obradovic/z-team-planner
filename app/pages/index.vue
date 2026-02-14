@@ -113,22 +113,11 @@ const {
   flightTrainingsUsed,
   getSpecialPowerState,
   toggleSpecialPower,
-  getSpecialPowerBonus,
+  getSpecialPowerBonusStats,
   getBonusLevel,
   incrementBonusLevel,
   bonusLevelsUsed
 } = useHeroPlanner();
-
-// Helper to get all special power bonuses as HeroStats
-function getSpecialPowerBonusStats(heroId: HeroId) {
-  return {
-    combat: getSpecialPowerBonus(heroId, 'combat'),
-    intellect: getSpecialPowerBonus(heroId, 'intellect'),
-    vigor: getSpecialPowerBonus(heroId, 'vigor'),
-    charisma: getSpecialPowerBonus(heroId, 'charisma'),
-    mobility: getSpecialPowerBonus(heroId, 'mobility')
-  };
-}
 
 const synergyPairDefs = computed((): [HeroId, HeroId][] => [
   ['flambae', 'prism'],
