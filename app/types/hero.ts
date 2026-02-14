@@ -88,8 +88,9 @@ export const MAX_BONUS_POINTS = 4;
 
 /**
  * Definition of a single hero power.
- * Each hero has exactly 3 powers: 1 starting + 2 trainable options.
+ * Most heroes have exactly 3 powers: 1 starting + 2 trainable options.
  * Only one of the two trainable powers can be selected.
+ * Episode 8 hires have only 1 power: the starting power.
  */
 export interface HeroPowerDefinition {
   name: string;
@@ -137,7 +138,11 @@ export const MAX_POWER_TRAININGS = 7;
  */
 export type FlightCapability =
   | { type: 'innate' }
-  | { type: 'conditional-power'; requiresPowerSlot: 'starting' | 'trainable-1' | 'trainable-2'; inverted?: boolean }
+  | {
+      type: 'conditional-power';
+      requiresPowerSlot: 'starting' | 'trainable-1' | 'trainable-2';
+      inverted?: boolean;
+    }
   | { type: 'trainable' }
   | { type: 'none' };
 
@@ -417,7 +422,11 @@ export const HERO_FLIGHT = {
  */
 export const HERO_FLIGHT_CAPABILITY = {
   'blonde-blazer': { type: 'innate' },
-  phenomaman: { type: 'conditional-power', requiresPowerSlot: 'trainable-1', inverted: true }, // Loses flight if Heavily Medicated selected
+  phenomaman: {
+    type: 'conditional-power',
+    requiresPowerSlot: 'trainable-1',
+    inverted: true
+  }, // Loses flight if Heavily Medicated selected
   sonar: { type: 'trainable' }, // Must train at Flight School; only visually active when transformed (UI concern)
   coupe: { type: 'trainable' },
   flambae: { type: 'trainable' }

@@ -1,12 +1,6 @@
-import type { HeroId, HeroStats } from '~~/app/types/hero';
+import type { Hero } from '~~/app/types/hero';
 
-interface BaseHero {
-  id: HeroId;
-  name: string;
-  startingStats: HeroStats;
-}
-
-const heroes: BaseHero[] = [
+const heroes: Hero[] = [
   {
     id: 'coupe',
     name: 'Coupé',
