@@ -181,20 +181,27 @@ import {
   MAX_STAT_VALUE,
   HERO_POWERS,
   HERO_FLIGHT
-} from '~/types/hero';
+} from '@/types/hero';
 import type {
   HeroId,
   HeroPowerDefinition,
   HeroPowerSelection,
   HeroStats,
   StatName
-} from '~/types/hero';
+} from '@/types/hero';
 
 const POWER_ICONS = [
   'i-lucide-zap',
   'i-lucide-shield',
   'i-lucide-swords'
 ] as const;
+
+const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
+  combat: 'intellect',
+  intellect: 'combat',
+  vigor: 'charisma',
+  charisma: 'vigor'
+};
 
 const props = defineProps<{
   hero: {
@@ -225,11 +232,12 @@ defineEmits<{
   incrementBonus: [];
 }>();
 
+const monsterForm = ref(false);
+
 const powers = computed(() => HERO_POWERS[props.hero.id as HeroId]);
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
   if (!powers.value || props.isEp8Recruit) return [];
-  // Filter out dummy powers (empty name means no power exists)
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
@@ -245,11 +253,8 @@ const flightLocked = computed(() => {
 
 const flightVisuallyActive = computed(() => {
   if (props.hero.id !== 'sonar') return props.flightActive;
-  // For Sonar, flight is only visually active in monster form
   return props.flightActive && monsterForm.value;
 });
-
-const monsterForm = ref(false);
 
 const portraitSrc = computed(() => {
   if (props.hero.id === 'sonar') {
@@ -259,20 +264,6 @@ const portraitSrc = computed(() => {
   }
   return `/images/portraits/${props.hero.id}.webp`;
 });
-
-const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
-  combat: 'intellect',
-  intellect: 'combat',
-  vigor: 'charisma',
-  charisma: 'vigor'
-};
-
-function resolvedStat(stat: StatName): StatName {
-  if (props.hero.id === 'sonar' && monsterForm.value) {
-    return MONSTER_FORM_SWAPS[stat] ?? stat;
-  }
-  return stat;
-}
 
 const canLevelUp = computed(() => !(props.hero.id in FIXED_LEVEL_HEROES));
 
@@ -304,17 +295,16 @@ const showCoupeEnPointe = computed(() => {
 });
 
 const coupeTooltip = computed(() => {
-  // À la Seconde is trainable-2
   const isUpgraded = props.powerStates.trainableSelected === 2;
   const bonus = isUpgraded ? '+3' : '+1';
 
   if (props.specialPowerState === 1) {
     return `En Pointe: ${bonus} Combat (active)`;
-  } else if (props.specialPowerState === 2) {
-    return `En Pointe: ${bonus} Mobility (active)`;
-  } else {
-    return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
   }
+  if (props.specialPowerState === 2) {
+    return `En Pointe: ${bonus} Mobility (active)`;
+  }
+  return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
 });
 
 const coupeIcon = computed(() => {
@@ -330,4 +320,11 @@ const sonarFormIcon = computed(() => {
 const sonarFormTooltip = computed(() => {
   return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
 });
+
+function resolvedStat(stat: StatName): StatName {
+  if (props.hero.id === 'sonar' && monsterForm.value) {
+    return MONSTER_FORM_SWAPS[stat] ?? stat;
+  }
+  return stat;
+}
 </script>

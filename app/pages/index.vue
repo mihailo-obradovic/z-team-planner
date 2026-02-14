@@ -79,16 +79,16 @@
 </template>
 
 <script setup lang="ts">
-import HeroCard from '~/components/HeroCard.vue';
+import HeroCard from '@/components/HeroCard.vue';
 
 import {
   MAX_LEVEL_UPS,
   MAX_POWER_TRAININGS,
   MAX_FLIGHT_TRAININGS,
   MAX_BONUS_POINTS
-} from '~/types/hero';
+} from '@/types/hero';
 
-import type { HeroId } from '~/types/hero';
+import type { HeroId } from '@/types/hero';
 
 const tabs = [
   { label: 'Overview', slot: 'overview' },
