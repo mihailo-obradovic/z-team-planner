@@ -33,6 +33,7 @@
             @toggle-flight="toggleFlight(hero.id)"
             @toggle-special-power="toggleSpecialPower(hero.id)"
             @increment-bonus="incrementBonusLevel(hero.id)"
+            @view-detail="selectedHeroId = hero.id as HeroId"
           />
         </div>
       </div>
@@ -64,6 +65,7 @@
           @toggle-flight="toggleFlight(hero.id)"
           @toggle-special-power="toggleSpecialPower(hero.id)"
           @increment-bonus="incrementBonusLevel(hero.id)"
+          @view-detail="selectedHeroId = hero.id as HeroId"
         />
       </div>
     </template>
@@ -76,10 +78,13 @@
       <div class="p-4" />
     </template>
   </UTabs>
+
+  <HeroDetailDialog :hero-id="selectedHeroId" @close="selectedHeroId = null" />
 </template>
 
 <script setup lang="ts">
 import HeroCard from '@/components/HeroCard.vue';
+import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
 import {
   MAX_LEVEL_UPS,
@@ -89,6 +94,8 @@ import {
 } from '@/types/hero';
 
 import type { HeroId } from '@/types/hero';
+
+const selectedHeroId = ref<HeroId | null>(null);
 
 const tabs = [
   { label: 'Overview', slot: 'overview' },

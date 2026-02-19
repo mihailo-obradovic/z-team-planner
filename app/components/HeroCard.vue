@@ -6,7 +6,8 @@
       <NuxtImg
         :src="portraitSrc"
         :alt="hero.name"
-        class="aspect-square size-35 rounded-md bg-accented object-cover"
+        class="aspect-square size-35 rounded-md bg-accented object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-shadow"
+        @click="$emit('viewDetail')"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
         <UTooltip v-if="hero.id === 'sonar'" :text="sonarFormTooltip">
@@ -230,6 +231,7 @@ defineEmits<{
   toggleFlight: [];
   toggleSpecialPower: [];
   incrementBonus: [];
+  viewDetail: [];
 }>();
 
 const monsterForm = ref(false);
