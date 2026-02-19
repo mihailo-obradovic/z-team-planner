@@ -225,7 +225,9 @@
           <div
             class="rounded-xl border border-default bg-elevated/50 p-6 flex items-center justify-center"
           >
-            <span class="text-muted text-sm">Radar chart</span>
+            <ClientOnly>
+              <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
+            </ClientOnly>
           </div>
         </div>
 
@@ -330,6 +332,12 @@
 </template>
 
 <script setup lang="ts">
+import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
+
+const VueUiRadar = defineAsyncComponent(() =>
+  import('vue-data-ui').then((m) => m.VueUiRadar)
+);
+
 import {
   STAT_NAMES,
   FIXED_LEVEL_HEROES,
@@ -590,6 +598,70 @@ const specialAbility = computed(() => {
 
   return null;
 });
+
+const radarDataset = computed((): VueUiRadarDataset => ({
+  categories: [{ name: hero.value?.name ?? '' }],
+  series: STAT_NAMES.map((stat) => ({
+    name: stat.charAt(0).toUpperCase() + stat.slice(1),
+    values: [computedStat(stat)],
+    target: 10
+  }))
+}));
+
+const radarConfig = computed((): VueUiRadarConfig => ({
+  responsive: true,
+  useCssAnimation: true,
+  style: {
+    fontFamily: 'inherit',
+    chart: {
+      backgroundColor: 'transparent',
+      color: 'currentColor',
+      layout: {
+        grid: {
+          show: true,
+          stroke: 'var(--ui-border)',
+          strokeWidth: 0.5,
+          graduations: 10
+        },
+        outerPolygon: {
+          stroke: 'var(--ui-border)',
+          strokeWidth: 1
+        },
+        dataPolygon: {
+          strokeWidth: 2,
+          opacity: 0.2,
+          useGradient: false
+        },
+        plots: {
+          show: true,
+          radius: 3
+        },
+        labels: {
+          dataLabels: {
+            show: true,
+            fontSize: 12,
+            color: 'currentColor'
+          }
+        }
+      },
+      legend: {
+        show: false
+      },
+      title: {
+        text: ''
+      },
+      tooltip: {
+        show: false
+      }
+    }
+  },
+  userOptions: {
+    show: false
+  },
+  table: {
+    show: false
+  }
+}));
 
 // ---
 
