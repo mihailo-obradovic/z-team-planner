@@ -223,7 +223,7 @@
           </div>
 
           <div
-            class="rounded-xl border border-default bg-elevated/50 p-6 flex items-center justify-center"
+            class="radar-chart rounded-xl border border-default bg-elevated/50 p-6 flex items-center justify-center"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -599,9 +599,17 @@ const specialAbility = computed(() => {
   return null;
 });
 
+const RADAR_STAT_ORDER: StatName[] = [
+  'combat',
+  'vigor',
+  'mobility',
+  'charisma',
+  'intellect'
+];
+
 const radarDataset = computed((): VueUiRadarDataset => ({
   categories: [{ name: hero.value?.name ?? '' }],
-  series: STAT_NAMES.map((stat) => ({
+  series: RADAR_STAT_ORDER.map((stat) => ({
     name: stat.charAt(0).toUpperCase() + stat.slice(1),
     values: [computedStat(stat)],
     target: 10
@@ -692,3 +700,15 @@ function isPowerActive(power: HeroPowerDefinition): boolean {
   return false;
 }
 </script>
+
+<style scoped>
+.radar-chart :deep(svg) {
+  transform: rotate(-90deg);
+}
+
+.radar-chart :deep(svg text) {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(90deg);
+}
+</style>
