@@ -72,7 +72,7 @@
 
     <NuxtImg
       src="/images/background.png"
-      class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
+      class="fixed inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
       alt=""
     />
 
