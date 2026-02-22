@@ -25,11 +25,9 @@
             <span class="text-sm text-muted">
               Power trainings: {{ trainingsUsed }}/{{ MAX_POWER_TRAININGS }}
             </span>
-            <UButton
+            <IconButton
               v-if="trainingsUsed > 0"
               icon="i-lucide-rotate-ccw"
-              size="xs"
-              variant="soft"
               color="neutral"
               @click="resetAllPowerTrainings"
             />
@@ -40,11 +38,9 @@
                 MAX_FLIGHT_TRAININGS
               }}
             </span>
-            <UButton
+            <IconButton
               v-if="flightTrainingsUsed > 0"
               icon="i-lucide-rotate-ccw"
-              size="xs"
-              variant="soft"
               color="neutral"
               @click="resetAllFlightTrainings"
             />
@@ -53,11 +49,9 @@
             <span class="text-sm text-muted">
               Bonus points: {{ bonusLevelsUsed }}/{{ MAX_BONUS_POINTS }}
             </span>
-            <UButton
+            <IconButton
               v-if="bonusLevelsUsed > 0"
               icon="i-lucide-rotate-ccw"
-              size="xs"
-              variant="soft"
               color="neutral"
               @click="resetAllBonusLevels"
             />

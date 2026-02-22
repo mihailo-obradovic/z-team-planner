@@ -10,89 +10,72 @@
         @click="$emit('viewDetail')"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
-        <UTooltip v-if="heroId === 'sonar'" :text="sonarFormTooltip">
-          <UButton
-            :icon="sonarFormIcon"
-            size="xs"
-            variant="soft"
-            :color="monsterForm ? 'primary' : 'neutral'"
-            @click="monsterForm = !monsterForm"
-          />
-        </UTooltip>
-        <UTooltip :text="`${powers[0]!.name}: ${powers[0]!.description}`">
-          <UButton
-            :icon="POWER_ICONS[0]"
-            size="xs"
-            variant="soft"
-            :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-            @click="togglePower(heroId, 0)"
-          />
-        </UTooltip>
-        <UTooltip
+        <TooltipButton
+          v-if="heroId === 'sonar'"
+          :text="sonarFormTooltip"
+          :icon="sonarFormIcon"
+          :color="monsterForm ? 'primary' : 'neutral'"
+          @click="monsterForm = !monsterForm"
+        />
+
+        <TooltipButton
+          :text="`${powers[0]!.name}: ${powers[0]!.description}`"
+          :icon="POWER_ICONS[0]"
+          :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
+          @click="togglePower(heroId, 0)"
+        />
+
+        <TooltipButton
           v-for="(power, i) in upgradePowers"
           :key="i"
           :text="`${power.name}: ${power.description}`"
-        >
-          <UButton
-            :icon="POWER_ICONS[i + 1]"
-            size="xs"
-            variant="soft"
-            :color="
-              powerStates.trainableSelected === i + 1 ? 'primary' : 'neutral'
-            "
-            :disabled="powerStates.trainableSelected !== i + 1 && trainingsFull"
-            @click="togglePower(heroId, (i + 1) as 0 | 1 | 2)"
-          />
-        </UTooltip>
-        <UTooltip
+          :icon="POWER_ICONS[i + 1]!"
+          :color="
+            powerStates.trainableSelected === i + 1 ? 'primary' : 'neutral'
+          "
+          :disabled="powerStates.trainableSelected !== i + 1 && trainingsFull"
+          @click="togglePower(heroId, (i + 1) as 0 | 1 | 2)"
+        />
+
+        <TooltipButton
           v-if="flightInfo"
           :text="`${flightInfo.name}: ${flightInfo.description}`"
-        >
-          <UButton
-            icon="i-lucide-plane"
-            size="xs"
-            variant="soft"
-            :color="
-              flightVisuallyActive
-                ? 'primary'
-                : flightActive
-                  ? 'secondary'
-                  : 'neutral'
-            "
-            :disabled="flightLocked"
-            @click="toggleFlight(heroId)"
-          />
-        </UTooltip>
-        <UTooltip
+          icon="i-lucide-plane"
+          :color="
+            flightVisuallyActive
+              ? 'primary'
+              : flightActive
+                ? 'secondary'
+                : 'neutral'
+          "
+          :disabled="flightLocked"
+          @click="toggleFlight(heroId)"
+        />
+
+        <TooltipButton
           v-if="showFlambaeSupernova"
           text="Supernova: Set Combat and Mobility to 10"
-        >
-          <UButton
-            icon="i-lucide-flame"
-            size="xs"
-            variant="soft"
-            :color="specialPowerState ? 'primary' : 'neutral'"
-            @click="toggleSpecialPower(heroId)"
-          />
-        </UTooltip>
-        <UTooltip v-if="showCoupeEnPointe" :text="coupeTooltip">
-          <UButton
-            :icon="coupeIcon"
-            size="xs"
-            variant="soft"
-            :color="specialPowerState ? 'primary' : 'neutral'"
-            @click="toggleSpecialPower(heroId)"
-          />
-        </UTooltip>
+          icon="i-lucide-flame"
+          :color="specialPowerState ? 'primary' : 'neutral'"
+          @click="toggleSpecialPower(heroId)"
+        />
+
+        <TooltipButton
+          v-if="showCoupeEnPointe"
+          :text="coupeTooltip"
+          :icon="coupeIcon"
+          :color="specialPowerState ? 'primary' : 'neutral'"
+          @click="toggleSpecialPower(heroId)"
+        />
       </div>
     </div>
 
     <div class="flex flex-col flex-1">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-md font-semibold min-w-18">{{ hero.name }}</h3>
-        <div class="flex items-center gap-2 ml-2">
+        <div class="flex items-center gap-2 ml-2 mr-0.5">
           <div v-if="canLevelUp" class="w-6 flex items-center justify-center">
-            <UButton
+            <IconButton
               v-if="
                 totalAssignedValue > 0 ||
                 hasPowers ||
@@ -100,8 +83,6 @@
                 bonusLevel > 0
               "
               icon="i-lucide-rotate-ccw"
-              size="xs"
-              variant="soft"
               color="neutral"
               @click="resetHero(heroId)"
             />
@@ -112,11 +93,9 @@
           >
 
           <div v-if="canLevelUp" class="w-7 flex items-center justify-center">
-            <UButton
+            <IconButton
               v-if="bonusLevel > 0 || !bonusFull"
               :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
-              size="xs"
-              variant="soft"
               :color="bonusLevel > 0 ? 'primary' : 'neutral'"
               :disabled="bonusLevel >= 4 || bonusFull"
               @click="incrementBonusLevel(heroId)"
@@ -124,7 +103,7 @@
               <span v-if="bonusLevel > 0" class="text-xs font-semibold"
                 >+{{ bonusLevel }}</span
               >
-            </UButton>
+            </IconButton>
           </div>
         </div>
       </div>
@@ -145,10 +124,8 @@
           </span>
           <div class="flex items-center gap-1 ml-2">
             <template v-if="canLevelUp">
-              <UButton
+              <IconButton
                 icon="i-lucide-minus"
-                size="xs"
-                variant="soft"
                 color="neutral"
                 :disabled="statBonuses[resolvedStat(stat)] <= 0"
                 @click="statDown(heroId, resolvedStat(stat))"
@@ -160,10 +137,8 @@
               specialPowerBonus[resolvedStat(stat)]
             }}</span>
             <template v-if="canLevelUp">
-              <UButton
+              <IconButton
                 icon="i-lucide-plus"
-                size="xs"
-                variant="soft"
                 color="neutral"
                 :disabled="
                   pointsRemaining <= 0 ||
