@@ -85,7 +85,7 @@ export function useHeroPowerTraining(
       powers.startingRevealed = !powers.startingRevealed;
     } else {
       // Toggle trainable power (1 or 2)
-      if (episodeSetup.isEp8Recruit(id)) {
+      if (episodeSetup.ep8RecruitIds.value.has(id)) {
         return;
       }
 

@@ -18,11 +18,11 @@
         </div>
       </div>
       <div
-        v-if="ep8RecruitHeroes.length"
+        v-if="showEp8Recruits"
         class="flex flex-wrap justify-center gap-4 px-4 pb-4"
       >
         <HeroCard
-          v-for="hero in ep8RecruitHeroes"
+          v-for="hero in ep8Recruits"
           :key="hero.id"
           :hero-id="hero.id as HeroId"
           @view-detail="selectedHeroId = hero.id as HeroId"
@@ -56,5 +56,5 @@ const tabs = [
   { label: 'Mission simulator (coming soon!)', slot: 'mission-simulator' }
 ];
 
-const { synergyPairColumns, ep8RecruitHeroes } = useHeroPlanner();
+const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
 </script>

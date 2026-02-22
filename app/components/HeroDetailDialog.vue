@@ -358,7 +358,7 @@ const {
   getPowerState,
   togglePower,
   trainingsUsed,
-  isEp8Recruit,
+  ep8RecruitIds,
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
@@ -409,7 +409,7 @@ const powerState = computed(() => {
 });
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || !props.heroId || isEp8Recruit(props.heroId)) return [];
+  if (!powers.value || !props.heroId || ep8RecruitIds.value.has(props.heroId)) return [];
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 

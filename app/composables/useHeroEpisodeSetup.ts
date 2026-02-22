@@ -15,18 +15,6 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
   const ep4Hire = useState<HeroId>('ep4Hire', () => 'waterboy');
   const showEp8Recruits = useState('showEp8Recruits', () => false);
 
-  function isEp8Recruit(id: HeroId): boolean {
-    if (id === 'blonde-blazer') {
-      return true;
-    }
-
-    if (EP4_HIRE_OPTIONS.includes(id as (typeof EP4_HIRE_OPTIONS)[number])) {
-      return id !== ep4Hire.value;
-    }
-
-    return false;
-  }
-
   const ep3CutItems = computed(
     () =>
       heroes.value
@@ -45,12 +33,23 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
         .map((h) => ({ label: h.name, value: h.id })) ?? []
   );
 
+  const ep8RecruitIds = computed<Set<HeroId>>(() => {
+    const ids = new Set<HeroId>(['blonde-blazer'] as HeroId[]);
+
+    for (const id of EP4_HIRE_OPTIONS) {
+      if (id !== ep4Hire.value) ids.add(id as HeroId);
+    }
+
+    return ids;
+  });
+
   const visibleHeroes = computed(
     () =>
       heroes.value?.filter((hero) => {
         if (hero.id === ep3Cut.value) {
           return false;
         }
+
         if (hero.id === 'blonde-blazer') {
           return showEp8Recruits.value;
         }
@@ -67,18 +66,24 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
       }) ?? []
   );
 
+  const ep8Recruits = computed(() => {
+    const pairHeroIds = new Set<string>(synergyPairDefs.value.flat());
+
+    return visibleHeroes.value.filter((h) => !pairHeroIds.has(h.id));
+  });
+
   const synergyPairDefs = computed((): [HeroId, HeroId][] => {
     const pairs: [HeroId, HeroId][] = BASE_SYNERGY_PAIRS.map((pair) => [
       pair.hero1,
       pair.hero2
     ]);
 
-    // Determine which conditional pair to use based on episode choices
     const conditionalKey =
       `${ep3Cut.value}-cut-${ep4Hire.value}-hired` as keyof typeof CONDITIONAL_SYNERGY_PAIRS;
 
     if (conditionalKey in CONDITIONAL_SYNERGY_PAIRS) {
       const conditionalPair = CONDITIONAL_SYNERGY_PAIRS[conditionalKey];
+
       pairs.push([conditionalPair.hero1, conditionalPair.hero2]);
     }
 
@@ -102,26 +107,17 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     return pairs;
   });
 
-  const ep8RecruitHeroes = computed(() => {
-    if (!showEp8Recruits.value) {
-      return [];
-    }
-
-    const pairHeroIds = new Set<string>(synergyPairDefs.value.flat());
-
-    return visibleHeroes.value.filter((h) => !pairHeroIds.has(h.id));
-  });
-
   return {
     ep3Cut,
-    ep4Hire,
-    showEp8Recruits,
-    isEp8Recruit,
     ep3CutItems,
+
+    ep4Hire,
     ep4HireItems,
-    visibleHeroes,
-    synergyPairDefs,
-    synergyPairColumns,
-    ep8RecruitHeroes
+
+    ep8RecruitIds,
+    ep8Recruits,
+    showEp8Recruits,
+
+    synergyPairColumns
   };
 }
