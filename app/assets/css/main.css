@@ -96,3 +96,10 @@
     --ui-border-accented: var(--ui-color-neutral-700);
     --ui-border-inverted: var(--color-white); */
 }
+
+/** Restore cursor-pointer on buttons */
+button,
+[role='button'] {
+    @apply cursor-pointer;
+    @apply disabled:cursor-not-allowed;
+}
