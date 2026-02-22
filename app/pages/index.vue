@@ -12,27 +12,7 @@
           <HeroCard
             v-for="hero in [pair.top, pair.bottom]"
             :key="hero.id"
-            :hero="hero"
-            :stat-bonuses="getStatBonuses(hero.id)"
-            :special-power-bonus="getSpecialPowerBonusStats(hero.id)"
-            :points-remaining="
-              MAX_LEVEL_UPS + getBonusLevel(hero.id) - totalAssigned(hero.id)
-            "
-            :power-states="getPowerState(hero.id)"
-            :special-power-state="getSpecialPowerState(hero.id)"
-            :is-ep8-recruit="isEp8Recruit(hero.id as HeroId)"
-            :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
-            :flight-active="getFlightState(hero.id)"
-            :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
-            :bonus-level="getBonusLevel(hero.id)"
-            :bonus-full="bonusLevelsUsed >= MAX_BONUS_POINTS"
-            @stat-up="statUp(hero.id, $event)"
-            @stat-down="statDown(hero.id, $event)"
-            @reset-hero="resetHero(hero.id)"
-            @toggle-power="togglePower(hero.id, $event)"
-            @toggle-flight="toggleFlight(hero.id)"
-            @toggle-special-power="toggleSpecialPower(hero.id)"
-            @increment-bonus="incrementBonusLevel(hero.id)"
+            :hero-id="hero.id as HeroId"
             @view-detail="selectedHeroId = hero.id as HeroId"
           />
         </div>
@@ -44,27 +24,7 @@
         <HeroCard
           v-for="hero in ep8RecruitHeroes"
           :key="hero.id"
-          :hero="hero"
-          :stat-bonuses="getStatBonuses(hero.id)"
-          :special-power-bonus="getSpecialPowerBonusStats(hero.id)"
-          :points-remaining="
-            MAX_LEVEL_UPS + getBonusLevel(hero.id) - totalAssigned(hero.id)
-          "
-          :power-states="getPowerState(hero.id)"
-          :special-power-state="getSpecialPowerState(hero.id)"
-          :is-ep8-recruit="isEp8Recruit(hero.id as HeroId)"
-          :trainings-full="trainingsUsed >= MAX_POWER_TRAININGS"
-          :flight-active="getFlightState(hero.id)"
-          :flights-full="flightTrainingsUsed >= MAX_FLIGHT_TRAININGS"
-          :bonus-level="getBonusLevel(hero.id)"
-          :bonus-full="bonusLevelsUsed >= MAX_BONUS_POINTS"
-          @stat-up="statUp(hero.id, $event)"
-          @stat-down="statDown(hero.id, $event)"
-          @reset-hero="resetHero(hero.id)"
-          @toggle-power="togglePower(hero.id, $event)"
-          @toggle-flight="toggleFlight(hero.id)"
-          @toggle-special-power="toggleSpecialPower(hero.id)"
-          @increment-bonus="incrementBonusLevel(hero.id)"
+          :hero-id="hero.id as HeroId"
           @view-detail="selectedHeroId = hero.id as HeroId"
         />
       </div>
@@ -86,13 +46,6 @@
 import HeroCard from '@/components/HeroCard.vue';
 import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
-import {
-  MAX_LEVEL_UPS,
-  MAX_POWER_TRAININGS,
-  MAX_FLIGHT_TRAININGS,
-  MAX_BONUS_POINTS
-} from '@/types/hero';
-
 import type { HeroId } from '@/types/hero';
 
 const selectedHeroId = ref<HeroId | null>(null);
@@ -103,35 +56,5 @@ const tabs = [
   { label: 'Mission simulator (coming soon!)', slot: 'mission-simulator' }
 ];
 
-const {
-  // Hero visibility
-  synergyPairColumns,
-  ep8RecruitHeroes,
-
-  // Hero stats
-  getStatBonuses,
-  totalAssigned,
-  statUp,
-  statDown,
-  getBonusLevel,
-  incrementBonusLevel,
-  bonusLevelsUsed,
-
-  // Powers
-  getPowerState,
-  togglePower,
-  trainingsUsed,
-  isEp8Recruit,
-  getSpecialPowerState,
-  toggleSpecialPower,
-  getSpecialPowerBonusStats,
-
-  // Flight
-  getFlightState,
-  toggleFlight,
-  flightTrainingsUsed,
-
-  // Reset
-  resetHero
-} = useHeroPlanner();
+const { synergyPairColumns, ep8RecruitHeroes } = useHeroPlanner();
 </script>

@@ -10,7 +10,7 @@
         @click="$emit('viewDetail')"
       />
       <div v-if="powers" class="flex justify-center items-center gap-1">
-        <UTooltip v-if="hero.id === 'sonar'" :text="sonarFormTooltip">
+        <UTooltip v-if="heroId === 'sonar'" :text="sonarFormTooltip">
           <UButton
             :icon="sonarFormIcon"
             size="xs"
@@ -25,7 +25,7 @@
             size="xs"
             variant="soft"
             :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-            @click="$emit('togglePower', 0)"
+            @click="togglePower(heroId, 0)"
           />
         </UTooltip>
         <UTooltip
@@ -41,7 +41,7 @@
               powerStates.trainableSelected === i + 1 ? 'primary' : 'neutral'
             "
             :disabled="powerStates.trainableSelected !== i + 1 && trainingsFull"
-            @click="$emit('togglePower', (i + 1) as 0 | 1 | 2)"
+            @click="togglePower(heroId, (i + 1) as 0 | 1 | 2)"
           />
         </UTooltip>
         <UTooltip
@@ -60,7 +60,7 @@
                   : 'neutral'
             "
             :disabled="flightLocked"
-            @click="$emit('toggleFlight')"
+            @click="toggleFlight(heroId)"
           />
         </UTooltip>
         <UTooltip
@@ -72,7 +72,7 @@
             size="xs"
             variant="soft"
             :color="specialPowerState ? 'primary' : 'neutral'"
-            @click="$emit('toggleSpecialPower')"
+            @click="toggleSpecialPower(heroId)"
           />
         </UTooltip>
         <UTooltip v-if="showCoupeEnPointe" :text="coupeTooltip">
@@ -81,7 +81,7 @@
             size="xs"
             variant="soft"
             :color="specialPowerState ? 'primary' : 'neutral'"
-            @click="$emit('toggleSpecialPower')"
+            @click="toggleSpecialPower(heroId)"
           />
         </UTooltip>
       </div>
@@ -94,13 +94,16 @@
           <div v-if="canLevelUp" class="w-6 flex items-center justify-center">
             <UButton
               v-if="
-                totalAssigned > 0 || hasPowers || flightActive || bonusLevel > 0
+                totalAssignedValue > 0 ||
+                hasPowers ||
+                flightActive ||
+                bonusLevel > 0
               "
               icon="i-lucide-rotate-ccw"
               size="xs"
               variant="soft"
               color="neutral"
-              @click="() => $emit('resetHero')"
+              @click="resetHero(heroId)"
             />
           </div>
 
@@ -116,9 +119,11 @@
               variant="soft"
               :color="bonusLevel > 0 ? 'primary' : 'neutral'"
               :disabled="bonusLevel >= 4 || bonusFull"
-              @click="() => $emit('incrementBonus')"
+              @click="incrementBonusLevel(heroId)"
             >
-              <span v-if="bonusLevel > 0" class="text-xs font-semibold">+{{ bonusLevel }}</span>
+              <span v-if="bonusLevel > 0" class="text-xs font-semibold"
+                >+{{ bonusLevel }}</span
+              >
             </UButton>
           </div>
         </div>
@@ -146,7 +151,7 @@
                 variant="soft"
                 color="neutral"
                 :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                @click="$emit('statDown', resolvedStat(stat))"
+                @click="statDown(heroId, resolvedStat(stat))"
               />
             </template>
             <span class="font-medium w-5 text-center">{{
@@ -166,7 +171,7 @@
                     statBonuses[resolvedStat(stat)] >=
                     MAX_STAT_VALUE
                 "
-                @click="$emit('statUp', resolvedStat(stat))"
+                @click="statUp(heroId, resolvedStat(stat))"
               />
             </template>
           </div>
@@ -182,16 +187,13 @@ import {
   FIXED_LEVEL_HEROES,
   MAX_LEVEL_UPS,
   MAX_STAT_VALUE,
+  MAX_POWER_TRAININGS,
+  MAX_FLIGHT_TRAININGS,
+  MAX_BONUS_POINTS,
   HERO_POWERS,
   HERO_FLIGHT
 } from '@/types/hero';
-import type {
-  HeroId,
-  HeroPowerDefinition,
-  HeroPowerSelection,
-  HeroStats,
-  StatName
-} from '@/types/hero';
+import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
 
 const POWER_ICONS = [
   'i-lucide-zap',
@@ -207,116 +209,143 @@ const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
 };
 
 const props = defineProps<{
-  hero: {
-    id: string;
-    name: string;
-    startingStats: HeroStats;
-  };
-  statBonuses: HeroStats;
-  specialPowerBonus: HeroStats;
-  pointsRemaining: number;
-  powerStates: HeroPowerSelection;
-  specialPowerState: number;
-  isEp8Recruit: boolean;
-  trainingsFull: boolean;
-  flightActive: boolean;
-  flightsFull: boolean;
-  bonusLevel: number;
-  bonusFull: boolean;
+  heroId: HeroId;
 }>();
 
 defineEmits<{
-  statUp: [stat: StatName];
-  statDown: [stat: StatName];
-  resetHero: [];
-  togglePower: [index: 0 | 1 | 2];
-  toggleFlight: [];
-  toggleSpecialPower: [];
-  incrementBonus: [];
   viewDetail: [];
 }>();
 
 const monsterForm = ref(false);
 
-const powers = computed(() => HERO_POWERS[props.hero.id as HeroId]);
+const {
+  heroes,
+  getStatBonuses,
+  totalAssigned,
+  statUp,
+  statDown,
+  getBonusLevel,
+  incrementBonusLevel,
+  bonusLevelsUsed,
+  getPowerState,
+  togglePower,
+  trainingsUsed,
+  isEp8Recruit,
+  getSpecialPowerState,
+  toggleSpecialPower,
+  getSpecialPowerBonusStats,
+  getFlightState,
+  toggleFlight,
+  flightTrainingsUsed,
+  resetHero
+} = useHeroPlanner();
+
+const hero = computed(() => heroes.value?.find((h) => h.id === props.heroId)!);
+
+const statBonuses = computed(() => getStatBonuses(props.heroId));
+
+const specialPowerBonus = computed(() =>
+  getSpecialPowerBonusStats(props.heroId)
+);
+
+const pointsRemaining = computed(
+  () =>
+    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - totalAssigned(props.heroId)
+);
+
+const powerStates = computed(() => getPowerState(props.heroId));
+
+const specialPowerState = computed(() => getSpecialPowerState(props.heroId));
+
+const flightActive = computed(() => getFlightState(props.heroId));
+
+const bonusLevel = computed(() => getBonusLevel(props.heroId));
+
+const trainingsFull = computed(
+  () => trainingsUsed.value >= MAX_POWER_TRAININGS
+);
+
+const flightsFull = computed(
+  () => flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
+);
+
+const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
+
+const powers = computed(() => HERO_POWERS[props.heroId]);
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || props.isEp8Recruit) return [];
+  if (!powers.value || isEp8Recruit(props.heroId)) return [];
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
 const flightInfo = computed(
-  () => HERO_FLIGHT[props.hero.id as HeroId as keyof typeof HERO_FLIGHT]
+  () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
 );
 
 const flightLocked = computed(() => {
-  if (props.hero.id === 'blonde-blazer' || props.hero.id === 'phenomaman')
+  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman')
     return true;
-  return !props.flightActive && props.flightsFull;
+  return !flightActive.value && flightsFull.value;
 });
 
 const flightVisuallyActive = computed(() => {
-  if (props.hero.id !== 'sonar') return props.flightActive;
-  return props.flightActive && monsterForm.value;
+  if (props.heroId !== 'sonar') return flightActive.value;
+  return flightActive.value && monsterForm.value;
 });
 
 const portraitSrc = computed(() => {
-  if (props.hero.id === 'sonar') {
+  if (props.heroId === 'sonar') {
     return monsterForm.value
       ? '/images/portraits/sonar-monster.webp'
       : '/images/portraits/sonar-hybrid.webp';
   }
-  return `/images/portraits/${props.hero.id}.webp`;
+  return `/images/portraits/${props.heroId}.webp`;
 });
 
-const canLevelUp = computed(() => !(props.hero.id in FIXED_LEVEL_HEROES));
+const canLevelUp = computed(() => !(props.heroId in FIXED_LEVEL_HEROES));
 
 const heroLevel = computed(() => {
   const fixedLevel =
-    FIXED_LEVEL_HEROES[
-      props.hero.id as HeroId as keyof typeof FIXED_LEVEL_HEROES
-    ];
+    FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
   if (fixedLevel !== undefined) return fixedLevel;
-  return 1 + (MAX_LEVEL_UPS - props.pointsRemaining) + props.bonusLevel;
+  return 1 + totalAssignedValue.value + bonusLevel.value;
 });
 
-const totalAssigned = computed(() => {
-  return STAT_NAMES.reduce((sum, s) => sum + props.statBonuses[s], 0);
-});
+const totalAssignedValue = computed(() => totalAssigned(props.heroId));
 
 const hasPowers = computed(() => {
   return (
-    props.powerStates.startingRevealed ||
-    props.powerStates.trainableSelected > 0
+    powerStates.value.startingRevealed ||
+    powerStates.value.trainableSelected > 0
   );
 });
 
 const showFlambaeSupernova = computed(() => {
   return (
-    props.hero.id === 'flambae' && props.powerStates.trainableSelected === 2
+    props.heroId === 'flambae' && powerStates.value.trainableSelected === 2
   );
 });
 
 const showCoupeEnPointe = computed(() => {
-  return props.hero.id === 'coupe' && props.powerStates.startingRevealed;
+  return props.heroId === 'coupe' && powerStates.value.startingRevealed;
 });
 
 const coupeTooltip = computed(() => {
-  const isUpgraded = props.powerStates.trainableSelected === 2;
+  const isUpgraded = powerStates.value.trainableSelected === 2;
   const bonus = isUpgraded ? '+3' : '+1';
 
-  if (props.specialPowerState === 1) {
+  if (specialPowerState.value === 1) {
     return `En Pointe: ${bonus} Combat (active)`;
   }
-  if (props.specialPowerState === 2) {
+  if (specialPowerState.value === 2) {
     return `En Pointe: ${bonus} Mobility (active)`;
   }
   return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
 });
 
 const coupeIcon = computed(() => {
-  if (props.specialPowerState === 1) return 'i-lucide-sword';
-  if (props.specialPowerState === 2) return 'i-lucide-footprints';
+  if (specialPowerState.value === 1) return 'i-lucide-sword';
+  if (specialPowerState.value === 2) return 'i-lucide-footprints';
   return 'i-lucide-sparkles';
 });
 
@@ -329,7 +358,7 @@ const sonarFormTooltip = computed(() => {
 });
 
 function resolvedStat(stat: StatName): StatName {
-  if (props.hero.id === 'sonar' && monsterForm.value) {
+  if (props.heroId === 'sonar' && monsterForm.value) {
     return MONSTER_FORM_SWAPS[stat] ?? stat;
   }
   return stat;
