@@ -14,7 +14,7 @@
           <UButton
             :icon="sonarFormIcon"
             size="xs"
-            :variant="monsterForm ? 'soft' : 'ghost'"
+            variant="soft"
             :color="monsterForm ? 'primary' : 'neutral'"
             @click="monsterForm = !monsterForm"
           />
@@ -23,7 +23,7 @@
           <UButton
             :icon="POWER_ICONS[0]"
             size="xs"
-            :variant="powerStates.startingRevealed ? 'soft' : 'ghost'"
+            variant="soft"
             :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
             @click="$emit('togglePower', 0)"
           />
@@ -36,9 +36,11 @@
           <UButton
             :icon="POWER_ICONS[i + 1]"
             size="xs"
-            :variant="powerStates.trainableSelected === (i + 1) ? 'soft' : 'ghost'"
-            :color="powerStates.trainableSelected === (i + 1) ? 'primary' : 'neutral'"
-            :disabled="powerStates.trainableSelected !== (i + 1) && trainingsFull"
+            variant="soft"
+            :color="
+              powerStates.trainableSelected === i + 1 ? 'primary' : 'neutral'
+            "
+            :disabled="powerStates.trainableSelected !== i + 1 && trainingsFull"
             @click="$emit('togglePower', (i + 1) as 0 | 1 | 2)"
           />
         </UTooltip>
@@ -49,7 +51,7 @@
           <UButton
             icon="i-lucide-plane"
             size="xs"
-            :variant="flightActive ? 'soft' : 'ghost'"
+            variant="soft"
             :color="
               flightVisuallyActive
                 ? 'primary'
@@ -68,7 +70,7 @@
           <UButton
             icon="i-lucide-flame"
             size="xs"
-            :variant="specialPowerState ? 'soft' : 'ghost'"
+            variant="soft"
             :color="specialPowerState ? 'primary' : 'neutral'"
             @click="$emit('toggleSpecialPower')"
           />
@@ -77,7 +79,7 @@
           <UButton
             :icon="coupeIcon"
             size="xs"
-            :variant="specialPowerState ? 'soft' : 'ghost'"
+            variant="soft"
             :color="specialPowerState ? 'primary' : 'neutral'"
             @click="$emit('toggleSpecialPower')"
           />
@@ -85,40 +87,40 @@
       </div>
     </div>
 
-    <div class="flex flex-col">
+    <div class="flex flex-col flex-1">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-md font-semibold">{{ hero.name }}</h3>
+        <h3 class="text-md font-semibold min-w-18">{{ hero.name }}</h3>
         <div class="flex items-center gap-2 ml-2">
-          <UButton
-            v-if="
-              canLevelUp &&
-              (totalAssigned > 0 || hasPowers || flightActive || bonusLevel > 0)
-            "
-            icon="i-lucide-rotate-ccw"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            @click="() => $emit('resetHero')"
-          />
-          <span class="text-xs text-muted">Lv. {{ heroLevel }}</span>
-          <UButton
-            v-if="canLevelUp && bonusLevel === 0 && !bonusFull"
-            icon="i-lucide-circle-plus"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            @click="() => $emit('incrementBonus')"
-          />
-          <UButton
-            v-else-if="canLevelUp && bonusLevel > 0"
-            size="xs"
-            variant="soft"
-            color="primary"
-            :disabled="bonusLevel >= 4 || bonusFull"
-            @click="() => $emit('incrementBonus')"
+          <div v-if="canLevelUp" class="w-6 flex items-center justify-center">
+            <UButton
+              v-if="
+                totalAssigned > 0 || hasPowers || flightActive || bonusLevel > 0
+              "
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              variant="soft"
+              color="neutral"
+              @click="() => $emit('resetHero')"
+            />
+          </div>
+
+          <span class="text-xs text-muted w-8 text-end"
+            >Lv. {{ heroLevel }}</span
           >
-            <span class="text-xs font-semibold">+{{ bonusLevel }}</span>
-          </UButton>
+
+          <div v-if="canLevelUp" class="w-7 flex items-center justify-center">
+            <UButton
+              v-if="bonusLevel > 0 || !bonusFull"
+              :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
+              size="xs"
+              variant="soft"
+              :color="bonusLevel > 0 ? 'primary' : 'neutral'"
+              :disabled="bonusLevel >= 4 || bonusFull"
+              @click="() => $emit('incrementBonus')"
+            >
+              <span v-if="bonusLevel > 0" class="text-xs font-semibold">+{{ bonusLevel }}</span>
+            </UButton>
+          </div>
         </div>
       </div>
 
@@ -243,8 +245,8 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
-const flightInfo = computed(() =>
-  HERO_FLIGHT[props.hero.id as HeroId as keyof typeof HERO_FLIGHT]
+const flightInfo = computed(
+  () => HERO_FLIGHT[props.hero.id as HeroId as keyof typeof HERO_FLIGHT]
 );
 
 const flightLocked = computed(() => {
@@ -284,12 +286,15 @@ const totalAssigned = computed(() => {
 
 const hasPowers = computed(() => {
   return (
-    props.powerStates.startingRevealed || props.powerStates.trainableSelected > 0
+    props.powerStates.startingRevealed ||
+    props.powerStates.trainableSelected > 0
   );
 });
 
 const showFlambaeSupernova = computed(() => {
-  return props.hero.id === 'flambae' && props.powerStates.trainableSelected === 2;
+  return (
+    props.hero.id === 'flambae' && props.powerStates.trainableSelected === 2
+  );
 });
 
 const showCoupeEnPointe = computed(() => {

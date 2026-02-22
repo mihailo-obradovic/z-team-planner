@@ -20,19 +20,17 @@
                 <UButton
                   :icon="sonarFormIcon"
                   size="sm"
-                  :variant="monsterForm ? 'soft' : 'ghost'"
+                  variant="soft"
                   :color="monsterForm ? 'primary' : 'neutral'"
                   @click="monsterForm = !monsterForm"
                 />
               </UTooltip>
 
-              <UTooltip
-                :text="`${powers[0]!.name}: ${powers[0]!.description}`"
-              >
+              <UTooltip :text="`${powers[0]!.name}: ${powers[0]!.description}`">
                 <UButton
                   :icon="POWER_ICONS[0]"
                   size="sm"
-                  :variant="powerState!.startingRevealed ? 'soft' : 'ghost'"
+                  variant="soft"
                   :color="powerState!.startingRevealed ? 'primary' : 'neutral'"
                   @click="togglePower(heroId!, 0)"
                 />
@@ -46,9 +44,7 @@
                 <UButton
                   :icon="POWER_ICONS[i + 1]"
                   size="sm"
-                  :variant="
-                    powerState!.trainableSelected === i + 1 ? 'soft' : 'ghost'
-                  "
+                  variant="soft"
                   :color="
                     powerState!.trainableSelected === i + 1
                       ? 'primary'
@@ -69,7 +65,7 @@
                 <UButton
                   icon="i-lucide-plane"
                   size="sm"
-                  :variant="flightActive ? 'soft' : 'ghost'"
+                  variant="soft"
                   :color="
                     flightVisuallyActive
                       ? 'primary'
@@ -89,7 +85,7 @@
                 <UButton
                   icon="i-lucide-flame"
                   size="sm"
-                  :variant="specialPowerStateValue ? 'soft' : 'ghost'"
+                  variant="soft"
                   :color="specialPowerStateValue ? 'primary' : 'neutral'"
                   @click="toggleSpecialPower(heroId!)"
                 />
@@ -99,7 +95,7 @@
                 <UButton
                   :icon="coupeIcon"
                   size="sm"
-                  :variant="specialPowerStateValue ? 'soft' : 'ghost'"
+                  variant="soft"
                   :color="specialPowerStateValue ? 'primary' : 'neutral'"
                   @click="toggleSpecialPower(heroId!)"
                 />
@@ -123,7 +119,7 @@
                   "
                   icon="i-lucide-rotate-ccw"
                   size="sm"
-                  variant="ghost"
+                  variant="soft"
                   color="neutral"
                   @click="resetHero(heroId!)"
                 />
@@ -132,7 +128,7 @@
                   v-if="bonusLevel === 0 && !bonusFull"
                   icon="i-lucide-circle-plus"
                   size="sm"
-                  variant="ghost"
+                  variant="soft"
                   color="neutral"
                   @click="incrementBonusLevel(heroId!)"
                 />
@@ -178,7 +174,9 @@
                     />
                   </template>
 
-                  <span class="text-3xl font-bold tabular-nums w-10 text-center">
+                  <span
+                    class="text-3xl font-bold tabular-nums w-10 text-center"
+                  >
                     {{ computedStat(stat) }}
                   </span>
 
@@ -455,12 +453,14 @@ const displayPowers = computed(() => {
 });
 
 const statBonuses = computed(() => {
-  if (!props.heroId) return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
+  if (!props.heroId)
+    return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
   return getStatBonuses(props.heroId);
 });
 
 const specialPowerBonusStats = computed(() => {
-  if (!props.heroId) return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
+  if (!props.heroId)
+    return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
   return getSpecialPowerBonusStats(props.heroId);
 });
 
@@ -471,7 +471,9 @@ const totalAssignedValue = computed(() => {
 
 const pointsRemaining = computed(() => {
   if (!props.heroId) return 0;
-  return MAX_LEVEL_UPS + getBonusLevel(props.heroId) - totalAssigned(props.heroId);
+  return (
+    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - totalAssigned(props.heroId)
+  );
 });
 
 const bonusLevel = computed(() => {
@@ -495,7 +497,9 @@ const flightLocked = computed(() => {
   if (!props.heroId) return true;
   if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman')
     return true;
-  return !flightActive.value && flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS;
+  return (
+    !flightActive.value && flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
+  );
 });
 
 const flightVisuallyActive = computed(() => {
@@ -513,16 +517,13 @@ const specialPowerStateValue = computed(() => {
 const hasPowers = computed(() => {
   if (!powerState.value) return false;
   return (
-    powerState.value.startingRevealed ||
-    powerState.value.trainableSelected > 0
+    powerState.value.startingRevealed || powerState.value.trainableSelected > 0
   );
 });
 
 const showFlambaeSupernova = computed(() => {
   if (!props.heroId || !powerState.value) return false;
-  return (
-    props.heroId === 'flambae' && powerState.value.trainableSelected === 2
-  );
+  return props.heroId === 'flambae' && powerState.value.trainableSelected === 2;
 });
 
 const showCoupeEnPointe = computed(() => {
@@ -578,11 +579,7 @@ const specialAbility = computed(() => {
     const isUpgraded = powerState.value?.trainableSelected === 2;
     const bonus = isUpgraded ? '+3' : '+1';
     const statLabel =
-      state === 1
-        ? 'Combat'
-        : state === 2
-          ? 'Mobility'
-          : 'Combat or Mobility';
+      state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
     return {
       name: 'En Pointe',
       description: `${bonus} ${statLabel} when placed in a specific slot.`,
@@ -607,69 +604,73 @@ const RADAR_STAT_ORDER: StatName[] = [
   'intellect'
 ];
 
-const radarDataset = computed((): VueUiRadarDataset => ({
-  categories: [{ name: hero.value?.name ?? '' }],
-  series: RADAR_STAT_ORDER.map((stat) => ({
-    name: stat.charAt(0).toUpperCase() + stat.slice(1),
-    values: [computedStat(stat)],
-    target: 10
-  }))
-}));
+const radarDataset = computed(
+  (): VueUiRadarDataset => ({
+    categories: [{ name: hero.value?.name ?? '' }],
+    series: RADAR_STAT_ORDER.map((stat) => ({
+      name: stat.charAt(0).toUpperCase() + stat.slice(1),
+      values: [computedStat(stat)],
+      target: 10
+    }))
+  })
+);
 
-const radarConfig = computed((): VueUiRadarConfig => ({
-  responsive: true,
-  useCssAnimation: true,
-  style: {
-    fontFamily: 'inherit',
-    chart: {
-      backgroundColor: 'transparent',
-      color: 'currentColor',
-      layout: {
-        grid: {
-          show: true,
-          stroke: 'var(--ui-border)',
-          strokeWidth: 0.5,
-          graduations: 10
-        },
-        outerPolygon: {
-          stroke: 'var(--ui-border)',
-          strokeWidth: 1
-        },
-        dataPolygon: {
-          strokeWidth: 2,
-          opacity: 0.2,
-          useGradient: false
-        },
-        plots: {
-          show: true,
-          radius: 3
-        },
-        labels: {
-          dataLabels: {
+const radarConfig = computed(
+  (): VueUiRadarConfig => ({
+    responsive: true,
+    useCssAnimation: true,
+    style: {
+      fontFamily: 'inherit',
+      chart: {
+        backgroundColor: 'transparent',
+        color: 'currentColor',
+        layout: {
+          grid: {
             show: true,
-            fontSize: 12,
-            color: 'currentColor'
+            stroke: 'var(--ui-border)',
+            strokeWidth: 0.5,
+            graduations: 10
+          },
+          outerPolygon: {
+            stroke: 'var(--ui-border)',
+            strokeWidth: 1
+          },
+          dataPolygon: {
+            strokeWidth: 2,
+            opacity: 0.2,
+            useGradient: false
+          },
+          plots: {
+            show: true,
+            radius: 3
+          },
+          labels: {
+            dataLabels: {
+              show: true,
+              fontSize: 12,
+              color: 'currentColor'
+            }
           }
+        },
+        legend: {
+          show: false
+        },
+        title: {
+          text: ''
+        },
+        tooltip: {
+          show: false
         }
-      },
-      legend: {
-        show: false
-      },
-      title: {
-        text: ''
-      },
-      tooltip: {
-        show: false
       }
+    },
+    userOptions: {
+      show: false
+    },
+    table: {
+      show: false
     }
-  },
-  userOptions: {
-    show: false
-  },
-  table: {
-    show: false
-  }
-}));
+  })
+);
 
 // ---
 

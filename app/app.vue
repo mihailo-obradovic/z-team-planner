@@ -29,7 +29,7 @@
               v-if="trainingsUsed > 0"
               icon="i-lucide-rotate-ccw"
               size="xs"
-              variant="ghost"
+              variant="soft"
               color="neutral"
               @click="resetAllPowerTrainings"
             />
@@ -44,7 +44,7 @@
               v-if="flightTrainingsUsed > 0"
               icon="i-lucide-rotate-ccw"
               size="xs"
-              variant="ghost"
+              variant="soft"
               color="neutral"
               @click="resetAllFlightTrainings"
             />
@@ -57,7 +57,7 @@
               v-if="bonusLevelsUsed > 0"
               icon="i-lucide-rotate-ccw"
               size="xs"
-              variant="ghost"
+              variant="soft"
               color="neutral"
               @click="resetAllBonusLevels"
             />
