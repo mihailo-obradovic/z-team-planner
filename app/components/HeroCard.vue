@@ -77,7 +77,7 @@
           <div v-if="canLevelUp" class="w-6 flex items-center justify-center">
             <IconButton
               v-if="
-                totalAssignedValue > 0 ||
+                getLevelUpPointsUsedValue > 0 ||
                 hasPowers ||
                 flightActive ||
                 bonusLevel > 0
@@ -98,7 +98,7 @@
               :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
               :color="bonusLevel > 0 ? 'primary' : 'neutral'"
               :disabled="bonusLevel >= 4 || bonusFull"
-              @click="incrementBonusLevel(heroId)"
+              @click="addBonusLevel(heroId)"
             >
               <span v-if="bonusLevel > 0" class="text-xs font-semibold"
                 >+{{ bonusLevel }}</span
@@ -195,12 +195,12 @@ const monsterForm = ref(false);
 
 const {
   heroes,
-  getStatBonuses,
-  totalAssigned,
+  getStatAllocations,
+  getLevelUpPointsUsed,
   statUp,
   statDown,
   getBonusLevel,
-  incrementBonusLevel,
+  addBonusLevel,
   bonusLevelsUsed,
   getPowerState,
   togglePower,
@@ -217,7 +217,7 @@ const {
 
 const hero = computed(() => heroes.value?.find((h) => h.id === props.heroId)!);
 
-const statBonuses = computed(() => getStatBonuses(props.heroId));
+const statBonuses = computed(() => getStatAllocations(props.heroId));
 
 const specialPowerBonus = computed(() =>
   getSpecialPowerBonusStats(props.heroId)
@@ -225,7 +225,7 @@ const specialPowerBonus = computed(() =>
 
 const pointsRemaining = computed(
   () =>
-    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - totalAssigned(props.heroId)
+    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - getLevelUpPointsUsed(props.heroId)
 );
 
 const powerStates = computed(() => getPowerState(props.heroId));
@@ -283,10 +283,10 @@ const heroLevel = computed(() => {
   const fixedLevel =
     FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
   if (fixedLevel !== undefined) return fixedLevel;
-  return 1 + totalAssignedValue.value + bonusLevel.value;
+  return 1 + getLevelUpPointsUsedValue.value + bonusLevel.value;
 });
 
-const totalAssignedValue = computed(() => totalAssigned(props.heroId));
+const getLevelUpPointsUsedValue = computed(() => getLevelUpPointsUsed(props.heroId));
 
 const hasPowers = computed(() => {
   return (

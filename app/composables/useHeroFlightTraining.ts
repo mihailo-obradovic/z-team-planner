@@ -65,8 +65,9 @@ export function useHeroFlightTraining(
     if (
       !heroFlights.value[id] &&
       flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
-    )
+    ) {
       return;
+    }
 
     heroFlights.value[id] = !(heroFlights.value[id] ?? false);
   }
@@ -75,7 +76,7 @@ export function useHeroFlightTraining(
     heroFlights.value = {};
   }
 
-  function clearHeroFlight(id: HeroId) {
+  function resetHeroFlight(id: HeroId) {
     delete heroFlights.value[id];
   }
 
@@ -93,10 +94,10 @@ export function useHeroFlightTraining(
   });
 
   return {
+    flightTrainingsUsed,
     flyingHeroIds,
     toggleFlight,
-    flightTrainingsUsed,
     resetAllFlightTrainings,
-    clearHeroFlight
+    resetHeroFlight
   };
 }

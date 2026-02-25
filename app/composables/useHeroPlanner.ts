@@ -24,9 +24,9 @@ function createHeroPlanner() {
       return;
     }
 
-    levelUp.clearHeroLevelUp(id);
-    powerTraining.clearHeroPowers(id);
-    flightTraining.clearHeroFlight(id);
+    levelUp.resetHeroLevelUp(id);
+    powerTraining.resetHeroPowers(id);
+    flightTraining.resetHeroFlight(id);
   }
 
   // Return unified API by spreading all sub-composable exports

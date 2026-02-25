@@ -32,14 +32,14 @@ export function useHeroLevelUp(
     () => ({})
   );
 
-  function getStatBonuses(id: HeroId): HeroStats {
+  function getStatAllocations(id: HeroId): HeroStats {
     return heroLevelUps.value[id] ?? ZERO_STATS;
   }
 
-  function totalAssigned(id: HeroId): number {
-    const bonuses = getStatBonuses(id);
+  function getLevelUpPointsUsed(id: HeroId): number {
+    const allocations = getStatAllocations(id);
 
-    return STAT_NAMES.reduce((sum, s) => sum + bonuses[s], 0);
+    return STAT_NAMES.reduce((sum, s) => sum + allocations[s], 0);
   }
 
   function getBonusLevel(id: HeroId): number {
@@ -67,19 +67,19 @@ export function useHeroLevelUp(
       heroLevelUps.value[id] = { ...ZERO_STATS };
     }
 
-    const bonuses = heroLevelUps.value[id]!;
+    const allocations = heroLevelUps.value[id]!;
 
     const effectiveLevelCap = MAX_LEVEL_UPS + getBonusLevel(id);
 
-    if (totalAssigned(id) >= effectiveLevelCap) {
+    if (getLevelUpPointsUsed(id) >= effectiveLevelCap) {
       return;
     }
 
-    if (hero.startingStats[stat] + bonuses[stat] >= MAX_STAT_VALUE) {
+    if (hero.startingStats[stat] + allocations[stat] >= MAX_STAT_VALUE) {
       return;
     }
 
-    bonuses[stat]++;
+    allocations[stat]++;
   }
 
   function statDown(id: HeroId, stat: StatName) {
@@ -91,16 +91,16 @@ export function useHeroLevelUp(
       return;
     }
 
-    const bonuses = heroLevelUps.value[id]!;
+    const allocations = heroLevelUps.value[id]!;
 
-    if (bonuses[stat] <= 0) {
+    if (allocations[stat] <= 0) {
       return;
     }
 
-    bonuses[stat]--;
+    allocations[stat]--;
   }
 
-  function incrementBonusLevel(id: HeroId) {
+  function addBonusLevel(id: HeroId) {
     if (id in FIXED_LEVEL_HEROES) {
       return;
     }
@@ -122,37 +122,34 @@ export function useHeroLevelUp(
     heroBonusLevels.value = {};
   }
 
-  function clearHeroLevelUp(id: HeroId) {
+  function resetHeroLevelUp(id: HeroId) {
     delete heroLevelUps.value[id];
     delete heroBonusLevels.value[id];
   }
 
   // Watch episode choices and clear data when heroes are cut/not hired
-  watch(episodeSetup.ep3Cut, (newCut) => {
-    delete heroLevelUps.value[newCut];
-    delete heroBonusLevels.value[newCut];
-  });
+  watch(episodeSetup.ep3Cut, resetHeroLevelUp);
 
   watch(episodeSetup.ep4Hire, (newHire) => {
     for (const heroId of EP4_HIRE_OPTIONS) {
       if (heroId !== newHire) {
-        delete heroLevelUps.value[heroId];
-        delete heroBonusLevels.value[heroId];
+        resetHeroLevelUp(heroId);
       }
     }
   });
 
   return {
-    heroLevelUps,
-    heroBonusLevels,
-    getStatBonuses,
-    totalAssigned,
+    getStatAllocations,
+    getLevelUpPointsUsed,
+
     getBonusLevel,
     bonusLevelsUsed,
+    addBonusLevel,
+    resetAllBonusLevels,
+
     statUp,
     statDown,
-    incrementBonusLevel,
-    resetAllBonusLevels,
-    clearHeroLevelUp
+
+    resetHeroLevelUp
   };
 }

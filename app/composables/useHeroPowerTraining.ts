@@ -145,7 +145,7 @@ export function useHeroPowerTraining(
           return 0;
         }
 
-        const normalBonus = levelUp.getStatBonuses(id)[stat];
+        const normalBonus = levelUp.getStatAllocations(id)[stat];
 
         return Math.max(
           0,
@@ -197,7 +197,7 @@ export function useHeroPowerTraining(
     heroSpecialPowers.value = {};
   }
 
-  function clearHeroPowers(id: HeroId) {
+  function resetHeroPowers(id: HeroId) {
     delete heroPowers.value[id];
     delete heroSpecialPowers.value[id];
   }
@@ -228,6 +228,6 @@ export function useHeroPowerTraining(
     getSpecialPowerBonus,
     getSpecialPowerBonusStats,
     resetAllPowerTrainings,
-    clearHeroPowers
+    resetHeroPowers
   };
 }
