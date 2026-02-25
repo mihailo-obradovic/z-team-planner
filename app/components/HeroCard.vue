@@ -22,7 +22,7 @@
           :text="`${powers[0]!.name}: ${powers[0]!.description}`"
           :icon="POWER_ICONS[0]"
           :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-          @click="togglePower(heroId, 0)"
+          @click="toggleStartingPower(heroId)"
         />
 
         <TooltipButton
@@ -30,24 +30,16 @@
           :key="i"
           :text="`${power.name}: ${power.description}`"
           :icon="POWER_ICONS[i + 1]!"
-          :color="
-            powerStates.trainableSelected === i + 1 ? 'primary' : 'neutral'
-          "
-          :disabled="powerStates.trainableSelected !== i + 1 && trainingsFull"
-          @click="togglePower(heroId, (i + 1) as 0 | 1 | 2)"
+          :color="trainablePowerColor(i)"
+          :disabled="isTrainableDisabled(i)"
+          @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
         />
 
         <TooltipButton
           v-if="flightInfo"
           :text="`${flightInfo.name}: ${flightInfo.description}`"
           icon="i-lucide-plane"
-          :color="
-            flightVisuallyActive
-              ? 'primary'
-              : flightActive
-                ? 'secondary'
-                : 'neutral'
-          "
+          :color="flightColor"
           :disabled="flightLocked"
           @click="toggleFlight(heroId)"
         />
@@ -203,7 +195,8 @@ const {
   addBonusLevel,
   bonusLevelsUsed,
   getPowerState,
-  togglePower,
+  toggleStartingPower,
+  toggleTrainablePower,
   trainingsUsed,
   ep8RecruitIds,
   getSpecialPowerState,
@@ -253,6 +246,14 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
+function trainablePowerColor(i: number) {
+  return powerStates.value.trainableSelected === i + 1 ? 'primary' : 'neutral';
+}
+
+function isTrainableDisabled(i: number) {
+  return !powerStates.value.startingRevealed || (powerStates.value.trainableSelected !== i + 1 && trainingsFull.value);
+}
+
 const flightInfo = computed(
   () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
 );
@@ -267,6 +268,10 @@ const flightVisuallyActive = computed(() => {
   if (props.heroId !== 'sonar') return flightActive.value;
   return flightActive.value && monsterForm.value;
 });
+
+const flightColor = computed(() =>
+  flightVisuallyActive.value ? 'primary' : flightActive.value ? 'secondary' : 'neutral'
+);
 
 const portraitSrc = computed(() => {
   if (props.heroId === 'sonar') {

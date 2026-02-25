@@ -20,6 +20,11 @@ const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((s) => [s, 0])
 ) as HeroStats;
 
+const DEFAULT_POWER_STATE: HeroPowerSelection = {
+  startingRevealed: false,
+  trainableSelected: 0
+};
+
 /**
  * Composable for managing power training and special power mechanics.
  * Handles power selections, training limits, and special powers for Flambae and Coupe.
@@ -39,11 +44,6 @@ export function useHeroPowerTraining(
     () => ({})
   );
 
-  const DEFAULT_POWER_STATE: HeroPowerSelection = {
-    startingRevealed: false,
-    trainableSelected: 0
-  };
-
   function getPowerState(id: HeroId): HeroPowerSelection {
     return heroPowers.value[id] ?? DEFAULT_POWER_STATE;
   }
@@ -54,57 +54,49 @@ export function useHeroPowerTraining(
     ).length;
   });
 
-  function togglePower(id: HeroId, index: 0 | 1 | 2) {
-    // Validate that the power exists
+  function toggleStartingPower(id: HeroId) {
     const powerSet = HERO_POWERS[id];
-
-    if (!powerSet) {
-      return;
-    }
-
-    const power = powerSet[index];
-
-    if (!power.name) {
-      return;
-    } // Empty power slot (e.g., Blonde Blazer)
+    if (!powerSet || !powerSet[0].name) return;
 
     if (!heroPowers.value[id]) {
-      heroPowers.value[id] = {
-        startingRevealed: false,
-        trainableSelected: 0
-      };
+      heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
     }
     const powers = heroPowers.value[id]!;
 
-    if (index === 0) {
-      // Toggle starting power (only if no trainable is selected)
-      if (powers.startingRevealed && powers.trainableSelected > 0) {
-        return;
-      }
-
-      powers.startingRevealed = !powers.startingRevealed;
+    if (powers.startingRevealed) {
+      // Un-discovering: also untrain and reset any active special powers
+      powers.trainableSelected = 0;
+      delete heroSpecialPowers.value[id];
+      powers.startingRevealed = false;
     } else {
-      // Toggle trainable power (1 or 2)
-      if (episodeSetup.ep8RecruitIds.value.has(id)) {
+      powers.startingRevealed = true;
+    }
+  }
+
+  function toggleTrainablePower(id: HeroId, index: 1 | 2) {
+    const powerSet = HERO_POWERS[id];
+    if (!powerSet) return;
+
+    if (!powerSet[index].name) return; // Empty power slot (e.g., Blonde Blazer)
+
+    if (!heroPowers.value[id]) {
+      heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
+    }
+    const powers = heroPowers.value[id]!;
+
+    if (!powers.startingRevealed) return;
+    if (episodeSetup.ep8RecruitIds.value.has(id)) return;
+
+    if (powers.trainableSelected === index) {
+      // Deselect: also reset any active special powers
+      powers.trainableSelected = 0;
+      delete heroSpecialPowers.value[id];
+    } else {
+      // Only count as a new slot when switching from nothing
+      if (powers.trainableSelected === 0 && trainingsUsed.value >= MAX_POWER_TRAININGS) {
         return;
       }
-
-      if (powers.trainableSelected === index) {
-        // Deselect current trainable
-        powers.trainableSelected = 0;
-      } else {
-        // Check training limit
-        if (
-          powers.trainableSelected === 0 &&
-          trainingsUsed.value >= MAX_POWER_TRAININGS
-        ) {
-          return;
-        }
-
-        // Select new trainable (automatically deselects the other)
-        powers.trainableSelected = index as 1 | 2;
-        powers.startingRevealed = true; // Auto-reveal starting when selecting trainable
-      }
+      powers.trainableSelected = index;
     }
   }
 
@@ -119,7 +111,6 @@ export function useHeroPowerTraining(
     } else if (id === 'coupe') {
       // Cycle through 0 (off), 1 (+combat), 2 (+mobility)
       const current = heroSpecialPowers.value[id] ?? 0;
-
       heroSpecialPowers.value[id] = (current + 1) % 3;
     }
   }
@@ -128,43 +119,27 @@ export function useHeroPowerTraining(
     const mechanics =
       SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS];
 
-    if (!mechanics) {
-      return 0;
-    }
+    if (!mechanics) return 0;
 
     const specialState = getSpecialPowerState(id);
 
     if (mechanics.type === 'supernova' && specialState === 1) {
       // Flambae's Supernova: set combat and mobility to 10
-      if (
-        (stat === 'combat' || stat === 'mobility') &&
-        mechanics.affectedStats.includes(stat)
-      ) {
+      if ((stat === 'combat' || stat === 'mobility') && mechanics.affectedStats.includes(stat)) {
         const hero = heroes.value?.find((h) => h.id === id);
-        if (!hero) {
-          return 0;
-        }
+        if (!hero) return 0;
 
         const normalBonus = levelUp.getStatAllocations(id)[stat];
 
-        return Math.max(
-          0,
-          MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus
-        );
+        return Math.max(0, MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus);
       }
     } else if (mechanics.type === 'en-pointe' && specialState > 0) {
       // Coupe's En Pointe: +1 or +3 combat/mobility based on slot
-      const powerStates = getPowerState(id);
-      const isUpgraded = powerStates.trainableSelected === 2; // À la Seconde
+      const isUpgraded = getPowerState(id).trainableSelected === 2; // À la Seconde
       const bonus = isUpgraded ? mechanics.upgradeBonus : mechanics.baseBonus;
 
-      if (specialState === 1 && stat === 'combat') {
-        return bonus;
-      }
-
-      if (specialState === 2 && stat === 'mobility') {
-        return bonus;
-      }
+      if (specialState === 1 && stat === 'combat') return bonus;
+      if (specialState === 2 && stat === 'mobility') return bonus;
     }
 
     return 0;
@@ -176,13 +151,9 @@ export function useHeroPowerTraining(
 
     for (const hero of heroes.value ?? []) {
       const id = hero.id as HeroId;
-      result[id] = {
-        combat: getSpecialPowerBonus(id, 'combat'),
-        intellect: getSpecialPowerBonus(id, 'intellect'),
-        vigor: getSpecialPowerBonus(id, 'vigor'),
-        charisma: getSpecialPowerBonus(id, 'charisma'),
-        mobility: getSpecialPowerBonus(id, 'mobility')
-      };
+      result[id] = Object.fromEntries(
+        STAT_NAMES.map((s) => [s, getSpecialPowerBonus(id, s)])
+      ) as HeroStats;
     }
 
     return result;
@@ -202,31 +173,27 @@ export function useHeroPowerTraining(
     delete heroSpecialPowers.value[id];
   }
 
-  // Watch episode choices and clear power data when heroes are cut/not hired
-  watch(episodeSetup.ep3Cut, (newCut) => {
-    delete heroPowers.value[newCut];
-    delete heroSpecialPowers.value[newCut];
-  });
+  // Watch episode choices and reset power data when heroes are cut/not hired
+  watch(episodeSetup.ep3Cut, resetHeroPowers);
 
   watch(episodeSetup.ep4Hire, (newHire) => {
     for (const heroId of EP4_HIRE_OPTIONS) {
       if (heroId !== newHire) {
-        delete heroPowers.value[heroId];
-        delete heroSpecialPowers.value[heroId];
+        resetHeroPowers(heroId);
       }
     }
   });
 
   return {
-    heroPowers,
-    heroSpecialPowers,
     getPowerState,
-    togglePower,
+    toggleStartingPower,
+    toggleTrainablePower,
     trainingsUsed,
+
     getSpecialPowerState,
     toggleSpecialPower,
-    getSpecialPowerBonus,
     getSpecialPowerBonusStats,
+
     resetAllPowerTrainings,
     resetHeroPowers
   };

@@ -30,7 +30,7 @@
                 :icon="POWER_ICONS[0]"
                 size="sm"
                 :color="powerState!.startingRevealed ? 'primary' : 'neutral'"
-                @click="togglePower(heroId!, 0)"
+                @click="toggleStartingPower(heroId!)"
               />
 
               <TooltipButton
@@ -39,9 +39,9 @@
                 :text="`${power.name}: ${power.description}`"
                 :icon="POWER_ICONS[i + 1]!"
                 size="sm"
-                :color="powerState!.trainableSelected === i + 1 ? 'primary' : 'neutral'"
-                :disabled="powerState!.trainableSelected !== i + 1 && trainingsUsed >= MAX_POWER_TRAININGS"
-                @click="togglePower(heroId!, (i + 1) as 0 | 1 | 2)"
+                :color="trainablePowerColor(i)"
+                :disabled="isTrainableDisabled(i)"
+                @click="toggleTrainablePower(heroId!, (i + 1) as 1 | 2)"
               />
 
               <TooltipButton
@@ -49,7 +49,7 @@
                 :text="`${flightInfo.name}: ${flightInfo.description}`"
                 icon="i-lucide-plane"
                 size="sm"
-                :color="flightVisuallyActive ? 'primary' : flightActive ? 'secondary' : 'neutral'"
+                :color="flightColor"
                 :disabled="flightLocked"
                 @click="toggleFlight(heroId!)"
               />
@@ -356,7 +356,8 @@ const {
   addBonusLevel,
   bonusLevelsUsed,
   getPowerState,
-  togglePower,
+  toggleStartingPower,
+  toggleTrainablePower,
   trainingsUsed,
   ep8RecruitIds,
   getSpecialPowerState,
@@ -412,6 +413,14 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
   if (!powers.value || !props.heroId || ep8RecruitIds.value.has(props.heroId)) return [];
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
+
+function trainablePowerColor(i: number) {
+  return powerState.value?.trainableSelected === i + 1 ? 'primary' : 'neutral';
+}
+
+function isTrainableDisabled(i: number) {
+  return !powerState.value?.startingRevealed || (powerState.value?.trainableSelected !== i + 1 && trainingsUsed.value >= MAX_POWER_TRAININGS);
+}
 
 const displayPowers = computed(() => {
   if (!powers.value) return [];
@@ -469,6 +478,10 @@ const flightVisuallyActive = computed(() => {
   if (props.heroId !== 'sonar') return flightActive.value;
   return flightActive.value && monsterForm.value;
 });
+
+const flightColor = computed(() =>
+  flightVisuallyActive.value ? 'primary' : flightActive.value ? 'secondary' : 'neutral'
+);
 
 
 const specialPowerStateValue = computed(() => {
