@@ -5,6 +5,7 @@
     :size="size"
     :disabled="disabled"
     variant="soft"
+    class="p-1"
     @click="$emit('click')"
   >
     <slot />
