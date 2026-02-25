@@ -209,7 +209,7 @@ const {
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
-  getFlightState,
+  flyingHeroIds,
   toggleFlight,
   flightTrainingsUsed,
   resetHero
@@ -232,7 +232,7 @@ const powerStates = computed(() => getPowerState(props.heroId));
 
 const specialPowerState = computed(() => getSpecialPowerState(props.heroId));
 
-const flightActive = computed(() => getFlightState(props.heroId));
+const flightActive = computed(() => flyingHeroIds.value.has(props.heroId));
 
 const bonusLevel = computed(() => getBonusLevel(props.heroId));
 

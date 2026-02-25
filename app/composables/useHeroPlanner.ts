@@ -1,9 +1,9 @@
 import { FIXED_LEVEL_HEROES } from '@/types/hero';
-import type { HeroId } from '@/types/hero';
 import { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import { useHeroFlightTraining } from './useHeroFlightTraining';
 import { useHeroLevelUp } from './useHeroLevelUp';
 import { useHeroPowerTraining } from './useHeroPowerTraining';
+import type { HeroId } from '@/types/hero';
 
 /**
  * Main hero planner composable that aggregates all hero management functionality.

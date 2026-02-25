@@ -232,7 +232,7 @@
                 v-if="flightInfo"
                 class="rounded-lg border p-3"
                 :class="
-                  isFlying ? 'border-accented bg-elevated' : 'border-default'
+                  flightActive ? 'border-accented bg-elevated' : 'border-default'
                 "
               >
                 <div class="flex items-center gap-2">
@@ -241,7 +241,7 @@
                   <span class="font-medium">{{ flightInfo.name }}</span>
 
                   <UBadge
-                    v-if="isFlying"
+                    v-if="flightActive"
                     label="Active"
                     size="xs"
                     variant="subtle"
@@ -362,7 +362,7 @@ const {
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
-  getFlightState,
+  flyingHeroIds,
   toggleFlight,
   flightTrainingsUsed,
   resetHero
@@ -454,10 +454,7 @@ const flightInfo = computed(() => {
   return HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT] ?? null;
 });
 
-const flightActive = computed(() => {
-  if (!props.heroId) return false;
-  return getFlightState(props.heroId);
-});
+const flightActive = computed(() => !!props.heroId && flyingHeroIds.value.has(props.heroId));
 
 const flightLocked = computed(() => {
   if (!props.heroId) return true;
@@ -473,7 +470,6 @@ const flightVisuallyActive = computed(() => {
   return flightActive.value && monsterForm.value;
 });
 
-const isFlying = computed(() => flightActive.value);
 
 const specialPowerStateValue = computed(() => {
   if (!props.heroId) return 0;

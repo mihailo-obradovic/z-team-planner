@@ -25,37 +25,35 @@ export function useHeroFlightTraining(
     return FLIGHT_SCHOOL_HEROES.filter((id) => heroFlights.value[id]).length;
   });
 
-  function getFlightState(id: HeroId): boolean {
-    const capability =
-      HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
+  const flyingHeroIds = computed<Set<HeroId>>(() => {
+    const result = new Set<HeroId>();
 
-    if (!capability) {
-      return false;
-    }
+    for (const key in HERO_FLIGHT_CAPABILITY) {
+      const id = key as HeroId;
+      const capability =
+        HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-    switch (capability.type) {
-      case 'innate':
-        // Always can fly (e.g., Blonde Blazer)
-        return true;
+      switch (capability.type) {
+        case 'innate':
+          result.add(id);
+          break;
 
-      case 'conditional-power': {
-        // Flight depends on power selection (e.g., Phenomaman)
-        // Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
-        const powerState = powerTraining.getPowerState(id);
-        const hasPower = powerState.trainableSelected === 1;
+        case 'conditional-power': {
+          // Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
+          const powerState = powerTraining.getPowerState(id);
+          const hasPower = powerState.trainableSelected === 1;
+          if (capability.inverted ? !hasPower : hasPower) result.add(id);
+          break;
+        }
 
-        // If inverted, flight is disabled when power is selected
-        return capability.inverted ? !hasPower : hasPower;
+        case 'trainable':
+          if (heroFlights.value[id]) result.add(id);
+          break;
       }
-
-      case 'trainable':
-        // Must train at Flight School (e.g., Coupe, Flambae, Sonar)
-        return heroFlights.value[id] ?? false;
-
-      default:
-        return false;
     }
-  }
+
+    return result;
+  });
 
   function toggleFlight(id: HeroId) {
     const capability =
@@ -95,8 +93,7 @@ export function useHeroFlightTraining(
   });
 
   return {
-    heroFlights,
-    getFlightState,
+    flyingHeroIds,
     toggleFlight,
     flightTrainingsUsed,
     resetAllFlightTrainings,

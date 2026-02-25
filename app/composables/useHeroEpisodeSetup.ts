@@ -66,13 +66,11 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
       }) ?? []
   );
 
-  const ep8Recruits = computed(() => {
-    const pairHeroIds = new Set<string>(synergyPairDefs.value.flat());
+  const ep8Recruits = computed(() =>
+    visibleHeroes.value.filter((h) => ep8RecruitIds.value.has(h.id))
+  );
 
-    return visibleHeroes.value.filter((h) => !pairHeroIds.has(h.id));
-  });
-
-  const synergyPairDefs = computed((): [HeroId, HeroId][] => {
+  const synergyPairs = computed((): [HeroId, HeroId][] => {
     const pairs: [HeroId, HeroId][] = BASE_SYNERGY_PAIRS.map((pair) => [
       pair.hero1,
       pair.hero2
@@ -95,7 +93,7 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
 
     const pairs = [];
 
-    for (const [topId, bottomId] of synergyPairDefs.value) {
+    for (const [topId, bottomId] of synergyPairs.value) {
       const top = heroMap.get(topId);
       const bottom = heroMap.get(bottomId);
 
