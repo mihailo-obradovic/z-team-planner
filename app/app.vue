@@ -1,62 +1,14 @@
 <template>
   <u-app>
-    <u-header>
+    <u-header mode="slideover" :menu="{ side: 'right', inset: false }">
       <template #left> Z-Team Planner </template>
 
       <template #default>
-        <div class="flex gap-6 items-center">
-          <u-form-field label="Episode 3: Cut" orientation="horizontal">
-            <u-select v-model="ep3Cut" :items="ep3CutItems" variant="subtle" />
-          </u-form-field>
+        <PlannerFilters orientation="horizontal" />
+      </template>
 
-          <u-form-field label="Episode 4: Hire" orientation="horizontal">
-            <u-select
-              v-model="ep4Hire"
-              :items="ep4HireItems"
-              variant="subtle"
-            />
-          </u-form-field>
-
-          <u-form-field label="Episode 8 recruits" orientation="horizontal">
-            <u-switch v-model="showEp8Recruits" size="sm" />
-          </u-form-field>
-
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted">
-              Power trainings: {{ trainingsUsed }}/{{ MAX_POWER_TRAININGS }}
-            </span>
-            <IconButton
-              v-if="trainingsUsed > 0"
-              icon="i-lucide-rotate-ccw"
-              color="neutral"
-              @click="resetAllPowerTrainings"
-            />
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted">
-              Flight trainings: {{ flightTrainingsUsed }}/{{
-                MAX_FLIGHT_TRAININGS
-              }}
-            </span>
-            <IconButton
-              v-if="flightTrainingsUsed > 0"
-              icon="i-lucide-rotate-ccw"
-              color="neutral"
-              @click="resetAllFlightTrainings"
-            />
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted">
-              Bonus points: {{ bonusLevelsUsed }}/{{ MAX_BONUS_POINTS }}
-            </span>
-            <IconButton
-              v-if="bonusLevelsUsed > 0"
-              icon="i-lucide-rotate-ccw"
-              color="neutral"
-              @click="resetAllBonusLevels"
-            />
-          </div>
-        </div>
+      <template #body>
+        <PlannerFilters orientation="vertical" />
       </template>
 
       <template #right>
@@ -77,25 +29,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-  MAX_POWER_TRAININGS,
-  MAX_FLIGHT_TRAININGS,
-  MAX_BONUS_POINTS
-} from '~/types/hero';
-
-const {
-  ep3Cut,
-  ep4Hire,
-  showEp8Recruits,
-  ep3CutItems,
-  ep4HireItems,
-  trainingsUsed,
-  flightTrainingsUsed,
-  resetAllPowerTrainings,
-  resetAllFlightTrainings,
-  bonusLevelsUsed,
-  resetAllBonusLevels
-} = useHeroPlanner();
 
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
