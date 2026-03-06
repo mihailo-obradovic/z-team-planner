@@ -7,75 +7,17 @@
   >
     <template #body>
       <div v-if="hero" class="flex flex-col gap-8 max-w-7xl mx-auto h-full">
-        <div class="grid grid-cols-3 gap-8">
-          <div class="flex flex-col gap-3">
+        <div class="grid grid-cols-4 gap-6">
+          <div class="flex flex-col gap-2">
             <NuxtImg
               :src="portraitSrc"
               :alt="hero.name"
               class="w-full aspect-square rounded-xl bg-accented object-cover"
             />
-
-            <div v-if="powers" class="flex justify-center items-center gap-2">
-              <TooltipButton
-                v-if="heroId === 'sonar'"
-                :text="sonarFormTooltip"
-                :icon="sonarFormIcon"
-                size="sm"
-                :color="monsterForm ? 'primary' : 'neutral'"
-                @click="monsterForm = !monsterForm"
-              />
-
-              <TooltipButton
-                :text="`${powers[0]!.name}: ${powers[0]!.description}`"
-                :icon="POWER_ICONS[0]"
-                size="sm"
-                :color="powerState!.startingRevealed ? 'primary' : 'neutral'"
-                @click="toggleStartingPower(heroId!)"
-              />
-
-              <TooltipButton
-                v-for="(power, i) in upgradePowers"
-                :key="i"
-                :text="`${power.name}: ${power.description}`"
-                :icon="POWER_ICONS[i + 1]!"
-                size="sm"
-                :color="trainablePowerColor(i)"
-                :disabled="isTrainableDisabled(i)"
-                @click="toggleTrainablePower(heroId!, (i + 1) as 1 | 2)"
-              />
-
-              <TooltipButton
-                v-if="flightInfo"
-                :text="`${flightInfo.name}: ${flightInfo.description}`"
-                icon="i-lucide-plane"
-                size="sm"
-                :color="flightColor"
-                :disabled="flightLocked"
-                @click="toggleFlight(heroId!)"
-              />
-
-              <TooltipButton
-                v-if="showFlambaeSupernova"
-                text="Supernova: Set Combat and Mobility to 10"
-                icon="i-lucide-flame"
-                size="sm"
-                :color="specialPowerStateValue ? 'primary' : 'neutral'"
-                @click="toggleSpecialPower(heroId!)"
-              />
-
-              <TooltipButton
-                v-if="showCoupeEnPointe"
-                :text="coupeTooltip"
-                :icon="coupeIcon"
-                size="sm"
-                :color="specialPowerStateValue ? 'primary' : 'neutral'"
-                @click="toggleSpecialPower(heroId!)"
-              />
-            </div>
           </div>
 
           <div
-            class="rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
+            class="col-span-2 rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
           >
             <div class="flex items-center justify-between">
               <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
@@ -174,20 +116,10 @@
               </li>
             </ul>
 
-            <div
-              v-if="heroId === 'sonar'"
-              class="text-xs text-muted text-center"
-            >
-              {{
-                monsterForm
-                  ? 'Mega Bat form: Combat/Intellect and Vigor/Charisma swapped'
-                  : 'Hybrid form'
-              }}
-            </div>
           </div>
 
           <div
-            class="radar-chart rounded-xl border border-default bg-elevated/50 p-4 flex items-center justify-center"
+            class="radar-chart rounded-xl border border-default bg-elevated/50 p-1 flex items-center justify-center"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -199,7 +131,9 @@
           <div
             class="grid gap-8"
             :class="
-              flightInfo || specialAbility ? 'grid-cols-2' : 'grid-cols-1'
+              flightInfo || specialAbility || heroId === 'sonar'
+                ? 'grid-cols-2'
+                : 'grid-cols-1'
             "
           >
             <div class="flex flex-col gap-4">
@@ -208,12 +142,16 @@
               <div
                 v-for="(power, i) in displayPowers"
                 :key="i"
-                class="rounded-lg border p-3"
-                :class="
+                class="rounded-lg border p-3 transition-colors"
+                :class="[
                   isPowerActive(power)
                     ? 'border-accented bg-elevated'
-                    : 'border-default'
-                "
+                    : 'border-default hover:border-accented/50',
+                  isPowerDisabled(power)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer'
+                ]"
+                @click="handlePowerClick(power)"
               >
                 <div class="flex items-center gap-2">
                   <UIcon :name="POWER_ICONS[i]" class="size-4" />
@@ -222,7 +160,7 @@
 
                   <UBadge
                     v-if="isPowerActive(power)"
-                    label="Trained"
+                    :label="power.slot === 'starting' ? 'Revealed' : 'Trained'"
                     size="xs"
                     variant="subtle"
                   />
@@ -233,19 +171,60 @@
             </div>
 
             <div
-              v-if="flightInfo || specialAbility"
+              v-if="flightInfo || specialAbility || heroId === 'sonar'"
               class="flex flex-col gap-4"
             >
               <h3 class="text-lg font-semibold">Abilities</h3>
 
               <div
-                v-if="flightInfo"
-                class="rounded-lg border p-3"
+                v-if="heroId === 'sonar'"
+                class="rounded-lg border p-3 cursor-pointer transition-colors"
                 :class="
+                  monsterForm
+                    ? 'border-accented bg-elevated'
+                    : 'border-default hover:border-accented/50'
+                "
+                @click="monsterForm = !monsterForm"
+              >
+                <div class="flex items-center gap-2">
+                  <UIcon
+                    :name="monsterForm ? 'i-lucide-zap' : 'i-lucide-user'"
+                    class="size-4"
+                  />
+
+                  <span class="font-medium">
+                    {{ monsterForm ? 'Mega Bat Form' : 'Hybrid Form' }}
+                  </span>
+
+                  <UBadge
+                    v-if="monsterForm"
+                    label="Active"
+                    size="xs"
+                    variant="subtle"
+                  />
+                </div>
+
+                <p class="text-sm text-muted mt-1">
+                  {{
+                    monsterForm
+                      ? 'Combat/Intellect and Vigor/Charisma swapped'
+                      : 'Default form — no stat swaps'
+                  }}
+                </p>
+              </div>
+
+              <div
+                v-if="flightInfo"
+                class="rounded-lg border p-3 transition-colors"
+                :class="[
                   flightActive
                     ? 'border-accented bg-elevated'
-                    : 'border-default'
-                "
+                    : 'border-default hover:border-accented/50',
+                  flightLocked
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer'
+                ]"
+                @click="!flightLocked && toggleFlight(heroId!)"
               >
                 <div class="flex items-center gap-2">
                   <UIcon name="i-lucide-plane" class="size-4" />
@@ -267,12 +246,13 @@
 
               <div
                 v-if="specialAbility"
-                class="rounded-lg border p-3"
+                class="rounded-lg border p-3 cursor-pointer transition-colors"
                 :class="
                   specialAbility.active
                     ? 'border-accented bg-elevated'
-                    : 'border-default'
+                    : 'border-default hover:border-accented/50'
                 "
+                @click="toggleSpecialPower(heroId!)"
               >
                 <div class="flex items-center gap-2">
                   <UIcon :name="specialAbility.icon" class="size-4" />
@@ -324,7 +304,6 @@ import {
   MAX_BONUS_POINTS,
   HERO_POWERS,
   HERO_FLIGHT,
-  HERO_FLIGHT_CAPABILITY,
   SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
@@ -371,7 +350,6 @@ const {
   toggleStartingPower,
   toggleTrainablePower,
   trainingsUsed,
-  ep8RecruitIds,
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
@@ -420,24 +398,6 @@ const powerState = computed(() => {
   if (!props.heroId) return null;
   return getPowerState(props.heroId);
 });
-
-const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || !props.heroId || ep8RecruitIds.value.has(props.heroId))
-    return [];
-  return powers.value.slice(1).filter((p) => p.name !== '');
-});
-
-function trainablePowerColor(i: number) {
-  return powerState.value?.trainableSelected === i + 1 ? 'primary' : 'neutral';
-}
-
-function isTrainableDisabled(i: number) {
-  return (
-    !powerState.value?.startingRevealed ||
-    (powerState.value?.trainableSelected !== i + 1 &&
-      trainingsUsed.value >= MAX_POWER_TRAININGS)
-  );
-}
 
 const displayPowers = computed(() => {
   if (!powers.value) return [];
@@ -495,19 +455,6 @@ const flightLocked = computed(() => {
   );
 });
 
-const flightVisuallyActive = computed(() => {
-  if (props.heroId !== 'sonar') return flightActive.value;
-  return flightActive.value && monsterForm.value;
-});
-
-const flightColor = computed(() =>
-  flightVisuallyActive.value
-    ? 'primary'
-    : flightActive.value
-      ? 'secondary'
-      : 'neutral'
-);
-
 const specialPowerStateValue = computed(() => {
   if (!props.heroId) return 0;
   return getSpecialPowerState(props.heroId);
@@ -518,41 +465,6 @@ const hasPowers = computed(() => {
   return (
     powerState.value.startingRevealed || powerState.value.trainableSelected > 0
   );
-});
-
-const showFlambaeSupernova = computed(() => {
-  if (!props.heroId || !powerState.value) return false;
-  return props.heroId === 'flambae' && powerState.value.trainableSelected === 2;
-});
-
-const showCoupeEnPointe = computed(() => {
-  if (!props.heroId || !powerState.value) return false;
-  return props.heroId === 'coupe' && powerState.value.startingRevealed;
-});
-
-const coupeTooltip = computed(() => {
-  if (!powerState.value) return '';
-  const isUpgraded = powerState.value.trainableSelected === 2;
-  const bonus = isUpgraded ? '+3' : '+1';
-  if (specialPowerStateValue.value === 1)
-    return `En Pointe: ${bonus} Combat (active)`;
-  if (specialPowerStateValue.value === 2)
-    return `En Pointe: ${bonus} Mobility (active)`;
-  return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
-});
-
-const coupeIcon = computed(() => {
-  if (specialPowerStateValue.value === 1) return 'i-lucide-sword';
-  if (specialPowerStateValue.value === 2) return 'i-lucide-footprints';
-  return 'i-lucide-sparkles';
-});
-
-const sonarFormIcon = computed(() => {
-  return monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user';
-});
-
-const sonarFormTooltip = computed(() => {
-  return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
 });
 
 const specialAbility = computed(() => {
@@ -699,6 +611,41 @@ function isPowerActive(power: HeroPowerDefinition): boolean {
   if (power.slot === 'trainable-2')
     return powerState.value.trainableSelected === 2;
   return false;
+}
+
+function isPowerDisabled(power: HeroPowerDefinition): boolean {
+  if (!props.heroId || !powerState.value) return true;
+  if (power.slot === 'starting') return false;
+  if (power.slot === 'trainable-1') {
+    return (
+      !powerState.value.startingRevealed ||
+      (powerState.value.trainableSelected !== 1 &&
+        trainingsUsed.value >= MAX_POWER_TRAININGS)
+    );
+  }
+  if (power.slot === 'trainable-2') {
+    return (
+      !powerState.value.startingRevealed ||
+      (powerState.value.trainableSelected !== 2 &&
+        trainingsUsed.value >= MAX_POWER_TRAININGS)
+    );
+  }
+  return false;
+}
+
+function handlePowerClick(power: HeroPowerDefinition) {
+  if (!props.heroId || isPowerDisabled(power)) return;
+  if (power.slot === 'starting') {
+    toggleStartingPower(props.heroId);
+    return;
+  }
+  if (power.slot === 'trainable-1') {
+    toggleTrainablePower(props.heroId, 1);
+    return;
+  }
+  if (power.slot === 'trainable-2') {
+    toggleTrainablePower(props.heroId, 2);
+  }
 }
 </script>
 
