@@ -1,5 +1,5 @@
 <template>
-  <UTabs :items="tabs" class="w-full" variant="link">
+  <UTabs :items="tabs" class="w-full flex flex-col h-[calc(100dvh-var(--ui-header-height))]" variant="link" :ui="{ root: 'gap-0', content: 'flex-1 overflow-y-auto min-h-0' }">
     <template #overview>
       <div
         class="grid grid-cols-1 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)] justify-items-center justify-center gap-4 p-4"

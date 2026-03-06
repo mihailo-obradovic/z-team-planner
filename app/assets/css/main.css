@@ -97,6 +97,13 @@
     --ui-border-inverted: var(--color-white); */
 }
 
+/** Prevent page-level scroll — only inner containers should scroll */
+html,
+body {
+    overflow: hidden;
+    height: 100%;
+}
+
 /** Restore cursor-pointer on buttons */
 button,
 [role='button'] {
