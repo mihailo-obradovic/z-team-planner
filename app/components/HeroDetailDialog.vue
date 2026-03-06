@@ -75,10 +75,10 @@
           </div>
 
           <div
-            class="rounded-xl border border-default p-6 flex flex-col justify-between gap-4"
+            class="rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
           >
             <div class="flex items-center justify-between">
-              <span class="text-xl text-muted">Lv. {{ heroLevel }}</span>
+              <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
 
               <div v-if="canLevelUp" class="flex items-center gap-2">
                 <IconButton
@@ -109,7 +109,7 @@
                   :disabled="bonusLevel >= 4 || bonusFull"
                   @click="addBonusLevel(heroId!)"
                 >
-                  <span class="text-xs font-semibold">+{{ bonusLevel }}</span>
+                  <span class="text-sm font-semibold">+{{ bonusLevel }}</span>
                 </IconButton>
               </div>
             </div>
@@ -187,7 +187,7 @@
           </div>
 
           <div
-            class="radar-chart rounded-xl border border-default bg-elevated/50 p-6 flex items-center justify-center"
+            class="radar-chart rounded-xl border border-default bg-elevated/50 p-4 flex items-center justify-center"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -195,44 +195,56 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-8 flex-1">
-          <div class="flex flex-col gap-4">
-            <h3 class="text-lg font-semibold">Powers</h3>
+        <div class="flex flex-col gap-8 flex-1">
+          <div
+            class="grid gap-8"
+            :class="
+              flightInfo || specialAbility ? 'grid-cols-2' : 'grid-cols-1'
+            "
+          >
+            <div class="flex flex-col gap-4">
+              <h3 class="text-lg font-semibold">Powers</h3>
 
-            <div
-              v-for="(power, i) in displayPowers"
-              :key="i"
-              class="rounded-lg border p-3"
-              :class="
-                isPowerActive(power)
-                  ? 'border-accented bg-elevated'
-                  : 'border-default'
-              "
-            >
-              <div class="flex items-center gap-2">
-                <UIcon :name="POWER_ICONS[i]" class="size-4" />
+              <div
+                v-for="(power, i) in displayPowers"
+                :key="i"
+                class="rounded-lg border p-3"
+                :class="
+                  isPowerActive(power)
+                    ? 'border-accented bg-elevated'
+                    : 'border-default'
+                "
+              >
+                <div class="flex items-center gap-2">
+                  <UIcon :name="POWER_ICONS[i]" class="size-4" />
 
-                <span class="font-medium">{{ power.name }}</span>
+                  <span class="font-medium">{{ power.name }}</span>
 
-                <UBadge
-                  v-if="isPowerActive(power)"
-                  label="Trained"
-                  size="xs"
-                  variant="subtle"
-                />
+                  <UBadge
+                    v-if="isPowerActive(power)"
+                    label="Trained"
+                    size="xs"
+                    variant="subtle"
+                  />
+                </div>
+
+                <p class="text-sm text-muted mt-1">{{ power.description }}</p>
               </div>
-
-              <p class="text-sm text-muted mt-1">{{ power.description }}</p>
             </div>
 
-            <template v-if="flightInfo || specialAbility">
-              <h3 class="text-lg font-semibold mt-2">Abilities</h3>
+            <div
+              v-if="flightInfo || specialAbility"
+              class="flex flex-col gap-4"
+            >
+              <h3 class="text-lg font-semibold">Abilities</h3>
 
               <div
                 v-if="flightInfo"
                 class="rounded-lg border p-3"
                 :class="
-                  flightActive ? 'border-accented bg-elevated' : 'border-default'
+                  flightActive
+                    ? 'border-accented bg-elevated'
+                    : 'border-default'
                 "
               >
                 <div class="flex items-center gap-2">
@@ -279,7 +291,7 @@
                   {{ specialAbility.description }}
                 </p>
               </div>
-            </template>
+            </div>
           </div>
 
           <div class="flex flex-col gap-2">
@@ -410,7 +422,8 @@ const powerState = computed(() => {
 });
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || !props.heroId || ep8RecruitIds.value.has(props.heroId)) return [];
+  if (!powers.value || !props.heroId || ep8RecruitIds.value.has(props.heroId))
+    return [];
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
@@ -419,7 +432,11 @@ function trainablePowerColor(i: number) {
 }
 
 function isTrainableDisabled(i: number) {
-  return !powerState.value?.startingRevealed || (powerState.value?.trainableSelected !== i + 1 && trainingsUsed.value >= MAX_POWER_TRAININGS);
+  return (
+    !powerState.value?.startingRevealed ||
+    (powerState.value?.trainableSelected !== i + 1 &&
+      trainingsUsed.value >= MAX_POWER_TRAININGS)
+  );
 }
 
 const displayPowers = computed(() => {
@@ -447,7 +464,9 @@ const getLevelUpPointsUsedValue = computed(() => {
 const pointsRemaining = computed(() => {
   if (!props.heroId) return 0;
   return (
-    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - getLevelUpPointsUsed(props.heroId)
+    MAX_LEVEL_UPS +
+    getBonusLevel(props.heroId) -
+    getLevelUpPointsUsed(props.heroId)
   );
 });
 
@@ -463,7 +482,9 @@ const flightInfo = computed(() => {
   return HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT] ?? null;
 });
 
-const flightActive = computed(() => !!props.heroId && flyingHeroIds.value.has(props.heroId));
+const flightActive = computed(
+  () => !!props.heroId && flyingHeroIds.value.has(props.heroId)
+);
 
 const flightLocked = computed(() => {
   if (!props.heroId) return true;
@@ -480,9 +501,12 @@ const flightVisuallyActive = computed(() => {
 });
 
 const flightColor = computed(() =>
-  flightVisuallyActive.value ? 'primary' : flightActive.value ? 'secondary' : 'neutral'
+  flightVisuallyActive.value
+    ? 'primary'
+    : flightActive.value
+      ? 'secondary'
+      : 'neutral'
 );
-
 
 const specialPowerStateValue = computed(() => {
   if (!props.heroId) return 0;
@@ -594,11 +618,12 @@ const radarConfig = computed(
   (): VueUiRadarConfig => ({
     responsive: true,
     useCssAnimation: true,
+    customPalette: ['#f88ee8'], // lavender-400 for the data polygon fill
     style: {
       fontFamily: 'inherit',
       chart: {
         backgroundColor: 'transparent',
-        color: 'currentColor',
+        color: '#f88ee8', // This controls the data polygon fill color
         layout: {
           grid: {
             show: true,
@@ -612,7 +637,7 @@ const radarConfig = computed(
           },
           dataPolygon: {
             strokeWidth: 2,
-            opacity: 0.2,
+            opacity: 50, // 50% transparency (0–100 range)
             useGradient: false
           },
           plots: {
@@ -622,7 +647,7 @@ const radarConfig = computed(
           labels: {
             dataLabels: {
               show: true,
-              fontSize: 12,
+              fontSize: 14,
               color: 'currentColor'
             }
           }
