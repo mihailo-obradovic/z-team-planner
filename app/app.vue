@@ -12,6 +12,8 @@
       </template>
 
       <template #right>
+        <BuildManager />
+
         <u-color-mode-button />
       </template>
     </u-header>
@@ -30,6 +32,17 @@
 
 <script setup lang="ts">
 await useFetch('/api/heroes', { key: 'heroes' });
+
+// ---
+
+const { initialize, setupBeforeUnload } = useHeroPlanner();
+
+onMounted(async () => {
+  await initialize();
+  setupBeforeUnload();
+});
+
+// ---
 
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],

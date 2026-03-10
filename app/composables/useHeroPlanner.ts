@@ -1,4 +1,5 @@
 import { FIXED_LEVEL_HEROES } from '@/types/hero';
+import { useBuildPersistence } from './useBuildPersistence';
 import { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import { useHeroFlightTraining } from './useHeroFlightTraining';
 import { useHeroLevelUp } from './useHeroLevelUp';
@@ -19,6 +20,7 @@ function createHeroPlanner() {
   const levelUp = useHeroLevelUp(heroes, episodeSetup);
   const powerTraining = useHeroPowerTraining(heroes, episodeSetup, levelUp);
   const flightTraining = useHeroFlightTraining(episodeSetup, powerTraining);
+  const persistence = useBuildPersistence();
 
   // Cross-cutting concern: resetHero clears all state for a specific hero
   function resetHero(id: HeroId) {
@@ -38,6 +40,7 @@ function createHeroPlanner() {
     ...levelUp,
     ...powerTraining,
     ...flightTraining,
+    ...persistence,
     resetHero
   };
 }
