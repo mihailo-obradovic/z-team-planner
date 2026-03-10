@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+await useFetch('/api/heroes', { key: 'heroes' });
 
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],

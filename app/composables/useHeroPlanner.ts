@@ -3,14 +3,16 @@ import { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import { useHeroFlightTraining } from './useHeroFlightTraining';
 import { useHeroLevelUp } from './useHeroLevelUp';
 import { useHeroPowerTraining } from './useHeroPowerTraining';
-import type { HeroId } from '@/types/hero';
+import type { Hero, HeroId } from '@/types/hero';
 
 /**
  * Main hero planner composable that aggregates all hero management functionality.
  * Acts as a unified interface for episode setup, level-ups, powers, and flight training.
  */
 function createHeroPlanner() {
-  const { data: heroes } = useFetch('/api/heroes');
+  // Heroes data is fetched in app.vue and read here via useNuxtData to avoid
+  // SSR hydration issues (useFetch inside a singleton breaks Suspense awaiting)
+  const { data: heroes } = useNuxtData<Hero[]>('heroes');
 
   // Initialize all sub-composables with explicit dependencies
   const episodeSetup = useHeroEpisodeSetup(heroes);
