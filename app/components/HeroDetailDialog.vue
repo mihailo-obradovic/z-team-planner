@@ -1,14 +1,21 @@
 <template>
-  <UModal
-    :open="!!heroId"
-    fullscreen
-    :title="hero?.name"
-    @update:open="$emit('close')"
-  >
+  <UModal :open="!!heroId" fullscreen @update:open="$emit('close')">
+    <template #title>
+      <div class="flex items-center gap-2">
+        <NuxtImg
+          :src="portraitSrc"
+          :alt="hero?.name ?? ''"
+          class="size-8 rounded-lg object-cover md:hidden"
+        />
+
+        <span class="text-highlighted font-semibold">{{ hero?.name }}</span>
+      </div>
+    </template>
+
     <template #body>
       <div v-if="hero" class="flex flex-col gap-8 max-w-7xl mx-auto h-full">
-        <div class="grid grid-cols-4 gap-6">
-          <div class="flex flex-col gap-2">
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="hidden md:block md:w-1/4 md:shrink-0 md:order-1">
             <NuxtImg
               :src="portraitSrc"
               :alt="hero.name"
@@ -17,7 +24,7 @@
           </div>
 
           <div
-            class="col-span-2 rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
+            class="md:w-1/2 md:order-2 md:min-h-0 md:overflow-auto rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
           >
             <div class="flex items-center justify-between">
               <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
@@ -115,11 +122,10 @@
                 </div>
               </li>
             </ul>
-
           </div>
 
           <div
-            class="radar-chart rounded-xl border border-default bg-elevated/50 p-1 flex items-center justify-center"
+            class="radar-chart order-first md:order-3 md:w-1/4 md:shrink-0 md:min-h-0 md:overflow-hidden rounded-xl border border-default bg-elevated/50 p-1 flex items-center justify-center"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -651,7 +657,14 @@ function handlePowerClick(power: HeroPowerDefinition) {
 
 <style scoped>
 .radar-chart :deep(svg) {
-  transform: rotate(-90deg);
+  transform: rotate(-90deg) scale(0.5);
+  transform-origin: center;
+}
+
+@media (min-width: 768px) {
+  .radar-chart :deep(svg) {
+    transform: rotate(-90deg);
+  }
 }
 
 .radar-chart :deep(svg text) {
