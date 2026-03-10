@@ -137,7 +137,7 @@
           <div
             class="grid gap-8"
             :class="
-              flightInfo || specialAbility || heroId === 'sonar'
+              specialAbility || heroId === 'sonar'
                 ? 'grid-cols-2'
                 : 'grid-cols-1'
             "
@@ -174,10 +174,41 @@
 
                 <p class="text-sm text-muted mt-1">{{ power.description }}</p>
               </div>
+
+              <div
+                v-if="flightInfo"
+                class="rounded-lg border p-3 transition-colors"
+                :class="[
+                  flightActive
+                    ? 'border-accented bg-elevated'
+                    : 'border-default hover:border-accented/50',
+                  flightLocked
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer'
+                ]"
+                @click="!flightLocked && toggleFlight(heroId!)"
+              >
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-plane" class="size-4" />
+
+                  <span class="font-medium">{{ flightInfo.name }}</span>
+
+                  <UBadge
+                    v-if="flightActive"
+                    label="Active"
+                    size="xs"
+                    variant="subtle"
+                  />
+                </div>
+
+                <p class="text-sm text-muted mt-1">
+                  {{ flightInfo.description }}
+                </p>
+              </div>
             </div>
 
             <div
-              v-if="flightInfo || specialAbility || heroId === 'sonar'"
+              v-if="specialAbility || heroId === 'sonar'"
               class="flex flex-col gap-4"
             >
               <h3 class="text-lg font-semibold">Abilities</h3>
@@ -220,45 +251,17 @@
               </div>
 
               <div
-                v-if="flightInfo"
+                v-if="specialAbility"
                 class="rounded-lg border p-3 transition-colors"
                 :class="[
-                  flightActive
+                  specialAbility.active
                     ? 'border-accented bg-elevated'
                     : 'border-default hover:border-accented/50',
-                  flightLocked
+                  specialAbility.disabled
                     ? 'opacity-50 cursor-not-allowed'
                     : 'cursor-pointer'
                 ]"
-                @click="!flightLocked && toggleFlight(heroId!)"
-              >
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-lucide-plane" class="size-4" />
-
-                  <span class="font-medium">{{ flightInfo.name }}</span>
-
-                  <UBadge
-                    v-if="flightActive"
-                    label="Active"
-                    size="xs"
-                    variant="subtle"
-                  />
-                </div>
-
-                <p class="text-sm text-muted mt-1">
-                  {{ flightInfo.description }}
-                </p>
-              </div>
-
-              <div
-                v-if="specialAbility"
-                class="rounded-lg border p-3 cursor-pointer transition-colors"
-                :class="
-                  specialAbility.active
-                    ? 'border-accented bg-elevated'
-                    : 'border-default hover:border-accented/50'
-                "
-                @click="toggleSpecialPower(heroId!)"
+                @click="!specialAbility.disabled && toggleSpecialPower(heroId!)"
               >
                 <div class="flex items-center gap-2">
                   <UIcon :name="specialAbility.icon" class="size-4" />
@@ -484,11 +487,13 @@ const specialAbility = computed(() => {
   const state = specialPowerStateValue.value;
 
   if (mechanics.type === 'supernova') {
+    const hasRequiredPower = powerState.value?.trainableSelected === 2;
     return {
       name: 'Supernova',
       description: 'Combat and Mobility set to 10 after two successes.',
       icon: 'i-lucide-flame',
-      active: state > 0
+      active: state > 0,
+      disabled: !hasRequiredPower
     };
   }
 
@@ -506,7 +511,8 @@ const specialAbility = computed(() => {
           : state === 2
             ? 'i-lucide-footprints'
             : 'i-lucide-sparkles',
-      active: state > 0
+      active: state > 0,
+      disabled: false
     };
   }
 

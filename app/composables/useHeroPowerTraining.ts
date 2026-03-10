@@ -106,6 +106,9 @@ export function useHeroPowerTraining(
 
   function toggleSpecialPower(id: HeroId) {
     if (id === 'flambae') {
+      // Supernova requires trainable-2 power to be trained
+      const power = getPowerState(id);
+      if (power.trainableSelected !== 2) return;
       // Toggle between 0 (off) and 1 (on)
       heroSpecialPowers.value[id] = heroSpecialPowers.value[id] ? 0 : 1;
     } else if (id === 'coupe') {
