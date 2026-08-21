@@ -43,3 +43,16 @@ Pint needs no extension: it is the formatter of record and runs from `vendor/bin
 Same marker rule as the generated root pointers: the block between the markers is Catalyst's to rewrite, everything outside it is the project's own, and deleting the markers is how a project takes the file over permanently. A pre-existing `.vscode/extensions.json` without the markers — the brownfield case — gets the block injected into its `recommendations` array, keeping every row the project wrote; an id already present outside the block (including in `unwantedRecommendations`, an explicit rejection) is left out of it.
 
 Adding a row is two edits plus a validator run: the registry entry (with the bundle path that gates it) and this table. Anything else under `.vscode/` is the project's own business — Catalyst writes no `settings.json`.
+
+## Unwanted extensions
+
+The same file carries a second generated block in `unwantedRecommendations`, between `// catalyst:unwanted:begin` / `// catalyst:unwanted:end` markers: the extensions the adopted toolchain **supersedes**, so VS Code stops suggesting them to workstations that open the project. The registry is `UNWANTED_EXTENSIONS` in `tools/new_project.py`; the table below is its documented mirror, kept in parity by the same validator rule (R11) as the recommended set.
+
+| Extension                | Unwanted when                                      | Why                                                                                                     |
+| ------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `dbaeumer.vscode-eslint` | the `_lang/typescript` tier travels with the stack | ESLint is superseded by oxlint — a second lint runner beside it only disagrees with the one that counts |
+| `esbenp.prettier-vscode` | the `_lang/typescript` tier travels with the stack | Prettier is superseded by oxfmt — a second formatter fights the format-on-save the project relies on    |
+
+One deliberate subtraction rides with this block, the only one in an otherwise additive adopt: a pre-existing `recommendations` row naming one of these ids — the brownfield case — is **removed**, not kept, because the row actively recommends what the adopted stack forbids (`stacks/_lang/typescript/toolchain.md`: oxlint owns linting, oxfmt owns formatting, ESLint and Prettier are never added). The scaffolder reports every removal. The superseded packages, scripts, and config files themselves are only detected and reported — removing them is the adoption's cleanup move (`workflows/brownfield.md`), never the scaffolder's write.
+
+The block follows the same marker contract as the recommended one — rewritten on every spawn/upgrade apply, rows outside it the project's own, an id the project already lists outside the block left out of it — with distinct markers so the two managed blocks stay unambiguous.
