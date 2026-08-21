@@ -2,7 +2,7 @@
  * Hero Type System for Z-Team Planner
  *
  * This file defines all types related to heroes in the Dispatch game.
- * For full game mechanics, see .claude/docs/dispatch.md
+ * For full game mechanics, see catalyst/context/game-mechanics.md
  *
  * ## Design Principles
  *
@@ -131,7 +131,7 @@ export const MAX_POWER_TRAININGS = 7;
 // ============================================================================
 
 /**
- * Determines how/when a hero can fly. See .claude/docs/dispatch.md for flight mechanics details.
+ * Determines how/when a hero can fly. See catalyst/context/game-mechanics.md for flight mechanics details.
  * - 'innate': Always can fly
  * - 'conditional-power': Can fly based on power selection
  * - 'trainable': Can learn through Flight School

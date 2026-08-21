@@ -10,9 +10,11 @@ Context documents: `context/product-description.md`, `context/game-mechanics.md`
 
 ## Feature Index
 
-| ### | Feature                       | Status | Summary                                                                                                                                                       | Document                                                   |
-| --- | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 001 | Build persistence and sharing | Active | Builds persist in localStorage as named saves and share via a `?build=` URL parameter (compact v1 format); shared links open in a view-only mode until saved. | [001_build-persistence](features/001_build-persistence.md) |
+| ### | Feature                       | Status | Summary                                                                                                                                                                                                  | Document                                                   |
+| --- | ----------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 001 | Build persistence and sharing | Active | Builds persist in localStorage as named saves and share via a `?build=` URL parameter (compact v1 format); shared links open in a view-only mode until saved.                                            | [001_build-persistence](features/001_build-persistence.md) |
+| 002 | Hero data and domain model    | Active | The game data transcribed from the Dispatch reference — roster and starting stats (static Nitro endpoint), powers, flight, synergy pairs, budget constants — and the type system every feature consumes. | [002_hero-data](features/002_hero-data.md)                 |
+| 003 | Planner mechanics             | Active | Interactive allocation under the game's budgets: level-ups and bonus levels, power and flight training, special powers, episode setup with roster resets, and the synergy-pair overview layout.          | [003_planner-mechanics](features/003_planner-mechanics.md) |
 
 ## Architecture Decision Record (ADR) Index
 
@@ -34,9 +36,10 @@ Present only when the project has standing cross-cutting domain/method decisions
 
 Pointer index of protections declared in lazy-loaded feature/decision documents. One row per area: name + owning document — never the rule text. Folder-document protections are not indexed; they load with their folder.
 
-| Area                                    | Owner                                                      |
-| --------------------------------------- | ---------------------------------------------------------- |
-| Serialized build format (v1) + hero ids | [001_build-persistence](features/001_build-persistence.md) |
+| Area                         | Owner                                                      |
+| ---------------------------- | ---------------------------------------------------------- |
+| Serialized build format (v1) | [001_build-persistence](features/001_build-persistence.md) |
+| Hero ids and game data       | [002_hero-data](features/002_hero-data.md)                 |
 
 ## Technical Stack
 
