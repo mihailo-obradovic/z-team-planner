@@ -1,15 +1,15 @@
 <template>
   <div
-    class="flex gap-4 rounded-lg border border-default bg-elevated p-4 w-92 justify-between"
+    class="flex w-92 justify-between gap-4 rounded-lg border border-default bg-elevated p-4"
   >
     <div class="flex flex-col gap-2">
       <NuxtImg
         :src="portraitSrc"
         :alt="hero.name"
-        class="aspect-square size-35 rounded-md bg-accented object-cover cursor-pointer hover:ring-2 hover:ring-primary transition-shadow"
+        class="aspect-square size-35 cursor-pointer rounded-md bg-accented object-cover transition-shadow hover:ring-2 hover:ring-primary"
         @click="$emit('viewDetail')"
       />
-      <div v-if="powers" class="flex justify-center items-center gap-1">
+      <div v-if="powers" class="flex items-center justify-center gap-1">
         <TooltipButton
           v-if="heroId === 'sonar'"
           :text="sonarFormTooltip"
@@ -62,11 +62,11 @@
       </div>
     </div>
 
-    <div class="flex flex-col flex-1">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-md font-semibold min-w-18">{{ hero.name }}</h3>
-        <div class="flex items-center gap-2 ml-2 mr-0.5">
-          <div v-if="canLevelUp" class="w-6 flex items-center justify-center">
+    <div class="flex flex-1 flex-col">
+      <div class="mb-2 flex items-center justify-between">
+        <h3 class="text-md min-w-18 font-semibold">{{ hero.name }}</h3>
+        <div class="mr-0.5 ml-2 flex items-center gap-2">
+          <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
             <IconButton
               v-if="
                 getLevelUpPointsUsedValue > 0 ||
@@ -80,11 +80,11 @@
             />
           </div>
 
-          <span class="text-xs text-muted w-8 text-end"
+          <span class="w-8 text-end text-xs text-muted"
             >Lv. {{ heroLevel }}</span
           >
 
-          <div v-if="canLevelUp" class="w-7 flex items-center justify-center">
+          <div v-if="canLevelUp" class="flex w-7 items-center justify-center">
             <IconButton
               v-if="bonusLevel > 0 || !bonusFull"
               :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
@@ -106,7 +106,7 @@
           :key="stat"
           class="flex items-center justify-between"
         >
-          <span class="capitalize text-muted flex items-center gap-2">
+          <span class="flex items-center gap-2 text-muted capitalize">
             <NuxtImg
               :src="`/stat-icons/${stat}.webp`"
               :alt="stat"
@@ -114,7 +114,7 @@
             />
             {{ stat }}
           </span>
-          <div class="flex items-center gap-1 ml-2">
+          <div class="ml-2 flex items-center gap-1">
             <template v-if="canLevelUp">
               <IconButton
                 icon="i-lucide-minus"
@@ -123,7 +123,7 @@
                 @click="statDown(heroId, resolvedStat(stat))"
               />
             </template>
-            <span class="font-medium w-5 text-center">{{
+            <span class="w-5 text-center font-medium">{{
               hero.startingStats[resolvedStat(stat)] +
               statBonuses[resolvedStat(stat)] +
               specialPowerBonus[resolvedStat(stat)]
@@ -208,7 +208,9 @@ const {
   resetHero
 } = useHeroPlanner();
 
-const hero = computed(() => heroes.value?.find((h) => h.id === props.heroId)!);
+const hero = computed(() =>
+  (heroes.value ?? []).find((h) => h.id === props.heroId)!
+);
 
 const statBonuses = computed(() => getStatAllocations(props.heroId));
 
@@ -218,7 +220,9 @@ const specialPowerBonus = computed(() =>
 
 const pointsRemaining = computed(
   () =>
-    MAX_LEVEL_UPS + getBonusLevel(props.heroId) - getLevelUpPointsUsed(props.heroId)
+    MAX_LEVEL_UPS +
+    getBonusLevel(props.heroId) -
+    getLevelUpPointsUsed(props.heroId)
 );
 
 const powerStates = computed(() => getPowerState(props.heroId));
@@ -251,7 +255,10 @@ function trainablePowerColor(i: number) {
 }
 
 function isTrainableDisabled(i: number) {
-  return !powerStates.value.startingRevealed || (powerStates.value.trainableSelected !== i + 1 && trainingsFull.value);
+  return (
+    !powerStates.value.startingRevealed ||
+    (powerStates.value.trainableSelected !== i + 1 && trainingsFull.value)
+  );
 }
 
 const flightInfo = computed(
@@ -270,7 +277,11 @@ const flightVisuallyActive = computed(() => {
 });
 
 const flightColor = computed(() =>
-  flightVisuallyActive.value ? 'primary' : flightActive.value ? 'secondary' : 'neutral'
+  flightVisuallyActive.value
+    ? 'primary'
+    : flightActive.value
+      ? 'secondary'
+      : 'neutral'
 );
 
 const portraitSrc = computed(() => {
@@ -291,7 +302,9 @@ const heroLevel = computed(() => {
   return 1 + getLevelUpPointsUsedValue.value + bonusLevel.value;
 });
 
-const getLevelUpPointsUsedValue = computed(() => getLevelUpPointsUsed(props.heroId));
+const getLevelUpPointsUsedValue = computed(() =>
+  getLevelUpPointsUsed(props.heroId)
+);
 
 const hasPowers = computed(() => {
   return (

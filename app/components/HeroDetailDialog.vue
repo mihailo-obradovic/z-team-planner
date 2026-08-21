@@ -8,23 +8,23 @@
           class="size-8 rounded-lg object-cover md:hidden"
         />
 
-        <span class="text-highlighted font-semibold">{{ hero?.name }}</span>
+        <span class="font-semibold text-highlighted">{{ hero?.name }}</span>
       </div>
     </template>
 
     <template #body>
-      <div v-if="hero" class="flex flex-col gap-8 max-w-7xl mx-auto h-full">
-        <div class="flex flex-col md:flex-row gap-6">
-          <div class="hidden md:block md:w-1/4 md:shrink-0 md:order-1">
+      <div v-if="hero" class="mx-auto flex h-full max-w-7xl flex-col gap-8">
+        <div class="flex flex-col gap-6 md:flex-row">
+          <div class="hidden md:order-1 md:block md:w-1/4 md:shrink-0">
             <NuxtImg
               :src="portraitSrc"
               :alt="hero.name"
-              class="w-full aspect-square rounded-xl bg-accented object-cover"
+              class="aspect-square w-full rounded-xl bg-accented object-cover"
             />
           </div>
 
           <div
-            class="md:w-1/2 md:order-2 md:min-h-0 md:overflow-auto rounded-xl border border-default p-4 flex flex-col justify-between gap-4"
+            class="flex flex-col justify-between gap-4 rounded-xl border border-default p-4 md:order-2 md:min-h-0 md:w-1/2 md:overflow-auto"
           >
             <div class="flex items-center justify-between">
               <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
@@ -63,7 +63,7 @@
               </div>
             </div>
 
-            <ul class="flex flex-col gap-3 flex-1 justify-center">
+            <ul class="flex flex-1 flex-col justify-center gap-3">
               <li
                 v-for="stat in STAT_NAMES"
                 :key="stat"
@@ -75,11 +75,11 @@
                   class="size-8"
                 />
 
-                <span class="text-lg capitalize text-muted w-28">
+                <span class="w-28 text-lg text-muted capitalize">
                   {{ stat }}
                 </span>
 
-                <div class="flex items-center gap-2 ml-auto">
+                <div class="ml-auto flex items-center gap-2">
                   <template v-if="canLevelUp">
                     <IconButton
                       icon="i-lucide-minus"
@@ -91,7 +91,7 @@
                   </template>
 
                   <span
-                    class="text-3xl font-bold tabular-nums w-10 text-center"
+                    class="w-10 text-center text-3xl font-bold tabular-nums"
                   >
                     {{ computedStat(stat) }}
                   </span>
@@ -125,7 +125,7 @@
           </div>
 
           <div
-            class="radar-chart order-first md:order-3 md:w-1/4 md:shrink-0 md:min-h-0 md:overflow-hidden rounded-xl border border-default bg-elevated/50 p-1 flex items-center justify-center"
+            class="radar-chart order-first flex items-center justify-center rounded-xl border border-default bg-elevated/50 p-1 md:order-3 md:min-h-0 md:w-1/4 md:shrink-0 md:overflow-hidden"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -133,7 +133,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-8 flex-1">
+        <div class="flex flex-1 flex-col gap-8">
           <div
             class="grid gap-8"
             :class="
@@ -154,7 +154,7 @@
                     ? 'border-accented bg-elevated'
                     : 'border-default hover:border-accented/50',
                   isPowerDisabled(power)
-                    ? 'opacity-50 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-50'
                     : 'cursor-pointer'
                 ]"
                 @click="handlePowerClick(power)"
@@ -172,7 +172,7 @@
                   />
                 </div>
 
-                <p class="text-sm text-muted mt-1">{{ power.description }}</p>
+                <p class="mt-1 text-sm text-muted">{{ power.description }}</p>
               </div>
 
               <div
@@ -183,7 +183,7 @@
                     ? 'border-accented bg-elevated'
                     : 'border-default hover:border-accented/50',
                   flightLocked
-                    ? 'opacity-50 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-50'
                     : 'cursor-pointer'
                 ]"
                 @click="!flightLocked && toggleFlight(heroId!)"
@@ -201,7 +201,7 @@
                   />
                 </div>
 
-                <p class="text-sm text-muted mt-1">
+                <p class="mt-1 text-sm text-muted">
                   {{ flightInfo.description }}
                 </p>
               </div>
@@ -215,7 +215,7 @@
 
               <div
                 v-if="heroId === 'sonar'"
-                class="rounded-lg border p-3 cursor-pointer transition-colors"
+                class="cursor-pointer rounded-lg border p-3 transition-colors"
                 :class="
                   monsterForm
                     ? 'border-accented bg-elevated'
@@ -241,7 +241,7 @@
                   />
                 </div>
 
-                <p class="text-sm text-muted mt-1">
+                <p class="mt-1 text-sm text-muted">
                   {{
                     monsterForm
                       ? 'Combat/Intellect and Vigor/Charisma swapped'
@@ -258,7 +258,7 @@
                     ? 'border-accented bg-elevated'
                     : 'border-default hover:border-accented/50',
                   specialAbility.disabled
-                    ? 'opacity-50 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-50'
                     : 'cursor-pointer'
                 ]"
                 @click="!specialAbility.disabled && toggleSpecialPower(heroId!)"
@@ -276,7 +276,7 @@
                   />
                 </div>
 
-                <p class="text-sm text-muted mt-1">
+                <p class="mt-1 text-sm text-muted">
                   {{ specialAbility.description }}
                 </p>
               </div>
@@ -527,74 +527,70 @@ const RADAR_STAT_ORDER: StatName[] = [
   'intellect'
 ];
 
-const radarDataset = computed(
-  (): VueUiRadarDataset => ({
-    categories: [{ name: hero.value?.name ?? '' }],
-    series: RADAR_STAT_ORDER.map((stat) => ({
-      name: stat.charAt(0).toUpperCase() + stat.slice(1),
-      values: [computedStat(stat)],
-      target: 10
-    }))
-  })
-);
+const radarDataset = computed((): VueUiRadarDataset => ({
+  categories: [{ name: hero.value?.name ?? '' }],
+  series: RADAR_STAT_ORDER.map((stat) => ({
+    name: stat.charAt(0).toUpperCase() + stat.slice(1),
+    values: [computedStat(stat)],
+    target: 10
+  }))
+}));
 
-const radarConfig = computed(
-  (): VueUiRadarConfig => ({
-    responsive: true,
-    useCssAnimation: true,
-    customPalette: ['#f88ee8'], // lavender-400 for the data polygon fill
-    style: {
-      fontFamily: 'inherit',
-      chart: {
-        backgroundColor: 'transparent',
-        color: '#f88ee8', // This controls the data polygon fill color
-        layout: {
-          grid: {
+const radarConfig = computed((): VueUiRadarConfig => ({
+  responsive: true,
+  useCssAnimation: true,
+  customPalette: ['#f88ee8'], // lavender-400 for the data polygon fill
+  style: {
+    fontFamily: 'inherit',
+    chart: {
+      backgroundColor: 'transparent',
+      color: '#f88ee8', // This controls the data polygon fill color
+      layout: {
+        grid: {
+          show: true,
+          stroke: 'var(--ui-border)',
+          strokeWidth: 0.5,
+          graduations: 10
+        },
+        outerPolygon: {
+          stroke: 'var(--ui-border)',
+          strokeWidth: 1
+        },
+        dataPolygon: {
+          strokeWidth: 2,
+          opacity: 50, // 50% transparency (0–100 range)
+          useGradient: false
+        },
+        plots: {
+          show: true,
+          radius: 3
+        },
+        labels: {
+          dataLabels: {
             show: true,
-            stroke: 'var(--ui-border)',
-            strokeWidth: 0.5,
-            graduations: 10
-          },
-          outerPolygon: {
-            stroke: 'var(--ui-border)',
-            strokeWidth: 1
-          },
-          dataPolygon: {
-            strokeWidth: 2,
-            opacity: 50, // 50% transparency (0–100 range)
-            useGradient: false
-          },
-          plots: {
-            show: true,
-            radius: 3
-          },
-          labels: {
-            dataLabels: {
-              show: true,
-              fontSize: 14,
-              color: 'currentColor'
-            }
+            fontSize: 14,
+            color: 'currentColor'
           }
-        },
-        legend: {
-          show: false
-        },
-        title: {
-          text: ''
-        },
-        tooltip: {
-          show: false
         }
+      },
+      legend: {
+        show: false
+      },
+      title: {
+        text: ''
+      },
+      tooltip: {
+        show: false
       }
-    },
-    userOptions: {
-      show: false
-    },
-    table: {
-      show: false
     }
-  })
-);
+  },
+  userOptions: {
+    show: false
+  },
+  table: {
+    show: false
+  }
+}));
 
 // ---
 

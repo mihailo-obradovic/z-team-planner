@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+# Catalyst document validator (optional pre-commit seatbelt).
+#
+# Optional — never installed automatically (agents don't install or configure hooks; see prime-directive.md, Document Validation). To enable in a clone:
+#   sh catalyst/tools/hooks/install.sh pre-commit
+#
+# Runs the validator before each commit and blocks when it reports errors; notes never block. Graceful: where the validator or python3 itself is absent (a standalone handoff, a stripped-down environment), the commit proceeds with a note instead of breaking.
+#
+# Validates the working tree as it sits on disk, not the staged index — a partial `git add -p` stage is checked in its on-disk form. An index-accurate run would need the validator's own change detection to read the index too; deferred deliberately.
+
+set -eu
+
+command -v python3 >/dev/null 2>&1 || {
+    echo "pre-commit: python3 not found — skipping document validation"
+    exit 0
+}
+
+# Git runs hooks from the repository root. A project keeps the rule set in catalyst/ and the Catalyst repo keeps it at the root, so which one this is follows from where the validator sits. tools/validate.py alone does not identify Catalyst — an older spawn carries it at tools/ too — so the scaffolder, which never travels, is the tiebreaker (the same test validate.py uses).
+if [ -f catalyst/tools/validate.py ]; then
+    exec python3 catalyst/tools/validate.py .
+elif [ -f tools/new_project.py ]; then
+    exec python3 tools/validate.py             # Catalyst itself
+elif [ -f tools/validate.py ]; then
+    exec python3 tools/validate.py .           # older spawn carrying the validator at tools/
+fi
+
+echo "pre-commit: validate.py not found — skipping document validation"
+exit 0

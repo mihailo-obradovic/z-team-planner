@@ -93,7 +93,10 @@ export function useHeroPowerTraining(
       delete heroSpecialPowers.value[id];
     } else {
       // Only count as a new slot when switching from nothing
-      if (powers.trainableSelected === 0 && trainingsUsed.value >= MAX_POWER_TRAININGS) {
+      if (
+        powers.trainableSelected === 0 &&
+        trainingsUsed.value >= MAX_POWER_TRAININGS
+      ) {
         return;
       }
       powers.trainableSelected = index;
@@ -128,13 +131,19 @@ export function useHeroPowerTraining(
 
     if (mechanics.type === 'supernova' && specialState === 1) {
       // Flambae's Supernova: set combat and mobility to 10
-      if ((stat === 'combat' || stat === 'mobility') && mechanics.affectedStats.includes(stat)) {
+      if (
+        (stat === 'combat' || stat === 'mobility') &&
+        mechanics.affectedStats.includes(stat)
+      ) {
         const hero = heroes.value?.find((h) => h.id === id);
         if (!hero) return 0;
 
         const normalBonus = levelUp.getStatAllocations(id)[stat];
 
-        return Math.max(0, MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus);
+        return Math.max(
+          0,
+          MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus
+        );
       }
     } else if (mechanics.type === 'en-pointe' && specialState > 0) {
       // Coupe's En Pointe: +1 or +3 combat/mobility based on slot

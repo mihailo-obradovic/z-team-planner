@@ -1,13 +1,19 @@
 {
-    "recommendations": [
-        "aaron-bond.better-comments",
-        "EditorConfig.EditorConfig",
-        "dbaeumer.vscode-eslint",
-        "antfu.iconify",
-        "esbenp.prettier-vscode",
-        "Tyriar.sort-lines",
-        "bradlc.vscode-tailwindcss",
-        "Vue.volar"
-    ],
-    "unwantedRecommendations": ["octref.vetur"]
+  "recommendations": [
+    "aaron-bond.better-comments",
+    "EditorConfig.EditorConfig",
+    "antfu.iconify",
+    "Tyriar.sort-lines",
+    "bradlc.vscode-tailwindcss",
+    "Vue.volar",
+    // catalyst:begin
+    "oxc.oxc-vscode" // oxlint diagnostics and oxfmt formatting in-editor (stacks/_lang/typescript/toolchain.md)
+    // catalyst:end
+  ],
+  "unwantedRecommendations": [
+    // catalyst:unwanted:begin
+    "dbaeumer.vscode-eslint", // ESLint is superseded by oxlint (stacks/_lang/typescript/toolchain.md)
+    "esbenp.prettier-vscode" // Prettier is superseded by oxfmt (stacks/_lang/typescript/toolchain.md)
+    // catalyst:unwanted:end
+  ]
 }

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "trailingComma": "none",
+  "semi": true,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "overrides": [
+    {
+      "files": ["**/*.css"],
+      "options": {
+        "tabWidth": 4
+      }
+    },
+    {
+      "files": ["app/config/nuxt-ui/**"],
+      "options": {
+        "sortTailwindcss": false
+      }
+    }
+  ],
+  "sortTailwindcss": {
+    "stylesheet": "./app/assets/css/main.css"
+  }
+}

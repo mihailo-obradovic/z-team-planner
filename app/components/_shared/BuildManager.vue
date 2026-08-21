@@ -99,7 +99,7 @@
     <!-- Save shared build dialog -->
     <UModal v-model:open="showSaveSharedDialog">
       <template #content>
-        <div class="p-4 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Save as my build</h3>
 
           <UFormField label="Build name">
@@ -120,9 +120,7 @@
               Cancel
             </UButton>
 
-            <UButton @click="confirmSaveShared">
-              Save
-            </UButton>
+            <UButton @click="confirmSaveShared"> Save </UButton>
           </div>
         </div>
       </template>
@@ -131,7 +129,7 @@
     <!-- New build dialog -->
     <UModal v-model:open="showNewBuildDialog">
       <template #content>
-        <div class="p-4 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">New build</h3>
 
           <UFormField label="Build name">
@@ -152,9 +150,7 @@
               Cancel
             </UButton>
 
-            <UButton @click="confirmNewBuild">
-              Create
-            </UButton>
+            <UButton @click="confirmNewBuild"> Create </UButton>
           </div>
         </div>
       </template>
@@ -163,7 +159,7 @@
     <!-- Delete confirmation dialog -->
     <UModal v-model:open="showDeleteDialog">
       <template #content>
-        <div class="p-4 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Delete build</h3>
 
           <p class="text-sm text-muted">
@@ -179,9 +175,7 @@
               Cancel
             </UButton>
 
-            <UButton color="error" @click="confirmDelete">
-              Delete
-            </UButton>
+            <UButton color="error" @click="confirmDelete"> Delete </UButton>
           </div>
         </div>
       </template>
@@ -190,7 +184,7 @@
     <!-- Rename dialog -->
     <UModal v-model:open="showRenameDialog">
       <template #content>
-        <div class="p-4 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Rename build</h3>
 
           <UFormField label="Build name">
@@ -210,9 +204,7 @@
               Cancel
             </UButton>
 
-            <UButton @click="confirmRename">
-              Rename
-            </UButton>
+            <UButton @click="confirmRename"> Rename </UButton>
           </div>
         </div>
       </template>
@@ -261,11 +253,15 @@ const renameBuildName = ref('');
 // --- Build menu ---
 
 const buildMenuItems = computed(() => {
-  const items = savedBuilds.value.map((build: { id: string; name: string }) => ({
-    label: build.name,
-    icon: build.id === activeBuildId.value ? 'i-lucide-check' : undefined,
-    onSelect: () => { loadBuild(build.id); }
-  }));
+  const items = savedBuilds.value.map(
+    (build: { id: string; name: string }) => ({
+      label: build.name,
+      icon: build.id === activeBuildId.value ? 'i-lucide-check' : undefined,
+      onSelect: () => {
+        loadBuild(build.id);
+      }
+    })
+  );
 
   items.push({
     label: 'Rename...',

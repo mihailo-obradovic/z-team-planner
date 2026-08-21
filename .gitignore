@@ -25,3 +25,8 @@ logs
 
 # Test coverage
 coverage/
+
+# catalyst:begin
+__pycache__/
+.claude/settings.local.json
+# catalyst:end

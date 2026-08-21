@@ -1,9 +1,5 @@
 import { STAT_NAMES } from '@/types/hero';
-import type {
-  HeroId,
-  HeroPowerSelection,
-  HeroStats
-} from '@/types/hero';
+import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SavedBuild, SerializedBuild } from '@/types/build';
 
 // ============================================================================
@@ -28,13 +24,21 @@ function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
     try {
       const stored = localStorage.getItem(key);
       if (stored !== null) data.value = JSON.parse(stored);
-    } catch { /* ignore corrupt data */ }
+    } catch {
+      /* ignore corrupt data */
+    }
 
-    watch(data, (val) => {
-      try {
-        localStorage.setItem(key, JSON.stringify(val));
-      } catch { /* ignore quota errors */ }
-    }, { deep: true });
+    watch(
+      data,
+      (val) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch {
+          /* ignore quota errors */
+        }
+      },
+      { deep: true }
+    );
   }
 
   return data;
@@ -49,7 +53,9 @@ function statsToArray(stats: HeroStats): number[] {
 }
 
 function arrayToStats(arr: number[]): HeroStats {
-  return Object.fromEntries(STAT_NAMES.map((s, i) => [s, arr[i] ?? 0])) as HeroStats;
+  return Object.fromEntries(
+    STAT_NAMES.map((s, i) => [s, arr[i] ?? 0])
+  ) as HeroStats;
 }
 
 function isZeroStats(stats: HeroStats): boolean {
@@ -215,17 +221,12 @@ async function deserializeIntoState(
 function encodeBuildToUrl(build: SerializedBuild): string {
   const json = JSON.stringify(build);
 
-  return btoa(json)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
   try {
-    const padded = encoded
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+    const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(padded);
 
     const parsed = JSON.parse(json);
@@ -247,16 +248,23 @@ export function useBuildPersistence() {
   const ep3Cut = useState<HeroId>('ep3Cut');
   const ep4Hire = useState<HeroId>('ep4Hire');
   const showEp8Recruits = useState<boolean>('showEp8Recruits');
-  const heroLevelUps = useState<Partial<Record<HeroId, HeroStats>>>('heroLevelUps');
-  const heroBonusLevels = useState<Partial<Record<HeroId, number>>>('heroBonusLevels');
-  const heroPowers = useState<Partial<Record<HeroId, HeroPowerSelection>>>('heroPowers');
-  const heroSpecialPowers = useState<Partial<Record<HeroId, number>>>('heroSpecialPowers');
+  const heroLevelUps =
+    useState<Partial<Record<HeroId, HeroStats>>>('heroLevelUps');
+  const heroBonusLevels =
+    useState<Partial<Record<HeroId, number>>>('heroBonusLevels');
+  const heroPowers =
+    useState<Partial<Record<HeroId, HeroPowerSelection>>>('heroPowers');
+  const heroSpecialPowers =
+    useState<Partial<Record<HeroId, number>>>('heroSpecialPowers');
   const heroFlights = useState<Partial<Record<HeroId, boolean>>>('heroFlights');
 
   // --- localStorage ---
 
   const savedBuilds = useLocalStorageRef<SavedBuild[]>(STORAGE_KEY_BUILDS, []);
-  const activeBuildId = useLocalStorageRef<string | null>(STORAGE_KEY_ACTIVE, null);
+  const activeBuildId = useLocalStorageRef<string | null>(
+    STORAGE_KEY_ACTIVE,
+    null
+  );
 
   // --- Shared-build mode ---
 
@@ -268,12 +276,18 @@ export function useBuildPersistence() {
   const savedSnapshot = ref<string>('');
 
   function takeSnapshot(): string {
-    return JSON.stringify(serializeCurrentState(
-      ep3Cut, ep4Hire, showEp8Recruits,
-      heroLevelUps, heroBonusLevels,
-      heroPowers, heroSpecialPowers,
-      heroFlights
-    ));
+    return JSON.stringify(
+      serializeCurrentState(
+        ep3Cut,
+        ep4Hire,
+        showEp8Recruits,
+        heroLevelUps,
+        heroBonusLevels,
+        heroPowers,
+        heroSpecialPowers,
+        heroFlights
+      )
+    );
   }
 
   function updateSavedSnapshot() {
@@ -295,14 +309,20 @@ export function useBuildPersistence() {
   function getActiveBuild(): SavedBuild | undefined {
     if (!activeBuildId.value) return undefined;
 
-    return savedBuilds.value.find((b: SavedBuild) => b.id === activeBuildId.value);
+    return savedBuilds.value.find(
+      (b: SavedBuild) => b.id === activeBuildId.value
+    );
   }
 
   function saveBuild(name?: string) {
     const data = serializeCurrentState(
-      ep3Cut, ep4Hire, showEp8Recruits,
-      heroLevelUps, heroBonusLevels,
-      heroPowers, heroSpecialPowers,
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
       heroFlights
     );
 
@@ -331,9 +351,13 @@ export function useBuildPersistence() {
 
   function saveAsNewBuild(name: string) {
     const data = serializeCurrentState(
-      ep3Cut, ep4Hire, showEp8Recruits,
-      heroLevelUps, heroBonusLevels,
-      heroPowers, heroSpecialPowers,
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
       heroFlights
     );
 
@@ -361,9 +385,13 @@ export function useBuildPersistence() {
 
     await deserializeIntoState(
       build.data,
-      ep3Cut, ep4Hire, showEp8Recruits,
-      heroLevelUps, heroBonusLevels,
-      heroPowers, heroSpecialPowers,
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
       heroFlights
     );
 
@@ -399,9 +427,13 @@ export function useBuildPersistence() {
 
   function getShareUrl(): string {
     const data = serializeCurrentState(
-      ep3Cut, ep4Hire, showEp8Recruits,
-      heroLevelUps, heroBonusLevels,
-      heroPowers, heroSpecialPowers,
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
       heroFlights
     );
 
@@ -439,9 +471,13 @@ export function useBuildPersistence() {
     if (active) {
       await deserializeIntoState(
         active.data,
-        ep3Cut, ep4Hire, showEp8Recruits,
-        heroLevelUps, heroBonusLevels,
-        heroPowers, heroSpecialPowers,
+        ep3Cut,
+        ep4Hire,
+        showEp8Recruits,
+        heroLevelUps,
+        heroBonusLevels,
+        heroPowers,
+        heroSpecialPowers,
         heroFlights
       );
     }
@@ -467,9 +503,13 @@ export function useBuildPersistence() {
 
         await deserializeIntoState(
           decoded,
-          ep3Cut, ep4Hire, showEp8Recruits,
-          heroLevelUps, heroBonusLevels,
-          heroPowers, heroSpecialPowers,
+          ep3Cut,
+          ep4Hire,
+          showEp8Recruits,
+          heroLevelUps,
+          heroBonusLevels,
+          heroPowers,
+          heroSpecialPowers,
           heroFlights
         );
       }
@@ -480,9 +520,13 @@ export function useBuildPersistence() {
       if (active) {
         await deserializeIntoState(
           active.data,
-          ep3Cut, ep4Hire, showEp8Recruits,
-          heroLevelUps, heroBonusLevels,
-          heroPowers, heroSpecialPowers,
+          ep3Cut,
+          ep4Hire,
+          showEp8Recruits,
+          heroLevelUps,
+          heroBonusLevels,
+          heroPowers,
+          heroSpecialPowers,
           heroFlights
         );
       }
