@@ -513,8 +513,13 @@ export function useBuildPersistence() {
           heroFlights
         );
       }
-    } else {
-      // Load active build from localStorage
+    }
+
+    if (!isViewingSharedBuild.value) {
+      // No build param, or an undecodable one — fall back to the active
+      // build and strip the dead param so a reload cannot re-trip on it
+      if (buildParam) clearUrlParam();
+
       const active = getActiveBuild();
 
       if (active) {

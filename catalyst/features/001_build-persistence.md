@@ -50,7 +50,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- On app start with no `?build=` param, the active saved build (if any) is deserialized into the planner; otherwise defaults apply.
+- On app start with no `?build=` param — or an undecodable one, which is stripped from the URL — the active saved build (if any) is deserialized into the planner; otherwise defaults apply.
 - On app start with a valid `?build=` param, the decoded build is shown in **shared-build mode**: a banner replaces the build controls, offering "Save as mine" and (when local builds exist) "Back to my build". Local builds are not modified by viewing.
 - Saving (any variant) exits shared mode, strips the `build` param from the URL, and resets dirty tracking.
 - Deleting the active build promotes the first remaining build to active; the last build cannot be deleted (the delete control needs ≥2 builds).
@@ -67,8 +67,8 @@ Not role-specific.
 | default state, serialize                                  | `{"v":1}`                                                      | all defaults omitted                        |
 | ep3Cut=coupe, serialize                                   | `{"v":1,"ec":"coupe"}`                                         | `sonar` is the default and would be omitted |
 | open `?build=` of `{"v":1,"fl":["flambae"],"ec":"coupe"}` | shared mode: Flambae flight active, Coupé cut, Sonar on roster | local builds untouched                      |
-| `?build=` decoding to `{"v":2}`                           | param ignored; **defaults** load (see Open Questions)          | unknown version is rejected                 |
-| `?build=` with malformed base64/JSON                      | param ignored; **defaults** load (see Open Questions)          | never an error surface                      |
+| `?build=` decoding to `{"v":2}`                           | param stripped; active local build loads                       | unknown version is rejected                 |
+| `?build=` with malformed base64/JSON                      | param stripped; active local build loads                       | never an error surface                      |
 | save, change a stat, reload page without saving           | browser unload prompt; after reload, last-saved state          | dirty tracking + beforeunload               |
 | serialize → encode → decode → deserialize                 | identical planner state                                        | round-trip is lossless                      |
 
@@ -116,11 +116,12 @@ Not role-specific.
 Deliberate long-horizon items kept past approval (brownfield exception, `workflows/brownfield.md`):
 
 - No format versioning/migration story beyond "reject non-v1" — acceptable until a breaking change is actually wanted.
-- **Bug candidate found in the live walk:** when a `?build=` param is present but undecodable (garbage, or `v ≠ 1`), `initialize()` skips the localStorage branch entirely — defaults are shown while the build selector still names the active build, and the dirty snapshot baselines to those defaults (so no "Unsaved changes" badge either). Expected behavior would be falling back to the active build. Awaiting the user's call; a fix is bug-fix work against this contract.
 
 ## Tests
 
-Honest gap: **no automated tests cover this feature today** (`test/` holds only example stubs). Wanted, in order of value:
+- `test/nuxt/build-persistence.test.ts`: `initialize()` falls back to the active build on a garbage or unknown-version `?build=` param (regression for the invalid-param fallback fix); a valid param enters shared mode without touching local builds.
+
+Honest gap — wanted but not yet written:
 
 - `test/unit/` serialization round-trip: default state → `{"v":1}`; each field family serializes and round-trips; unknown version and malformed input return `null`.
 - `test/unit/` URL codec: base64url encode/decode round-trip, padding/charset edge cases.
@@ -128,7 +129,7 @@ Honest gap: **no automated tests cover this feature today** (`test/` holds only 
 
 ## Verification
 
-Retro-documented from code review of the entry points above, then the Examples table walked live in Chrome (dev server, 2026-08-21): shared-mode open of `{"v":1,"fl":["flambae"],"ec":"coupe"}` restored flight + episode cut with localStorage untouched; "Save as mine" persisted byte-identical data (round-trip proven), stripped the URL param, and exited shared mode; reload restored the active build; a stat edit raised the "Unsaved changes" badge and the beforeunload prompt fired on navigation away; garbage and `v:2` params were rejected without error — surfacing the fallback bug candidate recorded in Open Questions. oxlint, vue-tsc, and the (stub) vitest suite pass; automated coverage remains the gap listed under Tests.
+Retro-documented from code review of the entry points above, then the Examples table walked live in Chrome (dev server, 2026-08-21): shared-mode open of `{"v":1,"fl":["flambae"],"ec":"coupe"}` restored flight + episode cut with localStorage untouched; "Save as mine" persisted byte-identical data (round-trip proven), stripped the URL param, and exited shared mode; reload restored the active build; a stat edit raised the "Unsaved changes" badge and the beforeunload prompt fired on navigation away; garbage and `v:2` params were rejected without error — surfacing the fallback bug fixed the same day (`initialize()` now falls back to the active build and strips the dead param; regression tests in `test/nuxt/build-persistence.test.ts` fail on the old code and pass on the fix). oxlint, vue-tsc, and vitest pass; the remaining coverage gap is listed under Tests.
 
 ## Agent Change Rules
 
