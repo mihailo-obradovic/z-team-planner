@@ -29,6 +29,6 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 
 ## Local invariants
 
-- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is what shared links depend on; treat it as a protected area and keep it backward-compatible.
+- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
 - Hero ids (`types/hero.ts`, `server/api/heroes.get.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.

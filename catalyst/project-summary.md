@@ -10,9 +10,9 @@ Context documents: `context/product-description.md`, `context/game-mechanics.md`
 
 ## Feature Index
 
-| ### | Feature                       | Status | Summary                                              | Document |
-| --- | ----------------------------- | ------ | ---------------------------------------------------- | -------- |
-| 000 | _No documented features yet._ | -      | Add the first feature when behavior becomes durable. | -        |
+| ### | Feature                       | Status | Summary                                                                                                                                                       | Document                                                   |
+| --- | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 001 | Build persistence and sharing | Active | Builds persist in localStorage as named saves and share via a `?build=` URL parameter (compact v1 format); shared links open in a view-only mode until saved. | [001_build-persistence](features/001_build-persistence.md) |
 
 ## Architecture Decision Record (ADR) Index
 
@@ -34,9 +34,9 @@ Present only when the project has standing cross-cutting domain/method decisions
 
 Pointer index of protections declared in lazy-loaded feature/decision documents. One row per area: name + owning document — never the rule text. Folder-document protections are not indexed; they load with their folder.
 
-| Area                                 | Owner |
-| ------------------------------------ | ----- |
-| _No documented protected areas yet._ | -     |
+| Area                                    | Owner                                                      |
+| --------------------------------------- | ---------------------------------------------------------- |
+| Serialized build format (v1) + hero ids | [001_build-persistence](features/001_build-persistence.md) |
 
 ## Technical Stack
 
