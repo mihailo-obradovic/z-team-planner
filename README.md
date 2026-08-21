@@ -1,41 +1,18 @@
-# Nuxt Starter Template
+# Z-Team Planner
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+A build calculator for [Dispatch](https://store.steampowered.com/app/2429620/Dispatch/) (AdHoc Studio). Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices (who was cut in episode 3, who was hired in episode 4). Builds persist in your browser and are shareable as URLs — no account needed.
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
-
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
-
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-  </picture>
-</a>
-
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+Built with Nuxt 4, Nuxt UI 4, and Tailwind CSS 4. There is no server-side storage; the only server code is a static endpoint serving hero base data.
 
 ## Setup
 
-Make sure to install the dependencies:
+Install dependencies (pnpm is enforced):
 
 ```bash
 pnpm install
 ```
 
-## Development Server
+## Development
 
 Start the development server on `http://localhost:3000`:
 
@@ -43,21 +20,25 @@ Start the development server on `http://localhost:3000`:
 pnpm dev
 ```
 
+Other useful scripts:
+
+```bash
+pnpm lint        # oxlint
+pnpm format      # oxfmt
+pnpm typecheck   # vue-tsc via nuxt
+pnpm test        # vitest (unit + nuxt projects)
+```
+
 ## Production
 
-Build the application for production:
+Build and locally preview:
 
 ```bash
 pnpm build
-```
-
-Locally preview production build:
-
-```bash
 pnpm preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+See the [Nuxt deployment documentation](https://nuxt.com/docs/getting-started/deployment) for hosting options.
 
 ## The catalyst/ Directory
 

@@ -26,6 +26,8 @@ export default defineConfig({
         }
       })
     ],
+    // The unit project is empty until the first real unit tests land (feature docs list the wanted ones)
+    passWithNoTests: true,
     coverage: {
       enabled: true,
       provider: 'v8'
