@@ -1,5 +1,5 @@
 <template>
-  <UTooltip :text="text">
+  <u-tooltip :text="text">
     <IconButton
       :icon="icon"
       :color="color"
@@ -7,17 +7,21 @@
       :disabled="disabled"
       @click="$emit('click')"
     />
-  </UTooltip>
+  </u-tooltip>
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  text: string;
-  icon: string;
-  color?: 'primary' | 'secondary' | 'neutral';
-  size?: 'xs' | 'sm';
-  disabled?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    text: string;
+    icon: string;
+    color?: 'primary' | 'secondary' | 'neutral';
+    size?: 'xs' | 'sm';
+    disabled?: boolean;
+  }>(),
+  // * Power and flight chips are the 28px step, a size up from a bare stepper (design-system annex §4)
+  { size: 'sm' }
+);
 
 defineEmits<{
   click: [];

@@ -1,149 +1,148 @@
 <template>
-  <div
-    class="flex w-92 justify-between gap-4 rounded-lg border border-default bg-elevated p-4"
-  >
-    <div class="flex flex-col gap-2">
-      <NuxtImg
-        :src="portraitSrc"
-        :alt="hero.name"
-        class="aspect-square size-35 cursor-pointer rounded-md bg-accented object-cover transition-shadow hover:ring-2 hover:ring-primary"
-        @click="$emit('viewDetail')"
-      />
-      <div v-if="powers" class="flex items-center justify-center gap-1">
-        <TooltipButton
-          v-if="heroId === 'sonar'"
-          :text="sonarFormTooltip"
-          :icon="sonarFormIcon"
-          :color="monsterForm ? 'primary' : 'neutral'"
-          @click="monsterForm = !monsterForm"
-        />
+  <div class="w-92 bg-default panel">
+    <div class="flex plate items-center justify-between gap-2 px-3">
+      <h3 class="truncate font-heading text-title uppercase">
+        {{ hero.name }}
+      </h3>
 
-        <TooltipButton
-          :text="`${powers[0]!.name}: ${powers[0]!.description}`"
-          :icon="POWER_ICONS[0]"
-          :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-          @click="toggleStartingPower(heroId)"
-        />
+      <div class="flex items-center gap-2">
+        <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
+          <IconButton
+            v-if="
+              getLevelUpPointsUsedValue > 0 ||
+              hasPowers ||
+              flightActive ||
+              bonusLevel > 0
+            "
+            icon="i-lucide-rotate-ccw"
+            color="neutral"
+            @click="resetHero(heroId)"
+          />
+        </div>
 
-        <TooltipButton
-          v-for="(power, i) in upgradePowers"
-          :key="i"
-          :text="`${power.name}: ${power.description}`"
-          :icon="POWER_ICONS[i + 1]!"
-          :color="trainablePowerColor(i)"
-          :disabled="isTrainableDisabled(i)"
-          @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
-        />
+        <span class="w-8 text-end text-xs text-muted">Lv. {{ heroLevel }}</span>
 
-        <TooltipButton
-          v-if="flightInfo"
-          :text="`${flightInfo.name}: ${flightInfo.description}`"
-          icon="i-lucide-plane"
-          :color="flightColor"
-          :disabled="flightLocked"
-          @click="toggleFlight(heroId)"
-        />
-
-        <TooltipButton
-          v-if="showFlambaeSupernova"
-          text="Supernova: Set Combat and Mobility to 10"
-          icon="i-lucide-flame"
-          :color="specialPowerState ? 'primary' : 'neutral'"
-          @click="toggleSpecialPower(heroId)"
-        />
-
-        <TooltipButton
-          v-if="showCoupeEnPointe"
-          :text="coupeTooltip"
-          :icon="coupeIcon"
-          :color="specialPowerState ? 'primary' : 'neutral'"
-          @click="toggleSpecialPower(heroId)"
-        />
+        <div v-if="canLevelUp" class="flex w-7 items-center justify-center">
+          <IconButton
+            v-if="bonusLevel > 0 || !bonusFull"
+            :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
+            :color="bonusLevel > 0 ? 'primary' : 'neutral'"
+            :disabled="bonusLevel >= 4 || bonusFull"
+            @click="addBonusLevel(heroId)"
+          >
+            <span v-if="bonusLevel > 0" class="text-xs font-semibold"
+              >+{{ bonusLevel }}</span
+            >
+          </IconButton>
+        </div>
       </div>
     </div>
 
-    <div class="flex flex-1 flex-col">
-      <div class="mb-2 flex items-center justify-between">
-        <h3 class="text-md min-w-18 font-semibold">{{ hero.name }}</h3>
-        <div class="mr-0.5 ml-2 flex items-center gap-2">
-          <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
-            <IconButton
-              v-if="
-                getLevelUpPointsUsedValue > 0 ||
-                hasPowers ||
-                flightActive ||
-                bonusLevel > 0
-              "
-              icon="i-lucide-rotate-ccw"
-              color="neutral"
-              @click="resetHero(heroId)"
-            />
-          </div>
+    <div class="flex justify-between gap-3 p-3">
+      <div class="flex flex-col gap-2">
+        <NuxtImg
+          :src="portraitSrc"
+          :alt="hero.name"
+          class="aspect-square size-28 cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
+          @click="$emit('viewDetail')"
+        />
+        <div v-if="powers" class="flex items-center justify-center gap-1">
+          <TooltipButton
+            v-if="heroId === 'sonar'"
+            :text="sonarFormTooltip"
+            :icon="sonarFormIcon"
+            :color="monsterForm ? 'primary' : 'neutral'"
+            @click="monsterForm = !monsterForm"
+          />
 
-          <span class="w-8 text-end text-xs text-muted"
-            >Lv. {{ heroLevel }}</span
-          >
+          <TooltipButton
+            :text="`${powers[0]!.name}: ${powers[0]!.description}`"
+            :icon="POWER_ICONS[0]"
+            :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
+            @click="toggleStartingPower(heroId)"
+          />
 
-          <div v-if="canLevelUp" class="flex w-7 items-center justify-center">
-            <IconButton
-              v-if="bonusLevel > 0 || !bonusFull"
-              :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
-              :color="bonusLevel > 0 ? 'primary' : 'neutral'"
-              :disabled="bonusLevel >= 4 || bonusFull"
-              @click="addBonusLevel(heroId)"
-            >
-              <span v-if="bonusLevel > 0" class="text-xs font-semibold"
-                >+{{ bonusLevel }}</span
-              >
-            </IconButton>
-          </div>
+          <TooltipButton
+            v-for="(power, i) in upgradePowers"
+            :key="i"
+            :text="`${power.name}: ${power.description}`"
+            :icon="POWER_ICONS[i + 1]!"
+            :color="trainablePowerColor(i)"
+            :disabled="isTrainableDisabled(i)"
+            @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
+          />
+
+          <TooltipButton
+            v-if="flightInfo"
+            :text="`${flightInfo.name}: ${flightInfo.description}`"
+            icon="i-lucide-plane"
+            :color="flightColor"
+            :disabled="flightLocked"
+            @click="toggleFlight(heroId)"
+          />
+
+          <TooltipButton
+            v-if="showFlambaeSupernova"
+            text="Supernova: Set Combat and Mobility to 10"
+            icon="i-lucide-flame"
+            :color="specialPowerState ? 'primary' : 'neutral'"
+            @click="toggleSpecialPower(heroId)"
+          />
+
+          <TooltipButton
+            v-if="showCoupeEnPointe"
+            :text="coupeTooltip"
+            :icon="coupeIcon"
+            :color="specialPowerState ? 'primary' : 'neutral'"
+            @click="toggleSpecialPower(heroId)"
+          />
         </div>
       </div>
 
-      <ul class="flex flex-1 flex-col justify-between text-sm">
-        <li
-          v-for="stat in STAT_NAMES"
-          :key="stat"
-          class="flex items-center justify-between"
-        >
-          <span class="flex items-center gap-2 text-muted capitalize">
-            <NuxtImg
-              :src="`/stat-icons/${stat}.webp`"
-              :alt="stat"
-              class="size-4"
-            />
-            {{ stat }}
-          </span>
-          <div class="ml-2 flex items-center gap-1">
-            <template v-if="canLevelUp">
-              <IconButton
-                icon="i-lucide-minus"
-                color="neutral"
-                :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                @click="statDown(heroId, resolvedStat(stat))"
-              />
-            </template>
-            <span class="w-5 text-center font-medium">{{
-              hero.startingStats[resolvedStat(stat)] +
-              statBonuses[resolvedStat(stat)] +
-              specialPowerBonus[resolvedStat(stat)]
-            }}</span>
-            <template v-if="canLevelUp">
-              <IconButton
-                icon="i-lucide-plus"
-                color="neutral"
-                :disabled="
-                  pointsRemaining <= 0 ||
-                  hero.startingStats[resolvedStat(stat)] +
-                    statBonuses[resolvedStat(stat)] >=
-                    MAX_STAT_VALUE
-                "
-                @click="statUp(heroId, resolvedStat(stat))"
-              />
-            </template>
-          </div>
-        </li>
-      </ul>
+      <div class="flex flex-1 flex-col">
+        <ul class="flex flex-1 flex-col justify-between text-sm">
+          <li
+            v-for="stat in STAT_NAMES"
+            :key="stat"
+            class="flex items-center justify-between"
+          >
+            <span
+              class="flex items-center gap-2 font-heading tracking-label text-toned uppercase"
+            >
+              <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
+              {{ stat }}
+            </span>
+            <div class="ml-2 flex items-center gap-1">
+              <template v-if="canLevelUp">
+                <IconButton
+                  icon="i-lucide-minus"
+                  color="neutral"
+                  :disabled="statBonuses[resolvedStat(stat)] <= 0"
+                  @click="statDown(heroId, resolvedStat(stat))"
+                />
+              </template>
+              <span class="w-5 text-center font-medium">{{
+                hero.startingStats[resolvedStat(stat)] +
+                statBonuses[resolvedStat(stat)] +
+                specialPowerBonus[resolvedStat(stat)]
+              }}</span>
+              <template v-if="canLevelUp">
+                <IconButton
+                  icon="i-lucide-plus"
+                  color="neutral"
+                  :disabled="
+                    pointsRemaining <= 0 ||
+                    hero.startingStats[resolvedStat(stat)] +
+                      statBonuses[resolvedStat(stat)] >=
+                      MAX_STAT_VALUE
+                  "
+                  @click="statUp(heroId, resolvedStat(stat))"
+                />
+              </template>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>

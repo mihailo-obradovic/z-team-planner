@@ -69,13 +69,11 @@
                 :key="stat"
                 class="flex items-center gap-4"
               >
-                <NuxtImg
-                  :src="`/stat-icons/${stat}.webp`"
-                  :alt="stat"
-                  class="size-8"
-                />
+                <u-icon :name="STAT_ICONS[stat]" class="size-6 shrink-0" />
 
-                <span class="w-28 text-lg text-muted capitalize">
+                <span
+                  class="w-28 font-heading text-lg tracking-label text-toned uppercase"
+                >
                   {{ stat }}
                 </span>
 
