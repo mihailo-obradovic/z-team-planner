@@ -2,8 +2,15 @@ import type { ButtonConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
+    // * Changes: a button is the annex's label role — condensed, uppercase and
+    // * tracked. Disabled drops to 40% (§7). font-bold is explicit because a
+    // * vendored config EXTENDS the upstream theme rather than replacing it —
+    // * an omitted class is still contributed by the default, so a deviation
+    // * has to out-rank it. Type size stays upstream's per-size mapping (md is
+    // * already the design's 14px); only tracking is a decision here.
+    // * Default: 'rounded-md font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75'
     base: [
-      'rounded-md font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75',
+      'rounded-md font-heading font-bold uppercase tracking-label inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:opacity-40',
       'transition-colors'
     ],
     label: 'truncate',
@@ -36,36 +43,43 @@ export default {
       ghost: '',
       link: ''
     },
+    // * Changes: heights come from the annex §4 control scale instead of
+    // * padding, so a row of mixed controls aligns without per-case fixes.
+    // * Icon sizes follow §9 (16 beside a label, 20 standalone). py-0 lets the
+    // * height token decide the box rather than the upstream padding.
+    // * Default (xs..xl base): 'px-2 py-1 text-xs gap-1', 'px-2.5 py-1.5 text-xs gap-1.5',
+    // * 'px-2.5 py-1.5 text-sm gap-1.5', 'px-3 py-2 text-sm gap-2', 'px-3 py-2 text-base gap-2'
     size: {
       xs: {
-        base: 'px-2 py-1 text-xs gap-1',
+        base: 'py-0 h-(--control-h-xs) px-2 gap-1',
         leadingIcon: 'size-4',
         leadingAvatarSize: '3xs',
         trailingIcon: 'size-4'
       },
       sm: {
-        base: 'px-2.5 py-1.5 text-xs gap-1.5',
+        base: 'py-0 h-(--control-h-sm) px-2.5 gap-1.5',
         leadingIcon: 'size-4',
         leadingAvatarSize: '3xs',
         trailingIcon: 'size-4'
       },
       md: {
-        base: 'px-2.5 py-1.5 text-sm gap-1.5',
-        leadingIcon: 'size-5',
+        base: 'py-0 h-(--control-h-default) px-3 gap-2',
+        leadingIcon: 'size-4',
         leadingAvatarSize: '2xs',
-        trailingIcon: 'size-5'
+        trailingIcon: 'size-4'
       },
       lg: {
-        base: 'px-3 py-2 text-sm gap-2',
+        base: 'py-0 h-(--control-h-lg) px-4 gap-2',
         leadingIcon: 'size-5',
         leadingAvatarSize: '2xs',
         trailingIcon: 'size-5'
       },
+      // * xl shares the lg step: the scale has four heights, not five.
       xl: {
-        base: 'px-3 py-2 text-base gap-2',
-        leadingIcon: 'size-6',
+        base: 'py-0 h-(--control-h-lg) px-5 gap-2',
+        leadingIcon: 'size-5',
         leadingAvatarSize: 'xs',
-        trailingIcon: 'size-6'
+        trailingIcon: 'size-5'
       }
     },
     block: {
@@ -105,8 +119,11 @@ export default {
     {
       color: 'secondary',
       variant: 'solid',
+      // * Changes: text-inverted is ink (annex §1), which is right on the amber
+      // * and gold solids but unreadable on teal — cream instead.
+      // * Default: 'text-inverted bg-secondary …'
       class:
-        'text-inverted bg-secondary hover:bg-secondary/75 active:bg-secondary/75 disabled:bg-secondary aria-disabled:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary'
+        'text-neutral-100 bg-secondary hover:bg-secondary/75 active:bg-secondary/75 disabled:bg-secondary aria-disabled:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary'
     },
     {
       color: 'success',
@@ -348,30 +365,33 @@ export default {
       class:
         'text-muted hover:text-default active:text-default disabled:text-muted aria-disabled:text-muted focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-inverted'
     },
+    // * Changes: a square button is square at its control height (§4), not a
+    // * padded rectangle, so padding is dropped for aspect-square + centring.
+    // * Default (xs..xl): 'p-1', 'p-1.5', 'p-1.5', 'p-2', 'p-2'
     {
       size: 'xs',
       square: true,
-      class: 'p-1'
+      class: 'aspect-square justify-center p-0'
     },
     {
       size: 'sm',
       square: true,
-      class: 'p-1.5'
+      class: 'aspect-square justify-center p-0'
     },
     {
       size: 'md',
       square: true,
-      class: 'p-1.5'
+      class: 'aspect-square justify-center p-0'
     },
     {
       size: 'lg',
       square: true,
-      class: 'p-2'
+      class: 'aspect-square justify-center p-0'
     },
     {
       size: 'xl',
       square: true,
-      class: 'p-2'
+      class: 'aspect-square justify-center p-0'
     },
     {
       loading: true,

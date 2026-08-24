@@ -30,6 +30,11 @@
     --text-tag--font-weight: 700;
     --text-tag--letter-spacing: 0.14em;
 
+    /** Tracking, as its own token: a control takes its size from the component
+        theme's own size variant, so only the tracking is a design decision. */
+    --tracking-label: 0.09em;
+    --tracking-tag: 0.14em;
+
     /** body is text-sm, small is text-xs — only the leading is decided here */
     --text-sm--line-height: 1.5;
     --text-xs--line-height: 1.4;
