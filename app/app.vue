@@ -16,7 +16,10 @@
       </template>
 
       <template #right>
-        <BuildManager />
+        <!-- ! Client-only: BuildManager renders localStorage state (saved builds, active build), which the server cannot know. Rendering it during SSR makes the client's first render disagree with the server's, and because the trees then differ by an instance, Reka's useId counter drifts and every id below this point mismatches too. -->
+        <ClientOnly>
+          <BuildManager />
+        </ClientOnly>
       </template>
     </u-header>
 
