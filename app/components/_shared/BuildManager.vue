@@ -2,20 +2,21 @@
   <div class="flex items-center gap-1.5">
     <!-- Shared build banner -->
     <template v-if="isViewingSharedBuild">
-      <UBadge color="info" variant="subtle" size="sm">
+      <!-- * Solid, not subtle: a subtle badge is its own hue on a near-paper tint, and both signal and gold fail AA that way (3.0:1 and worse). Solid puts ink on the fill instead. -->
+      <u-badge color="info" variant="solid" size="sm">
         Viewing shared build
-      </UBadge>
+      </u-badge>
 
-      <UButton
+      <u-button
         size="xs"
         variant="soft"
         icon="i-lucide-save"
         @click="showSaveSharedDialog = true"
       >
         Save as mine
-      </UButton>
+      </u-button>
 
-      <UButton
+      <u-button
         v-if="hasSavedBuilds"
         size="xs"
         variant="ghost"
@@ -24,39 +25,39 @@
         @click="handleBackToMyBuild"
       >
         Back to my build
-      </UButton>
+      </u-button>
     </template>
 
     <!-- Normal mode -->
     <template v-else>
       <!-- Build selector -->
-      <UDropdownMenu
+      <u-dropdown-menu
         v-if="savedBuilds.length > 0"
         :items="buildMenuItems"
         :ui="{ content: 'min-w-48' }"
       >
-        <UButton
+        <u-button
           size="xs"
           variant="subtle"
           color="neutral"
           trailing-icon="i-lucide-chevron-down"
         >
           {{ activeBuildName }}
-        </UButton>
-      </UDropdownMenu>
+        </u-button>
+      </u-dropdown-menu>
 
       <!-- Unsaved changes indicator -->
-      <UBadge
+      <u-badge
         v-if="hasUnsavedChanges"
         color="warning"
-        variant="subtle"
+        variant="solid"
         size="sm"
       >
         Unsaved changes
-      </UBadge>
+      </u-badge>
 
       <!-- Save button -->
-      <UButton
+      <u-button
         v-if="hasUnsavedChanges || savedBuilds.length === 0"
         size="xs"
         variant="soft"
@@ -64,10 +65,10 @@
         @click="handleSave"
       >
         {{ savedBuilds.length === 0 ? 'Save' : '' }}
-      </UButton>
+      </u-button>
 
       <!-- New build -->
-      <UButton
+      <u-button
         v-if="savedBuilds.length > 0"
         size="xs"
         variant="ghost"
@@ -77,7 +78,7 @@
       />
 
       <!-- Delete build -->
-      <UButton
+      <u-button
         v-if="savedBuilds.length > 1 && activeBuildId"
         size="xs"
         variant="ghost"
@@ -88,7 +89,7 @@
     </template>
 
     <!-- Share button (always visible) -->
-    <UButton
+    <u-button
       size="xs"
       variant="ghost"
       color="neutral"
@@ -97,67 +98,67 @@
     />
 
     <!-- Save shared build dialog -->
-    <UModal v-model:open="showSaveSharedDialog">
+    <u-modal v-model:open="showSaveSharedDialog">
       <template #content>
         <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Save as my build</h3>
 
-          <UFormField label="Build name">
-            <UInput
+          <u-form-field label="Build name">
+            <u-input
               v-model="newBuildName"
               placeholder="My build"
               autofocus
               @keydown.enter="confirmSaveShared"
             />
-          </UFormField>
+          </u-form-field>
 
           <div class="flex justify-end gap-2">
-            <UButton
+            <u-button
               variant="ghost"
               color="neutral"
               @click="showSaveSharedDialog = false"
             >
               Cancel
-            </UButton>
+            </u-button>
 
-            <UButton @click="confirmSaveShared"> Save </UButton>
+            <u-button @click="confirmSaveShared"> Save </u-button>
           </div>
         </div>
       </template>
-    </UModal>
+    </u-modal>
 
     <!-- New build dialog -->
-    <UModal v-model:open="showNewBuildDialog">
+    <u-modal v-model:open="showNewBuildDialog">
       <template #content>
         <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">New build</h3>
 
-          <UFormField label="Build name">
-            <UInput
+          <u-form-field label="Build name">
+            <u-input
               v-model="newBuildName"
               placeholder="My build"
               autofocus
               @keydown.enter="confirmNewBuild"
             />
-          </UFormField>
+          </u-form-field>
 
           <div class="flex justify-end gap-2">
-            <UButton
+            <u-button
               variant="ghost"
               color="neutral"
               @click="showNewBuildDialog = false"
             >
               Cancel
-            </UButton>
+            </u-button>
 
-            <UButton @click="confirmNewBuild"> Create </UButton>
+            <u-button @click="confirmNewBuild"> Create </u-button>
           </div>
         </div>
       </template>
-    </UModal>
+    </u-modal>
 
     <!-- Delete confirmation dialog -->
-    <UModal v-model:open="showDeleteDialog">
+    <u-modal v-model:open="showDeleteDialog">
       <template #content>
         <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Delete build</h3>
@@ -167,48 +168,48 @@
           </p>
 
           <div class="flex justify-end gap-2">
-            <UButton
+            <u-button
               variant="ghost"
               color="neutral"
               @click="showDeleteDialog = false"
             >
               Cancel
-            </UButton>
+            </u-button>
 
-            <UButton color="error" @click="confirmDelete"> Delete </UButton>
+            <u-button color="error" @click="confirmDelete"> Delete </u-button>
           </div>
         </div>
       </template>
-    </UModal>
+    </u-modal>
 
     <!-- Rename dialog -->
-    <UModal v-model:open="showRenameDialog">
+    <u-modal v-model:open="showRenameDialog">
       <template #content>
         <div class="flex flex-col gap-4 p-4">
           <h3 class="text-lg font-medium">Rename build</h3>
 
-          <UFormField label="Build name">
-            <UInput
+          <u-form-field label="Build name">
+            <u-input
               v-model="renameBuildName"
               autofocus
               @keydown.enter="confirmRename"
             />
-          </UFormField>
+          </u-form-field>
 
           <div class="flex justify-end gap-2">
-            <UButton
+            <u-button
               variant="ghost"
               color="neutral"
               @click="showRenameDialog = false"
             >
               Cancel
-            </UButton>
+            </u-button>
 
-            <UButton @click="confirmRename"> Rename </UButton>
+            <u-button @click="confirmRename"> Rename </u-button>
           </div>
         </div>
       </template>
-    </UModal>
+    </u-modal>
   </div>
 </template>
 
