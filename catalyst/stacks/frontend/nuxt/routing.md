@@ -49,6 +49,8 @@ Baseline only — the `ssr` addon supersedes this section (`addons/ssr.md`, Cook
 
 Under `ssr: false` the app boots with no server-rendered state, so anything the first render depends on is fetched by a plugin before the app mounts: prime the CSRF cookie, then attempt to rehydrate the user from the session cookie, treating failure as "not logged in" rather than an error.
 
+That pre-mount window is otherwise a blank screen — cover it with a self-contained `spa-loading-template.html` in the source directory (`spaLoadingTemplate` in `nuxt.config.ts`): inline CSS only, no app text (it renders before i18n exists), and colours matching the app theme so a persisted dark preference does not flash white. It sizes itself with `100dvh` — it renders outside the layout, so it is one of the few places a viewport unit is correct (`page-layout.md`).
+
 ## Navigation
 
 - `navigateTo` for programmatic navigation, `<NuxtLink>` in templates. Never `window.location` — it discards the SPA's state and forces a full reload.

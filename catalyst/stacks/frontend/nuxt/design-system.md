@@ -120,7 +120,9 @@ An icon button is square at its size (`width` = `height` = the control height), 
 
 ### Heights
 
-Avoid fixed heights on anything holding content — use `min-height` and let content set the box. Full-viewport surfaces use `min-height: 100dvh`, never `100vh`, so mobile browser chrome does not clip them. Fixed heights are for controls (above), media boxes (aspect ratio, §10), and skeletons that must match the content they stand in for.
+Avoid fixed heights on anything holding content — use `min-height` and let content set the box. Fixed heights are for controls (above), media boxes (aspect ratio, §10), and skeletons that must match the content they stand in for.
+
+**Viewport height is not this document's to give.** A page's height comes from the chain the shell establishes (`page-layout.md`), which has already subtracted the header and the footer — so nothing here, and nothing in a page, restates it with `100vh`, `100dvh`, or a `calc()` over a header token. The one exception is a surface rendered outside the layout entirely, such as a pre-mount splash or a standalone error page: it has no chain to inherit and sizes itself with `100dvh`, never `100vh`, so mobile browser chrome does not clip it.
 
 ---
 

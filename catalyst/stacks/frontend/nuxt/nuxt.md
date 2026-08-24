@@ -16,15 +16,16 @@ The Vue-side frontend module: a Nuxt 4 app running **as an SPA** (`ssr: false`) 
 
 ## Module Documents
 
-| Document            | What it holds                                                                              | Load                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `nuxt.md`           | This document — the module contract and approved libraries                                 | Always, with the module                                      |
-| `data-layer.md`     | The two-layer service + Pinia Colada contract, query keys, cache invalidation              | When fetching, mutating, or caching server data              |
-| `client-state.md`   | Pinia stores — what belongs in one, store shape, and the server-state boundary             | When adding or changing a store                              |
-| `validation.md`     | Zod for responses, Regle for requests, and the inline-not-toast 422 path                   | When validating a request or a response payload              |
-| `error-handling.md` | The fetcher, CSRF retry, and the central error policy                                      | When adding a fetcher call, or changing how failures surface |
-| `routing.md`        | Pages, layouts, and middleware-as-thin-adapter                                             | When adding or changing pages, layouts, or middleware        |
-| `design-system.md`  | Design-system template — instantiated into a project-owned convention annex at Init Design | At Init Design, and when the project's design annex changes  |
+| Document            | What it holds                                                                                  | Load                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `nuxt.md`           | This document — the module contract and approved libraries                                     | Always, with the module                                                   |
+| `data-layer.md`     | The two-layer service + Pinia Colada contract, query keys, cache invalidation                  | When fetching, mutating, or caching server data                           |
+| `client-state.md`   | Pinia stores — what belongs in one, store shape, and the server-state boundary                 | When adding or changing a store                                           |
+| `validation.md`     | Zod for responses, Regle for requests, and the inline-not-toast 422 path                       | When validating a request or a response payload                           |
+| `error-handling.md` | The fetcher, CSRF retry, and the central error policy                                          | When adding a fetcher call, or changing how failures surface              |
+| `routing.md`        | Pages, layouts, and middleware-as-thin-adapter                                                 | When adding or changing pages, layouts, or middleware                     |
+| `page-layout.md`    | The height chain from the shell to a page, and the full-height column a scrolling region needs | When building a page layout, or when a region must scroll inside the page |
+| `design-system.md`  | Design-system template — instantiated into a project-owned convention annex at Init Design     | At Init Design, and when the project's design annex changes               |
 
 The shared tiers `_lang/typescript`, `frontend/_vue`, and `frontend/_common` travel with this module and hold the language-level, Vue-general, and framework-agnostic frontend conventions; the style guide `../_vue/vue-style.md` is the authoritative Vue style rules.
 

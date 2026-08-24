@@ -51,7 +51,7 @@ export function useFetchUser(
 Every composable takes an `options` passthrough so a caller can add its own `onSuccess` / `onSettled`. Two rules make that safe:
 
 1. **Spread the caller's options first, then declare the internal hook** — otherwise the caller silently overwrites the invalidation the composable exists to guarantee.
-2. **Chain the caller's hook last**, after the internal work: `await options.onSettled?.(data, error, vars, context)`.
+2. **Chain the caller's hook last, and await the internal work before it** — `await` the invalidation, then `await options.onSettled?.(data, error, vars, context)`. Without the first await, a caller reading the cache or a store from its own hook sees the state as it was before the composable updated it.
 
 ```ts
 export function useUpdateUser(options: /* … */ = {}) {
@@ -68,6 +68,8 @@ export function useUpdateUser(options: /* … */ = {}) {
   });
 }
 ```
+
+**Test the await, not just the order.** An internal hook whose effect is synchronous (`setUser(data)`) runs in order whether or not it is awaited, and an invalidation asserts the refetch was _sent_, not that it finished — so a composable-level spec passes with the `await` removed. Pin the guarantee once, against a deliberately slow internal hook. A project that chains through one small helper rather than hand-writing the chain per composable has exactly one place to pin it, and one place for the chain to be wrong.
 
 **Store side effects belong to the query layer's internal hook**, not to services and not to components — syncing the authenticated user after a login is the composable's job.
 
