@@ -17,8 +17,7 @@ export default defineNuxtConfig({
     colorMode: false
   },
 
-  // * @nuxt/fonts is registered by @nuxt/ui; configured here, never in modules.
-  // * Weights are only those the type scale uses (annex §2).
+  // * @nuxt/fonts is registered by @nuxt/ui; configured here, never in modules. Weights are only those the type scale uses (annex §2).
   fonts: {
     families: [
       {

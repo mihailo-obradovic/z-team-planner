@@ -2,10 +2,7 @@ import type { BadgeConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
-    // * Changes: badges are the annex's tag role — condensed, uppercase,
-    // * heavily tracked. font-bold is explicit because a vendored config
-    // * extends the upstream theme rather than replacing it — a deviation must
-    // * out-rank the default, not omit it. Size stays upstream's.
+    // * Changes: badges are the annex's tag role — condensed, uppercase, heavily tracked. font-bold is explicit because a vendored config extends the upstream theme rather than replacing it — a deviation must out-rank the default, not omit it. Size stays upstream's.
     // * Default: 'font-medium inline-flex items-center'
     base: 'font-heading font-bold uppercase tracking-tag inline-flex items-center',
     label: 'truncate',
@@ -49,8 +46,7 @@ export default {
         leadingAvatarSize: '3xs',
         trailingIcon: 'size-3'
       },
-      // * Changes: md is the badge the app actually uses — it sits in rows
-      // * beside 32px controls, so it takes the 28px step (§4).
+      // * Changes: md is the badge the app actually uses — it sits in rows beside 32px controls, so it takes the 28px step (§4).
       // * Default: 'text-xs px-2 py-1 gap-1 rounded-md'
       md: {
         base: 'py-0 h-(--control-h-sm) px-2 gap-1 rounded-md',

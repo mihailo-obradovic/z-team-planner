@@ -1,15 +1,12 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
-/**
- * Design tokens — the source of truth is catalyst/annexes/design-system.md.
- * Ramps and scales here; the semantic alias mapping is in app.config.ts.
- */
+/* * Design tokens — the source of truth is catalyst/annexes/design-system.md. Ramps and scales here; the semantic alias mapping is in app.config.ts. */
 @theme static {
     --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
     --font-heading: 'Barlow Condensed', 'Barlow', ui-sans-serif, sans-serif;
 
-    /** Type scale (annex §2) — size, weight and leading travel together */
+    /* * Type scale (annex §2) — size, weight and leading travel together */
     --text-display: 2.125rem;
     --text-display--line-height: 1.05;
     --text-display--font-weight: 800;
@@ -30,20 +27,18 @@
     --text-tag--font-weight: 700;
     --text-tag--letter-spacing: 0.14em;
 
-    /** Tracking, as its own token: a control takes its size from the component
-        theme's own size variant, so only the tracking is a design decision. */
+    /* * Tracking, as its own token: a control takes its size from the component theme's own size variant, so only the tracking is a design decision. */
     --tracking-label: 0.09em;
     --tracking-tag: 0.14em;
 
-    /** body is text-sm, small is text-xs — only the leading is decided here */
+    /* * body is text-sm, small is text-xs — only the leading is decided here */
     --text-sm--line-height: 1.5;
     --text-xs--line-height: 1.4;
 
-    /** Elevation (annex §6) — the one shadow value */
+    /* * Elevation (annex §6) — the one shadow value */
     --shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5);
 
-    /** Ramps (annex §1). Designed steps come from the mockups; the rest are
-        fillers — promote one in the annex before depending on it. */
+    /* * Ramps (annex §1). Designed steps come from the mockups; the rest are fillers — promote one in the annex before depending on it. */
     --color-paper-50: #f0e2bd;
     --color-paper-100: #ece0c6;
     --color-paper-200: #e6d6b4;
@@ -63,7 +58,7 @@
     --color-ember-400: #e79a3a;
     --color-ember-500: #df8a20;
     --color-ember-600: #b96a15;
-    /** 700 is the rust panel edge, not a darker amber — used by `panel` only */
+    /* * 700 is the rust panel edge, not a darker amber — used by `panel` only */
     --color-ember-700: #b14f2a;
     --color-ember-800: #8f4f10;
     --color-ember-900: #6b3a0c;
@@ -77,7 +72,7 @@
     --color-lagoon-500: #1d5049;
     --color-lagoon-600: #143e38;
     --color-lagoon-700: #0d2b26;
-    /** 800/900 leave the teal line for the charcoal-green page ground */
+    /* * 800/900 leave the teal line for the charcoal-green page ground */
     --color-lagoon-800: #202622;
     --color-lagoon-900: #171c19;
     --color-lagoon-950: #0d100e;
@@ -131,11 +126,7 @@
     --color-signal-950: #102538;
 }
 
-/**
- * Surface variables (annex §1). Nuxt UI derives these from `neutral` assuming
- * a white page; this project is paper panels on a dark ground, so they are
- * remapped here. Unlayered on purpose — that is what beats @layer theme.
- */
+/* * Surface variables (annex §1). Nuxt UI derives these from `neutral` assuming a white page; this project is paper panels on a dark ground, so they are remapped here. Unlayered on purpose — that is what beats @layer theme. */
 :root {
     --ui-bg: var(--ui-color-neutral-100);
     --ui-bg-muted: var(--ui-color-neutral-50);
@@ -148,8 +139,7 @@
     --ui-text-toned: var(--ui-color-neutral-600);
     --ui-text-muted: var(--ui-color-neutral-600);
     --ui-text-dimmed: var(--ui-color-neutral-500);
-    /** Ink on the amber and gold solids the design leans on. Secondary solids
-        are the exception and carry text-neutral-100 in their own config. */
+    /* * Ink on the amber and gold solids the design leans on. Secondary solids are the exception and carry text-neutral-100 in their own config. */
     --ui-text-inverted: var(--ui-color-neutral-900);
 
     --ui-border: var(--ui-color-neutral-500);
@@ -159,14 +149,14 @@
 
     --ui-radius: 0;
 
-    /** Control heights (annex §4) */
+    /* * Control heights (annex §4) */
     --control-h-xs: 24px;
     --control-h-sm: 28px;
     --control-h-default: 32px;
     --control-h-lg: 44px;
     --control-h-plate: 40px;
 
-    /** Stacking (annex §8) */
+    /* * Stacking (annex §8) */
     --z-base: 0;
     --z-dropdown: 10;
     --z-sticky: 20;
@@ -175,23 +165,20 @@
     --z-popover: 50;
     --z-toast: 60;
 
-    /** Motion (annex §11) */
+    /* * Motion (annex §11) */
     --duration-baseline: 150ms;
     --duration-slow: 250ms;
     --duration-slowest: 400ms;
 }
 
 @layer base {
-    /** Nuxt UI paints body with --ui-bg (paper); the ground is the dark one */
+    /* * Nuxt UI paints body with --ui-bg (paper); the ground is the dark one */
     body {
         background-color: var(--ui-color-secondary-900);
     }
 }
 
-/**
- * The panel anatomy from the mockups, as one decision rather than a class
- * string repeated per component (annex §1, §6).
- */
+/* * The panel anatomy from the mockups, as one decision rather than a class string repeated per component (annex §1, §6). */
 @utility panel {
     border: 2px solid var(--ui-border-accented);
     box-shadow:
@@ -209,7 +196,7 @@
     border-bottom: 2px solid var(--ui-border-accented);
 }
 
-/** The height chain: the shell is exactly the viewport and never scrolls */
+/* * The height chain: the shell is exactly the viewport and never scrolls */
 html,
 body,
 #__nuxt {
@@ -217,13 +204,13 @@ body,
     overflow: hidden;
 }
 
-/** UApp renders no element of its own, so #__nuxt is the layout column */
+/* * UApp renders no element of its own, so #__nuxt is the layout column */
 #__nuxt {
     display: flex;
     flex-direction: column;
 }
 
-/** Restore cursor-pointer on buttons */
+/* * Restore cursor-pointer on buttons */
 button,
 [role='button'] {
     @apply cursor-pointer;

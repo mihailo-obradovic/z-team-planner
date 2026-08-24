@@ -68,8 +68,7 @@ export default {
       }
     },
     variant: {
-      // * Changes: 2px ink ring (annex §5) — inputs are bordered like every
-      // * other panel edge, not hairlined.
+      // * Changes: 2px ink ring (annex §5) — inputs are bordered like every other panel edge, not hairlined.
       // * Default: 'text-highlighted bg-default ring ring-inset ring-accented'
       outline: 'text-highlighted bg-default ring-2 ring-inset ring-accented',
       soft: 'text-highlighted bg-elevated/50 hover:bg-elevated focus:bg-elevated disabled:bg-elevated/50',

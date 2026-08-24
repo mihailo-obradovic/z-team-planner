@@ -4,9 +4,7 @@ export default {
   slots: {
     root: 'relative flex items-start',
     base: [
-      // * Changes: rounded-full is a literal in the upstream theme, so the
-      // * radius token cannot flatten it — rounded-none out-ranks it (annex
-      // * §5). The unchecked track is tan with an ink edge, like a control.
+      // * Changes: rounded-full is a literal in the upstream theme, so the radius token cannot flatten it — rounded-none out-ranks it (annex §5). The unchecked track is tan with an ink edge, like a control.
       // * Default: 'inline-flex items-center shrink-0 rounded-full border-2 border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-accented'
       'inline-flex items-center shrink-0 rounded-full rounded-none border-2 border-accented focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-elevated',
       'transition-[background] duration-200'
