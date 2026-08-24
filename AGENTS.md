@@ -11,6 +11,12 @@ Paths inside those documents are relative to `catalyst/`, not to this root.
 This block is generated — edit `catalyst/AGENTS.md` instead. Anything outside the markers is yours and is never touched.
 <!-- catalyst:end -->
 
+## Design system
+
+This project has its own design system at [`catalyst/annexes/design-system.md`](catalyst/annexes/design-system.md), instantiated from the Nuxt stack template by [decision 003](catalyst/decisions/003_design_design-system.md) and owned by this repository. It is a convention annex, indexed by `catalyst/architecture.md`.
+
+**Load it before styling anything** — adding or changing a token, picking a size, shadow or spacing value, or building a new component. Styling values come from it; a raw hex or an off-scale px in a component is a defect. Colour is named through the seven semantic aliases, never a ramp name.
+
 ## Agent skills
 
 Installed pipeline: `mattpocock-skills`, adopted by [decision 002](catalyst/decisions/002_tooling_matt-pocock-skills.md). Its assumed paths are redirected into the bundle. On any conflict, Catalyst discipline wins: the feature document or decision record is the contract and its approval is the implementation gate, and no step is committed without the user approving it.

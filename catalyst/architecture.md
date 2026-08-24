@@ -38,6 +38,14 @@ Before adding any runtime dependency, framework, package pattern, build plugin, 
 
 This file holds technical structure and dependency choices; everything else routes per the file index (`AGENTS.md`) and Context Loading (`prime-directive.md`). One ownership rule lives here: a project's cross-cutting convention annexes are owned and indexed by this file (`references/convention-annexes.md`) — distinct from `conventions/`, Catalyst's own always-applied set that arrives with the bundle and upgrades with it.
 
+### Convention Annexes
+
+| Annex                      | Covers                                                                                                                                                                                                            | Loads when                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `annexes/design-system.md` | Colour ramps and the semantic aliases behind them, the type scale, spacing, control heights, radius, elevation, z-index, motion, iconography, imagery, and the per-element values components are checked against. | Styling anything, adding or changing a token, picking a size, shadow or spacing value, or building a new component. |
+
+Instantiated from `stacks/frontend/nuxt/design-system.md` by decision 003; the template stays pristine and the annex is the contract.
+
 ## Universal Rules
 
 Stack-neutral. Every project, every stack module.
