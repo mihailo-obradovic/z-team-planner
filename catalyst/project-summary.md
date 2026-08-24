@@ -23,6 +23,7 @@ One line per record: type, status, title, link.
 | ### | Type        | Status      | Decision                                                              | Document                                                                                |
 | --- | ----------- | ----------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | 001 | init-design | Implemented | Brownfield adoption — confirm the de facto Nuxt/NuxtUI frontend stack | [001_init-design_brownfield-adoption](decisions/001_init-design_brownfield-adoption.md) |
+| 002 | tooling     | Accepted    | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md) |
 
 ## Domain Decision Index
 
