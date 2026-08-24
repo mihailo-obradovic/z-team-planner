@@ -6,7 +6,9 @@ export default {
     // * Default: 'bg-default/75 backdrop-blur border-b border-default h-(--ui-header-height) sticky top-0 z-50'
     root: 'bg-secondary-600 backdrop-blur-none border-b-2 border-secondary-700 text-neutral-100 h-(--ui-header-height) sticky top-0 z-(--z-sticky)',
     container: 'flex items-center justify-between gap-3 h-full',
-    left: 'lg:flex-1 flex items-center gap-1.5',
+    // * Changes: shrink-0 so the wordmark keeps its width. The header is over-full while the episode filters still live in it — left is flex-1, so the filter row squeezed it to 80px and the wordmark spilled out of its box. The filters are what should give until they move into the Story Setup drawer. It takes lg:flex-none rather than a shrink utility: flex-1 is a shorthand that re-sets flex-shrink, so only another class in the same group reliably replaces it — tailwind-merge then keeps the later one, which is this file's.
+    // * Default: 'lg:flex-1 flex items-center gap-1.5'
+    left: 'lg:flex-1 lg:flex-none flex items-center gap-1.5',
     center: 'hidden lg:flex',
     right: 'flex items-center justify-end lg:flex-1 gap-1.5',
     // * Changes: the wordmark is the display face — condensed, tracked, cream. text-highlighted is ink and would vanish against the teal band.

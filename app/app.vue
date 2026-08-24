@@ -5,7 +5,9 @@
       :menu="{ side: 'right', inset: false }"
       class="shrink-0"
     >
-      <template #left> Z-Team Planner </template>
+      <template #title>
+        <span>Z-Team<span class="text-primary"> Planner</span></span>
+      </template>
 
       <template #default>
         <PlannerFilters orientation="horizontal" />
@@ -23,13 +25,7 @@
       </template>
     </u-header>
 
-    <NuxtImg
-      src="/images/background.png"
-      class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"
-      alt=""
-    />
-
-    <u-main class="relative z-10">
+    <u-main>
       <NuxtPage />
     </u-main>
   </u-app>
@@ -59,15 +55,14 @@ useHead({
 
 const title = 'Z-Team Planner';
 const description =
-  'A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours.';
+  'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.';
 
+// ! No ogImage or twitterImage: the starter's pointed at a Nuxt UI template screenshot, and this project has no share image of its own yet. A wrong picture is worse than none, so the cards fall back to text until one exists.
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterCard: 'summary_large_image'
+  twitterCard: 'summary'
 });
 </script>
