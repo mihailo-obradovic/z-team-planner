@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -44,10 +44,11 @@ Cost: the redirect table is a maintenance point — a plugin upgrade that adds a
 
 ## Contracts Touched
 
-- `AGENTS.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block and the redirect table.
+- `AGENTS.md` and `CLAUDE.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block, mirrored in both because each harness reads only one of them; `CLAUDE.md` imports `catalyst/AGENTS.md`, not the root `AGENTS.md`.
 - `project-summary.md` — this record's ADR index row.
 
 ## Open Questions
 
 ## Verification
 
+`catalyst/agents/` carries the three documents; no `docs/`, no root `CONTEXT.md`, no `.scratch/` was created. The redirect table was built from a grep of what each installed skill actually hardcodes, so every assumed path has a row. `merge_marked` in the scaffolder was read to confirm an upgrade replaces only what sits between the `catalyst:` markers, leaving the appended block intact — so the redirect survives the next `upgrade_project.py --apply`. `python3 catalyst/tools/validate.py .` passes with 0 errors.
