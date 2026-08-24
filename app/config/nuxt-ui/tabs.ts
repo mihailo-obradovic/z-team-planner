@@ -33,9 +33,14 @@ export default {
         trigger: 'grow',
         indicator: 'rounded-md shadow-xs'
       },
+      // * Changes: the design's tabs are free-standing bordered buttons on the
+      // * dark ground, not an underlined rail — so the sliding indicator is
+      // * hidden here and the rail's bottom rule is dropped in the compound
+      // * variant below, which is the level that re-adds it. Colours too.
+      // * Default: { list: 'border-default', indicator: 'rounded-full', trigger: 'focus:outline-none' }
       link: {
-        list: 'border-default',
-        indicator: 'rounded-full',
+        list: 'border-default gap-2 px-6 py-2.5',
+        indicator: 'rounded-full hidden',
         trigger: 'focus:outline-none'
       }
     },
@@ -176,13 +181,29 @@ export default {
           'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-inverted'
       }
     },
+    // * Changes: an inactive tab is a teal chrome button with cream label; the
+    // * active one flips to paper with ink text, an inset amber underline and a
+    // * gold ring. Every rule here out-ranks an upstream one it cannot remove:
+    // * font-bold beats font-medium, and the state colours beat text-muted and
+    // * data-[state=active]:text-primary. Focus is cream, since amber fails 3:1
+    // * against paper (annex §5).
+    // * Default trigger: 'data-[state=active]:text-primary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
     {
       color: 'primary',
       variant: 'link',
       class: {
         indicator: 'bg-primary',
-        trigger:
-          'data-[state=active]:text-primary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
+        // * The orientation+link compound above re-adds the rail's bottom rule
+        // * after the variant, so it has to be out-ranked at compound level too.
+        list: 'border-b-0 mb-0',
+        trigger: [
+          'h-9 px-5 py-0 border-2 border-secondary-700 bg-secondary',
+          'font-heading font-bold uppercase tracking-label',
+          'data-[state=inactive]:text-neutral-100 hover:data-[state=inactive]:not-disabled:text-neutral-100 hover:data-[state=inactive]:not-disabled:bg-secondary/80',
+          'data-[state=active]:bg-default data-[state=active]:text-highlighted data-[state=active]:border-accented',
+          'data-[state=active]:shadow-[inset_0_-3px_0_0_var(--ui-primary),0_0_0_1px_var(--ui-color-warning-500)]',
+          'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-100'
+        ]
       }
     },
     {

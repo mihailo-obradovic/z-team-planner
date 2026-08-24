@@ -26,7 +26,7 @@
       alt=""
     />
 
-    <u-main class="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
   </u-app>
