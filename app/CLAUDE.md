@@ -10,9 +10,9 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 - `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `PlannerFilters`, `IconButton`, `TooltipButton`).
 - `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization).
 - `types/` — `hero.ts` and `build.ts` domain types; `nuxt-ui.d.ts` theme-config helper types.
-- `config/nuxt-ui/` — global NuxtUI theme customizations, loaded from `app.config.ts`.
-- `utils/iconsMap.ts` — Lucide + custom icon registry.
-- `assets/` — CSS (`main.css`), custom icons.
+- `config/nuxt-ui/` — one vendored theme per NuxtUI component the app renders, loaded from `app.config.ts`. Each holds the complete upstream default with the project's deviations annotated on top; a config extends the upstream theme rather than replacing it, so a deviation has to out-rank the default, not omit it.
+- `utils/` — `statIcons.ts`, the Lucide glyph per stat, shared by the roster and the detail dialog.
+- `assets/css/main.css` — the design tokens: colour ramps, the type scale, the `--ui-*` surface remap, and the `panel`/`plate` utilities.
 
 Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this folder) — a static dataset transcribed from `catalyst/context/game-mechanics.md`.
 
@@ -26,6 +26,7 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 - Client state (composables) → `catalyst/stacks/frontend/nuxt/client-state.md`
 - Types (`types/`) → `catalyst/stacks/_lang/typescript/typescript-types.md`
 - NuxtUI usage and theming (`config/nuxt-ui/`) → `catalyst/stacks/frontend/nuxt/ui/nuxtui/nuxtui.md` and `customization.md`
+- Design tokens, type scale, spacing, control heights, colour roles → `catalyst/annexes/design-system.md` (the project's own design system; load it before styling anything)
 - SSR behavior → `catalyst/stacks/frontend/nuxt/addons/ssr.md`
 
 ## Local invariants
@@ -33,3 +34,5 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 - Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
 - Hero ids (`types/hero.ts`, `server/api/heroes.get.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
+- Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.
+- `BuildManager` is wrapped in `ClientOnly` in `app.vue` because it renders localStorage state; server-rendering it desynchronises hydration and every id below it.
