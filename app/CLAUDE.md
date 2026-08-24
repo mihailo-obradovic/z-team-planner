@@ -21,6 +21,7 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 - Vue component style → `catalyst/stacks/frontend/_vue/vue-style.md`
 - Component file naming → `catalyst/stacks/frontend/_common/component-naming.md` and `catalyst/stacks/frontend/_vue/component-naming.md`
 - Routing (`pages/`) → `catalyst/stacks/frontend/nuxt/routing.md`
+- Page height and scrolling regions → `catalyst/stacks/frontend/nuxt/page-layout.md`
 - Data fetching / server interaction → `catalyst/stacks/frontend/nuxt/data-layer.md`
 - Client state (composables) → `catalyst/stacks/frontend/nuxt/client-state.md`
 - Types (`types/`) → `catalyst/stacks/_lang/typescript/typescript-types.md`

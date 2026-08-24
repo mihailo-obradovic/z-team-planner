@@ -1,6 +1,10 @@
 <template>
   <u-app>
-    <u-header mode="slideover" :menu="{ side: 'right', inset: false }">
+    <u-header
+      mode="slideover"
+      :menu="{ side: 'right', inset: false }"
+      class="shrink-0"
+    >
       <template #left> Z-Team Planner </template>
 
       <template #default>
@@ -24,7 +28,7 @@
       alt=""
     />
 
-    <u-main class="relative z-10">
+    <u-main class="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto">
       <NuxtPage />
     </u-main>
   </u-app>

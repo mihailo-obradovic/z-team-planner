@@ -2,9 +2,13 @@
   <UTabs
     :items="tabs"
     default-value="overview"
-    class="flex h-[calc(100dvh-var(--ui-header-height))] w-full flex-col"
+    class="flex h-full w-full flex-col"
     variant="link"
-    :ui="{ root: 'gap-0', content: 'flex-1 overflow-y-auto min-h-0' }"
+    :ui="{
+      root: 'gap-0',
+      list: 'shrink-0',
+      content: 'min-h-0 flex-1 overflow-y-auto'
+    }"
   >
     <template #overview>
       <div

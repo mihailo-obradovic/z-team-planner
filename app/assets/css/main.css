@@ -145,11 +145,18 @@
     --ui-border-inverted: var(--color-white); */
 }
 
-/** Prevent page-level scroll — only inner containers should scroll */
+/** The height chain: the shell is exactly the viewport and never scrolls */
 html,
-body {
-    overflow: hidden;
+body,
+#__nuxt {
     height: 100%;
+    overflow: hidden;
+}
+
+/** UApp renders no element of its own, so #__nuxt is the layout column */
+#__nuxt {
+    display: flex;
+    flex-direction: column;
 }
 
 /** Restore cursor-pointer on buttons */
