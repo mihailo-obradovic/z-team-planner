@@ -79,10 +79,12 @@ The page ground is not a `--ui-*` variable — Nuxt UI paints `body` with `--ui-
 ```css
 @layer base {
   body {
-    background-color: var(--color-lagoon-900);
+    background-color: var(--ui-color-secondary-900);
   }
 }
 ```
+
+Surface values are written through the alias variables Nuxt UI injects (`--ui-color-neutral-100`, `--ui-color-secondary-900`, …) rather than the ramp names directly, so a ramp swapped behind an alias carries every surface with it.
 
 Elements that sit directly on that ground (tab triggers, section headings) opt into `text-neutral-100` (cream) or `text-secondary-300` (steel); everything else lives on paper and inherits ink.
 
@@ -94,7 +96,7 @@ The mockups' panel anatomy is one treatment used everywhere, so it lives once as
 @utility panel {
   border: 2px solid var(--ui-border-accented);
   box-shadow:
-    0 0 0 1px var(--color-ember-700),
+    0 0 0 1px var(--ui-color-primary-700),
     var(--shadow-panel);
 }
 
@@ -102,8 +104,8 @@ The mockups' panel anatomy is one treatment used everywhere, so it lives once as
   height: var(--control-h-plate);
   background: linear-gradient(
     180deg,
-    var(--color-paper-200),
-    var(--color-paper-300)
+    var(--ui-color-neutral-200),
+    var(--ui-color-neutral-300)
   );
   border-bottom: 2px solid var(--ui-border-accented);
 }
@@ -149,20 +151,22 @@ The scale is registered as Tailwind text tokens (`--text-display`, `--text-title
 
 ## 3. Spacing
 
-| Token        | Pixels | Primary use                                         |
-| ------------ | ------ | --------------------------------------------------- |
-| `--space-0`  | 0      | Reset / collapse                                    |
-| `--space-1`  | 4px    | Icon-to-text, stepper-to-value                      |
-| `--space-2`  | 8px    | Compact internal spacing — power chip rows          |
-| `--space-3`  | 12px   | Hero card padding, portrait-to-stats gap            |
-| `--space-4`  | 16px   | Standard spacing; page inline padding on mobile     |
-| `--space-6`  | 24px   | Between cards in the roster grid; page padding ≥ md |
-| `--space-8`  | 32px   | Between a section heading and its content           |
-| `--space-12` | 48px   | Between major sections of a page                    |
+Tailwind's numeric spacing scale already lands on exactly the steps this design needs, so spacing has **no parallel `--space-*` tokens** — a second scale would only drift from the first. The allowed steps are these and no others:
 
-Off-scale values (`gap: 20px`, `padding: 22px`) are a defect; the nearest token wins. Responsive overrides are fine when both base and override come from the scale.
+| Step | Pixels | Primary use                                         |
+| ---- | ------ | --------------------------------------------------- |
+| `0`  | 0      | Reset / collapse                                    |
+| `1`  | 4px    | Icon-to-text, stepper-to-value                      |
+| `2`  | 8px    | Compact internal spacing — power chip rows          |
+| `3`  | 12px   | Hero card padding, portrait-to-stats gap            |
+| `4`  | 16px   | Standard spacing; page inline padding on mobile     |
+| `6`  | 24px   | Between cards in the roster grid; page padding ≥ md |
+| `8`  | 32px   | Between a section heading and its content           |
+| `12` | 48px   | Between major sections of a page                    |
 
-**Gap categories:** inline `--space-1` · tight `--space-2` · compact `--space-3` · standard `--space-4` (use when unsure) · comfortable `--space-6` · section `--space-8` · page `--space-12`.
+Used as the utilities themselves (`gap-3`, `p-4`, `px-6`). A step outside this table (`gap-5`, `p-7`) is off-scale and a defect, as is a raw value (`gap: 20px`); the nearest allowed step wins. Responsive overrides are fine when both base and override come from the scale.
+
+**Gap categories:** inline `1` · tight `2` · compact `3` · standard `4` (use when unsure) · comfortable `6` · section `8` · page `12`.
 
 Layout is `flex`/`grid` with `gap` on the container. **Padding is a component's own business; margin is its parent's** — a component never sets a margin on its own outermost element to place itself in a layout it does not own.
 
@@ -187,12 +191,12 @@ An icon-only button is **square at its step** (`width` = `height`), never a padd
 
 ### Widths
 
-| Thing           | Value                         | Note                                                        |
-| --------------- | ----------------------------- | ----------------------------------------------------------- |
-| Page container  | full width                    | The roster grid centres itself; there is no fixed page rail |
-| Page padding    | `--space-4`, ≥ md `--space-6` | Inline padding on the page frame                            |
-| Content measure | 65ch                          | Running prose — descriptions, empty states                  |
-| Form field      | fills its container           | Never a fixed px width                                      |
+| Thing           | Value               | Note                                                        |
+| --------------- | ------------------- | ----------------------------------------------------------- |
+| Page container  | full width          | The roster grid centres itself; there is no fixed page rail |
+| Page padding    | `p-4`, ≥ md `p-6`   | Inline padding on the page frame                            |
+| Content measure | 65ch                | Running prose — descriptions, empty states                  |
+| Form field      | fills its container | Never a fixed px width                                      |
 
 Dialog widths are per-dialog and land in §13 once measured.
 
@@ -208,7 +212,7 @@ Nothing holding content takes a fixed height — `min-height` and let content si
 
 ### Radius
 
-`--radius: 0`, and `--ui-radius: 0` with it — every derived step is 0 and every `rounded-*` utility resolves flat. Hard edges are the design, not a default left unset.
+`--ui-radius: 0` is the whole story — Nuxt UI derives Tailwind's `--radius-*` steps from it, so every `rounded-*` utility resolves flat and there is no second radius token to keep in sync. Hard edges are the design, not a default left unset.
 
 Two things do not follow `--ui-radius` and must be overridden explicitly in the component config that uses them: `rounded-full` is a literal in Nuxt UI's themes (the switch track and thumb, the tabs indicator) and becomes `rounded-none`; anything drawn as an SVG circle is geometry, not radius, and stays round where the design shows a disc.
 

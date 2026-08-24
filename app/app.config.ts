@@ -6,15 +6,15 @@ export default defineAppConfig({
   // https://ui.nuxt.com/getting-started/theme#design-system
   icon: { mode: 'svg', cssLayer: 'base' },
   ui: {
+    // * Ramps and roles: catalyst/annexes/design-system.md §1
     colors: {
-      primary: 'lavender',
-      neutral: 'slate'
-      // secondary: 'secondary',
-      // info: 'info',
-      // success: 'success',
-      // warning: 'warning',
-      // error: 'error',
-      // accent: 'accent'
+      primary: 'ember',
+      secondary: 'lagoon',
+      success: 'moss',
+      info: 'signal',
+      warning: 'gold',
+      error: 'brick',
+      neutral: 'paper'
     },
     button,
     modal

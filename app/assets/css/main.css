@@ -1,148 +1,207 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/**
+ * Design tokens — the source of truth is catalyst/annexes/design-system.md.
+ * Ramps and scales here; the semantic alias mapping is in app.config.ts.
+ */
 @theme static {
-    --font-sans: 'Oxanium', sans-serif;
+    --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Barlow Condensed', 'Barlow', ui-sans-serif, sans-serif;
 
-    --color-green-50: #effdf5;
-    --color-green-100: #d9fbe8;
-    --color-green-200: #b3f5d1;
-    --color-green-300: #75edae;
-    --color-green-400: #00dc82;
-    --color-green-500: #00c16a;
-    --color-green-600: #00a155;
-    --color-green-700: #007f45;
-    --color-green-800: #016538;
-    --color-green-900: #0a5331;
-    --color-green-950: #052e16;
+    /** Type scale (annex §2) — size, weight and leading travel together */
+    --text-display: 2.125rem;
+    --text-display--line-height: 1.05;
+    --text-display--font-weight: 800;
+    --text-display--letter-spacing: 0.04em;
 
-    --color-lavender-50: #fff4fe;
-    --color-lavender-100: #ffe8fd;
-    --color-lavender-200: #fdd1f9;
-    --color-lavender-300: #fbacf1;
-    --color-lavender-400: #f88ee8;
-    --color-lavender-500: #ec49d3;
-    --color-lavender-600: #d029b3;
-    --color-lavender-700: #ad1e91;
-    --color-lavender-800: #8d1b76;
-    --color-lavender-900: #731c5e;
-    --color-lavender-950: #4d053d;
+    --text-title: 1.1875rem;
+    --text-title--line-height: 1.15;
+    --text-title--font-weight: 800;
+    --text-title--letter-spacing: 0.06em;
 
-    --color-tarawera-50: #f0faff;
-    --color-tarawera-100: #e1f3fd;
-    --color-tarawera-200: #bbe9fc;
-    --color-tarawera-300: #7fd8fa;
-    --color-tarawera-400: #3bc4f5;
-    --color-tarawera-500: #12ade5;
-    --color-tarawera-600: #058cc4;
-    --color-tarawera-700: #066f9e;
-    --color-tarawera-800: #095d83;
-    --color-tarawera-900: #0e4e6c;
-    --color-tarawera-950: #0b3c57;
+    --text-label: 0.8125rem;
+    --text-label--line-height: 1.2;
+    --text-label--font-weight: 700;
+    --text-label--letter-spacing: 0.09em;
 
-    --color-regal-blue-50: #e4eefa;
-    --color-regal-blue-100: #c4dcf3;
-    --color-regal-blue-200: #90bfe9;
-    --color-regal-blue-300: #549edc;
-    --color-regal-blue-400: #2e83c9;
-    --color-regal-blue-500: #1f67aa;
-    --color-regal-blue-600: #1a528a;
-    --color-regal-blue-700: #194570;
-    --color-regal-blue-800: #1a3c60;
-    --color-regal-blue-900: #12263f;
-    --color-regal-blue-950: #080d19;
+    --text-tag: 0.6875rem;
+    --text-tag--line-height: 1.3;
+    --text-tag--font-weight: 700;
+    --text-tag--letter-spacing: 0.14em;
 
-    --color-khaki-50: #f9f7f3;
-    --color-khaki-100: #f1ede3;
-    --color-khaki-200: #e2d8c6;
-    --color-khaki-300: #cfbea2;
-    --color-khaki-400: #c5ad8e;
-    --color-khaki-500: #ae8a61;
-    --color-khaki-600: #a07756;
-    --color-khaki-700: #856149;
-    --color-khaki-800: #6d503f;
-    --color-khaki-900: #594235;
-    --color-khaki-950: #2f211b;
+    /** body is text-sm, small is text-xs — only the leading is decided here */
+    --text-sm--line-height: 1.5;
+    --text-xs--line-height: 1.4;
 
-    --color-turquoise-50: #eefffd;
-    --color-turquoise-100: #c7fffa;
-    --color-turquoise-200: #8efff7;
-    --color-turquoise-300: #4efaf1;
-    --color-turquoise-400: #1ae7e4;
-    --color-turquoise-500: #01e2e1;
-    --color-turquoise-600: #00a2a4;
-    --color-turquoise-700: #037f82;
-    --color-turquoise-800: #086367;
-    --color-turquoise-900: #0c5255;
-    --color-turquoise-950: #003034;
+    /** Elevation (annex §6) — the one shadow value */
+    --shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5);
 
-    --color-bamboo-50: #fdf6ef;
-    --color-bamboo-100: #fbead9;
-    --color-bamboo-200: #f6d3b2;
-    --color-bamboo-300: #f1b480;
-    --color-bamboo-400: #ea8c4d;
-    --color-bamboo-500: #e46b27;
-    --color-bamboo-600: #d65520;
-    --color-bamboo-700: #b2411c;
-    --color-bamboo-800: #8e341e;
-    --color-bamboo-900: #722e1c;
-    --color-bamboo-950: #3e150c;
+    /** Ramps (annex §1). Designed steps come from the mockups; the rest are
+        fillers — promote one in the annex before depending on it. */
+    --color-paper-50: #f0e2bd;
+    --color-paper-100: #ece0c6;
+    --color-paper-200: #e6d6b4;
+    --color-paper-300: #d5c096;
+    --color-paper-400: #cdb98d;
+    --color-paper-500: #8a7c5e;
+    --color-paper-600: #57503f;
+    --color-paper-700: #464031;
+    --color-paper-800: #352f22;
+    --color-paper-900: #241f14;
+    --color-paper-950: #16130c;
+
+    --color-ember-50: #fdf3e3;
+    --color-ember-100: #fae3c2;
+    --color-ember-200: #f5cd94;
+    --color-ember-300: #eeb15f;
+    --color-ember-400: #e79a3a;
+    --color-ember-500: #df8a20;
+    --color-ember-600: #b96a15;
+    /** 700 is the rust panel edge, not a darker amber — used by `panel` only */
+    --color-ember-700: #b14f2a;
+    --color-ember-800: #8f4f10;
+    --color-ember-900: #6b3a0c;
+    --color-ember-950: #3e1f06;
+
+    --color-lagoon-50: #eef4f4;
+    --color-lagoon-100: #d9e8e8;
+    --color-lagoon-200: #b5d0d2;
+    --color-lagoon-300: #8fb0b4;
+    --color-lagoon-400: #4d8288;
+    --color-lagoon-500: #1d5049;
+    --color-lagoon-600: #143e38;
+    --color-lagoon-700: #0d2b26;
+    /** 800/900 leave the teal line for the charcoal-green page ground */
+    --color-lagoon-800: #202622;
+    --color-lagoon-900: #171c19;
+    --color-lagoon-950: #0d100e;
+
+    --color-moss-50: #eff5f0;
+    --color-moss-100: #dcebde;
+    --color-moss-200: #bcd7c0;
+    --color-moss-300: #8fb896;
+    --color-moss-400: #5d9166;
+    --color-moss-500: #3c6e42;
+    --color-moss-600: #2f5734;
+    --color-moss-700: #27462b;
+    --color-moss-800: #203823;
+    --color-moss-900: #1a2e1d;
+    --color-moss-950: #0d1a10;
+
+    --color-gold-50: #fdf9ee;
+    --color-gold-100: #fbf1d4;
+    --color-gold-200: #f6e3a9;
+    --color-gold-300: #f0d383;
+    --color-gold-400: #edc86f;
+    --color-gold-500: #e9be62;
+    --color-gold-600: #c79a3f;
+    --color-gold-700: #a37a2e;
+    --color-gold-800: #7d5d25;
+    --color-gold-900: #5c441c;
+    --color-gold-950: #33250e;
+
+    --color-brick-50: #fdf2f0;
+    --color-brick-100: #fadfda;
+    --color-brick-200: #f3bdb2;
+    --color-brick-300: #e79582;
+    --color-brick-400: #d66b53;
+    --color-brick-500: #b3402a;
+    --color-brick-600: #9c3521;
+    --color-brick-700: #802b1b;
+    --color-brick-800: #672418;
+    --color-brick-900: #521e15;
+    --color-brick-950: #2c0e09;
+
+    --color-signal-50: #eff6fc;
+    --color-signal-100: #dbeaf8;
+    --color-signal-200: #b9d5f0;
+    --color-signal-300: #8ab8e4;
+    --color-signal-400: #5c9bd6;
+    --color-signal-500: #3d85c8;
+    --color-signal-600: #2f6ea8;
+    --color-signal-700: #245a8c;
+    --color-signal-800: #1e4a72;
+    --color-signal-900: #1a3d5d;
+    --color-signal-950: #102538;
 }
 
+/**
+ * Surface variables (annex §1). Nuxt UI derives these from `neutral` assuming
+ * a white page; this project is paper panels on a dark ground, so they are
+ * remapped here. Unlayered on purpose — that is what beats @layer theme.
+ */
 :root {
-    --ui-primary: var(--ui-color-primary-400);
-    /* --ui-secondary: var(--ui-color-secondary-500);
-    --ui-success: var(--ui-color-success-500);
-    --ui-info: var(--ui-color-info-500);
-    --ui-warning: var(--ui-color-warning-500);
-    --ui-error: var(--ui-color-error-500);
-
-    --ui-text-dimmed: var(--ui-color-neutral-400);
-    --ui-text-muted: var(--ui-color-neutral-500);
-    --ui-text-toned: var(--ui-color-neutral-600);
-    --ui-text: var(--ui-color-neutral-700);
-    --ui-text-highlighted: var(--ui-color-neutral-900);
-    --ui-text-inverted: var(--color-white); */
-
-    /* --ui-bg: var(--color-white);
+    --ui-bg: var(--ui-color-neutral-100);
     --ui-bg-muted: var(--ui-color-neutral-50);
-    --ui-bg-elevated: var(--ui-color-neutral-100);
-    --ui-bg-accented: var(--ui-color-neutral-200);
-    --ui-bg-inverted: var(--ui-color-neutral-900);
+    --ui-bg-elevated: var(--ui-color-neutral-300);
+    --ui-bg-accented: var(--ui-color-neutral-400);
+    --ui-bg-inverted: var(--ui-color-warning-500);
 
-    --ui-border: var(--ui-color-neutral-200);
-    --ui-border-muted: var(--ui-color-neutral-200);
-    --ui-border-accented: var(--ui-color-neutral-300);
-    --ui-border-inverted: var(--ui-color-neutral-900); */
-
-    --ui-radius: 0;
-}
-
-.dark {
-    /* --ui-primary: var(--ui-color-primary-400);
-    --ui-secondary: var(--ui-color-secondary-400);
-    --ui-success: var(--ui-color-success-400);
-    --ui-info: var(--ui-color-info-400);
-    --ui-warning: var(--ui-color-warning-400);
-    --ui-error: var(--ui-color-error-400); */
-
-    /* --ui-text-dimmed: var(--ui-color-neutral-400);
-    --ui-text-muted: var(--ui-color-neutral-300);
-    --ui-text-toned: var(--ui-color-neutral-200);
-    --ui-text: var(--ui-color-neutral-100);
-    --ui-text-highlighted: var(--color-white);
+    --ui-text: var(--ui-color-neutral-900);
+    --ui-text-highlighted: var(--ui-color-neutral-900);
+    --ui-text-toned: var(--ui-color-neutral-600);
+    --ui-text-muted: var(--ui-color-neutral-600);
+    --ui-text-dimmed: var(--ui-color-neutral-500);
+    /** Ink on the amber and gold solids the design leans on. Secondary solids
+        are the exception and carry text-neutral-100 in their own config. */
     --ui-text-inverted: var(--ui-color-neutral-900);
 
-    --ui-bg: var(--color-tarawera-800);
-    --ui-bg-muted: var(--color-tarawera-800);
-    --ui-bg-elevated: var(--color-tarawera-700);
-    --ui-bg-accented: var(--color-tarawera-600);
-    --ui-bg-inverted: var(--color-white); */
+    --ui-border: var(--ui-color-neutral-500);
+    --ui-border-muted: var(--ui-color-neutral-400);
+    --ui-border-accented: var(--ui-color-neutral-900);
+    --ui-border-inverted: var(--ui-color-neutral-900);
 
-    /*--ui-border: var(--ui-color-neutral-800);
-    --ui-border-muted: var(--ui-color-neutral-700);
-    --ui-border-accented: var(--ui-color-neutral-700);
-    --ui-border-inverted: var(--color-white); */
+    --ui-radius: 0;
+
+    /** Control heights (annex §4) */
+    --control-h-xs: 24px;
+    --control-h-sm: 28px;
+    --control-h-default: 32px;
+    --control-h-lg: 44px;
+    --control-h-plate: 40px;
+
+    /** Stacking (annex §8) */
+    --z-base: 0;
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-overlay: 30;
+    --z-modal: 40;
+    --z-popover: 50;
+    --z-toast: 60;
+
+    /** Motion (annex §11) */
+    --duration-baseline: 150ms;
+    --duration-slow: 250ms;
+    --duration-slowest: 400ms;
+}
+
+@layer base {
+    /** Nuxt UI paints body with --ui-bg (paper); the ground is the dark one */
+    body {
+        background-color: var(--ui-color-secondary-900);
+    }
+}
+
+/**
+ * The panel anatomy from the mockups, as one decision rather than a class
+ * string repeated per component (annex §1, §6).
+ */
+@utility panel {
+    border: 2px solid var(--ui-border-accented);
+    box-shadow:
+        0 0 0 1px var(--ui-color-primary-700),
+        var(--shadow-panel);
+}
+
+@utility plate {
+    height: var(--control-h-plate);
+    background: linear-gradient(
+        180deg,
+        var(--ui-color-neutral-200),
+        var(--ui-color-neutral-300)
+    );
+    border-bottom: 2px solid var(--ui-border-accented);
 }
 
 /** The height chain: the shell is exactly the viewport and never scrolls */

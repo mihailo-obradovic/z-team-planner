@@ -17,8 +17,6 @@
 
       <template #right>
         <BuildManager />
-
-        <u-color-mode-button />
       </template>
     </u-header>
 
