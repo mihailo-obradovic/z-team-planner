@@ -2,8 +2,10 @@ import type { DropdownMenuConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
+    // * Changes: a floating menu is still a panel (annex §6) — the hairline ring and generic shadow give way to the panel treatment.
+    // * Default: leading 'min-w-32 bg-default shadow-lg rounded-md ring ring-default overflow-hidden'
     content:
-      'min-w-32 bg-default shadow-lg rounded-md ring ring-default overflow-hidden data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] origin-(--reka-dropdown-menu-content-transform-origin) flex flex-col',
+      'min-w-32 panel bg-default shadow-none ring-0 rounded-md overflow-hidden data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] origin-(--reka-dropdown-menu-content-transform-origin) flex flex-col',
     viewport:
       'relative divide-y divide-default scroll-py-1 overflow-y-auto flex-1',
     arrow: 'fill-default',

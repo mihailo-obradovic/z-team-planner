@@ -3,13 +3,20 @@ import type { ModalConfig } from '../../types/nuxt-ui';
 export default {
   slots: {
     overlay: 'fixed inset-0',
+    // * Changes: a dialog is a panel — 2px ink border, rust edge ring, drop shadow (annex §1, §6). The ring/shadow the fullscreen variant adds is out-ranked there, not here.
+    // * Default: 'bg-default divide-y divide-default flex flex-col focus:outline-none'
     content:
-      'bg-default divide-y divide-default flex flex-col focus:outline-none',
-    header: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-16',
+      'panel bg-default divide-y divide-default flex flex-col focus:outline-none',
+    // * Changes: the dialog's header is the titled plate band from the mockups. min-h-16 has to be out-ranked with min-h-10, because a min-height beats the plate utility's own height — and py-0 lets the band be exactly 40px rather than 40px plus the upstream padding.
+    // * Default: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-16'
+    header: 'plate flex items-center gap-1.5 px-4 sm:px-6 py-0 min-h-10',
     wrapper: '',
     body: 'flex-1 p-4 sm:p-6',
     footer: 'flex items-center gap-1.5 p-4 sm:px-6',
-    title: 'text-highlighted font-semibold',
+    // * Changes: the plate's title is the annex's title role — condensed, uppercase, tracked.
+    // * Default: 'text-highlighted font-semibold'
+    title:
+      'text-highlighted font-heading font-extrabold uppercase tracking-label text-title',
     description: 'mt-1 text-muted text-sm',
     close: 'absolute top-4 end-4'
   },
@@ -33,7 +40,9 @@ export default {
     },
     overlay: {
       true: {
-        overlay: 'bg-elevated/75'
+        // * Changes: the scrim is dark (annex §7). bg-elevated/75 is tan, which over a dark page washes the content out instead of dimming it.
+        // * Default: 'bg-elevated/75'
+        overlay: 'bg-secondary-900/75'
       }
     },
     scrollable: {

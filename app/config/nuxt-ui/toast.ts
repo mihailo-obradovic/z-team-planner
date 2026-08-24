@@ -2,9 +2,14 @@ import type { ToastConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
-    root: 'relative group overflow-hidden bg-default shadow-lg rounded-lg ring ring-default p-4 flex gap-2.5 focus:outline-none',
+    // * Changes: a toast is a panel (annex §6).
+    // * Default: 'relative group overflow-hidden bg-default shadow-lg rounded-lg ring ring-default p-4 flex gap-2.5 focus:outline-none'
+    root: 'relative group overflow-hidden panel bg-default shadow-none ring-0 rounded-lg p-4 flex gap-2.5 focus:outline-none',
     wrapper: 'w-0 flex-1 flex flex-col',
-    title: 'text-sm font-medium text-highlighted',
+    // * Changes: the annex's label role, as on every other titled surface.
+    // * Default: 'text-sm font-medium text-highlighted'
+    title:
+      'text-sm font-heading font-bold uppercase tracking-label text-highlighted',
     description: 'text-sm text-muted',
     icon: 'shrink-0 size-5',
     avatar: 'shrink-0',
