@@ -6,7 +6,7 @@ Catalyst version: 1.8.1
 
 This project provides a build calculator for the game **Dispatch** (AdHoc Studio) to players planning their Z-Team. It displays the whole roster with per-hero controls for stat leveling, power training, and flight capability, computes synergy pairs and team-wide totals, and lets setup flags mirror the story's roster changes (who was cut in episode 3, who was hired in episode 4). Builds persist in the browser (localStorage) and are shareable via a URL parameter — there is no server-side storage; the only server code is a static Nitro endpoint serving hero base data. The game-mechanics reference all hero data is transcribed from is `context/game-mechanics.md`.
 
-Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work) (`references/context-documents.md`)
+Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work), `context/design-reference.md` (project-specific — loads on UI styling or UI feature work) (`references/context-documents.md`)
 
 ## Feature Index
 
@@ -24,6 +24,7 @@ One line per record: type, status, title, link.
 | --- | ----------- | ----------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | 001 | init-design | Implemented | Brownfield adoption — confirm the de facto Nuxt/NuxtUI frontend stack           | [001_init-design_brownfield-adoption](decisions/001_init-design_brownfield-adoption.md) |
 | 002 | tooling     | Implemented | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md)           |
+| 003 | design      | Proposed    | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                       |
 
 ## Domain Decision Index
 
