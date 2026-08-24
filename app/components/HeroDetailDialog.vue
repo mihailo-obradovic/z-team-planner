@@ -5,7 +5,7 @@
         <NuxtImg
           :src="portraitSrc"
           :alt="hero?.name ?? ''"
-          class="size-8 rounded-lg object-cover md:hidden"
+          class="size-8 border-2 border-accented object-cover md:hidden"
         />
 
         <span class="font-semibold text-highlighted">{{ hero?.name }}</span>
@@ -19,12 +19,12 @@
             <NuxtImg
               :src="portraitSrc"
               :alt="hero.name"
-              class="aspect-square w-full rounded-xl bg-accented object-cover"
+              class="aspect-square w-full border-2 border-accented bg-accented object-cover"
             />
           </div>
 
           <div
-            class="flex flex-col justify-between gap-4 rounded-xl border border-default p-4 md:order-2 md:min-h-0 md:w-1/2 md:overflow-auto"
+            class="flex flex-col justify-between gap-4 bg-default p-4 panel md:order-2 md:min-h-0 md:w-1/2 md:overflow-auto"
           >
             <div class="flex items-center justify-between">
               <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
@@ -123,7 +123,7 @@
           </div>
 
           <div
-            class="radar-chart order-first flex items-center justify-center rounded-xl border border-default bg-elevated/50 p-1 md:order-3 md:min-h-0 md:w-1/4 md:shrink-0 md:overflow-hidden"
+            class="radar-chart order-first flex items-center justify-center bg-default p-1 panel md:order-3 md:min-h-0 md:w-1/4 md:shrink-0 md:overflow-hidden"
           >
             <ClientOnly>
               <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
@@ -141,12 +141,12 @@
             "
           >
             <div class="flex flex-col gap-4">
-              <h3 class="text-lg font-semibold">Powers</h3>
+              <h3 class="font-heading text-title uppercase">Powers</h3>
 
               <div
                 v-for="(power, i) in displayPowers"
                 :key="i"
-                class="rounded-lg border p-3 transition-colors"
+                class="border-2 p-3 transition-colors"
                 :class="[
                   isPowerActive(power)
                     ? 'border-accented bg-elevated'
@@ -175,7 +175,7 @@
 
               <div
                 v-if="flightInfo"
-                class="rounded-lg border p-3 transition-colors"
+                class="border-2 p-3 transition-colors"
                 :class="[
                   flightActive
                     ? 'border-accented bg-elevated'
@@ -209,11 +209,11 @@
               v-if="specialAbility || heroId === 'sonar'"
               class="flex flex-col gap-4"
             >
-              <h3 class="text-lg font-semibold">Abilities</h3>
+              <h3 class="font-heading text-title uppercase">Abilities</h3>
 
               <div
                 v-if="heroId === 'sonar'"
-                class="cursor-pointer rounded-lg border p-3 transition-colors"
+                class="cursor-pointer border-2 p-3 transition-colors"
                 :class="
                   monsterForm
                     ? 'border-accented bg-elevated'
@@ -250,7 +250,7 @@
 
               <div
                 v-if="specialAbility"
-                class="rounded-lg border p-3 transition-colors"
+                class="border-2 p-3 transition-colors"
                 :class="[
                   specialAbility.active
                     ? 'border-accented bg-elevated'
@@ -282,11 +282,9 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <h3 class="text-lg font-semibold">Notes</h3>
+            <h3 class="font-heading text-title uppercase">Notes</h3>
 
-            <div
-              class="flex-1 rounded-xl border border-default bg-elevated/50 p-4"
-            />
+            <div class="flex-1 bg-default p-4 panel" />
           </div>
         </div>
       </div>
@@ -525,6 +523,25 @@ const RADAR_STAT_ORDER: StatName[] = [
   'intellect'
 ];
 
+// * vue-data-ui wants literal colours — a var() reference is not valid in the SVG attributes it writes — so the chart's palette is read off the design tokens once the component is mounted. The chart is already ClientOnly, so getComputedStyle is safe here, and the fallbacks are the token values themselves so a failed read degrades to the right colours rather than to vue-data-ui's defaults.
+const radarColors = ref({
+  accent: '#df8a20',
+  grid: '#8a7c5e',
+  text: '#241f14'
+});
+
+onMounted(() => {
+  const root = getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) =>
+    root.getPropertyValue(name).trim() || fallback;
+
+  radarColors.value = {
+    accent: read('--ui-primary', radarColors.value.accent),
+    grid: read('--ui-border', radarColors.value.grid),
+    text: read('--ui-text', radarColors.value.text)
+  };
+});
+
 const radarDataset = computed((): VueUiRadarDataset => ({
   categories: [{ name: hero.value?.name ?? '' }],
   series: RADAR_STAT_ORDER.map((stat) => ({
@@ -537,22 +554,22 @@ const radarDataset = computed((): VueUiRadarDataset => ({
 const radarConfig = computed((): VueUiRadarConfig => ({
   responsive: true,
   useCssAnimation: true,
-  customPalette: ['#f88ee8'], // lavender-400 for the data polygon fill
+  customPalette: [radarColors.value.accent],
   style: {
     fontFamily: 'inherit',
     chart: {
       backgroundColor: 'transparent',
-      color: '#f88ee8', // This controls the data polygon fill color
+      color: radarColors.value.accent,
       layout: {
         grid: {
           show: true,
-          stroke: 'var(--ui-border)',
+          stroke: radarColors.value.grid,
           strokeWidth: 0.5,
           graduations: 10
         },
         outerPolygon: {
-          stroke: 'var(--ui-border)',
-          strokeWidth: 1
+          stroke: radarColors.value.grid,
+          strokeWidth: 2
         },
         dataPolygon: {
           strokeWidth: 2,
@@ -567,7 +584,8 @@ const radarConfig = computed((): VueUiRadarConfig => ({
           dataLabels: {
             show: true,
             fontSize: 14,
-            color: 'currentColor'
+            // * Ink, not the series colour: amber-deep on paper is 3.1:1 and fails AA as small text (annex §14).
+            color: radarColors.value.text
           }
         }
       },
