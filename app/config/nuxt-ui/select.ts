@@ -131,9 +131,13 @@ export default {
       }
     },
     variant: {
-      outline: 'text-highlighted bg-default ring ring-inset ring-accented',
+      // * Changes: 2px ink ring (annex §5), matching the input.
+      // * Default: 'text-highlighted bg-default ring ring-inset ring-accented'
+      outline: 'text-highlighted bg-default ring-2 ring-inset ring-accented',
       soft: 'text-highlighted bg-elevated/50 hover:bg-elevated focus:bg-elevated disabled:bg-elevated/50',
-      subtle: 'text-highlighted bg-elevated ring ring-inset ring-accented',
+      // * Changes: 2px ink ring (annex §5), matching the input.
+      // * Default: 'text-highlighted bg-elevated ring ring-inset ring-accented'
+      subtle: 'text-highlighted bg-elevated ring-2 ring-inset ring-accented',
       ghost:
         'text-highlighted bg-transparent hover:bg-elevated focus:bg-elevated disabled:bg-transparent dark:disabled:bg-transparent',
       none: 'text-highlighted bg-transparent'

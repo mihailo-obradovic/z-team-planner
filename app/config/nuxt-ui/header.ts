@@ -18,9 +18,17 @@ export default {
       'shrink-0 font-heading font-extrabold uppercase tracking-label text-xl text-neutral-100 flex items-end gap-1.5',
     toggle: 'lg:hidden',
     content: 'lg:hidden',
-    overlay: 'lg:hidden',
+    // * Changes: the scrim is dark (annex §7). The slideover theme's default
+    // * bg-elevated/75 is tan, which over a dark page washes it out instead of
+    // * dimming it — and it cannot be removed, only out-ranked.
+    // * Default: 'lg:hidden'
+    overlay: 'lg:hidden bg-secondary-900/75',
+    // * Changes: the slideover's own header strip has no background upstream,
+    // * so the scrim showed straight through it. It is paper with the same 2px
+    // * rule as every other panel edge.
+    // * Default: 'px-4 sm:px-6 h-(--ui-header-height) shrink-0 flex items-center justify-between gap-3'
     header:
-      'px-4 sm:px-6 h-(--ui-header-height) shrink-0 flex items-center justify-between gap-3',
+      'px-4 sm:px-6 h-(--ui-header-height) shrink-0 flex items-center justify-between gap-3 bg-default text-default border-b-2 border-accented',
     // * Changes: the slideover panel is paper, like every other surface.
     // * Default: 'p-4 sm:p-6 overflow-y-auto'
     body: 'p-4 sm:p-6 overflow-y-auto bg-default text-default'
