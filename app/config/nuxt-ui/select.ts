@@ -81,8 +81,9 @@ export default {
         itemTrailingIcon: 'size-4',
         empty: 'p-1.5 text-xs'
       },
+      // * Changes: the control's height comes from the §4 scale rather than padding, so a select lines up with the buttons beside it. py-0 stops the upstream padding adding to the token height.
       md: {
-        base: 'px-2.5 py-1.5 text-sm gap-1.5',
+        base: 'h-(--control-h-default) py-0 px-2.5 py-1.5 text-sm gap-1.5',
         leading: 'ps-2.5',
         trailing: 'pe-2.5',
         leadingIcon: 'size-5',

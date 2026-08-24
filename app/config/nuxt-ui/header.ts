@@ -11,10 +11,10 @@ export default {
     left: 'lg:flex-1 lg:flex-none flex items-center gap-1.5',
     center: 'hidden lg:flex',
     right: 'flex items-center justify-end lg:flex-1 gap-1.5',
-    // * Changes: the wordmark is the display face — condensed, tracked, cream. text-highlighted is ink and would vanish against the teal band.
+    // * Changes: the wordmark is the display face — condensed, tracked, cream. text-highlighted is ink and would vanish against the teal band. It truncates below lg rather than holding its width: at 320px the header also carries the build controls and the menu toggle, and an unshrinkable wordmark runs underneath them.
     // * Default: 'shrink-0 font-bold text-xl text-highlighted flex items-end gap-1.5'
     title:
-      'shrink-0 font-heading font-extrabold uppercase tracking-label text-xl text-neutral-100 flex items-end gap-1.5',
+      'min-w-0 shrink truncate lg:shrink-0 font-heading font-extrabold uppercase tracking-label text-xl text-neutral-100 flex items-end gap-1.5',
     toggle: 'lg:hidden',
     content: 'lg:hidden',
     // * Changes: the scrim is dark (annex §7). The slideover theme's default bg-elevated/75 is tan, which over a dark page washes it out instead of dimming it — and it cannot be removed, only out-ranked.

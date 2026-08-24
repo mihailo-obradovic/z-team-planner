@@ -1,5 +1,6 @@
 <template>
-  <div class="w-92 bg-default panel">
+  <!-- * w-full with a max, not a fixed w-92: 368px clips at the 320px reflow floor (annex §14.3). -->
+  <div class="w-full max-w-92 bg-default panel">
     <div class="flex plate items-center justify-between gap-2 px-3">
       <h3 class="truncate font-heading text-title uppercase">
         {{ hero.name }}

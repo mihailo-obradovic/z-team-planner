@@ -4,9 +4,9 @@ export default {
   slots: {
     root: 'relative flex items-start',
     base: [
-      // * Changes: rounded-full is a literal in the upstream theme, so the radius token cannot flatten it — rounded-none out-ranks it (annex §5). The unchecked track is tan with an ink edge, like a control.
+      // * Changes: rounded-full is a literal in the upstream theme, so the radius token cannot flatten it — rounded-none out-ranks it (annex §5). The unchecked track is tan with an ink edge, like a control. The ::after box pads the hit area to the 24px touch floor (§14.2) without growing the track: the switch renders 18px tall, and the floor is about the target, not the paint.
       // * Default: 'inline-flex items-center shrink-0 rounded-full border-2 border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-accented'
-      'inline-flex items-center shrink-0 rounded-full rounded-none border-2 border-accented focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-elevated',
+      'relative inline-flex items-center shrink-0 rounded-full rounded-none border-2 border-accented focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-elevated after:absolute after:inset-x-0 after:top-1/2 after:h-6 after:-translate-y-1/2 after:content-[""]',
       'transition-[background] duration-200'
     ],
     container: 'flex items-center',

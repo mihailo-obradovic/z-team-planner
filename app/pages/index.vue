@@ -17,7 +17,7 @@
         <div
           v-for="pair in synergyPairColumns"
           :key="pair.topId"
-          class="flex flex-col gap-4"
+          class="flex w-full max-w-92 flex-col gap-4"
         >
           <HeroCard
             v-for="hero in [pair.top, pair.bottom]"
@@ -29,7 +29,7 @@
       </div>
       <div
         v-if="showEp8Recruits"
-        class="flex flex-wrap justify-center gap-4 px-4 pb-4"
+        class="grid grid-cols-1 justify-items-center gap-4 px-4 pb-4 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
       >
         <HeroCard
           v-for="hero in ep8Recruits"

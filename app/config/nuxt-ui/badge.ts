@@ -92,7 +92,9 @@ export default {
     {
       color: 'info',
       variant: 'solid',
-      class: 'bg-info text-inverted'
+      // * Changes: ink on info-500 is 4.21:1, under AA for the 11px tag text this badge renders. The darker step with cream text is 5.50:1. Measured, not guessed — the fill was the only combination in this palette that failed once the badges moved from subtle to solid.
+      // * Default: 'bg-info text-inverted'
+      class: 'bg-info-700 text-neutral-100'
     },
     {
       color: 'warning',

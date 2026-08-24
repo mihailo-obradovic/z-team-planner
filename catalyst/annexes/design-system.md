@@ -6,8 +6,6 @@ The project's own design system, instantiated from `stacks/frontend/nuxt/design-
 
 Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `app/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too. A component never names a ramp or a hex — it names an alias or a token.
 
-Sections 13 (element specs) and 14 (accessibility constraints) are deliberately absent: their values are measured from the built UI and land at the end of decision 003.
-
 ---
 
 ## 1. Tokens & Color
@@ -326,6 +324,94 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 ## 12. User-select & pointer-events
 
 `user-select: none` on decorative elements, interactive controls, stat values that sit inside a stepper group, and drag handles — **never** on body text, headings, form labels, hero names, or anything a user might reasonably copy. `pointer-events: none` on any decorative layer drawn above interactive content.
+
+---
+
+## 13. Element & layout specs
+
+The scales above, resolved per element. Every value here was measured from the built UI, not intended — a component is checked against this table, and a value that is not here is not a decision yet.
+
+| Element            | Height / size             | Padding          | Radius | Border         | Shadow  |
+| ------------------ | ------------------------- | ---------------- | ------ | -------------- | ------- |
+| Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none           | none    |
+| Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none           | none    |
+| Icon button        | square at its step        | none             | 0      | none           | none    |
+| Input / select     | 32                        | `px-2.5`         | 0      | 2px inset ring | none    |
+| Switch             | 32 × 18 track             | —                | 0      | 2px            | none    |
+| Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)   | none    |
+| Tab trigger        | 36                        | `px-5`           | 0      | 2px            | none    |
+| Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom     | none    |
+| Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`        | `panel` |
+| Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom     | none    |
+| Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`        | `panel` |
+| Dropdown / popover | auto                      | —                | 0      | `panel`        | `panel` |
+| Toast              | auto                      | `p-4`            | 0      | `panel`        | `panel` |
+
+**Layouts:**
+
+| Layout         | Spec                                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Page container | full width; inline padding `p-4`, `md:p-6`                                                                 |
+| Roster grid    | `gap-4`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`. |
+| Card body      | portrait column beside the stat rows, `gap-3`                                                              |
+| Header         | wordmark · filters · build actions, single row; the wordmark truncates below `lg`                          |
+| Form           | `gap-4` between fields, label above or beside its control per orientation                                  |
+
+A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
+
+---
+
+## 14. Accessibility Constraints
+
+### 14.1 Colour contrast
+
+WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
+
+| Foreground              | On          | Ratio | Verdict                        |
+| ----------------------- | ----------- | ----- | ------------------------------ |
+| ink                     | paper       | 12.52 | AA                             |
+| ink                     | highlight   | 12.74 | AA                             |
+| ink                     | tan         | 9.22  | AA                             |
+| ink-soft (`text-muted`) | paper       | 6.11  | AA                             |
+| ink-soft                | tan         | 4.50  | AA, exactly at the floor       |
+| muted (`text-dimmed`)   | paper       | 3.13  | **labels and non-text only**   |
+| ink                     | amber solid | 6.08  | AA                             |
+| ink                     | gold solid  | 9.37  | AA                             |
+| amber-deep              | paper       | 3.12  | **large text only** (19px/800) |
+| `ember-800`             | paper       | 4.87  | AA — the small-text amber      |
+| `brick-600`             | paper       | 5.45  | AA — error text                |
+| brick-500               | paper       | 4.36  | fill only                      |
+| moss-500                | paper       | 4.58  | AA                             |
+| signal-500              | paper       | 2.98  | **fill only, never text**      |
+| `signal-700`            | paper       | 5.50  | AA — status text               |
+| cream                   | signal-700  | 5.50  | AA — the info solid            |
+| cream                   | chrome      | 9.03  | AA                             |
+| steel                   | chrome      | 5.09  | AA — header labels             |
+| gold                    | chrome      | 6.76  | AA — header counter values     |
+| cream                   | teal solid  | 6.99  | AA                             |
+| cream                   | ground      | 13.19 | AA                             |
+| gold                    | ground      | 9.87  | AA                             |
+| edge ring               | ground      | 3.31  | non-text, meets 3:1            |
+
+Three findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; and the three fill colours that fail as small text each have a darker text-only step beside them (§1).
+
+Re-measure after any token change. A brand colour that fails as text is constrained to a fill role and recorded here rather than nudged until it passes.
+
+### 14.2 Touch-target size
+
+The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, chips 28 × 28, buttons and selects 32, primary touch actions 44.
+
+The switch is the one control whose paint is under the floor — a 32 × 18 track. Its hit area is padded to 24 with an `::after` box rather than growing the track, because the floor is about the target, not the paint. Verified by hit-testing 2px above the visual track.
+
+### 14.3 Breakpoints & reflow
+
+`sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536` — Tailwind's defaults, unchanged. Every media query uses them.
+
+**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
+
+### 14.4 Motion & reduced motion
+
+Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
 
 ---
 
