@@ -17,10 +17,8 @@ import toaster from './config/nuxt-ui/toaster';
 import tooltip from './config/nuxt-ui/tooltip';
 
 export default defineAppConfig({
-  // https://ui.nuxt.com/getting-started/theme#design-system
   icon: { mode: 'svg', cssLayer: 'base' },
   ui: {
-    // * Ramps and roles: catalyst/annexes/design-system.md §1
     colors: {
       primary: 'ember',
       secondary: 'lagoon',

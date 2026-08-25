@@ -14,7 +14,7 @@
  *    invalid configurations at compile time.
  *
  * 3. **Game Rule Encoding**: Types reflect game rules like:
- *    - Each hero has exactly 3 powers (1 starting + 2 trainable options)
+ *    - Most heroes exactly 3 powers (1 starting + 2 trainable options)
  *    - Only 1 of the 2 trainable powers can be selected
  *    - Some powers override the starting power
  *    - Flight capability varies by hero type
@@ -479,8 +479,8 @@ export const BASE_SYNERGY_PAIRS: readonly SynergyPair[] = [
 
 /**
  * Conditional synergy pairs that depend on Episode 3/4 choices.
- * When Coupé is cut, Punch Up loses their partner and gains a new one (Phenomaman or Waterboy).
- * When Sonar is cut, Malevola loses their partner and gains a new one (Phenomaman or Waterboy).
+ * When Coupé is cut, Punch Up loses his partner and gains a new one (Phenomaman or Waterboy).
+ * When Sonar is cut, Malevola loses her partner and gains a new one (Phenomaman or Waterboy).
  */
 export const CONDITIONAL_SYNERGY_PAIRS = {
   'coupe-cut-phenomaman-hired': { hero1: 'punch-up', hero2: 'phenomaman' },
