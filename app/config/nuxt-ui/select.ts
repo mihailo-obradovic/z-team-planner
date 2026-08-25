@@ -2,9 +2,12 @@ import type { SelectConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
+    // * Changes: a select trigger takes the annex's label role's face — the boards' `.selectbox` is the same condensed bold as the buttons it sits beside — but not its casing. Every value a select holds here is a hero's name, and a name is written the way it is written; uppercase is for the words the UI itself supplies. Tracking is the label token rather than the boards' 0.04em: the annex carries two tracking values and a third is not a decision yet.
+    // * Default: 'relative group rounded-md inline-flex items-center focus:outline-none disabled:cursor-not-allowed disabled:opacity-75'
     base: [
       'relative group rounded-md inline-flex items-center focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
-      'transition-colors'
+      'transition-colors',
+      'font-heading font-bold tracking-label'
     ],
     leading: 'absolute inset-y-0 start-0 flex items-center',
     leadingIcon: 'shrink-0 text-dimmed',
@@ -38,7 +41,9 @@ export default {
     itemTrailing: 'ms-auto inline-flex gap-1.5 items-center',
     itemTrailingIcon: 'shrink-0',
     itemWrapper: 'flex-1 flex flex-col min-w-0',
-    itemLabel: 'truncate',
+    // * Changes: an option carries the trigger's face and casing, or picking one would change how the value reads on screen.
+    // * Default: 'truncate'
+    itemLabel: ['truncate', 'font-heading font-bold tracking-label'],
     itemDescription: 'truncate text-muted'
   },
   variants: {
