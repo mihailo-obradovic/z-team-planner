@@ -341,6 +341,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)   | none    |
 | Tab trigger        | 36                        | `px-5`           | 0      | 2px            | none    |
 | Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom     | none    |
+| Mobile action bar  | 64 (three 44 buttons)     | `p-3`            | 0      | 2px top        | none    |
 | Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`        | `panel` |
 | Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom     | none    |
 | Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`        | `panel` |
@@ -349,15 +350,27 @@ The scales above, resolved per element. Every value here was measured from the b
 
 **Layouts:**
 
-| Layout         | Spec                                                                                                       |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| Page container | full width; inline padding `p-4`, `md:p-6`                                                                 |
-| Roster grid    | `gap-4`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`. |
-| Card body      | portrait column beside the stat rows, `gap-3`                                                              |
-| Header         | wordmark · filters · build actions, single row; the wordmark truncates below `lg`                          |
-| Form           | `gap-4` between fields, label above or beside its control per orientation                                  |
+| Layout            | Spec                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| Page container    | full width; inline padding `p-4`, `md:p-6`                                                                 |
+| Roster grid       | `gap-4`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`. |
+| Card body         | portrait column beside the stat rows, `gap-3`                                                              |
+| Header            | wordmark · budget readout · build actions, single row; see the tier ladder below                           |
+| Mobile action bar | below `md` only, pinned under the scrolling content: three equal-width 44px buttons on chrome              |
+| Form              | `gap-4` between fields, label above or beside its control per orientation                                  |
 
 A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
+
+**Header tier ladder.** The header's content is ~1120px wide when everything is labelled, so it cannot hold one shape across the range. What gives way, in order:
+
+| From | Wordmark             | Budget readout   | Actions                                                                                 |
+| ---- | -------------------- | ---------------- | --------------------------------------------------------------------------------------- |
+| `xl` | + `BUILD CALCULATOR` | three, labelled  | Story Setup · Save · build ▾ · Share, all labelled                                      |
+| `lg` | wordmark only        | three, labelled  | as above                                                                                |
+| `md` | wordmark only        | three, labelled  | icon-only with tooltips; build ▾ keeps a truncated name                                 |
+| base | wordmark only        | none — see below | bare Story Setup and menu glyphs; Save · Builds ▾ · Share move to the mobile action bar |
+
+Two rules this ladder encodes. **Labels go before information**: an unlabelled floppy disk is still recognisably Save, whereas a hidden `2/7` is simply gone — so button labels drop a tier before the readout does. And the readout's disappearance below `md` is **safe only because the same three budgets are always present in the Story Setup drawer**; if that ever stops being true, this row has to change with it.
 
 ---
 
@@ -401,11 +414,15 @@ Re-measure after any token change. A brand colour that fails as text is constrai
 
 The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, chips 28 × 28, buttons and selects 32, primary touch actions 44.
 
+The two bare glyph triggers in the mobile header — Story Setup and the menu — paint at 20-22px and pad their hit area to 44, not merely to the 24 floor: they are the only route to episode setup and to build management at that width, which makes them primary touch actions.
+
 The switch is the one control whose paint is under the floor — a 32 × 18 track. Its hit area is padded to 24 with an `::after` box rather than growing the track, because the floor is about the target, not the paint. Verified by hit-testing 2px above the visual track.
 
 ### 14.3 Breakpoints & reflow
 
 `sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536` — Tailwind's defaults, unchanged. Every media query uses them.
+
+The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: header 52 plus action bar 64, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`.
 
 **Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
 
