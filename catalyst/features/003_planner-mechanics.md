@@ -12,7 +12,7 @@ Medium
 
 ## Purpose
 
-The heart of the app: interactive controls that let a player allocate the same budgets the game grants — level-up points, power trainings, flight trainings, bonus levels — under the same rules, with the roster shaped by their story choices. The card grid shows the resulting effective stats at a glance, arranged by synergy pairs.
+The heart of the app: controls that let a player allocate the budgets the game grants — level-up points, power trainings, flight trainings, bonus levels — under the same rules, with the roster shaped by their story choices. The card grid shows the resulting effective stats, arranged by synergy pairs.
 
 ## Inputs
 
@@ -49,11 +49,11 @@ Non-goals:
 
 ## User / System Behavior
 
-**Story Setup drawer.** Episode setup and budget management live in a right-side slideover, not in the top bar. It opens from a `Story Setup` control present at every viewport width, holds no state of its own, and closes without committing anything — every control inside writes through immediately, as it did when the same controls sat in the header. Its open state is ephemeral: it does not survive a reload, and it is not addressable by URL.
+**Story Setup drawer.** Episode setup and budget management live in a right-side slideover, not in the top bar, opened by a control present at every viewport width. Every control inside writes through immediately, so there is no commit step and closing discards nothing. Its open state is ephemeral: it survives neither a reload nor a shared-build link, and it is not addressable by URL.
 
-**Budget readout.** The three shared budgets (power trainings, flight trainings, bonus points) render twice, in two different roles. In the top bar they are a **readout** — value and label, no controls, hidden below `md` where there is no room. In the drawer's Training budget section they are the **management** surface: a row per budget carrying its own reset, shown only while that budget has something to reset.
+**Budget readout.** The three shared budgets render twice, in two roles. In the top bar they are a **readout** — value and label, no controls, hidden below `md` where there is no room. In the drawer's Training budget section they are the **management** surface: a row per budget carrying its own reset, shown only while that budget has something to reset.
 
-**Reset all trainings.** A single action in the drawer's footer clears all three shared budgets at once — power trainings, flight trainings, and bonus levels — equivalent to invoking each budget's own reset in turn. It is not confirmed: it sits behind a deliberate drawer open, and every value it clears is re-allocable by clicking. Per-hero level-up allocations are untouched, as are powers, special powers, and flight; those remain the per-hero reset's business.
+**Reset all trainings.** A single action in the drawer's footer clears all three shared budgets at once, equivalent to invoking each budget's own reset in turn. It is not confirmed: it sits behind a deliberate drawer open, and every value it clears is re-allocable by clicking. Per-hero level-up allocations, powers and special powers are untouched — those remain the per-hero reset's business.
 
 **Episode setup.** Default: Sonar cut, Waterboy hired, episode-8 recruits hidden. The cut hero disappears from the roster; the non-hired episode-4 option and Blonde Blazer appear only when "episode 8 recruits" is shown. Changing a choice wipes the affected heroes' allocations, powers, and flight — watchers fire on the choice change.
 
@@ -90,7 +90,6 @@ Not role-specific.
 | change ep3 cut sonar → coupe                                 | Coupé's state wiped, Sonar's kept; synergy column updates | watcher-driven reset            |
 | change ep4 hire waterboy → phenomaman                        | Waterboy's state wiped                                    | non-hired option reset          |
 | `Reset all trainings` with 2/7 powers, 0/2 flight, 2/4 bonus | all three read 0; hero level-up allocations unchanged     | union of the three resets       |
-| `Reset all trainings` with all three already empty           | no-op                                                     | each underlying reset no-ops    |
 | open Story Setup, reload the page                            | drawer closed, episode choices preserved                  | open state is ephemeral         |
 
 ## Business Rules
@@ -98,13 +97,13 @@ Not role-specific.
 - All budget checks are guard clauses: an over-budget action silently does nothing (buttons also disable in the UI, but state guards are authoritative).
 - Budgets: 9 level-up points/hero (+bonus), 4 bonus levels shared and per-hero, 7 power trainings shared, 2 flight trainings shared, stat cap 10.
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat.
-- `Reset all trainings` is exactly the union of the three per-budget resets; adding a fourth shared budget means adding it here too, or the action silently under-resets.
-- A per-budget reset is offered only while that budget is non-zero — an always-present reset on an empty budget is a no-op control.
+- `Reset all trainings` is exactly the union of the three per-budget resets; a fourth shared budget must be added there too, or it silently under-resets.
+- A per-budget reset is offered only while that budget is non-zero.
 - Overview lays heroes out as synergy-pair columns (base pairs + the one conditional pair for the current choices); episode-8 recruits render in their own row beneath.
 
 ## Edge Cases
 
-- `useHeroPlanner` is a per-app singleton (cached on `nuxtApp`) — all components share one instance; duplicate watcher registration would double resets.
+- `useHeroPlanner` is a per-app singleton (cached on `nuxtApp`) — one instance shared by every component; duplicate watcher registration would double resets.
 - Deserialization (feature 001) sets episode choices first and waits a tick so these same watchers do not wipe the restored hero state afterwards.
 - Coupé's En Pointe cycle is reachable whenever her card shows the toggle; the +bonus applies with base power (+1) even untrained, +3 only with À la Seconde.
 
@@ -142,13 +141,17 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 ## Tests
 
 - Honest gap: no automated tests. Wanted first: unit tests for the budget guards (level-up cap with/without bonus, shared pools, power-training gating and free switching) — they encode the game rules and are pure enough to test via the composables with seeded state.
-- The card controls are covered by the live browser walk per the stack's testing rule until then.
+- Until then the card controls are covered by the live browser walk, per the stack's testing rule.
 
 ## Verification
 
-**Story Setup drawer, budget readout, and `Reset all trainings` are drafted, not yet verified** — this section is completed on `feature/003-story-setup-drawer` before merge, with a live browser walk at 320, 390, 768, 1024, and 1600 confirming the tier ladder in `annexes/design-system.md` §13 and no horizontal scroll at the 320 reflow floor.
+Story Setup drawer, budget readout and `Reset all trainings` walked live in Chrome (2026-08-25, `feature/003-story-setup-drawer`):
 
-Retro-documented from the four composables, HeroCard, and index.vue; budget constants and rules cross-checked against `context/game-mechanics.md` (Hero Training, Stats, Synergy). Flight, episode-cut resets, and effective-stat display were exercised live in the feature 001 browser walk (2026-08-21). oxlint, vue-tsc, and vitest pass.
+- **Tier ladder** (annex §13) at 1600, 1024, 768, 390, 320: each tier drops what the ladder says and nothing else, and at 320 `scrollWidth === clientWidth` with no label clipped — the tab list scrolls inside itself.
+- **`Reset all trainings`**: `7/7 · 0/2 · 4/4` → `0/7 · 0/2 · 0/4` in one click; the footer then disables itself and the per-row resets disappear. A per-budget reset (bonus `1/4 → 0/4`) moves the readout with it, and gating holds — at `7/7 · 0/2 · 4/4` exactly two glyphs render, flight offering none.
+- **Accessible names**: dialog labelled "Story setup", selects and switch labelled, base-tier glyph 44 × 44 (§14.2). One defect fixed — `TooltipButton` reached the a11y tree unnamed (a tooltip contributes `aria-describedby`, never the name). Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` stay unnamed; `IconButton` now takes a `label` prop, so each is a one-line fix.
+
+Retro-documented from the four composables, HeroCard and index.vue; constants and rules cross-checked against `context/game-mechanics.md` (Hero Training, Stats, Synergy). Flight, episode-cut resets and effective-stat display were exercised live in the feature 001 browser walk (2026-08-21). oxlint, vue-tsc and vitest pass.
 
 ## Agent Change Rules
 

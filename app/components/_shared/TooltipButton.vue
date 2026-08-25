@@ -1,6 +1,7 @@
 <template>
   <u-tooltip :text="text">
     <IconButton
+      :label="text"
       :icon="icon"
       :color="color"
       :size="size"
