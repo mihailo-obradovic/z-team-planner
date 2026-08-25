@@ -33,6 +33,16 @@ export function useHeroFlightTraining(
       const capability =
         HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
+      // * An episode 8 recruit is a fixed portrait, not a build: nothing on the
+      // * card can train or untrain them, so a flier among them flies
+      // * unconditionally. That includes Phenomaman, whose flight is only
+      // * conditional while he is the episode 4 hire and Heavily Medicated is
+      // * still a power he can take.
+      if (episodeSetup.ep8RecruitIds.value.has(id)) {
+        result.add(id);
+        continue;
+      }
+
       switch (capability.type) {
         case 'innate':
           result.add(id);

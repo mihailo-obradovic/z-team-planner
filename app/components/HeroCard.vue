@@ -9,7 +9,9 @@
       <div class="flex items-center gap-2">
         <!-- * Flight School is its own training track with its own budget (context/game-mechanics.md, Flight School), and it was the fifth chip that pushed the power strip past the portrait's width. It sits with the other per-hero glyphs instead, and reserves its slot only for the five heroes in HERO_FLIGHT — the same rule the reset and bonus wrappers follow. -->
         <div v-if="flightInfo" class="flex w-6 items-center justify-center">
+          <!-- * The slot stays reserved while the glyph goes: a hero whose flight is a power's side effect has no flight to show once the power takes it away, but pulling the whole slot would shuffle the header's glyphs sideways on a power toggle. -->
           <TooltipButton
+            v-if="flightShown"
             :text="`${flightInfo.name}: ${flightInfo.description}`"
             icon="i-lucide-plane"
             :color="flightColor"
@@ -171,7 +173,8 @@ import {
   MAX_FLIGHT_TRAININGS,
   MAX_BONUS_POINTS,
   HERO_POWERS,
-  HERO_FLIGHT
+  HERO_FLIGHT,
+  HERO_FLIGHT_CAPABILITY
 } from '@/types/hero';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
 
@@ -281,6 +284,17 @@ function isTrainableDisabled(i: number) {
 const flightInfo = computed(
   () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
 );
+
+// * Phenomaman on Heavily Medicated does not have a disabled flight — he has no
+// * flight. Every other flier's glyph is a state the card can show as off.
+const flightShown = computed(() => {
+  const capability =
+    HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
+
+  if (capability?.type !== 'conditional-power') return true;
+
+  return flightActive.value;
+});
 
 const flightLocked = computed(() => {
   if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman')

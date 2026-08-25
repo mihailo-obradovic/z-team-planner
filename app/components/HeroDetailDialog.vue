@@ -173,8 +173,9 @@
                 <p class="mt-1 text-sm text-muted">{{ power.description }}</p>
               </div>
 
+              <!-- * Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
               <div
-                v-if="flightInfo"
+                v-if="flightInfo && flightShown"
                 class="border-2 p-3 transition-colors"
                 :class="[
                   flightActive
@@ -309,6 +310,7 @@ import {
   MAX_BONUS_POINTS,
   HERO_POWERS,
   HERO_FLIGHT,
+  HERO_FLIGHT_CAPABILITY,
   SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
@@ -450,6 +452,15 @@ const flightInfo = computed(() => {
 const flightActive = computed(
   () => !!props.heroId && flyingHeroIds.value.has(props.heroId)
 );
+
+const flightShown = computed(() => {
+  const capability =
+    HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
+
+  if (capability?.type !== 'conditional-power') return true;
+
+  return flightActive.value;
+});
 
 const flightLocked = computed(() => {
   if (!props.heroId) return true;

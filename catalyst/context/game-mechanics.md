@@ -170,7 +170,7 @@ On occasion, Blonde Blazer will bring up the opportunity during calls that the f
 - Flambae - Flybae: Flambae flies to call locations, greatly reducing travel time.
 - Sonar - Strong Back: If transformed, Sonar flies to call locations, greatly reducing travel time. He also carries non-flying heroes.
 
-Phenomaman starts with the ability to fly (Fly-Nomenal), as does Blonde Blazer (though it doesn't have a specific name).
+Phenomaman starts with the ability to fly (Fly-Nomenal), as does Blonde Blazer (though it doesn't have a specific name). Heavily Medicated does not weaken Fly-Nomenal, it takes it away — a medicated Phenomaman simply has no flight. Both join fixed if they arrive in Episode 8: they cannot be trained at all by then, so their flight is permanent — Heavily Medicated is only reachable for a Phenomaman hired in Episode 4.
 
 ## Stats
 
