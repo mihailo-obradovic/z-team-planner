@@ -338,7 +338,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none            | none    |
 | Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none    |
 | Icon button        | square at its step        | none             | 0      | none            | none    |
-| Input / select     | 32                        | `px-2.5`         | 0      | 2px inset ring  | none    |
+| Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none    |
 | Switch             | 44 × 24 track, 16 thumb   | —                | 0      | 2px             | none    |
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none    |
 | Tab trigger        | 36                        | `px-5`           | 0      | 2px             | none    |

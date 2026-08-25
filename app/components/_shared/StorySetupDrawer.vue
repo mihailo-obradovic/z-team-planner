@@ -6,8 +6,9 @@
     :ui="{ body: 'flex flex-col gap-8 p-4 sm:p-6' }"
   >
     <template #body>
+      <!-- * xl rather than the app-wide default: the drawer is a single-column surface with three controls on it, and it is the one place the episode choices are read and changed. The selects carry hero names, which stay in title case — the condensed uppercase of the annex's label role names the control, it does not spell out its value. -->
       <div class="flex flex-col gap-4">
-        <u-form-field label="Episode 3: Cut">
+        <u-form-field label="Episode 3: Cut" size="xl">
           <u-select
             v-model="ep3Cut"
             :items="ep3CutItems"
@@ -16,7 +17,7 @@
           />
         </u-form-field>
 
-        <u-form-field label="Episode 4: Hire">
+        <u-form-field label="Episode 4: Hire" size="xl">
           <u-select
             v-model="ep4Hire"
             :items="ep4HireItems"
@@ -25,37 +26,39 @@
           />
         </u-form-field>
 
-        <!-- * Horizontal here where the selects are stacked: a switch is a 32px control with nothing to fill a row's width, and a label above it reads as a heading for the block below rather than a name for the control beside it. -->
+        <!-- * Horizontal here where the selects are stacked: a switch is a short control with nothing to fill a row's width, and a label above it reads as a heading for the block below rather than a name for the control beside it. -->
         <u-form-field
           label="Show Episode 8 recruits"
           orientation="horizontal"
+          size="xl"
           class="justify-between"
         >
-          <u-switch v-model="showEp8Recruits" size="sm" />
+          <u-switch v-model="showEp8Recruits" size="xl" />
         </u-form-field>
-
-        <p class="border-l-2 border-accented pl-3 text-sm text-muted">
-          Mirror your story: who was cut in Episode 3, who you hired in Episode
-          4. Synergy pairs update to match.
-        </p>
       </div>
 
       <div class="flex flex-col gap-1">
-        <h3 class="font-heading text-label text-dimmed uppercase">
-          Training budget
-        </h3>
+        <!-- * The rules either side are the mockup's section head: the budget block has no panel of its own, so the rule is what separates it from the episode controls above. -->
+        <u-separator
+          label="Training budget"
+          :ui="{
+            label: 'font-heading text-label tracking-tag text-dimmed uppercase'
+          }"
+        />
 
         <div
           v-for="budget in budgets"
           :key="budget.label"
           class="flex min-h-(--control-h-lg) items-center justify-between gap-2 border-b border-default last:border-b-0"
         >
-          <span class="font-heading text-label uppercase">
+          <span
+            class="font-heading text-base font-bold tracking-label uppercase"
+          >
             {{ budget.label }}
           </span>
 
           <span class="flex items-center gap-2">
-            <span class="font-heading text-label text-primary">
+            <span class="font-heading text-lg font-extrabold text-primary">
               {{ budget.used }}/{{ budget.max }}
             </span>
 
