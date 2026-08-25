@@ -6,7 +6,7 @@
     :ui="{ body: 'flex flex-col gap-8 p-4 sm:p-6' }"
   >
     <template #body>
-      <!-- * xl rather than the app-wide default: the drawer is a single-column surface with three controls on it, and it is the one place the episode choices are read and changed. The selects carry hero names, which stay in title case — the condensed uppercase of the annex's label role names the control, it does not spell out its value. -->
+      <!-- * xl rather than the app-wide default: the drawer is a single-column surface with three controls on it, and it is the one place the episode choices are read and changed, so the step up in type is the whole surface's rather than one control's. -->
       <div class="flex flex-col gap-4">
         <u-form-field label="Episode 3: Cut" size="xl">
           <u-select
@@ -42,7 +42,8 @@
         <u-separator
           label="Training budget"
           :ui="{
-            label: 'font-heading text-label tracking-tag text-dimmed uppercase'
+            label:
+              'font-heading text-base font-bold tracking-tag text-dimmed uppercase'
           }"
         />
 

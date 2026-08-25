@@ -84,13 +84,13 @@ export default {
           'size-4.5 data-[state=checked]:translate-x-4.5 data-[state=checked]:rtl:-translate-x-4.5',
         wrapper: 'text-sm'
       },
-      // * Changes: the thumb is inset rather than flush. At size-5 it fills the 20px the 2px track edge leaves and the switch reads as one solid block; 16px leaves the 2px surround the mockup draws, and the travel is the track's inner width minus the thumb (44 - 4 - 16 = 24).
-      // * Default: thumb 'size-5 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5'
+      // * Changes: the thumb is inset rather than flush, so the track needs its own padding. Upstream has no track height at all — the track is as tall as its thumb plus the border, which is how a flush size-5 thumb makes the 24px track. Shrinking the thumb to the mockup's proportion therefore shrinks the track with it unless the 2px it gave up comes back as `p-0.5`, and that is also what puts the surround on the ends: the travel is what the padded content box leaves (44 - 4 border - 4 padding - 16 thumb = 20).
+      // * Default: base 'w-11', thumb 'size-5 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5'
       xl: {
-        base: 'w-11',
+        base: 'w-11 p-0.5',
         container: 'h-6',
         thumb:
-          'size-4 data-[state=checked]:translate-x-6 data-[state=checked]:rtl:-translate-x-6',
+          'size-4 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5',
         wrapper: 'text-base'
       }
     },
