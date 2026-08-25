@@ -90,7 +90,7 @@ export default {
     loading: {
       true: ''
     },
-    // * Changes: the boards mark an on control with a 1px gold halo and nothing else — `.chip.on` and `.tab.active` both carry it, and tabs.ts already spends the same shadow for the active tab. The fill is deliberately not set here: it stays the call site's `color`, which is what the boards vary between an off chip (tan) and an on one (amber), and a fill set here would lose to the colour compound variants below anyway. Default: both states empty.
+    // * Changes: the gold halo half of the on state — `.chip.on` and `.tab.active` both carry it, and tabs.ts already spends the same shadow for the active tab. The other half is the fill, and it cannot live here: tailwind-variants appends compound classes after variant ones, so a bg set on this variant would lose to the colour compounds below. It is a pair of compound entries at the end of that array instead. Default: both states empty.
     active: {
       true: {
         base: 'shadow-[0_0_0_1px_var(--ui-color-warning-500)]'
@@ -395,6 +395,50 @@ export default {
       class: {
         trailingIcon: 'animate-spin'
       }
+    },
+    // * Changes: the fill half of the on state, and the reason it is down here rather than on the `active` variant — tailwind-variants appends compound classes in source order, so these have to sit after the colour compounds to out-rank them. The boards draw an on control as a solid of its own colour with ink on it and an ink edge (`.chip.on`: #df8a20 on #241f14, against the off chip's tan `.chip`), so `active` flips the fill rather than tinting it — a `subtle` control reads as `solid` while it is on, which is the whole point of the state. Upstream has no active treatment at all.
+    {
+      active: true,
+      color: 'primary',
+      class:
+        'text-inverted bg-primary hover:bg-primary/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'secondary',
+      // * Cream, not ink, for the same reason the secondary solid above carries it: ink on teal is unreadable (annex §1).
+      class:
+        'text-neutral-100 bg-secondary hover:bg-secondary/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'success',
+      class:
+        'text-inverted bg-success hover:bg-success/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'info',
+      class:
+        'text-inverted bg-info hover:bg-info/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'warning',
+      class:
+        'text-inverted bg-warning hover:bg-warning/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'error',
+      class:
+        'text-inverted bg-error hover:bg-error/75 ring ring-inset ring-inverted'
+    },
+    {
+      active: true,
+      color: 'neutral',
+      class:
+        'text-inverted bg-inverted hover:bg-inverted/90 ring ring-inset ring-inverted'
     }
   ],
   defaultVariants: {
