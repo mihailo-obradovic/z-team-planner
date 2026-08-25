@@ -2,14 +2,22 @@ import type { SlideoverConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
-    overlay: 'fixed inset-0 bg-elevated/75',
+    // * Changes: the scrim is dark (annex §7). bg-elevated is tan here, so upstream's default washes the page out instead of dimming it — the same correction header.ts makes for UHeader's own slideover.
+    // * Default: 'fixed inset-0 bg-elevated/75'
+    overlay: 'fixed inset-0 bg-secondary-900/75',
+    // * Changes: the drawer is a panel like every other surface — 2px ink border, rust edge ring, drop shadow (annex §1, §6). Upstream's sm:ring/sm:shadow-lg are dropped rather than kept alongside, because `panel` already carries both and two rings stack visibly.
+    // * Default: 'fixed bg-default divide-y divide-default sm:ring ring-default sm:shadow-lg flex flex-col focus:outline-none'
     content:
-      'fixed bg-default divide-y divide-default sm:ring ring-default sm:shadow-lg flex flex-col focus:outline-none',
-    header: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-(--ui-header-height)',
+      'panel fixed bg-default divide-y divide-default flex flex-col focus:outline-none',
+    // * Changes: the drawer's header is the titled plate band from the mockups. As in modal.ts, min-h-10 has to out-rank the upstream min-height (a min-height beats the plate utility's own height) and py-0 keeps the band exactly 40px rather than 40px plus upstream's padding.
+    // * Default: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-(--ui-header-height)'
+    header: 'plate flex items-center gap-1.5 px-4 sm:px-6 py-0 min-h-10',
     wrapper: '',
     body: 'flex-1 overflow-y-auto p-4 sm:p-6',
     footer: 'flex items-center gap-1.5 p-4 sm:px-6',
-    title: 'text-highlighted font-semibold',
+    // * Changes: a plate's heading is the title role — condensed, uppercase, tracked (annex §2). font-semibold is dropped because text-title carries its own 800 weight.
+    // * Default: 'text-highlighted font-semibold'
+    title: 'text-highlighted font-heading text-title uppercase',
     description: 'mt-1 text-muted text-sm',
     close: 'absolute top-4 end-4'
   },
@@ -19,7 +27,9 @@ export default {
         content: ''
       },
       right: {
-        content: 'max-w-md'
+        // * Changes: the mockup's drawer is 462px, which is between Tailwind's md (28rem) and lg (32rem). max-w-lg is the nearer step and the two episode selects need the width; a raw 462px would be off-scale (annex §3).
+        // * Default: 'max-w-md'
+        content: 'max-w-lg'
       },
       bottom: {
         content: ''
@@ -30,7 +40,9 @@ export default {
     },
     inset: {
       true: {
-        content: 'rounded-lg'
+        // * Changes: every edge in this design is hard — radius 0 throughout (annex §6). The variant is kept so the prop still resolves, but it no longer rounds.
+        // * Default: 'rounded-lg'
+        content: ''
       }
     },
     transition: {

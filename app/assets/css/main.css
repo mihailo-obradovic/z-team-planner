@@ -216,3 +216,11 @@ button,
     @apply cursor-pointer;
     @apply disabled:cursor-not-allowed;
 }
+
+/* * Annex §14.4: transform-based enter/exit must short-circuit under reduced motion. The overlays animate via Tailwind `animate-[slide-in-from-right_200ms_…]` utilities baked into their theme configs, so there is no per-component prop to disable — the animation is cancelled here instead, for every overlay at once. Colour and opacity transitions stay: they are at the baseline duration and need no guard. */
+@media (prefers-reduced-motion: reduce) {
+    [data-state='open'],
+    [data-state='closed'] {
+        animation: none !important;
+    }
+}
