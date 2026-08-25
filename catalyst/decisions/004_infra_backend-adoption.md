@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -53,4 +53,4 @@ The project gains a second language, a deploy target it lacks, and two vendors. 
 
 ## Verification
 
-Pending.
+Five steps on `decision/004-backend-adoption`, each verified before commit. The four stack documents are byte-identical to Catalyst `v1.8.1` (`cmp`); every `stacks/` link in `architecture.md` resolves (scripted check, was 21 of 27 dangling); `catalyst/tools/validate.py .` reports 0 errors with `operations.md` present. After the `web/` move: oxfmt, oxlint and vue-tsc exit 0, vitest 3/3, and a production build prerenders `/` (194 KB). Nothing runs yet — the runbook's drill dates read _never_ until the API exists.
