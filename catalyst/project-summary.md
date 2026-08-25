@@ -4,7 +4,7 @@ Catalyst version: 1.8.1
 
 ## Project Purpose
 
-This project provides a build calculator for the game **Dispatch** (AdHoc Studio) to players planning their Z-Team. It displays the whole roster with per-hero controls for stat leveling, power training, and flight capability, computes synergy pairs and team-wide totals, and lets setup flags mirror the story's roster changes (who was cut in episode 3, who was hired in episode 4). Builds persist in the browser (localStorage) and are shareable via a URL parameter — there is no server-side storage; the only server code is a static Nitro endpoint serving hero base data. The game-mechanics reference all hero data is transcribed from is `context/game-mechanics.md`.
+This project provides a build calculator for the game **Dispatch** (AdHoc Studio) to players planning their Z-Team. It displays the whole roster with per-hero controls for stat leveling, power training, and flight capability, computes synergy pairs and team-wide totals, and lets setup flags mirror the story's roster changes (who was cut in episode 3, who was hired in episode 4). Builds persist in the browser (localStorage) and are shareable via a URL parameter; signing in with Google additionally saves builds to a FastAPI backend on Neon Postgres, where they follow the user across devices and share by live link (decision 004). The game-mechanics reference all hero data is transcribed from is `context/game-mechanics.md`.
 
 Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work), `context/design-reference.md` (project-specific — loads on UI styling or UI feature work) (`references/context-documents.md`)
 
@@ -48,13 +48,13 @@ Pointer index of protections declared in lazy-loaded feature/decision documents.
 
 One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices, adopted addons, and any optional layer. Filled at spawn; tells an agent which stack documents apply (`architecture.md` has the index).
 
-| Layer           | Module                                                           |
-| --------------- | ---------------------------------------------------------------- |
-| frontend        | nuxt                                                             |
-| frontend/addons | ssr                                                              |
-| frontend/ui     | nuxtui                                                           |
-| backend         | python-fastapi                                                   |
-| persistence     | postgres (hosted on Neon)                                        |
+| Layer           | Module                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| frontend        | nuxt                                                                                                    |
+| frontend/addons | ssr                                                                                                     |
+| frontend/ui     | nuxtui                                                                                                  |
+| backend         | python-fastapi                                                                                          |
+| persistence     | postgres (hosted on Neon)                                                                               |
 | identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
 
 ## Status Values

@@ -14,6 +14,7 @@ One user type: Dispatch players planning or comparing builds. Sub-cases, not sep
 
 - **Planners** — adjust levels, powers, and flight training for their own playthrough, matching the setup flags to their story choices.
 - **Sharers/receivers** — exchange finished builds via URL; a receiver opens a link and sees the full build without any account.
+- **Account holders** — sign in with Google so their builds follow them across devices and survive a cleared browser. The difference is just that builds can be saved on the server after logging in; nothing else changes.
 
 ## Scope And Non-Goals
 
@@ -22,29 +23,34 @@ In scope:
 - Full-roster overview with per-hero stat leveling, power training, and flight capability controls.
 - Synergy pair and team-composition effects reflected in computed totals.
 - Setup flags mirroring story roster changes (episode 3 cut, episode 4 hire).
-- Saving/loading builds locally (localStorage) and sharing them by URL.
+- Saving/loading builds locally (localStorage) and sharing them by URL — anonymous, at the user's own risk.
+- Optional accounts (Google sign-in) with server-side saved builds and live share links.
 
 Non-goals:
 
-- User accounts or server-side build storage — persistence is deliberately client-only; sharing is the URL itself.
+- Requiring an account — anonymous planning, local saves, and snapshot share links stay; an account is an offer, never a gate.
+- Any login method that costs money to offer (Apple sign-in) or needs a mail pipeline to run (email + password).
 - Simulating dispatch gameplay (calls, cooldowns, scoring) — the tool plans builds, it does not play shifts.
 - Story/choice tracking beyond the roster-affecting flags.
 
 ## Phases And Priorities
 
-| Phase             | Focus                                                      | Priority |
-| ----------------- | ---------------------------------------------------------- | -------- |
-| Core calculator   | Roster overview, hero controls, synergy pairs, team totals | must     |
-| Build persistence | Save/load builds locally, share via URL (in progress)      | must     |
-| Polish            | Mobile layout, theming, visual refinement                  | should   |
+| Phase             | Focus                                                                        | Priority |
+| ----------------- | ---------------------------------------------------------------------------- | -------- |
+| Core calculator   | Roster overview, hero controls, synergy pairs, team totals                   | must     |
+| Build persistence | Save/load builds locally, share via URL                                      | must     |
+| Accounts          | Google sign-in, server-side builds, live share links, import of local builds | should   |
+| Polish            | Mobile layout, theming, visual refinement                                    | should   |
 
 ## Key Integrations
 
-- None at runtime — the app is self-contained; hero base data ships with the app (static Nitro endpoint).
+- Hero base data ships with the app as typed constants; it never leaves the frontend.
+- **Neon** (serverless Postgres) holds accounts and account builds; **Firebase Authentication** issues the identity. Both on free tiers — the project is a hobby and must stay free or very low cost (decision 004).
 - `context/game-mechanics.md`: the game-mechanics reference all hero data and rules are transcribed from; the game itself is the upstream source of truth.
 
 ## Success Signals
 
 - A build for any roster configuration can be assembled without consulting the game.
 - A shared URL reproduces the exact build on another device with no account or setup.
+- A signed-in user finds their builds on a second device, and a live share link shows the owner's latest edits.
 - Computed stats and synergy effects match observed in-game values.
