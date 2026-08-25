@@ -47,7 +47,11 @@
           </div>
         </div>
 
-        <div v-if="showEp8Recruits" class="flex flex-col gap-4">
+        <!-- * md:w-fit so the ruled band spans the cards rather than the page: the block shrinks to its grid, and the grid is content-width. Below md the cards are fluid and fill the frame, so the band should too. -->
+        <div
+          v-if="showEp8Recruits"
+          class="flex flex-col gap-4 md:mx-auto md:w-fit"
+        >
           <!-- * Without this the recruits read as a fifth synergy column. The heading is the h2 the cards' h3 names have been missing, so it carries the ruled band rather than a bare label. -->
           <u-separator color="secondary" decorative>
             <h2 class="font-heading text-label text-secondary-300 uppercase">
@@ -55,8 +59,9 @@
             </h2>
           </u-separator>
 
+          <!-- * Two tracks, not three: there are always exactly two recruits (Blonde Blazer plus whichever episode-4 option was not hired), so a third track never filled and only widened the band above by its gap. -->
           <div
-            class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
+            class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)]"
           >
             <HeroCard
               v-for="hero in ep8Recruits"
