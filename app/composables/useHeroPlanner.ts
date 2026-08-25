@@ -33,6 +33,13 @@ function createHeroPlanner() {
     flightTraining.resetHeroFlight(id);
   }
 
+  // * The union of the three shared-budget resets, and nothing else: per-hero level-up allocations, powers and flight are resetHero's business. Feature 003 pins it as a union, so a fourth shared budget has to be added here too or the drawer's footer button silently under-resets.
+  function resetAllTrainings() {
+    powerTraining.resetAllPowerTrainings();
+    flightTraining.resetAllFlightTrainings();
+    levelUp.resetAllBonusLevels();
+  }
+
   // Return unified API by spreading all sub-composable exports
   return {
     heroes,
@@ -41,7 +48,8 @@ function createHeroPlanner() {
     ...powerTraining,
     ...flightTraining,
     ...persistence,
-    resetHero
+    resetHero,
+    resetAllTrainings
   };
 }
 
