@@ -25,6 +25,7 @@ One line per record: type, status, title, link.
 | 001 | init-design | Implemented | Brownfield adoption — confirm the de facto Nuxt/NuxtUI frontend stack           | [001_init-design_brownfield-adoption](decisions/001_init-design_brownfield-adoption.md) |
 | 002 | tooling     | Implemented | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md)           |
 | 003 | design      | Implemented | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                       |
+| 004 | infra       | Proposed    | Adopt a backend — FastAPI, Neon Postgres, Firebase identity                     | [004_infra_backend-adoption](decisions/004_infra_backend-adoption.md)                   |
 
 ## Domain Decision Index
 
