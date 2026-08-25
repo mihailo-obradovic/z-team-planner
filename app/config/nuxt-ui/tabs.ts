@@ -34,11 +34,12 @@ export default {
         indicator: 'rounded-md shadow-xs'
       },
       // * Changes: the design's tabs are free-standing bordered buttons on the dark ground, not an underlined rail — so the sliding indicator is hidden here and the rail's bottom rule is dropped in the compound variant below, which is the level that re-adds it. Colours too.
+      // * The list scrolls rather than squeezing: three bordered triggers plus the Concept chip exceed 390px, and the shared `label` slot's `truncate` turns that overflow into clipped names ("MISSION SIMULA…") instead of an honest overflow. shrink-0 on the trigger is the half that matters — without it the triggers compress and there is nothing to scroll. Inline padding follows the page container (p-4, then 6 from md) rather than sitting at 6 everywhere (annex §3, §13).
       // * Default: { list: 'border-default', indicator: 'rounded-full', trigger: 'focus:outline-none' }
       link: {
-        list: 'border-default gap-2 px-6 py-2.5',
+        list: 'border-default gap-2 px-4 md:px-6 py-2.5 overflow-x-auto',
         indicator: 'rounded-full hidden',
-        trigger: 'focus:outline-none'
+        trigger: 'focus:outline-none shrink-0'
       }
     },
     orientation: {

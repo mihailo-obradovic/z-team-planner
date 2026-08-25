@@ -405,6 +405,9 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. **Meas
 | cream                   | ground      | 13.19 | AA                             |
 | gold                    | ground      | 9.87  | AA                             |
 | edge ring               | ground      | 3.31  | non-text, meets 3:1            |
+| amber solid             | tab teal    | 3.39  | non-text — the Concept chip    |
+
+The Concept chip is the fourth. The redesign board draws it as `#d2622a` bordered text, which measures **4.54:1 on the ground but only 2.40:1 on the inactive tab's teal fill** — and the chip sits inside the tab, not on the ground, so it fails the text floor and the non-text floor both. Measuring the pair that actually renders, rather than the one the eye assumes, is the whole lesson. It is a solid amber chip instead: ink on amber for the text (6.08) and the fill against the teal for the boundary (3.39).
 
 Three findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; and the three fill colours that fail as small text each have a darker text-only step beside them (§1).
 
@@ -424,7 +427,7 @@ The switch is the one control whose paint is under the floor — a 32 × 18 trac
 
 The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: the header stays 64 (`--ui-header-height` does not vary by breakpoint — the mockup's 52 was not worth a responsive token) and the action bar adds 70, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`. Measured at 320: no horizontal scroll and no element wider than the viewport.
 
-**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
+**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. The tab list is the one region that scrolls inside itself: three bordered triggers plus the Concept chip exceed 390px, and the shared `label` slot's `truncate` would otherwise turn that into clipped names. `overflow-x-auto` on the list with `shrink-0` on the trigger is the pair that matters — without the second the triggers compress and there is nothing to scroll. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
 
 ### 14.4 Motion & reduced motion
 

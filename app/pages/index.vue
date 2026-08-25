@@ -10,6 +10,23 @@
       content: 'min-h-0 flex-1 overflow-y-auto'
     }"
   >
+    <template #default="{ item }">
+      <!-- * Three full labels do not fit 390px, and truncating "Mission Simu…" is worse than a shorter honest name — so the label itself changes at sm rather than being clipped. -->
+      <span class="sm:hidden">{{ item.shortLabel }}</span>
+      <span class="hidden sm:inline">{{ item.label }}</span>
+
+      <!-- * Status as a chip rather than inside the tab's own text: "(coming soon!)" turned the tab's name into a sentence. Solid amber, not the artboard's #d2622a — that colour is 2.40:1 against the inactive tab's teal fill and fails both the text and the non-text floor. Amber solid is ink on amber (6.08:1) with the fill itself 3.39:1 against the teal, so both floors hold (annex §14.1). -->
+      <u-badge
+        v-if="item.concept"
+        color="primary"
+        variant="solid"
+        size="sm"
+        class="ml-1"
+      >
+        Concept
+      </u-badge>
+    </template>
+
     <template #overview>
       <div
         class="grid grid-cols-1 justify-center justify-items-center gap-4 p-4 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
@@ -61,12 +78,24 @@ import type { HeroId } from '@/types/hero';
 const selectedHeroId = ref<HeroId | null>(null);
 
 const tabs = [
-  { label: 'Overview', value: 'overview', slot: 'overview' },
-  { label: 'Synergy pairs', value: 'synergy-pairs', slot: 'synergy-pairs' },
   {
-    label: 'Mission simulator (coming soon!)',
+    label: 'Overview',
+    shortLabel: 'Overview',
+    value: 'overview',
+    slot: 'overview'
+  },
+  {
+    label: 'Synergy pairs',
+    shortLabel: 'Synergy',
+    value: 'synergy-pairs',
+    slot: 'synergy-pairs'
+  },
+  {
+    label: 'Mission simulator',
+    shortLabel: 'Missions',
     value: 'mission-simulator',
-    slot: 'mission-simulator'
+    slot: 'mission-simulator',
+    concept: true
   }
 ];
 
