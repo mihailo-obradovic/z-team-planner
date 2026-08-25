@@ -17,51 +17,54 @@
     </template>
 
     <template #overview>
-      <div
-        class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 p-4 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
-      >
+      <!-- * One padded frame holding both blocks, rather than a p-4 on each: two padded siblings doubled their inline padding into a 32px seam at the recruit band, on top of the band's own gap. The frame owns the page padding and the gap between the blocks is a single gap-4. -->
+      <div class="flex flex-col gap-4 p-4">
         <div
-          v-for="pair in synergyPairColumns"
-          :key="pair.topId"
-          class="flex w-full max-w-92 flex-col gap-2"
+          class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
         >
-          <HeroCard
-            :hero-id="pair.top.id as HeroId"
-            @view-detail="selectedHeroId = pair.top.id as HeroId"
-          />
+          <div
+            v-for="pair in synergyPairColumns"
+            :key="pair.topId"
+            class="flex w-full max-w-92 flex-col gap-2"
+          >
+            <HeroCard
+              :hero-id="pair.top.id as HeroId"
+              @view-detail="selectedHeroId = pair.top.id as HeroId"
+            />
 
-          <!-- * The column *is* the pair, which is invisible once the cards stack into one phone-width list — so the pair says so itself, between its two heroes. `decorative` keeps the rules out of the a11y tree: a role="separator" makes its children presentational and would swallow the badge's text. -->
+            <!-- * The column *is* the pair, which is invisible once the cards stack into one phone-width list — so the pair says so itself, between its two heroes. `decorative` keeps the rules out of the a11y tree: a role="separator" makes its children presentational and would swallow the badge's text. -->
+            <u-separator color="secondary" decorative>
+              <!-- ! No type-role class here: Nuxt UI runs its class strings through tailwind-merge, which reads a custom `text-*` token as a colour and drops the variant's `text-warning` beside it. The badge's own size variant carries the size. -->
+              <u-badge color="warning" variant="outline" icon="i-lucide-link-2">
+                Synergy
+              </u-badge>
+            </u-separator>
+
+            <HeroCard
+              :hero-id="pair.bottom.id as HeroId"
+              @view-detail="selectedHeroId = pair.bottom.id as HeroId"
+            />
+          </div>
+        </div>
+
+        <div v-if="showEp8Recruits" class="flex flex-col gap-4">
+          <!-- * Without this the recruits read as a fifth synergy column. The heading is the h2 the cards' h3 names have been missing, so it carries the ruled band rather than a bare label. -->
           <u-separator color="secondary" decorative>
-            <!-- ! No type-role class here: Nuxt UI runs its class strings through tailwind-merge, which reads a custom `text-*` token as a colour and drops the variant's `text-warning` beside it. The badge's own size variant carries the size. -->
-            <u-badge color="warning" variant="outline" icon="i-lucide-link-2">
-              Synergy
-            </u-badge>
+            <h2 class="font-heading text-label text-secondary-300 uppercase">
+              Episode 8 recruits
+            </h2>
           </u-separator>
 
-          <HeroCard
-            :hero-id="pair.bottom.id as HeroId"
-            @view-detail="selectedHeroId = pair.bottom.id as HeroId"
-          />
-        </div>
-      </div>
-
-      <div v-if="showEp8Recruits" class="flex flex-col gap-8 p-4">
-        <!-- * Without this the recruits read as a fifth synergy column. The heading is the h2 the cards' h3 names have been missing, so it carries the ruled band rather than a bare label. -->
-        <u-separator color="secondary" decorative>
-          <h2 class="font-heading text-label text-secondary-300 uppercase">
-            Episode 8 recruits
-          </h2>
-        </u-separator>
-
-        <div
-          class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
-        >
-          <HeroCard
-            v-for="hero in ep8Recruits"
-            :key="hero.id"
-            :hero-id="hero.id as HeroId"
-            @view-detail="selectedHeroId = hero.id as HeroId"
-          />
+          <div
+            class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
+          >
+            <HeroCard
+              v-for="hero in ep8Recruits"
+              :key="hero.id"
+              :hero-id="hero.id as HeroId"
+              @view-detail="selectedHeroId = hero.id as HeroId"
+            />
+          </div>
         </div>
       </div>
     </template>
