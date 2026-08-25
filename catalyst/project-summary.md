@@ -48,11 +48,14 @@ Pointer index of protections declared in lazy-loaded feature/decision documents.
 
 One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices, adopted addons, and any optional layer. Filled at spawn; tells an agent which stack documents apply (`architecture.md` has the index).
 
-| Layer           | Module |
-| --------------- | ------ |
-| frontend        | nuxt   |
-| frontend/addons | ssr    |
-| frontend/ui     | nuxtui |
+| Layer           | Module                                                           |
+| --------------- | ---------------------------------------------------------------- |
+| frontend        | nuxt                                                             |
+| frontend/addons | ssr                                                              |
+| frontend/ui     | nuxtui                                                           |
+| backend         | python-fastapi                                                   |
+| persistence     | postgres (hosted on Neon)                                        |
+| identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
 
 ## Status Values
 
