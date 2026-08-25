@@ -186,7 +186,8 @@ export default {
       class: {
         indicator: 'bg-primary',
         // * The orientation+link compound above re-adds the rail's bottom rule after the variant, so it has to be out-ranked at compound level too.
-        list: 'border-b-0 mb-0',
+        // * The rail comes back as a 1px secondary rule — the separator's own style (annex §13, Ruled band). The board has no rule here; this is for scrolling, so the edge the content passes under is visible rather than guessed.
+        list: 'border-b border-secondary mb-0',
         trigger: [
           'h-9 px-2 py-0 border-2 border-secondary-700 bg-secondary sm:px-5',
           'font-heading font-bold uppercase tracking-label',

@@ -158,6 +158,8 @@ Walked live on `feature/003-story-setup-drawer` (2026-08-25), in Chrome and then
 - **Level readout**: `+1 bonus` left the level at 2; only the allocation moved it to 3, and the detail dialog agreed.
 - **Drawer**: `Reset all trainings` took `7/7 · 0/2 · 4/4` → `0/7 · 0/2 · 0/4` in one click, then disabled itself and the per-row resets disappeared; gating held — at `7/7 · 0/2 · 4/4` exactly two glyphs rendered.
 - **Roster grouping**: each pair carries its marker between its two cards at every tier; the recruit heading reaches the a11y tree as `heading level=2` while the bands stay out of it (`decorative`). The roster-to-recruit seam is 48px card to card, the same 48 that separates stacked card rows.
+- **Chrome rules**: the header's divider is 1px × 28 of `secondary` — lighter than the chrome, where the previous `secondary-700` was darker and read as a seam — and the tab row carries the same 1px `secondary` along its bottom edge, so content scrolling under it is visibly cut off rather than fading into the ground.
+- **Recruit band**: spans the recruit cards exactly, 0px past them either side, at 1600 / 1280 / 768 / 390 / 320.
 - **Close buttons**: the drawer's and the dialog's `×` centre on the plate band and end on the title's own rail, at `sm`-and-up and base widths alike.
 - **Accessible names**: dialog, selects and switch labelled; `TooltipButton` passes its text through `IconButton`'s `label`. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are still unnamed — one line each.
 

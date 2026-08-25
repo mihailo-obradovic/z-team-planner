@@ -13,7 +13,9 @@ export default {
     // * Default: 'lg:flex-1 flex items-center gap-1.5'
     left: 'lg:flex-1 lg:flex-none flex items-center gap-1.5',
     center: 'hidden lg:flex',
-    right: 'flex items-center justify-end lg:flex-1 gap-1.5',
+    // * Changes: gap-2, not upstream's off-scale gap-1.5 — 6px is not on the spacing scale (annex §3), and it left the divider crowded against the readout and the buttons either side.
+    // * Default: 'flex items-center justify-end lg:flex-1 gap-1.5'
+    right: 'flex items-center justify-end lg:flex-1 gap-2',
     // * Changes: the wordmark is the display face — condensed, tracked, cream. text-highlighted is ink and would vanish against the teal band. It truncates below lg rather than holding its width: at 320px the header also carries the Story Setup glyph, and an unshrinkable wordmark runs underneath it.
     // * Default: 'shrink-0 font-bold text-xl text-highlighted flex items-end gap-1.5'
     title:

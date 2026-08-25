@@ -16,7 +16,8 @@
       <template #right>
         <BudgetCounters />
 
-        <div class="hidden h-6 w-px bg-secondary-700 md:block" />
+        <!-- * The board draws this 1px × 28 in a teal lighter than the bar, which reads as a divider — secondary-700 was darker than the chrome and read as a seam. secondary-500 is lighter but only 1.29:1 and still barely visible, so this is the 400 step at 2.74:1: above the bar, below the steel of the labels it separates, so it divides without competing (annex §1, §14.1). mx-2 on top of the row's gap-2 gives it the 16px either side the board's 20 rounds to (§3). -->
+        <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
 
         <!-- * Three renderings of the same two clusters, one per tier of the ladder in annex §13. The split is CSS-only on purpose: a JS breakpoint would have to resolve before first paint or the header would flicker through the wrong tier on every load. -->
         <!-- * The same subtle neutral as Save: the secondary solid is teal on teal chrome (1.29:1) and the control simply disappears there, where the tan fill reads at 6.65:1 (annex §14.1). -->
