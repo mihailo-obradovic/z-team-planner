@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Approved
 
 ## Task Weight
 
@@ -45,6 +45,7 @@ Non-goals:
 - Editable profile fields, avatars, display names other than Google's.
 - Roles, admin surfaces, or any permission beyond "owns their own builds".
 - Requiring an account for anything that works anonymously today.
+- Import semantics — name collisions between a kept local build and an existing account build, renaming, per-item outcomes — are feature 005's; this feature only shows the offer.
 
 ## User / System Behavior
 
@@ -133,8 +134,6 @@ Walkthrough — anonymous sees today's app plus a Sign in button and the hint. A
 - Firebase project provisioned (map task): web config in public runtime config, service-account JSON in the API's environment.
 
 ## Open Questions
-
-- Import UX detail — name collisions between a kept local build and an existing account build, and whether "Keep selected" should offer renaming. Resolved with feature 005.
 
 ## Tests
 
