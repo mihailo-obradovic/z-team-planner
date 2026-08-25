@@ -58,7 +58,6 @@
       </template>
     </u-header>
 
-    <!-- * The one decorative image in the product (annex §10): a fixed, full-bleed wash at 20% under everything, which is why it is pointer-events-none and alt="". The page needs relative/z-10 to sit above it. -->
     <NuxtImg
       src="/images/background.webp"
       class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"

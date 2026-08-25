@@ -6,7 +6,6 @@
     :ui="{ body: 'flex flex-col gap-8 p-4 sm:p-6' }"
   >
     <template #body>
-      <!-- * xl rather than the app-wide default: the drawer is a single-column surface with three controls on it, and it is the one place the episode choices are read and changed, so the step up in type is the whole surface's rather than one control's. -->
       <div class="flex flex-col gap-4">
         <u-form-field label="Episode 3: Cut" size="xl">
           <u-select
@@ -26,7 +25,6 @@
           />
         </u-form-field>
 
-        <!-- * Horizontal here where the selects are stacked: a switch is a short control with nothing to fill a row's width, and a label above it reads as a heading for the block below rather than a name for the control beside it. -->
         <u-form-field
           label="Show Episode 8 recruits"
           orientation="horizontal"
@@ -38,7 +36,6 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <!-- * The rules either side are the mockup's section head: the budget block has no panel of its own, so the rule is what separates it from the episode controls above. -->
         <u-separator
           label="Training budget"
           :ui="{
@@ -63,7 +60,6 @@
               {{ budget.used }}/{{ budget.max }}
             </span>
 
-            <!-- * A reset is offered only while the budget is non-zero (feature 003, Business Rules) — an always-present reset on an empty budget is a no-op control. -->
             <TooltipButton
               v-if="budget.used > 0"
               :text="`Reset ${budget.label.toLowerCase()}`"
@@ -101,12 +97,7 @@ import {
   MAX_BONUS_POINTS
 } from '@/types/hero';
 
-// ---
-
-// * Ephemeral by contract (feature 003, Story Setup drawer): the open state is owned by the shell, not persisted and not addressable by URL. Every control below writes through immediately, so there is no commit step and closing discards nothing.
 const open = defineModel<boolean>('open', { required: true });
-
-// ---
 
 const {
   ep3Cut,
@@ -122,8 +113,6 @@ const {
   resetAllBonusLevels,
   resetAllTrainings
 } = useHeroPlanner();
-
-// ---
 
 const budgets = computed(() => [
   {

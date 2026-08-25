@@ -1,5 +1,4 @@
 <template>
-  <!-- * Mounted once at the shell. The controls that open these render in two places (header and mobile action bar), so the dialogs cannot live beside them — see useBuildDialogs. -->
   <u-modal v-model:open="saveSharedOpen" title="Save as my build">
     <template #body>
       <u-form-field label="Build name">
@@ -14,11 +13,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button
-          variant="ghost"
-          color="neutral"
-          @click="saveSharedOpen = false"
-        >
+        <u-button variant="ghost" color="neutral" @click="closeSaveShared">
           Cancel
         </u-button>
         <u-button @click="confirmSaveShared">Save</u-button>
@@ -40,7 +35,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="newBuildOpen = false">
+        <u-button variant="ghost" color="neutral" @click="closeNewBuild">
           Cancel
         </u-button>
         <u-button @click="confirmNewBuild">Create</u-button>
@@ -57,7 +52,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="deleteOpen = false">
+        <u-button variant="ghost" color="neutral" @click="closeDelete">
           Cancel
         </u-button>
         <u-button color="error" @click="confirmDelete">Delete</u-button>
@@ -78,7 +73,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="renameOpen = false">
+        <u-button variant="ghost" color="neutral" @click="closeRename">
           Cancel
         </u-button>
         <u-button @click="confirmRename">Rename</u-button>
@@ -89,8 +84,6 @@
 
 <script setup lang="ts">
 const toast = useToast();
-
-// ---
 
 const {
   activeBuildId,
@@ -112,7 +105,9 @@ const {
   renameBuildName
 } = useBuildDialogs();
 
-// ---
+function closeSaveShared() {
+  saveSharedOpen.value = false;
+}
 
 function confirmSaveShared() {
   const name = newBuildName.value.trim() || 'Imported build';
@@ -123,6 +118,10 @@ function confirmSaveShared() {
   toast.add({ title: `Saved as "${name}"`, color: 'success' });
 }
 
+function closeNewBuild() {
+  newBuildOpen.value = false;
+}
+
 function confirmNewBuild() {
   const name = newBuildName.value.trim() || 'New build';
 
@@ -130,6 +129,10 @@ function confirmNewBuild() {
   newBuildOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Created "${name}"`, color: 'success' });
+}
+
+function closeDelete() {
+  deleteOpen.value = false;
 }
 
 function confirmDelete() {
@@ -146,6 +149,10 @@ function confirmDelete() {
   }
 
   toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
+}
+
+function closeRename() {
+  renameOpen.value = false;
 }
 
 function confirmRename() {

@@ -1,5 +1,4 @@
 <template>
-  <!-- * w-full with a max, not a fixed w-92: 368px clips at the 320px reflow floor (annex §14.3). -->
   <div class="w-full max-w-92 bg-default panel">
     <div class="flex plate items-center justify-between gap-2 px-3">
       <h3 class="truncate font-heading text-title uppercase">
@@ -7,9 +6,7 @@
       </h3>
 
       <div class="flex items-center gap-2">
-        <!-- * Flight School is its own training track with its own budget (context/game-mechanics.md, Flight School), and it was the fifth chip that pushed the power strip past the portrait's width. It sits with the other per-hero glyphs instead, and reserves its slot only for the five heroes in HERO_FLIGHT — the same rule the reset and bonus wrappers follow. -->
         <div v-if="flightInfo" class="flex w-6 items-center justify-center">
-          <!-- * The slot stays reserved while the glyph goes: a hero whose flight is a power's side effect has no flight to show once the power takes it away, but pulling the whole slot would shuffle the header's glyphs sideways on a power toggle. -->
           <TooltipButton
             v-if="flightShown"
             :text="`${flightInfo.name}: ${flightInfo.description}`"
@@ -54,7 +51,6 @@
     </div>
 
     <div class="flex justify-between gap-3 p-3">
-      <!-- * The portrait column is pinned to the portrait's own 108px (annex §13). Left auto-width, the strip sized the column instead of the image, and the difference came out of the stat list — so Flambae and Coupé's stat rows stopped lining up with everyone else's. -->
       <div class="flex w-27 shrink-0 flex-col gap-2">
         <NuxtImg
           :src="portraitSrc"
@@ -62,7 +58,7 @@
           class="aspect-square size-27 cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
           @click="$emit('viewDetail')"
         />
-        <!-- * Hero Power Training only, now that flight sits in the header: a fixed one-row box, never wrapping. Four 24px chips and three 4px gaps is 108, which is why the portrait is 108 and not the 112 it started at — a full row lines up with the image edge to edge, and a shorter one still centres under it. The box is sized for four; a hero gaining a fifth chip breaks it (feature 003, Business Rules). -->
+
         <div v-if="powers" class="flex h-6 items-center justify-center gap-1">
           <TooltipButton
             v-if="heroId === 'sonar'"
@@ -125,7 +121,7 @@
               <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
               {{ stat }}
             </span>
-            <!-- * The stepper slots are reserved, not conditional: a fixed-level recruit renders no buttons, and without the wrappers its stat column measures 116 against everyone else's 172 — a narrower card in the same roster. Same rule as the header cluster's w-6 slots. -->
+
             <div class="ml-2 flex items-center gap-1">
               <div class="flex w-6 items-center justify-center">
                 <IconButton
@@ -136,11 +132,13 @@
                   @click="statDown(heroId, resolvedStat(stat))"
                 />
               </div>
+
               <span class="w-5 text-center font-bold">{{
                 hero.startingStats[resolvedStat(stat)] +
                 statBonuses[resolvedStat(stat)] +
                 specialPowerBonus[resolvedStat(stat)]
               }}</span>
+
               <div class="flex w-6 items-center justify-center">
                 <IconButton
                   v-if="canLevelUp"
@@ -285,8 +283,7 @@ const flightInfo = computed(
   () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
 );
 
-// * Phenomaman on Heavily Medicated does not have a disabled flight — he has no
-// * flight. Every other flier's glyph is a state the card can show as off.
+// * Phenomaman on Heavily Medicated does not have a disabled flight — he has no flight. Every other flier's glyph is a state the card can show as off.
 const flightShown = computed(() => {
   const capability =
     HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
@@ -330,9 +327,7 @@ const heroLevel = computed(() => {
   const fixedLevel =
     FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
   if (fixedLevel !== undefined) return fixedLevel;
-  // * A bonus level raises the per-hero cap; it does not itself raise the level.
-  // * Counting it here made the level jump the moment the bonus was granted,
-  // * before the extra point was spent — and disagreed with the detail dialog.
+  // * A bonus level raises the per-hero cap; it does not itself raise the level. Counting it here made the level jump the moment the bonus was granted, before the extra point was spent — and disagreed with the detail dialog.
   return 1 + getLevelUpPointsUsedValue.value;
 });
 
