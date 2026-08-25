@@ -1,87 +1,97 @@
 <template>
-  <div class="flex items-center gap-2">
-    <!-- Shared build banner -->
-    <template v-if="isViewingSharedBuild">
-      <!-- * Solid, not subtle: a subtle badge is its own hue on a near-paper tint, and both signal and gold fail AA that way (3.0:1 and worse). Solid puts ink on the fill instead. -->
-      <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
-        Viewing shared build
-      </u-badge>
+  <!-- ! Two grid tracks, not two `flex-1` children: `flex-1` is `flex: 1 1 0%`, and a percentage basis resolves against the content box, so Share's `px-4` is added on top of its share and the row splits 218/250 instead of in half. A `1fr` track is measured on the border box. -->
+  <div
+    :class="
+      block
+        ? 'grid grid-cols-2 items-center gap-2'
+        : 'flex items-center gap-2'
+    "
+  >
+    <!-- * In the mobile action bar the row splits in half: the save/build-selector cluster takes one track, Share the other, so the primary action keeps a constant width whatever the cluster is showing. In the header the group is transparent (`contents`) and the controls sit inline as before. -->
+    <div :class="block ? 'flex min-w-0 items-center gap-2' : 'contents'">
+      <!-- Shared build banner -->
+      <template v-if="isViewingSharedBuild">
+        <!-- * Solid, not subtle: a subtle badge is its own hue on a near-paper tint, and both signal and gold fail AA that way (3.0:1 and worse). Solid puts ink on the fill instead. -->
+        <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
+          Viewing shared build
+        </u-badge>
 
-      <u-tooltip text="Save as mine" :disabled="labelled">
-        <u-button
-          :size="size"
-          variant="subtle"
-          color="neutral"
-          icon="i-lucide-save"
-          :label="labelled ? 'Save as mine' : undefined"
-          :aria-label="labelled ? undefined : 'Save as mine'"
-          :block="block"
-          @click="saveSharedOpen = true"
-        />
-      </u-tooltip>
+        <u-tooltip text="Save as mine" :disabled="labelled">
+          <u-button
+            :size="size"
+            variant="subtle"
+            color="neutral"
+            icon="i-lucide-save"
+            :label="labelled ? 'Save as mine' : undefined"
+            :aria-label="labelled ? undefined : 'Save as mine'"
+            :block="block"
+            @click="saveSharedOpen = true"
+          />
+        </u-tooltip>
 
-      <u-tooltip text="Back to my build" :disabled="labelled">
-        <u-button
+        <u-tooltip text="Back to my build" :disabled="labelled">
+          <u-button
+            v-if="savedBuilds.length > 0"
+            :size="size"
+            variant="subtle"
+            color="neutral"
+            icon="i-lucide-undo-2"
+            :label="labelled ? 'Back to my build' : undefined"
+            :aria-label="labelled ? undefined : 'Back to my build'"
+            :block="block"
+            @click="backToMyBuild"
+          />
+        </u-tooltip>
+      </template>
+
+      <!-- Normal mode -->
+      <template v-else>
+        <u-tooltip text="Save" :disabled="labelled">
+          <u-button
+            v-if="hasUnsavedChanges || savedBuilds.length === 0"
+            :size="size"
+            variant="subtle"
+            color="neutral"
+            icon="i-lucide-save"
+            :label="labelled ? 'Save' : undefined"
+            :aria-label="labelled ? undefined : 'Save'"
+            :block="block"
+            @click="handleSave"
+          />
+        </u-tooltip>
+
+        <!-- * The build selector doubles as the build menu: switching, renaming, creating and deleting are all build management, and giving each its own icon button is what crowded the header (feature 003, Story Setup drawer). -->
+        <u-dropdown-menu
           v-if="savedBuilds.length > 0"
-          :size="size"
-          variant="subtle"
-          color="neutral"
-          icon="i-lucide-undo-2"
-          :label="labelled ? 'Back to my build' : undefined"
-          :aria-label="labelled ? undefined : 'Back to my build'"
-          :block="block"
-          @click="backToMyBuild"
-        />
-      </u-tooltip>
-    </template>
-
-    <!-- Normal mode -->
-    <template v-else>
-      <u-tooltip text="Save" :disabled="labelled">
-        <u-button
-          v-if="hasUnsavedChanges || savedBuilds.length === 0"
-          :size="size"
-          variant="subtle"
-          color="neutral"
-          icon="i-lucide-save"
-          :label="labelled ? 'Save' : undefined"
-          :aria-label="labelled ? undefined : 'Save'"
-          :block="block"
-          @click="handleSave"
-        />
-      </u-tooltip>
-
-      <!-- * The build selector doubles as the build menu: switching, renaming, creating and deleting are all build management, and giving each its own icon button is what crowded the header (feature 003, Story Setup drawer). -->
-      <u-dropdown-menu
-        v-if="savedBuilds.length > 0"
-        :items="buildMenuItems"
-        :ui="{ content: 'min-w-48' }"
-        :class="block ? 'flex-1' : undefined"
-      >
-        <u-button
-          :size="size"
-          variant="solid"
-          color="secondary"
-          trailing-icon="i-lucide-chevron-down"
-          :block="block"
-          class="max-w-40"
-          :ui="{ label: 'truncate' }"
+          :items="buildMenuItems"
+          :ui="{ content: 'min-w-48' }"
+          :class="block ? 'min-w-0 flex-1' : undefined"
         >
-          {{ activeBuildName }}
-        </u-button>
-      </u-dropdown-menu>
+          <u-button
+            :size="size"
+            variant="solid"
+            color="secondary"
+            trailing-icon="i-lucide-chevron-down"
+            :block="block"
+            :class="block ? undefined : 'max-w-40'"
+            :ui="{ label: 'truncate' }"
+          >
+            {{ activeBuildName }}
+          </u-button>
+        </u-dropdown-menu>
 
-      <!-- * Not a badge on the button: unsaved state has to read at a glance next to Save, and a dot inside the label would be lost at the icon-only tier. -->
-      <u-badge
-        v-if="hasUnsavedChanges && savedBuilds.length > 0"
-        color="warning"
-        variant="solid"
-        size="sm"
-        class="max-lg:hidden"
-      >
-        Unsaved changes
-      </u-badge>
-    </template>
+        <!-- * Not a badge on the button: unsaved state has to read at a glance next to Save, and a dot inside the label would be lost at the icon-only tier. -->
+        <u-badge
+          v-if="hasUnsavedChanges && savedBuilds.length > 0"
+          color="warning"
+          variant="solid"
+          size="sm"
+          class="max-lg:hidden"
+        >
+          Unsaved changes
+        </u-badge>
+      </template>
+    </div>
 
     <u-tooltip text="Share" :disabled="labelled">
       <u-button
@@ -92,6 +102,7 @@
         :label="labelled ? 'Share' : undefined"
         :aria-label="labelled ? undefined : 'Share'"
         :block="block"
+        :class="block ? 'min-w-0' : undefined"
         @click="handleShare"
       />
     </u-tooltip>
@@ -110,7 +121,7 @@ withDefaults(
     // * and up, icon-only at `md`, and labelled again in the mobile action bar
     // * where there is width for them.
     labelled?: boolean;
-    // * The mobile action bar is three equal-width 44px buttons.
+    // * The mobile action bar lays the controls out as two 50% halves.
     block?: boolean;
     // * md is the annex's button step (§13); xs is the 24px stepper step and
     // * was never a button height.
