@@ -53,6 +53,7 @@
             :text="sonarFormTooltip"
             :icon="sonarFormIcon"
             :color="monsterForm ? 'primary' : 'neutral'"
+            :active="monsterForm"
             @click="monsterForm = !monsterForm"
           />
 
@@ -60,6 +61,7 @@
             :text="`${powers[0]!.name}: ${powers[0]!.description}`"
             :icon="POWER_ICONS[0]"
             :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
+            :active="powerStates.startingRevealed"
             @click="toggleStartingPower(heroId)"
           />
 
@@ -69,6 +71,7 @@
             :text="`${power.name}: ${power.description}`"
             :icon="POWER_ICONS[i + 1]!"
             :color="trainablePowerColor(i)"
+            :active="trainablePowerActive(i)"
             :disabled="isTrainableDisabled(i)"
             @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
           />
@@ -78,6 +81,7 @@
             :text="`${flightInfo.name}: ${flightInfo.description}`"
             icon="i-lucide-plane"
             :color="flightColor"
+            :active="flightActive"
             :disabled="flightLocked"
             @click="toggleFlight(heroId)"
           />
@@ -87,6 +91,7 @@
             text="Supernova: Set Combat and Mobility to 10"
             icon="i-lucide-flame"
             :color="specialPowerState ? 'primary' : 'neutral'"
+            :active="specialPowerState > 0"
             @click="toggleSpecialPower(heroId)"
           />
 
@@ -95,6 +100,7 @@
             :text="coupeTooltip"
             :icon="coupeIcon"
             :color="specialPowerState ? 'primary' : 'neutral'"
+            :active="specialPowerState > 0"
             @click="toggleSpecialPower(heroId)"
           />
         </div>
@@ -251,7 +257,11 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
 });
 
 function trainablePowerColor(i: number) {
-  return powerStates.value.trainableSelected === i + 1 ? 'primary' : 'neutral';
+  return trainablePowerActive(i) ? 'primary' : 'neutral';
+}
+
+function trainablePowerActive(i: number) {
+  return powerStates.value.trainableSelected === i + 1;
 }
 
 function isTrainableDisabled(i: number) {

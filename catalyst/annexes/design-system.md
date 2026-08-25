@@ -240,7 +240,15 @@ Separation is a border **or** a shadow, not both — except the `panel` treatmen
 | Dialog / modal     | `panel` + scrim (§7) |                                                            |
 | Toast              | `panel`              |                                                            |
 
-One shadow value, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, and no ad-hoc one-offs.
+One shadow value for elevation, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, and no ad-hoc one-offs.
+
+**Selection is not elevation.** A control that is _on_ — a toggled power chip, the active tab — is marked with a 1px gold halo drawn as a shadow, `0 0 0 1px var(--ui-color-warning-500)`, and never by raising it. This is the second and last shadow the system spends, and it is a state marker rather than a depth cue: it sits flush against the control's edge and reads as the gold that §1 gives selection. The halo is the whole of the button's `active` variant — the fill stays whatever the control's colour already is, which is what the mockups vary between an off chip (tan) and an on one (amber). Larger selected objects — a hero portrait, a mission template panel — take the same gold at 2px instead, as a ring rather than a halo.
+
+| Selected thing     | Marker                                                     |
+| ------------------ | ---------------------------------------------------------- |
+| Button / chip (on) | 1px gold halo + the control's own `primary` fill           |
+| Tab (active)       | 1px gold halo + paper fill + 3px inset `primary` underline |
+| Portrait / panel   | 2px gold ring                                              |
 
 The template's "in dark mode, elevation is surface colour, not shadow" does not apply here and is not a deviation: the surfaces are light and the ground is dark, so a dark shadow under a cream panel reads exactly as intended. It would apply to any surface drawn _on_ the paper, which instead separates with a border.
 
@@ -333,23 +341,24 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 
 The scales above, resolved per element. Every value here was measured from the built UI, not intended — a component is checked against this table, and a value that is not here is not a decision yet.
 
-| Element            | Height / size             | Padding          | Radius | Border          | Shadow  |
-| ------------------ | ------------------------- | ---------------- | ------ | --------------- | ------- |
-| Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none            | none    |
-| Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none    |
-| Icon button        | square at its step        | none             | 0      | none            | none    |
-| Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none    |
-| Switch             | 44 × 24 track, 16 thumb   | —                | 0      | 2px             | none    |
-| Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none    |
-| Tab trigger        | 36                        | `px-5`           | 0      | 2px             | none    |
-| Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom      | none    |
-| Mobile action bar  | 70 (44 buttons + `p-3`)   | `p-3`            | 0      | 2px top         | none    |
-| Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`         | `panel` |
-| Ruled band         | its content's height      | —                | 0      | 1px `secondary` | none    |
-| Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom      | none    |
-| Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`         | `panel` |
-| Dropdown / popover | auto                      | —                | 0      | `panel`         | `panel` |
-| Toast              | auto                      | `p-4`            | 0      | `panel`         | `panel` |
+| Element            | Height / size             | Padding          | Radius | Border          | Shadow        |
+| ------------------ | ------------------------- | ---------------- | ------ | --------------- | ------------- |
+| Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none            | none          |
+| Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none          |
+| Icon button        | square at its step        | none             | 0      | none            | none          |
+| Button / chip (on) | its step                  | its step's       | 0      | none            | 1px gold halo |
+| Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none          |
+| Switch             | 44 × 24 track, 16 thumb   | —                | 0      | 2px             | none          |
+| Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none          |
+| Tab trigger        | 36                        | `px-5`           | 0      | 2px             | none          |
+| Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom      | none          |
+| Mobile action bar  | 70 (44 buttons + `p-3`)   | `p-3`            | 0      | 2px top         | none          |
+| Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`         | `panel`       |
+| Ruled band         | its content's height      | —                | 0      | 1px `secondary` | none          |
+| Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom      | none          |
+| Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`         | `panel`       |
+| Dropdown / popover | auto                      | —                | 0      | `panel`         | `panel`       |
+| Toast              | auto                      | `p-4`            | 0      | `panel`         | `panel`       |
 
 **Layouts:**
 

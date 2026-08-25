@@ -90,9 +90,10 @@ export default {
     loading: {
       true: ''
     },
+    // * Changes: the boards mark an on control with a 1px gold halo and nothing else — `.chip.on` and `.tab.active` both carry it, and tabs.ts already spends the same shadow for the active tab. The fill is deliberately not set here: it stays the call site's `color`, which is what the boards vary between an off chip (tan) and an on one (amber), and a fill set here would lose to the colour compound variants below anyway. Default: both states empty.
     active: {
       true: {
-        base: ''
+        base: 'shadow-[0_0_0_1px_var(--ui-color-warning-500)]'
       },
       false: {
         base: ''
