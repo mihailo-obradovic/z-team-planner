@@ -123,22 +123,25 @@
               <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
               {{ stat }}
             </span>
+            <!-- * The stepper slots are reserved, not conditional: a fixed-level recruit renders no buttons, and without the wrappers its stat column measures 116 against everyone else's 172 — a narrower card in the same roster. Same rule as the header cluster's w-6 slots. -->
             <div class="ml-2 flex items-center gap-1">
-              <template v-if="canLevelUp">
+              <div class="flex w-6 items-center justify-center">
                 <IconButton
+                  v-if="canLevelUp"
                   icon="i-lucide-minus"
                   color="neutral"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
                   @click="statDown(heroId, resolvedStat(stat))"
                 />
-              </template>
+              </div>
               <span class="w-5 text-center font-medium">{{
                 hero.startingStats[resolvedStat(stat)] +
                 statBonuses[resolvedStat(stat)] +
                 specialPowerBonus[resolvedStat(stat)]
               }}</span>
-              <template v-if="canLevelUp">
+              <div class="flex w-6 items-center justify-center">
                 <IconButton
+                  v-if="canLevelUp"
                   icon="i-lucide-plus"
                   color="neutral"
                   :disabled="
@@ -149,7 +152,7 @@
                   "
                   @click="statUp(heroId, resolvedStat(stat))"
                 />
-              </template>
+              </div>
             </div>
           </li>
         </ul>
