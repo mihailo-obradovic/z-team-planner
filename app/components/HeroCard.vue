@@ -134,7 +134,7 @@
                   @click="statDown(heroId, resolvedStat(stat))"
                 />
               </div>
-              <span class="w-5 text-center font-medium">{{
+              <span class="w-5 text-center font-bold">{{
                 hero.startingStats[resolvedStat(stat)] +
                 statBonuses[resolvedStat(stat)] +
                 specialPowerBonus[resolvedStat(stat)]
