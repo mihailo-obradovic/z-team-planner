@@ -212,7 +212,9 @@ Nothing holding content takes a fixed height — `min-height` and let content si
 
 `--ui-radius: 0` is the whole story — Nuxt UI derives Tailwind's `--radius-*` steps from it, so every `rounded-*` utility resolves flat and there is no second radius token to keep in sync. Hard edges are the design, not a default left unset.
 
-Two things do not follow `--ui-radius` and must be overridden explicitly in the component config that uses them: `rounded-full` is a literal in Nuxt UI's themes (the switch track and thumb, the tabs indicator) and becomes `rounded-none`; anything drawn as an SVG circle is geometry, not radius, and stays round where the design shows a disc.
+Two things do not follow `--ui-radius` and must be overridden explicitly in the component config that uses them: `rounded-full` is a literal in Nuxt UI's themes (the switch track and thumb, the tabs indicator) and becomes `rounded-none!`; anything drawn as an SVG circle is geometry, not radius, and stays round where the design shows a disc.
+
+The `!` on that override is load-bearing. A config extends the upstream theme rather than replacing it, so both radius utilities reach the class list, and which one paints is decided by their order in the stylesheet — not by their order in the string. Without it the flat track holds most of the time and reverts to a pill whenever the build orders the two the other way.
 
 ### Border width
 
@@ -337,7 +339,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none    |
 | Icon button        | square at its step        | none             | 0      | none            | none    |
 | Input / select     | 32                        | `px-2.5`         | 0      | 2px inset ring  | none    |
-| Switch             | 32 × 18 track             | —                | 0      | 2px             | none    |
+| Switch             | 44 × 24 track, 16 thumb   | —                | 0      | 2px             | none    |
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none    |
 | Tab trigger        | 36                        | `px-5`           | 0      | 2px             | none    |
 | Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom      | none    |
@@ -423,7 +425,7 @@ The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not sma
 
 The two bare glyph triggers in the mobile header — Story Setup and the menu — paint at 20-22px and pad their hit area to 44, not merely to the 24 floor: they are the only route to episode setup and to build management at that width, which makes them primary touch actions.
 
-The switch is the one control whose paint is under the floor — a 32 × 18 track. Its hit area is padded to 24 with an `::after` box rather than growing the track, because the floor is about the target, not the paint. Verified by hit-testing 2px above the visual track.
+The switch used to be the one control whose paint was under the floor. It is drawn at the mockup's size now — a 44 × 24 track — so the paint is the target, and the `::after` box that padded it to 24 stays in the theme only for the smaller size variants, which the app does not currently render.
 
 ### 14.3 Breakpoints & reflow
 
