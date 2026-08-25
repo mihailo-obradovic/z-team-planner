@@ -19,11 +19,12 @@
         <div class="hidden h-6 w-px bg-secondary-700 md:block" />
 
         <!-- * Three renderings of the same two clusters, one per tier of the ladder in annex §13. The split is CSS-only on purpose: a JS breakpoint would have to resolve before first paint or the header would flicker through the wrong tier on every load. -->
+        <!-- * The same subtle neutral as Save: the secondary solid is teal on teal chrome (1.29:1) and the control simply disappears there, where the tan fill reads at 6.65:1 (annex §14.1). -->
         <u-button
           class="hidden lg:inline-flex"
-          size="xs"
-          variant="solid"
-          color="secondary"
+          size="md"
+          variant="subtle"
+          color="neutral"
           icon="i-lucide-sliders-horizontal"
           label="Story setup"
           @click="storySetupOpen = true"
@@ -32,9 +33,9 @@
         <u-tooltip text="Story setup">
           <u-button
             class="hidden md:inline-flex lg:hidden"
-            size="xs"
-            variant="solid"
-            color="secondary"
+            size="md"
+            variant="subtle"
+            color="neutral"
             icon="i-lucide-sliders-horizontal"
             aria-label="Story setup"
             @click="storySetupOpen = true"

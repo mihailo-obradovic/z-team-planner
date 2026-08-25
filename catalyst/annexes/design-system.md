@@ -348,7 +348,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Icon button        | square at its step        | none             | 0      | none            | none          |
 | Button / chip (on) | its step                  | its step's       | 0      | none            | 1px gold halo |
 | Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none          |
-| Switch             | 44 × 24 track, 16 thumb   | —                | 0      | 2px             | none          |
+| Switch             | 44 × 24 track, 16 thumb   | `p-0.5`          | 0      | 2px             | none          |
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none          |
 | Tab trigger        | 36                        | `px-5`           | 0      | 2px             | none          |
 | Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom      | none          |
@@ -419,12 +419,13 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A rule
 | steel                   | chrome      | 5.09  | AA — header labels              |
 | gold                    | chrome      | 6.76  | AA — counters, Story Setup      |
 | secondary solid         | chrome      | 1.29  | **fails — never a button here** |
+| neutral subtle          | chrome      | 6.65  | AA — Story Setup and Save       |
 | cream                   | teal solid  | 6.99  | AA                              |
 | cream                   | ground      | 13.19 | AA                              |
 | gold                    | ground      | 9.87  | AA                              |
 | edge ring               | ground      | 3.31  | non-text, meets 3:1             |
 
-Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger is gold there instead. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
+Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
 
 Re-measure after any token change. A brand colour that fails as text is constrained to a fill role and recorded here rather than nudged until it passes.
 

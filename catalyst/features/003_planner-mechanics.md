@@ -149,20 +149,16 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 
 ## Verification
 
-Walked live in Chrome on `feature/003-story-setup-drawer` (2026-08-25), at 1600, 1440, 1024, 768, 390 and 320:
+Walked live on `feature/003-story-setup-drawer` (2026-08-25), in Chrome and then headless against the dev server, at 1600 / 1280 / 1024 / 768 / 390 / 320. This records what is true now; measurements the later passes superseded are not kept.
 
-- **Tier ladder** (annex §13): each tier drops what the ladder says and nothing else; at 320 `scrollWidth === clientWidth` and no label is clipped — the tab list scrolls inside itself.
-- **Drawer**: `Reset all trainings` took `7/7 · 0/2 · 4/4` → `0/7 · 0/2 · 0/4` in one click, then disabled itself and the per-row resets disappeared; a per-budget reset moved the readout with it, and gating held — at `7/7 · 0/2 · 4/4` exactly two glyphs rendered.
-- **Roster grouping**: each pair carries its marker between its two cards at every tier, and the recruit heading reaches the a11y tree as `heading level=2` while the bands themselves stay out of it (`decorative`). At one column wide the pair still reads tighter than the gap to the next pair — the defect this closed.
-- **Accessible names**: dialog, selects and switch labelled, base-tier glyph 44 × 44 (§14.2); `TooltipButton` was unnamed and now passes its text through `IconButton`'s `label`. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are still unnamed — one line each.
-
-A second walk followed the minor-fix pass on the same branch (2026-08-25, headless Chromium against the dev server), re-measuring what the fixes touched:
-
-- **Header**: every action is 32 × 32 at `xl`, `lg` and `md`, the base-tier glyph 44 × 44. The Story Setup trigger paints gold (`rgb(233,190,98)`) instead of the secondary teal that measured 1.29:1 on the chrome (annex §14.1). The ladder still holds at 1600 / 1280 / 1024 / 768 / 390 / 320, and `scrollWidth === clientWidth` at every one of them.
-- **Tabs**: the Mission simulator's `Concept` chip is gone. The tab list now fits from 360 up; 320 is the only width where it still overflows (353 vs 320) and scrolls inside itself, which is what `overflow-x-auto` plus `shrink-0` is there for.
-- **Hero card**: the portrait column is pinned to 112px and the toggle strip wraps inside it, so every card reports the same `112 / 172` columns at 1600 and at 320 — Flambae and Coupé included, where the strip now takes two rows (60px) instead of widening the card. The bonus `+` and the stat `+` steppers share a right edge to the pixel.
-- **Level readout**: `+1 bonus` left the level at 2 and only the allocation moved it to 3; the detail dialog agreed.
-- **Close buttons**: the drawer's and the dialog's `×` centre on the plate band (both at 21 against the title's 21, in a band spanning 2 → 42) and end on the title's own rail, at `sm`-and-up and base widths alike.
+- **Tier ladder** (annex §13): each tier drops what the ladder says and nothing else. Every header action is 32 × 32 from `md` up, the base-tier glyphs 44 × 44. Story Setup paints `rgb(213,192,150)` — Save's fill — at 6.65:1 on the chrome, where the secondary solid it replaced measured 1.29:1 (§14.1).
+- **Reflow**: `scrollWidth === clientWidth` at every width, 320 included. Below `sm` the three tabs are equal thirds of the frame — 91px each at 320, nothing clipped — which retires the tab list's old 320px overflow; from 640 the content-width row is unchanged.
+- **Hero cards are uniform**: at every width each card reports the same box, portrait 108 × 108, power strip 108 × 24 and stat column. Sonar's four chips — the worst case — sit flush with the portrait's edges (0px offset both sides); three chips centre with 14px either side. Nothing reflows on click: through reveal → trainable-2 → Supernova the strip held 108 × 24. Flight's glyph renders in the header for the five heroes in `HERO_FLIGHT` and its slot is absent for the other six. The bonus `+` and the stat `+` steppers share a right edge to the pixel.
+- **Level readout**: `+1 bonus` left the level at 2; only the allocation moved it to 3, and the detail dialog agreed.
+- **Drawer**: `Reset all trainings` took `7/7 · 0/2 · 4/4` → `0/7 · 0/2 · 0/4` in one click, then disabled itself and the per-row resets disappeared; gating held — at `7/7 · 0/2 · 4/4` exactly two glyphs rendered.
+- **Roster grouping**: each pair carries its marker between its two cards at every tier; the recruit heading reaches the a11y tree as `heading level=2` while the bands stay out of it (`decorative`). The roster-to-recruit seam is 48px card to card, the same 48 that separates stacked card rows.
+- **Close buttons**: the drawer's and the dialog's `×` centre on the plate band and end on the title's own rail, at `sm`-and-up and base widths alike.
+- **Accessible names**: dialog, selects and switch labelled; `TooltipButton` passes its text through `IconButton`'s `label`. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are still unnamed — one line each.
 
 Rules were retro-documented from the four composables, HeroCard and index.vue, cross-checked against `context/game-mechanics.md` (Hero Training, Stats, Synergy); flight, episode-cut resets and effective-stat display were exercised live in the feature 001 walk (2026-08-21). oxlint, vue-tsc and vitest pass.
 

@@ -112,9 +112,11 @@ withDefaults(
     labelled?: boolean;
     // * The mobile action bar is three equal-width 44px buttons.
     block?: boolean;
-    size?: 'xs' | 'lg';
+    // * md is the annex's button step (§13); xs is the 24px stepper step and
+    // * was never a button height.
+    size?: 'md' | 'lg';
   }>(),
-  { labelled: true, block: false, size: 'xs' }
+  { labelled: true, block: false, size: 'md' }
 );
 
 // ---
@@ -149,15 +151,21 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
     })
   );
 
+  // * The menu's own actions are words the UI supplies, so they take the label
+  // * role's casing; the build names above them are the user's text and keep
+  // * theirs (annex §2). The menu theme cannot tell the two apart — only this
+  // * call site can — so the class lands per item rather than on the slot.
   const management: DropdownMenuItem[] = [
     {
       label: 'New build...',
       icon: 'i-lucide-plus',
+      class: 'uppercase',
       onSelect: () => openNewBuild('')
     },
     {
       label: 'Rename...',
       icon: 'i-lucide-pencil',
+      class: 'uppercase',
       onSelect: () => openRename(activeBuildName.value)
     }
   ];
@@ -169,6 +177,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       label: 'Delete...',
       icon: 'i-lucide-trash-2',
       color: 'error',
+      class: 'uppercase',
       onSelect: () => {
         deleteOpen.value = true;
       }
