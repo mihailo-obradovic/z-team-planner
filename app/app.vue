@@ -40,9 +40,10 @@
           />
         </u-tooltip>
 
+        <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is right on the amber and gold solids and unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
         <button
           type="button"
-          class="flex size-11 items-center justify-center text-inverted md:hidden"
+          class="flex size-11 items-center justify-center text-neutral-100 md:hidden"
           aria-label="Story setup"
           @click="openStorySetup"
         >
@@ -57,7 +58,14 @@
       </template>
     </u-header>
 
-    <u-main>
+    <!-- * The one decorative image in the product (annex §10): a fixed, full-bleed wash at 20% under everything, which is why it is pointer-events-none and alt="". The page needs relative/z-10 to sit above it. -->
+    <NuxtImg
+      src="/images/background.webp"
+      class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"
+      alt=""
+    />
+
+    <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
 

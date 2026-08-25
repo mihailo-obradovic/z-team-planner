@@ -28,7 +28,7 @@ Type is condensed and shouty for structure (uppercase, tracked labels and titles
 
 - **One theme, no light/dark.** The mockups define a single look; the colour-mode toggle is dropped.
 - **Icons: Lucide only**, inheriting `currentColor` — the `stat-icons` rasters are retired.
-- **The dark background image is gone.** Depth comes from the panel treatment, not a picture behind the content.
+- **The dark background image stays, as a wash.** It was dropped when the design system landed and brought back deliberately: structural depth comes from the panel treatment, and the image is texture behind it at 20% (design-system annex §10), not a competing layer.
 
 ## Concept boards and game rules
 

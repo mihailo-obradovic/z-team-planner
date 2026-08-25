@@ -339,7 +339,13 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 - **Placeholder:** a `--ui-bg-elevated` block at the same aspect ratio while loading, occupying the final geometry.
 - **Alt text is required** — the hero's name for a portrait. `alt=""` only for imagery that is decorative and already `aria-hidden` in effect.
 
-There is no decorative background image. The ground is a flat colour and depth comes from the panel treatment; the retired `public/images/background.png` is not to be reintroduced without a new decision.
+**The page ground carries one decorative image**, and it is the only one in the product that is not a hero portrait: `public/images/background.webp`, fixed and full-bleed behind the whole app at **20% opacity** over the `secondary-900` ground of §1. Structural depth still comes from the panel treatment — the wash sits under it and adds texture, never separation, which is why nothing above it is restyled to account for it.
+
+- **Opacity is 20%** (§7). Higher and it starts competing with the panel edges for the eye; the ground colour, not the image, is what the paper panels are read against.
+- **`pointer-events-none` and `alt=""`** — it is decoration in the §10 sense, outside the accessibility tree and out of the way of every control.
+- The page needs `relative z-10` on `<u-main>` to sit above the fixed layer.
+- **Ships as WebP at 2560px wide** (~300 KB). The original 6668 × 3024 PNG was 13 MB, which `/` being prerendered would have put in front of every first paint; at 20% opacity the detail it carried is not visible.
+- **The highlighted block is neutralised.** The source art marks one downtown building in saturated orange — a call-site highlight from the concept board that means nothing here, and the one spot where a decorative wash would have read as a pointer. The shipped asset paints it as ordinary masonry, with its courtyard tree green and its two window walls blue, so it sits in the skyline like any other building. The source PNG is not in the repo; it is in git history at `c0a045c^`.
 
 ---
 
@@ -407,11 +413,11 @@ A card is fluid below its maximum (`w-full max-w-92`) and its column is capped w
 
 **Header tier ladder.** Every header action is a 32px button (`md`, the button step — `xs` is the stepper step and was never a button height); the bare glyphs below `md` are 44. The 32px step also costs horizontal room: `md`'s `px-3` is 8px per labelled button more than `xs`'s `px-2`, so the labelled row is ~24px wider than the ~1120px it was measured at. It still cannot hold one shape across the range. What gives way, in order:
 
-| From | Wordmark             | Budget readout   | Actions                                                                                 |
-| ---- | -------------------- | ---------------- | --------------------------------------------------------------------------------------- |
-| `xl` | + `BUILD CALCULATOR` | three, labelled  | Story Setup · Save · build ▾ · Share, all labelled                                      |
-| `lg` | wordmark only        | three, labelled  | as above                                                                                |
-| `md` | wordmark only        | three, labelled  | icon-only with tooltips; build ▾ keeps a truncated name                                 |
+| From | Wordmark             | Budget readout   | Actions                                                                                                                                                      |
+| ---- | -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `xl` | + `BUILD CALCULATOR` | three, labelled  | Story Setup · Save · build ▾ · Share, all labelled                                                                                                           |
+| `lg` | wordmark only        | three, labelled  | as above                                                                                                                                                     |
+| `md` | wordmark only        | three, labelled  | icon-only with tooltips; build ▾ keeps a truncated name                                                                                                      |
 | base | wordmark only        | none — see below | bare Story Setup and menu glyphs; Save · Builds ▾ · Share move to the mobile action bar — Save icon-only at its own square, the other two splitting the rest |
 
 Two rules this ladder encodes. **Labels go before information**: an unlabelled floppy disk is still recognisably Save, whereas a hidden `2/7` is simply gone — so button labels drop a tier before the readout does. And the readout's disappearance below `md` is **safe only because the same three budgets are always present in the Story Setup drawer**; if that ever stops being true, this row has to change with it.
