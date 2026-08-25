@@ -8,14 +8,29 @@
     <template #body>
       <div class="flex flex-col gap-4">
         <u-form-field label="Episode 3: Cut">
-          <u-select v-model="ep3Cut" :items="ep3CutItems" variant="subtle" />
+          <u-select
+            v-model="ep3Cut"
+            :items="ep3CutItems"
+            variant="subtle"
+            class="w-full"
+          />
         </u-form-field>
 
         <u-form-field label="Episode 4: Hire">
-          <u-select v-model="ep4Hire" :items="ep4HireItems" variant="subtle" />
+          <u-select
+            v-model="ep4Hire"
+            :items="ep4HireItems"
+            variant="subtle"
+            class="w-full"
+          />
         </u-form-field>
 
-        <u-form-field label="Show Episode 8 recruits">
+        <!-- * Horizontal here where the selects are stacked: a switch is a 32px control with nothing to fill a row's width, and a label above it reads as a heading for the block below rather than a name for the control beside it. -->
+        <u-form-field
+          label="Show Episode 8 recruits"
+          orientation="horizontal"
+          class="justify-between"
+        >
           <u-switch v-model="showEp8Recruits" size="sm" />
         </u-form-field>
 

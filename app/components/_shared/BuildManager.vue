@@ -7,41 +7,49 @@
         Viewing shared build
       </u-badge>
 
-      <u-button
-        :size="size"
-        variant="soft"
-        icon="i-lucide-save"
-        :label="labelled ? 'Save as mine' : undefined"
-        :aria-label="labelled ? undefined : 'Save as mine'"
-        :block="block"
-        @click="saveSharedOpen = true"
-      />
+      <u-tooltip text="Save as mine" :disabled="labelled">
+        <u-button
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-save"
+          :label="labelled ? 'Save as mine' : undefined"
+          :aria-label="labelled ? undefined : 'Save as mine'"
+          :block="block"
+          @click="saveSharedOpen = true"
+        />
+      </u-tooltip>
 
-      <u-button
-        v-if="savedBuilds.length > 0"
-        :size="size"
-        variant="ghost"
-        color="neutral"
-        icon="i-lucide-undo-2"
-        :label="labelled ? 'Back to my build' : undefined"
-        :aria-label="labelled ? undefined : 'Back to my build'"
-        :block="block"
-        @click="backToMyBuild"
-      />
+      <u-tooltip text="Back to my build" :disabled="labelled">
+        <u-button
+          v-if="savedBuilds.length > 0"
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-undo-2"
+          :label="labelled ? 'Back to my build' : undefined"
+          :aria-label="labelled ? undefined : 'Back to my build'"
+          :block="block"
+          @click="backToMyBuild"
+        />
+      </u-tooltip>
     </template>
 
     <!-- Normal mode -->
     <template v-else>
-      <u-button
-        v-if="hasUnsavedChanges || savedBuilds.length === 0"
-        :size="size"
-        variant="soft"
-        icon="i-lucide-save"
-        :label="labelled ? 'Save' : undefined"
-        :aria-label="labelled ? undefined : 'Save'"
-        :block="block"
-        @click="handleSave"
-      />
+      <u-tooltip text="Save" :disabled="labelled">
+        <u-button
+          v-if="hasUnsavedChanges || savedBuilds.length === 0"
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-save"
+          :label="labelled ? 'Save' : undefined"
+          :aria-label="labelled ? undefined : 'Save'"
+          :block="block"
+          @click="handleSave"
+        />
+      </u-tooltip>
 
       <!-- * The build selector doubles as the build menu: switching, renaming, creating and deleting are all build management, and giving each its own icon button is what crowded the header (feature 003, Story Setup drawer). -->
       <u-dropdown-menu
@@ -52,8 +60,8 @@
       >
         <u-button
           :size="size"
-          variant="subtle"
-          color="neutral"
+          variant="solid"
+          color="secondary"
           trailing-icon="i-lucide-chevron-down"
           :block="block"
           class="max-w-40"
@@ -75,16 +83,18 @@
       </u-badge>
     </template>
 
-    <u-button
-      :size="size"
-      variant="ghost"
-      color="neutral"
-      icon="i-lucide-share-2"
-      :label="labelled ? 'Share' : undefined"
-      :aria-label="labelled ? undefined : 'Share'"
-      :block="block"
-      @click="handleShare"
-    />
+    <u-tooltip text="Share" :disabled="labelled">
+      <u-button
+        :size="size"
+        variant="solid"
+        color="primary"
+        icon="i-lucide-share-2"
+        :label="labelled ? 'Share' : undefined"
+        :aria-label="labelled ? undefined : 'Share'"
+        :block="block"
+        @click="handleShare"
+      />
+    </u-tooltip>
   </div>
 </template>
 

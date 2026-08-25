@@ -341,7 +341,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)   | none    |
 | Tab trigger        | 36                        | `px-5`           | 0      | 2px            | none    |
 | Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom     | none    |
-| Mobile action bar  | 64 (three 44 buttons)     | `p-3`            | 0      | 2px top        | none    |
+| Mobile action bar  | 70 (44 buttons + `p-3`)   | `p-3`            | 0      | 2px top        | none    |
 | Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`        | `panel` |
 | Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom     | none    |
 | Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`        | `panel` |
@@ -422,7 +422,7 @@ The switch is the one control whose paint is under the floor — a 32 × 18 trac
 
 `sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536` — Tailwind's defaults, unchanged. Every media query uses them.
 
-The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: header 52 plus action bar 64, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`.
+The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: the header stays 64 (`--ui-header-height` does not vary by breakpoint — the mockup's 52 was not worth a responsive token) and the action bar adds 70, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`. Measured at 320: no horizontal scroll and no element wider than the viewport.
 
 **Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
 
