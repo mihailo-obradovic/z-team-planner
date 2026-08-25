@@ -38,7 +38,7 @@ A build is worthless if it evaporates on refresh or cannot be shown to another p
 
 In scope:
 
-- Serialization of the full planner state into the compact `SerializedBuild` v1 format (`app/types/build.ts`), defaults omitted.
+- Serialization of the full planner state into the compact `SerializedBuild` v1 format (`web/types/build.ts`), defaults omitted.
 - Named builds: save, save-as-new, load, rename, delete, active-build tracking, dirty ("unsaved changes") tracking.
 - Shared-build mode: opening a `?build=` link, viewing it without touching local builds, saving it as one's own, returning to the active local build.
 
@@ -74,7 +74,7 @@ Not role-specific.
 
 ## Business Rules
 
-- `SerializedBuild` keys and meanings are fixed by `app/types/build.ts` (`v`, `ec`, `eh`, `e8`, `lu`, `bl`, `pw`, `sp`, `fl`); stats arrays are ordered by `STAT_NAMES`.
+- `SerializedBuild` keys and meanings are fixed by `web/types/build.ts` (`v`, `ec`, `eh`, `e8`, `lu`, `bl`, `pw`, `sp`, `fl`); stats arrays are ordered by `STAT_NAMES`.
 - Only non-default values are serialized — URLs stay short and defaults stay implicit.
 - URL encoding is base64url (`+`→`-`, `/`→`_`, padding stripped) of the JSON.
 - Episode choices deserialize first and dependent state after `nextTick()`, so episode watchers cannot clobber restored hero state.
@@ -89,7 +89,7 @@ Not role-specific.
 
 ## Invariants
 
-- **The `SerializedBuild` v1 format is a protected area**: shared URLs and saved builds in the wild depend on it. Fields may be added optionally; existing keys, their meanings, the `STAT_NAMES` order, and hero ids (`app/types/hero.ts`) never change incompatibly. A breaking change requires a new `v` plus decode support for v1.
+- **The `SerializedBuild` v1 format is a protected area**: shared URLs and saved builds in the wild depend on it. Fields may be added optionally; existing keys, their meanings, the `STAT_NAMES` order, and hero ids (`web/types/hero.ts`) never change incompatibly. A breaking change requires a new `v` plus decode support for v1.
 - serialize → deserialize round-trips to identical planner state.
 - Deserializing `{"v":1}` resets every hero to defaults (empty maps overwrite, never merge).
 - All persistence is client-only; the server renders nothing build-specific.
@@ -101,15 +101,15 @@ Not role-specific.
 
 ## Entry Points
 
-- `app/composables/useBuildPersistence.ts`: the whole mechanism — storage, serialization, URL codec, shared mode, dirty tracking (exposed through `useHeroPlanner`).
-- `app/types/build.ts`: the serialization contract (`SerializedBuild`, `SavedBuild`).
-- `app/components/_shared/BuildManager.vue`: all user-facing controls and dialogs.
-- `app/app.vue`: calls `initialize()` and `setupBeforeUnload()` on mount.
+- `web/composables/useBuildPersistence.ts`: the whole mechanism — storage, serialization, URL codec, shared mode, dirty tracking (exposed through `useHeroPlanner`).
+- `web/types/build.ts`: the serialization contract (`SerializedBuild`, `SavedBuild`).
+- `web/components/_shared/BuildManager.vue`: all user-facing controls and dialogs.
+- `web/app.vue`: calls `initialize()` and `setupBeforeUnload()` on mount.
 
 ## Dependencies
 
 - Planner state composables (`useHeroPlanner` and sub-composables): the `useState` keys serialized here are their contract.
-- `app/types/hero.ts` (`STAT_NAMES`, hero ids): the vocabulary of the format.
+- `web/types/hero.ts` (`STAT_NAMES`, hero ids): the vocabulary of the format.
 
 ## Open Questions
 

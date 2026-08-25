@@ -1,4 +1,4 @@
-import type { Hero } from '~~/app/types/hero';
+import type { Hero } from '~~/web/types/hero';
 
 const heroes: Hero[] = [
   {

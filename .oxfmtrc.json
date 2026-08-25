@@ -13,13 +13,13 @@
       }
     },
     {
-      "files": ["app/config/nuxt-ui/**"],
+      "files": ["web/config/nuxt-ui/**"],
       "options": {
         "sortTailwindcss": false
       }
     }
   ],
   "sortTailwindcss": {
-    "stylesheet": "./app/assets/css/main.css"
+    "stylesheet": "./web/assets/css/main.css"
   }
 }

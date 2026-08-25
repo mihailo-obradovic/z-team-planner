@@ -28,11 +28,11 @@ The heart of the app: controls that let a player allocate the budgets the game g
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type            | Description                                                                                                                                |
-| -------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| planner state        | `useState` refs | `heroLevelUps`, `heroBonusLevels`, `heroPowers`, `heroSpecialPowers`, `heroFlights`, episode keys — the exact state feature 001 serializes |
-| effective stats      | rendered        | starting + allocations + special-power bonus per stat                                                                                      |
-| roster layout        | rendered        | synergy-pair columns, each marked between its two cards; optional episode-8 recruit row under its own heading                              |
+| Output / Side Effect | Type            | Description                                                                  |
+| -------------------- | --------------- | ---------------------------------------------------------------------------- |
+| planner state        | `useState` refs | the eight keys listed under Invariants — exactly what feature 001 serializes |
+| effective stats      | rendered        | starting + allocations + special-power bonus per stat                        |
+| roster layout        | rendered        | synergy-pair columns with pair markers; optional episode-8 recruit row       |
 
 ## Scope And Non-Goals
 
@@ -49,23 +49,23 @@ Non-goals:
 
 ## User / System Behavior
 
-**Story Setup drawer.** Episode setup and budget management live in a right-side slideover, not in the top bar, opened by a control present at every viewport width. Every control inside writes through immediately, so there is no commit step and closing discards nothing. Its open state is ephemeral: it survives neither a reload nor a shared-build link, and it is not addressable by URL.
+**Story Setup drawer.** Episode setup and budget management live in a right-side slideover opened from a control present at every width. Every control writes through immediately — no commit step, closing discards nothing. Its open state is ephemeral: not kept across a reload or a shared link, not in the URL.
 
-**Budget readout.** The three shared budgets render twice, in two roles. In the top bar they are a **readout** — value and label, no controls, hidden below `md` where there is no room. In the drawer's Training budget section they are the **management** surface: a row per budget carrying its own reset, shown only while that budget has something to reset.
+**Budget readout.** The three shared budgets render twice: in the top bar as a **readout** (value and label, no controls, hidden below `md`), and in the drawer's Training budget section as the **management** surface — a row per budget with its own reset, shown only while that budget has something to reset.
 
-**Reset all trainings.** A single action in the drawer's footer clears all three shared budgets at once, equivalent to invoking each budget's own reset in turn. It is unconfirmed: it sits behind a deliberate drawer open, and everything it clears is re-allocable by clicking. Per-hero level-up allocations, powers and special powers are untouched — those remain the per-hero reset's business.
+**Reset all trainings.** One unconfirmed action in the drawer's footer clears all three shared budgets, equivalent to each budget's own reset in turn; everything it clears is re-allocable by clicking. Per-hero level-up allocations, powers and special powers stay — those are the per-hero reset's business.
 
-**Episode setup.** Default: Sonar cut, Waterboy hired, episode-8 recruits hidden. The cut hero disappears from the roster; the non-hired episode-4 option and Blonde Blazer appear only when "episode 8 recruits" is shown. Changing a choice wipes the affected heroes' allocations, powers, and flight — watchers fire on the choice change.
+**Episode setup.** Default: Sonar cut, Waterboy hired, episode-8 recruits hidden. The cut hero leaves the roster; the non-hired episode-4 option and Blonde Blazer appear only with "episode 8 recruits" shown. Changing a choice wipes the affected heroes' allocations, powers and flight (watchers on the choice).
 
 **Level-ups.** Each hero can allocate `MAX_LEVEL_UPS` (9) points, +1 per bonus level; a stat never exceeds 10 (starting + allocated). Bonus levels: max 4 per hero from a _shared_ pool of 4 team-wide. Fixed-level heroes (Phenomaman Lv. 12, Blonde Blazer Lv. 20) accept no allocation, bonus, or reset.
 
 **Displayed level.** A hero's level is `1 + points spent`. A bonus level raises the cap and hands the hero a point to spend; it is not itself a level, so the readout moves only once that point is allocated. The card and the detail dialog show the same number.
 
-**Powers.** The starting power must be revealed before a trainable can be selected; selecting the other trainable switches (no extra budget); selecting where none was consumes one of the team-wide `MAX_POWER_TRAININGS` (7). Un-revealing the starting power also clears the trainable and any special power. Episode-8 recruits cannot train (Blonde Blazer also has no trainable powers at all).
+**Powers.** The starting power must be revealed before a trainable can be selected; switching to the other trainable is free; selecting where none was consumes one of the team-wide `MAX_POWER_TRAININGS` (7). Un-revealing the starting power clears the trainable and any special power. Episode-8 recruits cannot train (Blonde Blazer has no trainable powers at all).
 
 **Special powers** (display-only stat effects): Flambae's Supernova (requires trainable-2 selected) raises Combat and Mobility to 10; Coupé's En Pointe cycles off → +Combat → +Mobility, +1 normally, +3 with À la Seconde. Sonar's card offers a monster-form toggle that swaps Combat↔Intellect and Vigor↔Charisma in the display only — never stored, never serialized.
 
-**Flight.** Flight School is its own training track, and its toggle sits in the hero card's header row with the per-hero glyphs — not in the power strip under the portrait, which is Hero Power Training only. Coupe/Flambae/Sonar toggle flight from a shared pool of `MAX_FLIGHT_TRAININGS` (2). Phenomaman flies unless Heavily Medicated (trainable-1) is selected — and when it is, the plane glyph is not shown at all rather than shown off, because the power removes the ability rather than disabling it. Blonde Blazer always flies; neither consumes the pool. An episode-8 recruit has no training left to take, so a flier among them (Blonde Blazer, or a Phenomaman who was not the episode-4 hire) flies permanently.
+**Flight.** Flight School is its own training track; its toggle sits in the card's header row, not in the power strip (Hero Power Training only). Coupe/Flambae/Sonar toggle flight from a shared pool of `MAX_FLIGHT_TRAININGS` (2). Phenomaman flies unless Heavily Medicated (trainable-1) is selected — then the plane glyph is absent, not shown off, because the power removes the ability. Blonde Blazer always flies; neither consumes the pool. Episode-8 recruits have no training left, so a flier among them flies permanently.
 
 **Reset.** The per-hero reset clears that hero's allocations, bonus levels, powers, special powers, and flight.
 
@@ -75,44 +75,43 @@ Not role-specific.
 
 ## Examples
 
-| Input                                                        | Expected Output                                           | Notes                           |
-| ------------------------------------------------------------ | --------------------------------------------------------- | ------------------------------- |
-| allocate 9 points to a hero, click +                         | no-op                                                     | budget exhausted                |
-| +1 bonus level, then allocate a 10th point                   | accepted                                                  | bonus raises the per-hero cap   |
-| +1 bonus level, allocate nothing                             | level unchanged; a 10th point is now allocatable          | bonus is a cap, not a level     |
-| 4 bonus levels on one hero, + on another                     | no-op                                                     | shared pool of 4 is empty       |
-| stat at 10 (starting + allocated), click +                   | no-op                                                     | `MAX_STAT_VALUE`                |
-| select trainable on an unrevealed hero                       | no-op                                                     | reveal gates training           |
-| 7 heroes trained, select an 8th hero's trainable             | no-op                                                     | `MAX_POWER_TRAININGS`           |
-| switch a trained hero's trainable 1 → 2                      | accepted, budget unchanged                                | switching is free               |
-| un-reveal a trained hero's starting power                    | trainable and special power cleared too                   |                                 |
-| toggle Supernova without À la Seconde… without trainable-2   | no-op                                                     | requires trainable-2 selected   |
-| Supernova on Flambae (4 combat, +2 allocated)                | Combat shows 10 (+4 special bonus)                        | bonus tops up to 10, never past |
-| train flight on coupe and flambae, then sonar                | sonar's toggle no-ops                                     | `MAX_FLIGHT_TRAININGS` = 2      |
-| select Heavily Medicated on Phenomaman                       | Phenomaman leaves the flying set, plane glyph disappears  | inverted conditional flight     |
-| change ep3 cut sonar → coupe                                 | Coupé's state wiped, Sonar's kept; synergy column updates | watcher-driven reset            |
-| change ep4 hire waterboy → phenomaman                        | Waterboy's state wiped                                    | non-hired option reset          |
-| `Reset all trainings` with 2/7 powers, 0/2 flight, 2/4 bonus | all three read 0; hero level-up allocations unchanged     | union of the three resets       |
-| open Story Setup, reload the page                            | drawer closed, episode choices preserved                  | open state is ephemeral         |
-| show episode-8 recruits at one column wide                   | recruits appear under their heading, pairs stay grouped   | marker + spacing, not the grid  |
+| Input                                            | Expected Output                                    |
+| ------------------------------------------------ | -------------------------------------------------- |
+| allocate 9 points to a hero, click +             | no-op (budget exhausted)                           |
+| +1 bonus level, then allocate a 10th point       | accepted                                           |
+| +1 bonus level, allocate nothing                 | level unchanged; a 10th point is now allocatable   |
+| 4 bonus levels on one hero, + on another         | no-op (shared pool of 4 is empty)                  |
+| stat at 10 (starting + allocated), click +       | no-op (`MAX_STAT_VALUE`)                           |
+| select trainable on an unrevealed hero           | no-op (reveal gates training)                      |
+| 7 heroes trained, select an 8th hero's trainable | no-op (`MAX_POWER_TRAININGS`)                      |
+| switch a trained hero's trainable 1 → 2          | accepted, budget unchanged                         |
+| un-reveal a trained hero's starting power        | trainable and special power cleared too            |
+| toggle Supernova without trainable-2             | no-op                                              |
+| Supernova on Flambae (4 combat, +2 allocated)    | Combat shows 10 (+4 special bonus, never past 10)  |
+| train flight on coupe and flambae, then sonar    | sonar's toggle no-ops (`MAX_FLIGHT_TRAININGS` = 2) |
+| select Heavily Medicated on Phenomaman           | leaves the flying set, plane glyph disappears      |
+| change ep3 cut sonar → coupe                     | Coupé's state wiped, Sonar's kept; column updates  |
+| change ep4 hire waterboy → phenomaman            | Waterboy's state wiped                             |
+| `Reset all trainings` at 2/7 · 0/2 · 2/4         | all three read 0; per-hero allocations unchanged   |
+| open Story Setup, reload the page                | drawer closed, episode choices preserved           |
+| show episode-8 recruits at one column wide       | recruits under their heading, pairs stay grouped   |
 
 ## Business Rules
 
 - All budget checks are guard clauses: an over-budget action silently does nothing (buttons also disable in the UI, but state guards are authoritative).
 - Budgets: 9 level-up points/hero (+bonus), 4 bonus levels shared and per-hero, 7 power trainings shared, 2 flight trainings shared, stat cap 10.
 - Displayed level is `1 + points spent` — never `+ bonus levels`, or the level jumps ahead of the allocation that earned it and the card disagrees with the dialog.
-- The card's power strip is a fixed box sized for **four** chips — `sonar form? + starting + upgrades(≤2) + special?`. Four 24px chips fill the portrait's 108px exactly; a fifth does not fit, and widens the column until every card's stat rows fall out of line. Adding a `SPECIAL_POWER_MECHANICS` entry for Sonar, or a second form toggle, reaches five — either change has to move something out of the strip first, the way flight was moved (annex §13, Card body).
+- The card's power strip holds at most **four** chips — `sonar form? + starting + upgrades(≤2) + special?` — and a fifth breaks every card's alignment (annex §13, Card body). Adding a `SPECIAL_POWER_MECHANICS` entry for Sonar, or a second form toggle, must first move something out of the strip, the way flight was moved.
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat.
 - `Reset all trainings` is exactly the union of the three per-budget resets; a fourth shared budget must be added there too, or it silently under-resets.
 - A per-budget reset is offered only while that budget is non-zero.
-- Overview lays heroes out as synergy-pair columns (base pairs + the one conditional pair for the current choices); episode-8 recruits render in their own row beneath, under a `Episode 8 recruits` heading.
-- A pair is marked between its two cards, and its two cards sit closer to each other than to the next pair — the columns are what carries the pairing, and a column is invisible once the grid stacks into a single phone-width list.
+- Overview lays heroes out as synergy-pair columns (base pairs + the one conditional pair for the current choices), each pair marked between its two cards and spaced closer than to the next pair — the marker carries the pairing once the grid stacks to one column. Episode-8 recruits render in their own row beneath, under an `Episode 8 recruits` heading.
 
 ## Edge Cases
 
-- `useHeroPlanner` is a per-app singleton (cached on `nuxtApp`) — one instance shared by every component; duplicate watcher registration would double resets.
-- Deserialization (feature 001) sets episode choices first and waits a tick so these same watchers do not wipe the restored hero state afterwards.
-- Coupé's En Pointe cycle is reachable whenever her card shows the toggle; the +bonus applies with base power (+1) even untrained, +3 only with À la Seconde.
+- `useHeroPlanner` is a per-app singleton (cached on `nuxtApp`); a second instance would register the watchers twice and double every reset.
+- Deserialization (feature 001) sets episode choices first and waits a tick so these watchers do not wipe the restored hero state.
+- Coupé's En Pointe applies +1 even untrained, +3 only with À la Seconde.
 
 ## Invariants
 
@@ -126,10 +125,10 @@ Not role-specific.
 
 ## Entry Points
 
-- `app/composables/`: `useHeroPlanner.ts` (singleton aggregator, also `resetHero`) over the four rule domains — `useHeroEpisodeSetup.ts`, `useHeroLevelUp.ts`, `useHeroPowerTraining.ts`, `useHeroFlightTraining.ts`.
-- `app/components/HeroCard.vue` (per-hero controls), `app/pages/index.vue` (roster layout and tabs).
-- `app/components/_shared/`: `StorySetupDrawer.vue` (episode fields, budget rows, `Reset all trainings`), `BudgetCounters.vue` (the top-bar readout).
-- `app/app.vue`: the shell placing the readout, the drawer trigger and the mobile action bar.
+- `web/composables/`: `useHeroPlanner.ts` (singleton aggregator, also `resetHero`) over the four rule domains — `useHeroEpisodeSetup.ts`, `useHeroLevelUp.ts`, `useHeroPowerTraining.ts`, `useHeroFlightTraining.ts`.
+- `web/components/HeroCard.vue` (per-hero controls), `web/pages/index.vue` (roster layout and tabs).
+- `web/components/_shared/`: `StorySetupDrawer.vue` (episode fields, budget rows, `Reset all trainings`), `BudgetCounters.vue` (the top-bar readout).
+- `web/app.vue`: the shell placing the readout, the drawer trigger and the mobile action bar.
 
 ## Dependencies
 
@@ -145,25 +144,17 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 
 ## Tests
 
-- Honest gap: no automated tests. Wanted first: unit tests for the budget guards (level-up cap with/without bonus, shared pools, power-training gating and free switching) — they encode the game rules and are pure enough to test via the composables with seeded state.
-- Until then the card controls are covered by the live browser walk, per the stack's testing rule.
+- Honest gap: no automated tests. Wanted first: unit tests for the budget guards (level-up cap with/without bonus, shared pools, power-training gating and free switching) via the composables with seeded state. Until then the live browser walk covers the card controls.
 
 ## Verification
 
-Walked live on `feature/003-story-setup-drawer` (2026-08-25), in Chrome and then headless against the dev server, at 1600 / 1280 / 1024 / 768 / 390 / 320. This records what is true now; measurements the later passes superseded are not kept.
+Walked live on `feature/003-story-setup-drawer` (2026-08-25), in Chrome and headless against the dev server, at 1600 / 1280 / 1024 / 768 / 390 / 320:
 
-- **Tier ladder** (annex §13): each tier drops what the ladder says and nothing else. Every header action is 32 × 32 from `md` up, the base-tier glyphs 44 × 44. Story Setup paints `rgb(213,192,150)` — Save's fill — at 6.65:1 on the chrome, where the secondary solid it replaced measured 1.29:1 (§14.1).
-- **Reflow**: `scrollWidth === clientWidth` at every width, 320 included. Below `sm` the three tabs are equal thirds of the frame — 91px each at 320, nothing clipped — which retires the tab list's old 320px overflow; from 640 the content-width row is unchanged.
-- **Hero cards are uniform**: at every width all ten cards report the same box (320 × 208 at `md` and up), portrait 108 × 108, power strip 108 × 24 and stat column — the fixed-level recruits included, which reserve their stepper slots rather than dropping them. Sonar's four chips — the worst case — sit flush with the portrait's edges (0px offset both sides); three chips centre with 14px either side. Nothing reflows on click: through reveal → trainable-2 → Supernova the strip held 108 × 24. Flight's glyph renders in the header for the five heroes in `HERO_FLIGHT` and its slot is absent for the other six; a medicated Phenomaman keeps the reserved slot but drops the glyph, so nothing shifts on the toggle. The bonus `+` and the stat `+` steppers share a right edge to the pixel.
-- **Level readout**: `+1 bonus` left the level at 2; only the allocation moved it to 3, and the detail dialog agreed.
-- **Drawer**: `Reset all trainings` took `7/7 · 0/2 · 4/4` → `0/7 · 0/2 · 0/4` in one click, then disabled itself and the per-row resets disappeared; gating held — at `7/7 · 0/2 · 4/4` exactly two glyphs rendered.
-- **Roster grouping**: each pair carries its marker between its two cards at every tier; the recruit heading reaches the a11y tree as `heading level=2` while the bands stay out of it (`decorative`). The roster-to-recruit seam is 48px card to card, the same 48 that separates stacked card rows.
-- **Chrome rules**: the header's divider is 1px × 28 of `secondary` — lighter than the chrome, where the previous `secondary-700` was darker and read as a seam — and the tab row carries the same 1px `secondary` along its bottom edge, so content scrolling under it is visibly cut off rather than fading into the ground.
-- **Recruit band**: spans the recruit cards exactly, 0px past them either side, at 1600 / 1280 / 768 / 390 / 320.
-- **Close buttons**: the drawer's and the dialog's `×` centre on the plate band and end on the title's own rail, at `sm`-and-up and base widths alike.
-- **Accessible names**: dialog, selects and switch labelled; `TooltipButton` passes its text through `IconButton`'s `label`. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are still unnamed — one line each.
+- No horizontal overflow at any width; all ten hero cards report one identical box (320 × 208 at `md`+, strip 108 × 24) and nothing reflows on click through reveal → trainable-2 → Supernova; the flight glyph is present for exactly the `HERO_FLIGHT` five and a medicated Phenomaman keeps its slot without the glyph.
+- `+1 bonus` left the level at 2 and only the allocation moved it to 3, card and dialog agreeing. `Reset all trainings` took `7/7 · 0/2 · 4/4` to `0/7 · 0/2 · 0/4` in one click, then disabled itself.
+- Pair markers sit between their cards at every tier; the recruit heading is `heading level=2` in the a11y tree, the bands `decorative`. Dialog, selects and switch are labelled. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are unnamed.
 
-Rules were retro-documented from the four composables, HeroCard and index.vue, cross-checked against `context/game-mechanics.md` (Hero Training, Stats, Synergy); flight, episode-cut resets and effective-stat display were exercised live in the feature 001 walk (2026-08-21). oxlint, vue-tsc and vitest pass.
+Rules were retro-documented from the four composables, HeroCard and index.vue, cross-checked against `context/game-mechanics.md`; flight, episode-cut resets and effective-stat display were exercised in the feature 001 walk (2026-08-21). oxlint, vue-tsc and vitest pass. Pixel-level measurements of the tier ladder, chrome and bands live in annex §13–14, which the walk confirmed.
 
 ## Agent Change Rules
 

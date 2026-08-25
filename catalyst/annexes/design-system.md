@@ -4,7 +4,7 @@ The project's own design system, instantiated from `stacks/frontend/nuxt/design-
 
 **Loads when:** styling anything, adding or changing a token, picking a size, shadow, or spacing value, or building a new component.
 
-Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `app/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too. A component never names a ramp or a hex — it names an alias or a token.
+Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `web/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too. A component never names a ramp or a hex — it names an alias or a token.
 
 ---
 
@@ -49,7 +49,7 @@ Two steps deliberately leave their ramp's hue line, and both are intentional: `e
 
 ### Surface variables
 
-Nuxt UI derives its `--ui-*` set from the `neutral` alias, assuming a white page. This project inverts that: the page is dark and every surface is paper. The remap is an unlayered `:root` block in `app/assets/css/main.css` (unlayered so it beats the values Nuxt UI injects into `@layer theme`).
+Nuxt UI derives its `--ui-*` set from the `neutral` alias, assuming a white page. This project inverts that: the page is dark and every surface is paper. The remap is an unlayered `:root` block in `web/assets/css/main.css` (unlayered so it beats the values Nuxt UI injects into `@layer theme`).
 
 | Variable                | Value       | Reads as                                          |
 | ----------------------- | ----------- | ------------------------------------------------- |
@@ -496,7 +496,7 @@ Transitions are colour and opacity at the baseline duration, which needs no guar
 
 ## 15. Scoped styles and token reach
 
-Tokens live in `app/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
+Tokens live in `web/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
 
 This matters concretely here: `UModal`, `UDropdownMenu`, `UTooltip` and `UToast` teleport to `body`, outside the app subtree. Tokens hung on an app wrapper element would never reach them — a dialog that loses its palette is almost always that mistake. `:root` is the only correct home.
 

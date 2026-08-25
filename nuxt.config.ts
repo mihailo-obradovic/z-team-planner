@@ -1,6 +1,9 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/image', '@nuxt/test-utils'],
 
+  // * The Nuxt app lives in web/ so the FastAPI application can take the root app/ (decision 004)
+  srcDir: 'web/',
+
   components: {
     dirs: ['@/components/_shared']
   },

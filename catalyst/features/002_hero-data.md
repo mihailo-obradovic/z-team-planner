@@ -26,7 +26,7 @@ Everything the planner computes stands on the game data transcribed from Dispatc
 | Output / Side Effect | Type                           | Description                                                             |
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------- |
 | hero list            | `Hero[]` JSON                  | 11 heroes: id, display name, starting stats (5 stats each)              |
-| domain constants     | exports of `app/types/hero.ts` | powers, flight, synergy, episode options, and every budget/cap constant |
+| domain constants     | exports of `web/types/hero.ts` | powers, flight, synergy, episode options, and every budget/cap constant |
 
 ## Scope And Non-Goals
 
@@ -49,7 +49,7 @@ Non-goals:
 ## User / System Behavior
 
 - `GET /api/heroes` always returns the same 11 heroes with the same stats; the client fetches once (`useNuxtData('heroes')`, fetched in `app.vue`).
-- All other domain data is imported directly from `app/types/hero.ts` — no request involved.
+- All other domain data is imported directly from `web/types/hero.ts` — no request involved.
 
 ## Roles And Access
 
@@ -88,7 +88,7 @@ Not role-specific.
 ## Entry Points
 
 - `server/api/heroes.get.ts`: the roster + starting stats.
-- `app/types/hero.ts`: every other domain constant and type.
+- `web/types/hero.ts`: every other domain constant and type.
 
 ## Dependencies
 
