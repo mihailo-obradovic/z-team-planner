@@ -8,6 +8,7 @@ import input from './config/nuxt-ui/input';
 import main from './config/nuxt-ui/main';
 import modal from './config/nuxt-ui/modal';
 import select from './config/nuxt-ui/select';
+import slideover from './config/nuxt-ui/slideover';
 import switchConfig from './config/nuxt-ui/switch';
 import tabs from './config/nuxt-ui/tabs';
 import toast from './config/nuxt-ui/toast';
@@ -37,6 +38,7 @@ export default defineAppConfig({
     main,
     modal,
     select,
+    slideover,
     switch: switchConfig,
     tabs,
     toast,
