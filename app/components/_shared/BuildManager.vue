@@ -1,14 +1,14 @@
 <template>
-  <!-- ! Two grid tracks, not two `flex-1` children: `flex-1` is `flex: 1 1 0%`, and a percentage basis resolves against the content box, so Share's `px-4` is added on top of its share and the row splits 218/250 instead of in half. A `1fr` track is measured on the border box. -->
-  <div
-    :class="
-      block
-        ? 'grid grid-cols-2 items-center gap-2'
-        : 'flex items-center gap-2'
-    "
-  >
-    <!-- * In the mobile action bar the row splits in half: the save/build-selector cluster takes one track, Share the other, so the primary action keeps a constant width whatever the cluster is showing. In the header the group is transparent (`contents`) and the controls sit inline as before. -->
-    <div :class="block ? 'flex min-w-0 items-center gap-2' : 'contents'">
+  <!-- ! `basis-0`, not bare `flex-1`: `flex-1` is `flex: 1 1 0%`, and that percentage basis resolves against the content box, so Share's `px-4` lands on top of its share and the row splits 218/250 instead of evenly. `basis-0` is a length — no content-box interaction — so the shares come out equal. This is why the row can be flex at all; it used to need two grid tracks to dodge the same bug. -->
+  <div class="flex items-center gap-2">
+    <!-- * Normal mode is transparent (`contents`): every control is a direct flex child, so Save sizes to its own square and the selector and Share split what is left. The shared branch groups instead — its two controls share one half against Share's, because three equal shares cannot hold `Back to my build` (measured 93px and clipped at 320). -->
+    <div
+      :class="
+        block && isViewingSharedBuild
+          ? 'flex min-w-0 flex-1 basis-0 items-center gap-2'
+          : 'contents'
+      "
+    >
       <!-- Shared build banner -->
       <template v-if="isViewingSharedBuild">
         <!-- * Solid, not subtle: a subtle badge is its own hue on a near-paper tint, and both signal and gold fail AA that way (3.0:1 and worse). Solid puts ink on the fill instead. -->
@@ -46,16 +46,17 @@
 
       <!-- Normal mode -->
       <template v-else>
-        <u-tooltip text="Save" :disabled="labelled">
+        <!-- * The unsaved state is the Save button, not a badge beside it. Save renders only when the build is dirty, so its presence already carries the signal; marking it takes the annex's on-treatment (§6 — an on control flips to the solid treatment of its own colour) in the gold §1 assigns to the unsaved-changes state. The badge it replaces had no size on the scale that matched a 32px button and hid itself below `lg`, which dropped the signal exactly where the header is tightest. -->
+        <!-- ! The colour is not the only carrier: it also lands in the accessible name, or the state is unavailable to anyone who cannot see the fill. -->
+        <u-tooltip :text="saveLabel" :disabled="saveLabelled">
           <u-button
             v-if="hasUnsavedChanges || savedBuilds.length === 0"
             :size="size"
-            variant="subtle"
-            color="neutral"
+            :variant="hasUnsavedChanges ? 'solid' : 'subtle'"
+            :color="hasUnsavedChanges ? 'warning' : 'neutral'"
             icon="i-lucide-save"
-            :label="labelled ? 'Save' : undefined"
-            :aria-label="labelled ? undefined : 'Save'"
-            :block="block"
+            :label="saveLabelled ? 'Save' : undefined"
+            :aria-label="saveLabel"
             @click="handleSave"
           />
         </u-tooltip>
@@ -65,7 +66,7 @@
           v-if="savedBuilds.length > 0"
           :items="buildMenuItems"
           :ui="{ content: 'min-w-48' }"
-          :class="block ? 'min-w-0 flex-1' : undefined"
+          :class="block ? 'min-w-0 flex-1 basis-0' : undefined"
         >
           <u-button
             :size="size"
@@ -79,17 +80,6 @@
             {{ activeBuildName }}
           </u-button>
         </u-dropdown-menu>
-
-        <!-- * Not a badge on the button: unsaved state has to read at a glance next to Save, and a dot inside the label would be lost at the icon-only tier. -->
-        <u-badge
-          v-if="hasUnsavedChanges && savedBuilds.length > 0"
-          color="warning"
-          variant="solid"
-          size="sm"
-          class="max-lg:hidden"
-        >
-          Unsaved changes
-        </u-badge>
       </template>
     </div>
 
@@ -102,7 +92,7 @@
         :label="labelled ? 'Share' : undefined"
         :aria-label="labelled ? undefined : 'Share'"
         :block="block"
-        :class="block ? 'min-w-0' : undefined"
+        :class="block ? 'min-w-0 flex-1 basis-0' : undefined"
         @click="handleShare"
       />
     </u-tooltip>
@@ -114,7 +104,7 @@ import type { DropdownMenuItem } from '@nuxt/ui';
 
 // ---
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     // * The tier ladder (annex §13) drops button labels a step before it drops
     // * information, so the same controls render labelled in the header at `lg`
@@ -148,6 +138,21 @@ const {
 
 const { saveSharedOpen, deleteOpen, openNewBuild, openRename } =
   useBuildDialogs();
+
+// ---
+
+const saveLabel = computed(() =>
+  hasUnsavedChanges.value ? 'Save \u2014 unsaved changes' : 'Save'
+);
+
+// ! Save is the one control in the action bar that is not `block`. The bar's
+// * left track holds Save beside the build selector, and a `block` button is
+// * `w-full` — inside that flex row it takes the whole track and starves the
+// * selector down to its chevron, so the build name disappears entirely
+// * (measured 132/32 at 375). Icon-only at its own 44px square leaves the
+// * selector ~120 for the name, and the floppy is the glyph the ladder in §13
+// * already says survives losing its label.
+const saveLabelled = computed(() => props.labelled && !props.block);
 
 // ---
 
