@@ -65,7 +65,7 @@ Non-goals:
 
 **Special powers** (display-only stat effects): Flambae's Supernova (requires trainable-2 selected) raises Combat and Mobility to 10; Coupé's En Pointe cycles off → +Combat → +Mobility, +1 normally, +3 with À la Seconde. Sonar's card offers a monster-form toggle that swaps Combat↔Intellect and Vigor↔Charisma in the display only — never stored, never serialized.
 
-**Flight.** Coupe/Flambae/Sonar toggle flight from a shared pool of `MAX_FLIGHT_TRAININGS` (2). Phenomaman flies unless Heavily Medicated (trainable-1) is selected; Blonde Blazer always flies; neither consumes the pool.
+**Flight.** Flight School is its own training track, and its toggle sits in the hero card's header row with the per-hero glyphs — not in the power strip under the portrait, which is Hero Power Training only. Coupe/Flambae/Sonar toggle flight from a shared pool of `MAX_FLIGHT_TRAININGS` (2). Phenomaman flies unless Heavily Medicated (trainable-1) is selected; Blonde Blazer always flies; neither consumes the pool.
 
 **Reset.** The per-hero reset clears that hero's allocations, bonus levels, powers, special powers, and flight.
 
@@ -101,6 +101,7 @@ Not role-specific.
 - All budget checks are guard clauses: an over-budget action silently does nothing (buttons also disable in the UI, but state guards are authoritative).
 - Budgets: 9 level-up points/hero (+bonus), 4 bonus levels shared and per-hero, 7 power trainings shared, 2 flight trainings shared, stat cap 10.
 - Displayed level is `1 + points spent` — never `+ bonus levels`, or the level jumps ahead of the allocation that earned it and the card disagrees with the dialog.
+- The card's power strip is a fixed box sized for **four** chips — `sonar form? + starting + upgrades(≤2) + special?`. Four 24px chips fill the portrait's 108px exactly; a fifth does not fit, and widens the column until every card's stat rows fall out of line. Adding a `SPECIAL_POWER_MECHANICS` entry for Sonar, or a second form toggle, reaches five — either change has to move something out of the strip first, the way flight was moved (annex §13, Card body).
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat.
 - `Reset all trainings` is exactly the union of the three per-budget resets; a fourth shared budget must be added there too, or it silently under-resets.
 - A per-budget reset is offered only while that budget is non-zero.

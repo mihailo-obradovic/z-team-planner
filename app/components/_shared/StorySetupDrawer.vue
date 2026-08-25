@@ -69,6 +69,7 @@
               :text="`Reset ${budget.label.toLowerCase()}`"
               icon="i-lucide-rotate-ccw"
               color="neutral"
+              size="sm"
               @click="budget.reset()"
             />
           </span>

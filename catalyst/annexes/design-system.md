@@ -178,14 +178,16 @@ Four steps, every one clearing the 24px touch floor. A row of mixed controls ali
 
 | Token                 | Height | Used by                                                                   |
 | --------------------- | ------ | ------------------------------------------------------------------------- |
-| `--control-h-xs`      | 24px   | Stat steppers in a hero card, inline reset buttons                        |
-| `--control-h-sm`      | 28px   | Power and flight chips                                                    |
+| `--control-h-xs`      | 24px   | Stat steppers, power chips and per-hero glyphs in a hero card             |
+| `--control-h-sm`      | 28px   | The Story Setup drawer's per-budget reset glyphs                          |
 | `--control-h-default` | 32px   | Buttons, inputs, selects, dropdown triggers, stepper in the detail dialog |
 | `--control-h-lg`      | 44px   | Primary actions on touch layouts, the mobile action bar                   |
 
 `--control-h-plate` (40px) is the titled header band on a panel — a surface, not a control, but sized here so nothing re-measures it.
 
 An icon-only button is **square at its step** (`width` = `height`), never a padded rectangle. The mockups' 30px dialog steppers and 27px chips were snapped to 32 and 28 (decision 003) so the scale stays four values wide.
+
+The power chips started at 28 and are 24: four of them plus their gaps is 108 at the smaller step and 124 at the larger. 24 is the floor in §14.2, so this is the last step down available to them — and the card portrait is 108 rather than 112 so that a full row of four lines up with the image edge to edge (§13, Card body). The 108 is derived from the chips, not chosen: no gap on the scale takes four 24s to 112, since `gap-1` lands on 108 and `gap-1.5` overshoots to 114.
 
 ### Widths
 
@@ -242,11 +244,11 @@ Separation is a border **or** a shadow, not both — except the `panel` treatmen
 
 One shadow value for elevation, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, and no ad-hoc one-offs.
 
-**Selection is not elevation.** A control that is _on_ — a toggled power chip, the active tab — is marked with a 1px gold halo drawn as a shadow, `0 0 0 1px var(--ui-color-warning-500)`, and never by raising it. This is the second and last shadow the system spends, and it is a state marker rather than a depth cue: it sits flush against the control's edge and reads as the gold that §1 gives selection. The halo is the whole of the button's `active` variant — the fill stays whatever the control's colour already is, which is what the mockups vary between an off chip (tan) and an on one (amber). Larger selected objects — a hero portrait, a mission template panel — take the same gold at 2px instead, as a ring rather than a halo.
+**Selection is not elevation.** A control that is _on_ — a toggled power chip, the active tab — is marked with a 1px gold halo drawn as a shadow, `0 0 0 1px var(--ui-color-warning-500)`, and never by raising it. This is the second and last shadow the system spends, and it is a state marker rather than a depth cue: it sits flush against the control's edge and reads as the gold that §1 gives selection. The halo is only half the state: an on control also **flips to the solid treatment of its own colour**, ink on the fill and an ink edge, rather than tinting the variant it wears when off. That is the difference the mockups draw between `.chip` (tan, a subtle control) and `.chip.on` (amber with ink on it), and it is why `active` is a variant change and not a colour change — a `subtle` control reads as `solid` for as long as it is on. Larger selected objects — a hero portrait, a mission template panel — take the same gold at 2px instead, as a ring rather than a halo.
 
 | Selected thing     | Marker                                                     |
 | ------------------ | ---------------------------------------------------------- |
-| Button / chip (on) | 1px gold halo + the control's own `primary` fill           |
+| Button / chip (on) | 1px gold halo + its colour's solid fill, ink on it, ink edge |
 | Tab (active)       | 1px gold halo + paper fill + 3px inset `primary` underline |
 | Portrait / panel   | 2px gold ring                                              |
 
@@ -307,6 +309,7 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 **This project uses `NuxtImg` (`@nuxt/image`), not a plain `<img>`** — a deliberate departure from the template's default, recorded here: every image in the product is a bundled hero portrait, and the module's sizing and format handling is what serves them. The rule the default protects still holds: every image ships explicit dimensions or a sized box, so nothing reflows when it loads.
 
 - **Aspect ratio, not height:** portraits are `1/1` in a hero card and `4/3` in a roster strip, with `object-fit: cover` and `object-position: top` on the strips so faces survive the crop.
+- **Card portrait: 108 × 108** (`size-27`). The value comes from the power-chip row beneath it (§4) — four 24px chips and their gaps — not from the imagery scale, so it moves only if that row does.
 - **Radius** is 0 like everything else; a portrait's separation is its 2px ink border.
 - **Placeholder:** a `--ui-bg-elevated` block at the same aspect ratio while loading, occupying the final geometry.
 - **Alt text is required** — the hero's name for a portrait. `alt=""` only for imagery that is decorative and already `aria-hidden` in effect.
@@ -346,7 +349,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none            | none          |
 | Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none          |
 | Icon button        | square at its step        | none             | 0      | none            | none          |
-| Button / chip (on) | its step                  | its step's       | 0      | none            | 1px gold halo |
+| Button / chip (on) | its step                  | its step's       | 0      | 1px ink ring    | 1px gold halo |
 | Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none          |
 | Switch             | 44 × 24 track, 16 thumb   | `p-0.5`          | 0      | 2px             | none          |
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none          |
@@ -362,16 +365,16 @@ The scales above, resolved per element. Every value here was measured from the b
 
 **Layouts:**
 
-| Layout            | Spec                                                                                                                                                                                                                                                                                                                   |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page container    | full width; inline padding `p-4`, `md:p-6`                                                                                                                                                                                                                                                                             |
-| Roster grid       | `gap-x-6 gap-y-12`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`.                                                                                                                                                                                                  |
-| Synergy pair      | the pair's two cards `gap-2` apart around a ruled band carrying a `warning` outline badge — 44px end to end. The grid's `gap-y-12` (48) is measured against that: at one column wide the columns are gone, so unpaired neighbours must sit further apart than the band's own span, not merely further than a bare gap. |
-| Recruit row       | a ruled band carrying the section heading (`label` role, `text-secondary-300`), `gap-8` to a centred `gap-x-6 gap-y-12` grid — one column, `md` two, `2xl` three. The recruits are unrelated to each other, so stacked they take the same 48 as unpaired neighbours above.                                             |
-| Card body         | portrait column pinned to the portrait's own 112px (`w-28 shrink-0`) beside the stat rows, `gap-3`. The status-toggle strip under the portrait wraps inside that width — three 28px chips per row — so a hero with four or five toggles never widens the column and every card's stat rows line up.                    |
-| Header            | wordmark · budget readout · build actions, single row; see the tier ladder below                                                                                                                                                                                                                                       |
-| Mobile action bar | below `md` only, pinned under the scrolling content: three equal-width 44px buttons on chrome                                                                                                                                                                                                                          |
-| Form              | `gap-4` between fields, label above or beside its control per orientation                                                                                                                                                                                                                                              |
+| Layout            | Spec                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page container    | full width; inline padding `p-4`, `md:p-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Roster grid       | `gap-x-6 gap-y-12`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`.                                                                                                                                                                                                                                                                                                                                                                            |
+| Synergy pair      | the pair's two cards `gap-2` apart around a ruled band carrying a `warning` outline badge — 44px end to end. The grid's `gap-y-12` (48) is measured against that: at one column wide the columns are gone, so unpaired neighbours must sit further apart than the band's own span, not merely further than a bare gap.                                                                                                                                                                           |
+| Recruit row       | a ruled band carrying the section heading (`label` role, `text-secondary-300`), `gap-8` to a centred `gap-x-6 gap-y-12` grid — one column, `md` two, `2xl` three. The recruits are unrelated to each other, so stacked they take the same 48 as unpaired neighbours above.                                                                                                                                                                                                                       |
+| Card body         | portrait column pinned to the portrait's own 108px (`w-27 shrink-0`) beside the stat rows, `gap-3`. Under the portrait sits a fixed 108 × 24 box holding the hero's power chips — one row, centred, `gap-1`, never wrapping. Sized for **four** 24px chips, which fill it exactly and align with the image's edges; a shorter row still centres under it. A fifth chip would widen the column and break every card's stat alignment, which is why flight lives in the card's header row instead. |
+| Header            | wordmark · budget readout · build actions, single row; see the tier ladder below                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Mobile action bar | below `md` only, pinned under the scrolling content: three equal-width 44px buttons on chrome                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Form              | `gap-4` between fields, label above or beside its control per orientation                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
 
@@ -431,7 +434,9 @@ Re-measure after any token change. A brand colour that fails as text is constrai
 
 ### 14.2 Touch-target size
 
-The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, chips 28 × 28, buttons and selects 32, primary touch actions 44.
+The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44.
+
+The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there.
 
 The two bare glyph triggers in the mobile header — Story Setup and the menu — paint at 20-22px and pad their hit area to 44, not merely to the 24 floor: they are the only route to episode setup and to build management at that width, which makes them primary touch actions.
 
