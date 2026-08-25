@@ -6,10 +6,8 @@ import {
 } from '@/types/hero';
 import type { Hero, HeroId } from '@/types/hero';
 
-/**
- * Composable for managing episode choices and hero visibility.
- * Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
- */
+//  * Composable for managing episode choices and hero visibility.
+//  * Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
 export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
   const ep3Cut = useState<HeroId>('ep3Cut', () => 'sonar');
   const ep4Hire = useState<HeroId>('ep4Hire', () => 'waterboy');

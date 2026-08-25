@@ -14,10 +14,8 @@ const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((s) => [s, 0])
 ) as HeroStats;
 
-/**
- * Composable for managing hero level-ups and bonus levels.
- * Handles stat allocation, point tracking, and bonus level system.
- */
+//  * Composable for managing hero level-ups and bonus levels.
+//  * Handles stat allocation, point tracking, and bonus level system.
 export function useHeroLevelUp(
   heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>
@@ -127,7 +125,7 @@ export function useHeroLevelUp(
     delete heroBonusLevels.value[id];
   }
 
-  // Watch episode choices and clear data when heroes are cut/not hired
+  // * Watch episode choices and clear data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, resetHeroLevelUp);
 
   watch(episodeSetup.ep4Hire, (newHire) => {

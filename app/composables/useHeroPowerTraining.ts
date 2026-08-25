@@ -25,10 +25,8 @@ const DEFAULT_POWER_STATE: HeroPowerSelection = {
   trainableSelected: 0
 };
 
-/**
- * Composable for managing power training and special power mechanics.
- * Handles power selections, training limits, and special powers for Flambae and Coupe.
- */
+//  * Composable for managing power training and special power mechanics.
+//  * Handles power selections, training limits, and special powers for Flambae and Coupe.
 export function useHeroPowerTraining(
   heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
@@ -64,7 +62,7 @@ export function useHeroPowerTraining(
     const powers = heroPowers.value[id]!;
 
     if (powers.startingRevealed) {
-      // Un-discovering: also untrain and reset any active special powers
+      // * Un-discovering: also untrain and reset any active special powers
       powers.trainableSelected = 0;
       delete heroSpecialPowers.value[id];
       powers.startingRevealed = false;
@@ -77,7 +75,7 @@ export function useHeroPowerTraining(
     const powerSet = HERO_POWERS[id];
     if (!powerSet) return;
 
-    if (!powerSet[index].name) return; // Empty power slot (e.g., Blonde Blazer)
+    if (!powerSet[index].name) return; // * Empty power slot (e.g., Blonde Blazer)
 
     if (!heroPowers.value[id]) {
       heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
@@ -88,11 +86,11 @@ export function useHeroPowerTraining(
     if (episodeSetup.ep8RecruitIds.value.has(id)) return;
 
     if (powers.trainableSelected === index) {
-      // Deselect: also reset any active special powers
+      // * Deselect: also reset any active special powers
       powers.trainableSelected = 0;
       delete heroSpecialPowers.value[id];
     } else {
-      // Only count as a new slot when switching from nothing
+      // * Only count as a new slot when switching from nothing
       if (
         powers.trainableSelected === 0 &&
         trainingsUsed.value >= MAX_POWER_TRAININGS
@@ -109,13 +107,13 @@ export function useHeroPowerTraining(
 
   function toggleSpecialPower(id: HeroId) {
     if (id === 'flambae') {
-      // Supernova requires trainable-2 power to be trained
+      // * Supernova requires trainable-2 power to be trained
       const power = getPowerState(id);
       if (power.trainableSelected !== 2) return;
-      // Toggle between 0 (off) and 1 (on)
+      // * Toggle between 0 (off) and 1 (on)
       heroSpecialPowers.value[id] = heroSpecialPowers.value[id] ? 0 : 1;
     } else if (id === 'coupe') {
-      // Cycle through 0 (off), 1 (+combat), 2 (+mobility)
+      // * Cycle through 0 (off), 1 (+combat), 2 (+mobility)
       const current = heroSpecialPowers.value[id] ?? 0;
       heroSpecialPowers.value[id] = (current + 1) % 3;
     }
@@ -130,7 +128,7 @@ export function useHeroPowerTraining(
     const specialState = getSpecialPowerState(id);
 
     if (mechanics.type === 'supernova' && specialState === 1) {
-      // Flambae's Supernova: set combat and mobility to 10
+      // * Flambae's Supernova: set combat and mobility to 10
       if (
         (stat === 'combat' || stat === 'mobility') &&
         mechanics.affectedStats.includes(stat)
@@ -146,7 +144,7 @@ export function useHeroPowerTraining(
         );
       }
     } else if (mechanics.type === 'en-pointe' && specialState > 0) {
-      // Coupe's En Pointe: +1 or +3 combat/mobility based on slot
+      // * Coupe's En Pointe: +1 or +3 combat/mobility based on slot
       const isUpgraded = getPowerState(id).trainableSelected === 2; // À la Seconde
       const bonus = isUpgraded ? mechanics.upgradeBonus : mechanics.baseBonus;
 
@@ -157,7 +155,7 @@ export function useHeroPowerTraining(
     return 0;
   }
 
-  // Memoized special power bonuses for all heroes to prevent unnecessary re-renders
+  // * Memoized special power bonuses for all heroes to prevent unnecessary re-renders
   const allSpecialPowerBonuses = computed(() => {
     const result: Partial<Record<HeroId, HeroStats>> = {};
 
@@ -185,7 +183,7 @@ export function useHeroPowerTraining(
     delete heroSpecialPowers.value[id];
   }
 
-  // Watch episode choices and reset power data when heroes are cut/not hired
+  // * Watch episode choices and reset power data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, resetHeroPowers);
 
   watch(episodeSetup.ep4Hire, (newHire) => {

@@ -25,7 +25,7 @@ function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
       const stored = localStorage.getItem(key);
       if (stored !== null) data.value = JSON.parse(stored);
     } catch {
-      /* ignore corrupt data */
+      // * ignore corrupt data
     }
 
     watch(
@@ -78,12 +78,12 @@ function serializeCurrentState(
 ): SerializedBuild {
   const build: SerializedBuild = { v: 1 };
 
-  // Episode setup (omit defaults)
+  // * Episode setup (omit defaults)
   if (ep3Cut.value !== DEFAULT_EP3_CUT) build.ec = ep3Cut.value;
   if (ep4Hire.value !== DEFAULT_EP4_HIRE) build.eh = ep4Hire.value;
   if (showEp8Recruits.value) build.e8 = 1;
 
-  // Level-ups (only non-zero allocations)
+  // * Level-ups (only non-zero allocations)
   const lu: Record<string, number[]> = {};
 
   for (const [id, stats] of Object.entries(heroLevelUps.value)) {
@@ -94,7 +94,7 @@ function serializeCurrentState(
 
   if (Object.keys(lu).length > 0) build.lu = lu;
 
-  // Bonus levels (only non-zero)
+  // * Bonus levels (only non-zero)
   const bl: Record<string, number> = {};
 
   for (const [id, level] of Object.entries(heroBonusLevels.value)) {
@@ -103,7 +103,7 @@ function serializeCurrentState(
 
   if (Object.keys(bl).length > 0) build.bl = bl;
 
-  // Power selections (only non-default)
+  // * Power selections (only non-default)
   const pw: Record<string, [number, number]> = {};
 
   for (const [id, power] of Object.entries(heroPowers.value)) {
@@ -114,7 +114,7 @@ function serializeCurrentState(
 
   if (Object.keys(pw).length > 0) build.pw = pw;
 
-  // Special powers (only non-zero)
+  // * Special powers (only non-zero)
   const sp: Record<string, number> = {};
 
   for (const [id, state] of Object.entries(heroSpecialPowers.value)) {
@@ -123,7 +123,7 @@ function serializeCurrentState(
 
   if (Object.keys(sp).length > 0) build.sp = sp;
 
-  // Flights (only true entries)
+  // * Flights (only true entries)
   const fl: string[] = [];
 
   for (const [id, flying] of Object.entries(heroFlights.value)) {
@@ -146,16 +146,16 @@ async function deserializeIntoState(
   heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
   heroFlights: Ref<Partial<Record<HeroId, boolean>>>
 ) {
-  // Set episode choices first — watchers in sub-composables reset
-  // dependent state for cut/non-hired heroes during the next tick
+  // * Set episode choices first — watchers in sub-composables reset
+  // * dependent state for cut/non-hired heroes during the next tick
   ep3Cut.value = build.ec ?? DEFAULT_EP3_CUT;
   ep4Hire.value = build.eh ?? DEFAULT_EP4_HIRE;
   showEp8Recruits.value = build.e8 === 1;
 
-  // Wait for watchers to flush before overwriting dependent state
+  // * Wait for watchers to flush before overwriting dependent state
   await nextTick();
 
-  // Level-ups
+  // * Level-ups
   const lu: Partial<Record<HeroId, HeroStats>> = {};
 
   if (build.lu) {
@@ -166,7 +166,7 @@ async function deserializeIntoState(
 
   heroLevelUps.value = lu;
 
-  // Bonus levels
+  // * Bonus levels
   const bl: Partial<Record<HeroId, number>> = {};
 
   if (build.bl) {
@@ -177,7 +177,7 @@ async function deserializeIntoState(
 
   heroBonusLevels.value = bl;
 
-  // Powers
+  // * Powers
   const pw: Partial<Record<HeroId, HeroPowerSelection>> = {};
 
   if (build.pw) {
@@ -191,7 +191,7 @@ async function deserializeIntoState(
 
   heroPowers.value = pw;
 
-  // Special powers
+  // * Special powers
   const sp: Partial<Record<HeroId, number>> = {};
 
   if (build.sp) {
@@ -202,7 +202,7 @@ async function deserializeIntoState(
 
   heroSpecialPowers.value = sp;
 
-  // Flights
+  // * Flights
   const fl: Partial<Record<HeroId, boolean>> = {};
 
   if (build.fl) {
@@ -244,7 +244,7 @@ function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
 // ============================================================================
 
 export function useBuildPersistence() {
-  // Access all mutable state via useState (same refs as sub-composables)
+  // * Access all mutable state via useState (same refs as sub-composables)
   const ep3Cut = useState<HeroId>('ep3Cut');
   const ep4Hire = useState<HeroId>('ep4Hire');
   const showEp8Recruits = useState<boolean>('showEp8Recruits');
@@ -258,21 +258,18 @@ export function useBuildPersistence() {
     useState<Partial<Record<HeroId, number>>>('heroSpecialPowers');
   const heroFlights = useState<Partial<Record<HeroId, boolean>>>('heroFlights');
 
-  // --- localStorage ---
-
+  // * localStorage
   const savedBuilds = useLocalStorageRef<SavedBuild[]>(STORAGE_KEY_BUILDS, []);
   const activeBuildId = useLocalStorageRef<string | null>(
     STORAGE_KEY_ACTIVE,
     null
   );
 
-  // --- Shared-build mode ---
-
+  // * Shared-build mode
   const isViewingSharedBuild = ref(false);
 
-  // --- Dirty tracking ---
-
-  // Snapshot of the last-saved state, used to detect unsaved changes
+  // * Dirty tracking
+  // * Snapshot of the last-saved state, used to detect unsaved changes
   const savedSnapshot = ref<string>('');
 
   function takeSnapshot(): string {
@@ -300,8 +297,7 @@ export function useBuildPersistence() {
     return takeSnapshot() !== savedSnapshot.value;
   });
 
-  // --- Build CRUD ---
-
+  // * Build CRUD
   function generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
@@ -414,8 +410,7 @@ export function useBuildPersistence() {
     if (build) build.name = name;
   }
 
-  // --- URL sharing ---
-
+  // * URL sharing
   function clearUrlParam() {
     const url = new URL(window.location.href);
 
@@ -441,7 +436,7 @@ export function useBuildPersistence() {
     const url = new URL(window.location.href);
     url.searchParams.set(URL_PARAM, encoded);
 
-    // Remove other params that might be stale
+    // * Remove other params that might be stale
     return url.toString();
   }
 
@@ -456,8 +451,7 @@ export function useBuildPersistence() {
     }
   }
 
-  // --- Shared build actions ---
-
+  // * Shared build actions
   function saveSharedAsMyBuild(name: string) {
     saveAsNewBuild(name);
   }
@@ -485,17 +479,16 @@ export function useBuildPersistence() {
     updateSavedSnapshot();
   }
 
-  // --- Initialization ---
-
+  // * Initialization
   async function initialize() {
-    // Only run on client
+    // * Only run on client
     if (import.meta.server) return;
 
     const route = useRoute();
     const buildParam = route.query[URL_PARAM] as string | undefined;
 
     if (buildParam) {
-      // Load from URL — shared build mode
+      // * Load from URL - shared build mode
       const decoded = decodeBuildFromUrl(buildParam);
 
       if (decoded) {
@@ -516,8 +509,8 @@ export function useBuildPersistence() {
     }
 
     if (!isViewingSharedBuild.value) {
-      // No build param, or an undecodable one — fall back to the active
-      // build and strip the dead param so a reload cannot re-trip on it
+      // * No build param, or an undecodable one - fall back to the active
+      // * build and strip the dead param so a reload cannot re-trip on it
       if (buildParam) clearUrlParam();
 
       const active = getActiveBuild();

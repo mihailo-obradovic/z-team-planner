@@ -6,23 +6,20 @@ import { useHeroLevelUp } from './useHeroLevelUp';
 import { useHeroPowerTraining } from './useHeroPowerTraining';
 import type { Hero, HeroId } from '@/types/hero';
 
-/**
- * Main hero planner composable that aggregates all hero management functionality.
- * Acts as a unified interface for episode setup, level-ups, powers, and flight training.
- */
+//  * Main hero planner composable that aggregates all hero management functionality.
+//  * Acts as a unified interface for episode setup, level-ups, powers, and flight training.
 function createHeroPlanner() {
-  // Heroes data is fetched in app.vue and read here via useNuxtData to avoid
-  // SSR hydration issues (useFetch inside a singleton breaks Suspense awaiting)
+  // * Heroes data is fetched in app.vue and read here via useNuxtData to avoid
+  // * SSR hydration issues (useFetch inside a singleton breaks Suspense awaiting)
   const { data: heroes } = useNuxtData<Hero[]>('heroes');
 
-  // Initialize all sub-composables with explicit dependencies
+  // * Initialize all sub-composables with explicit dependencies
   const episodeSetup = useHeroEpisodeSetup(heroes);
   const levelUp = useHeroLevelUp(heroes, episodeSetup);
   const powerTraining = useHeroPowerTraining(heroes, episodeSetup, levelUp);
   const flightTraining = useHeroFlightTraining(episodeSetup, powerTraining);
   const persistence = useBuildPersistence();
 
-  // Cross-cutting concern: resetHero clears all state for a specific hero
   function resetHero(id: HeroId) {
     if (id in FIXED_LEVEL_HEROES) {
       return;
@@ -33,14 +30,12 @@ function createHeroPlanner() {
     flightTraining.resetHeroFlight(id);
   }
 
-  // * The union of the three shared-budget resets, and nothing else: per-hero level-up allocations, powers and flight are resetHero's business. Feature 003 pins it as a union, so a fourth shared budget has to be added here too or the drawer's footer button silently under-resets.
   function resetAllTrainings() {
     powerTraining.resetAllPowerTrainings();
     flightTraining.resetAllFlightTrainings();
     levelUp.resetAllBonusLevels();
   }
 
-  // Return unified API by spreading all sub-composable exports
   return {
     heroes,
     ...episodeSetup,
@@ -53,10 +48,8 @@ function createHeroPlanner() {
   };
 }
 
-/**
- * Singleton composable for hero planning.
- * Uses useNuxtApp to cache the instance and prevent duplicate computeds/watchers.
- */
+//  * Singleton composable for hero planning.
+//  * Uses useNuxtApp to cache the instance and prevent duplicate computeds/watchers.
 export function useHeroPlanner() {
   const nuxtApp = useNuxtApp();
 

@@ -33,11 +33,7 @@ export function useHeroFlightTraining(
       const capability =
         HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-      // * An episode 8 recruit is a fixed portrait, not a build: nothing on the
-      // * card can train or untrain them, so a flier among them flies
-      // * unconditionally. That includes Phenomaman, whose flight is only
-      // * conditional while he is the episode 4 hire and Heavily Medicated is
-      // * still a power he can take.
+      // * An episode 8 recruit is a fixed portrait, not a build: nothing on the card can train or untrain them, so a flier among them flies unconditionally. That includes Phenomaman, whose flight is only conditional while he is the episode 4 hire and Heavily Medicated is still a power he can take.
       if (episodeSetup.ep8RecruitIds.value.has(id)) {
         result.add(id);
         continue;
@@ -49,7 +45,7 @@ export function useHeroFlightTraining(
           break;
 
         case 'conditional-power': {
-          // Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
+          // * Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
           const powerState = powerTraining.getPowerState(id);
           const hasPower = powerState.trainableSelected === 1;
           if (capability.inverted ? !hasPower : hasPower) result.add(id);
@@ -68,10 +64,10 @@ export function useHeroFlightTraining(
   function toggleFlight(id: HeroId) {
     const capability =
       HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
-    // Only trainable heroes can toggle flight
+    // * Only trainable heroes can toggle flight
     if (!capability || capability.type !== 'trainable') return;
 
-    // Check training limit
+    // * Check training limit
     if (
       !heroFlights.value[id] &&
       flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
@@ -90,7 +86,7 @@ export function useHeroFlightTraining(
     delete heroFlights.value[id];
   }
 
-  // Watch episode choices and clear flight data when heroes are cut/not hired
+  // * Watch episode choices and clear flight data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, (newCut) => {
     delete heroFlights.value[newCut];
   });
