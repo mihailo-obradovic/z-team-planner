@@ -4,16 +4,16 @@ export default {
   slots: {
     root: 'relative flex items-start',
     base: [
-      // * Changes: rounded-full is a literal in the upstream theme, so the radius token cannot flatten it — rounded-none out-ranks it (annex §5). The unchecked track is tan with an ink edge, like a control. The ::after box pads the hit area to the 24px touch floor (§14.2) without growing the track: the switch renders 18px tall, and the floor is about the target, not the paint.
+      // * Changes: rounded-full is a literal in the upstream theme, so the radius token cannot flatten it (annex §5). Two conflicting radius utilities in one string are resolved by stylesheet order rather than by their order here, which is why the track sometimes still painted round — `!` decides it. The unchecked track is tan with an ink edge, like a control. The ::after box pads the hit area to the 24px touch floor (§14.2) for the sizes whose track is shorter than that.
       // * Default: 'inline-flex items-center shrink-0 rounded-full border-2 border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-accented'
-      'relative inline-flex items-center shrink-0 rounded-full rounded-none border-2 border-accented focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-elevated after:absolute after:inset-x-0 after:top-1/2 after:h-6 after:-translate-y-1/2 after:content-[""]',
+      'relative inline-flex items-center shrink-0 rounded-none! border-2 border-accented focus-visible:outline-2 focus-visible:outline-offset-2 data-[state=unchecked]:bg-elevated after:absolute after:inset-x-0 after:top-1/2 after:h-6 after:-translate-y-1/2 after:content-[""]',
       'transition-[background] duration-200'
     ],
     container: 'flex items-center',
-    // * Changes: the thumb is square too, and carries the same ink edge.
+    // * Changes: the thumb is square too, and carries the same ink edge — `!` for the same reason as the track above.
     // * Default: 'group pointer-events-none rounded-full bg-default shadow-lg …'
     thumb:
-      'group pointer-events-none rounded-full rounded-none border border-accented bg-default shadow-lg ring-0 transition-transform duration-200 data-[state=unchecked]:translate-x-0 data-[state=unchecked]:rtl:-translate-x-0 flex items-center justify-center',
+      'group pointer-events-none rounded-none! border border-accented bg-default shadow-lg ring-0 transition-transform duration-200 data-[state=unchecked]:translate-x-0 data-[state=unchecked]:rtl:-translate-x-0 flex items-center justify-center',
     icon: [
       'absolute shrink-0 group-data-[state=unchecked]:text-dimmed opacity-0 size-10/12',
       'transition-[color,opacity] duration-200'
@@ -84,11 +84,13 @@ export default {
           'size-4.5 data-[state=checked]:translate-x-4.5 data-[state=checked]:rtl:-translate-x-4.5',
         wrapper: 'text-sm'
       },
+      // * Changes: the thumb is inset rather than flush, so the track needs its own padding. Upstream has no track height at all — the track is as tall as its thumb plus the border, which is how a flush size-5 thumb makes the 24px track. Shrinking the thumb to the mockup's proportion therefore shrinks the track with it unless the 2px it gave up comes back as `p-0.5`, and that is also what puts the surround on the ends: the travel is what the padded content box leaves (44 - 4 border - 4 padding - 16 thumb = 20).
+      // * Default: base 'w-11', thumb 'size-5 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5'
       xl: {
-        base: 'w-11',
+        base: 'w-11 p-0.5',
         container: 'h-6',
         thumb:
-          'size-5 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5',
+          'size-4 data-[state=checked]:translate-x-5 data-[state=checked]:rtl:-translate-x-5',
         wrapper: 'text-base'
       }
     },

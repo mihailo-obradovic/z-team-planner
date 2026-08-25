@@ -21,7 +21,9 @@ export default {
     itemTrailingKbds: 'hidden lg:inline-flex items-center shrink-0',
     itemTrailingKbdsSize: '',
     itemWrapper: 'flex-1 flex flex-col text-start min-w-0',
-    itemLabel: 'truncate',
+    // * Changes: the same label face the select's options take, and for the same reason — a menu item is a button in all but name. Casing is not set here: this menu lists build names beside its own actions, and a name is written the way the user wrote it. The actions carry `uppercase` themselves, at the call site that knows which is which.
+    // * Default: 'truncate'
+    itemLabel: ['truncate', 'font-heading font-bold tracking-label'],
     itemDescription: 'truncate text-muted',
     itemLabelExternalIcon: 'inline-block size-3 align-top text-dimmed'
   },

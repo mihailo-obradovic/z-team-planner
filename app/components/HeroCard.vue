@@ -7,6 +7,18 @@
       </h3>
 
       <div class="flex items-center gap-2">
+        <!-- * Flight School is its own training track with its own budget (context/game-mechanics.md, Flight School), and it was the fifth chip that pushed the power strip past the portrait's width. It sits with the other per-hero glyphs instead, and reserves its slot only for the five heroes in HERO_FLIGHT — the same rule the reset and bonus wrappers follow. -->
+        <div v-if="flightInfo" class="flex w-6 items-center justify-center">
+          <TooltipButton
+            :text="`${flightInfo.name}: ${flightInfo.description}`"
+            icon="i-lucide-plane"
+            :color="flightColor"
+            :active="flightActive"
+            :disabled="flightLocked"
+            @click="toggleFlight(heroId)"
+          />
+        </div>
+
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
           <IconButton
             v-if="
@@ -23,7 +35,7 @@
 
         <span class="w-8 text-end text-xs text-muted">Lv. {{ heroLevel }}</span>
 
-        <div v-if="canLevelUp" class="flex w-7 items-center justify-center">
+        <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
           <IconButton
             v-if="bonusLevel > 0 || !bonusFull"
             :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
@@ -40,19 +52,22 @@
     </div>
 
     <div class="flex justify-between gap-3 p-3">
-      <div class="flex flex-col gap-2">
+      <!-- * The portrait column is pinned to the portrait's own 108px (annex §13). Left auto-width, the strip sized the column instead of the image, and the difference came out of the stat list — so Flambae and Coupé's stat rows stopped lining up with everyone else's. -->
+      <div class="flex w-27 shrink-0 flex-col gap-2">
         <NuxtImg
           :src="portraitSrc"
           :alt="hero.name"
-          class="aspect-square size-28 cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
+          class="aspect-square size-27 cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
           @click="$emit('viewDetail')"
         />
-        <div v-if="powers" class="flex items-center justify-center gap-1">
+        <!-- * Hero Power Training only, now that flight sits in the header: a fixed one-row box, never wrapping. Four 24px chips and three 4px gaps is 108, which is why the portrait is 108 and not the 112 it started at — a full row lines up with the image edge to edge, and a shorter one still centres under it. The box is sized for four; a hero gaining a fifth chip breaks it (feature 003, Business Rules). -->
+        <div v-if="powers" class="flex h-6 items-center justify-center gap-1">
           <TooltipButton
             v-if="heroId === 'sonar'"
             :text="sonarFormTooltip"
             :icon="sonarFormIcon"
             :color="monsterForm ? 'primary' : 'neutral'"
+            :active="monsterForm"
             @click="monsterForm = !monsterForm"
           />
 
@@ -60,6 +75,7 @@
             :text="`${powers[0]!.name}: ${powers[0]!.description}`"
             :icon="POWER_ICONS[0]"
             :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
+            :active="powerStates.startingRevealed"
             @click="toggleStartingPower(heroId)"
           />
 
@@ -69,17 +85,9 @@
             :text="`${power.name}: ${power.description}`"
             :icon="POWER_ICONS[i + 1]!"
             :color="trainablePowerColor(i)"
+            :active="trainablePowerActive(i)"
             :disabled="isTrainableDisabled(i)"
             @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
-          />
-
-          <TooltipButton
-            v-if="flightInfo"
-            :text="`${flightInfo.name}: ${flightInfo.description}`"
-            icon="i-lucide-plane"
-            :color="flightColor"
-            :disabled="flightLocked"
-            @click="toggleFlight(heroId)"
           />
 
           <TooltipButton
@@ -87,6 +95,7 @@
             text="Supernova: Set Combat and Mobility to 10"
             icon="i-lucide-flame"
             :color="specialPowerState ? 'primary' : 'neutral'"
+            :active="specialPowerState > 0"
             @click="toggleSpecialPower(heroId)"
           />
 
@@ -95,6 +104,7 @@
             :text="coupeTooltip"
             :icon="coupeIcon"
             :color="specialPowerState ? 'primary' : 'neutral'"
+            :active="specialPowerState > 0"
             @click="toggleSpecialPower(heroId)"
           />
         </div>
@@ -113,22 +123,25 @@
               <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
               {{ stat }}
             </span>
+            <!-- * The stepper slots are reserved, not conditional: a fixed-level recruit renders no buttons, and without the wrappers its stat column measures 116 against everyone else's 172 — a narrower card in the same roster. Same rule as the header cluster's w-6 slots. -->
             <div class="ml-2 flex items-center gap-1">
-              <template v-if="canLevelUp">
+              <div class="flex w-6 items-center justify-center">
                 <IconButton
+                  v-if="canLevelUp"
                   icon="i-lucide-minus"
                   color="neutral"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
                   @click="statDown(heroId, resolvedStat(stat))"
                 />
-              </template>
-              <span class="w-5 text-center font-medium">{{
+              </div>
+              <span class="w-5 text-center font-bold">{{
                 hero.startingStats[resolvedStat(stat)] +
                 statBonuses[resolvedStat(stat)] +
                 specialPowerBonus[resolvedStat(stat)]
               }}</span>
-              <template v-if="canLevelUp">
+              <div class="flex w-6 items-center justify-center">
                 <IconButton
+                  v-if="canLevelUp"
                   icon="i-lucide-plus"
                   color="neutral"
                   :disabled="
@@ -139,7 +152,7 @@
                   "
                   @click="statUp(heroId, resolvedStat(stat))"
                 />
-              </template>
+              </div>
             </div>
           </li>
         </ul>
@@ -251,7 +264,11 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
 });
 
 function trainablePowerColor(i: number) {
-  return powerStates.value.trainableSelected === i + 1 ? 'primary' : 'neutral';
+  return trainablePowerActive(i) ? 'primary' : 'neutral';
+}
+
+function trainablePowerActive(i: number) {
+  return powerStates.value.trainableSelected === i + 1;
 }
 
 function isTrainableDisabled(i: number) {
@@ -299,7 +316,10 @@ const heroLevel = computed(() => {
   const fixedLevel =
     FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
   if (fixedLevel !== undefined) return fixedLevel;
-  return 1 + getLevelUpPointsUsedValue.value + bonusLevel.value;
+  // * A bonus level raises the per-hero cap; it does not itself raise the level.
+  // * Counting it here made the level jump the moment the bonus was granted,
+  // * before the extra point was spent — and disagreed with the detail dialog.
+  return 1 + getLevelUpPointsUsedValue.value;
 });
 
 const getLevelUpPointsUsedValue = computed(() =>

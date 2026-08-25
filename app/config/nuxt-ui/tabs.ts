@@ -34,11 +34,12 @@ export default {
         indicator: 'rounded-md shadow-xs'
       },
       // * Changes: the design's tabs are free-standing bordered buttons on the dark ground, not an underlined rail — so the sliding indicator is hidden here and the rail's bottom rule is dropped in the compound variant below, which is the level that re-adds it. Colours too.
+      // * Below sm the three tabs are equal thirds of the width — a 3-track grid, each trigger `w-full` — because at phone widths a content-width row left three short labels huddled against one edge, and at 320 it overflowed (353 into 320) and had to scroll. Equal thirds removes the overflow rather than scrolling it. From sm the row goes back to content width, `shrink-0` so it cannot compress, and keeps `overflow-x-auto` as the safety net. Inline padding follows the page container (p-4, then 6 from md) rather than sitting at 6 everywhere (annex §3, §13).
       // * Default: { list: 'border-default', indicator: 'rounded-full', trigger: 'focus:outline-none' }
       link: {
-        list: 'border-default gap-2 px-6 py-2.5',
+        list: 'border-default grid grid-cols-3 gap-2 px-4 py-2.5 sm:flex sm:overflow-x-auto md:px-6',
         indicator: 'rounded-full hidden',
-        trigger: 'focus:outline-none'
+        trigger: 'w-full focus:outline-none sm:w-auto sm:shrink-0'
       }
     },
     orientation: {
@@ -185,9 +186,10 @@ export default {
       class: {
         indicator: 'bg-primary',
         // * The orientation+link compound above re-adds the rail's bottom rule after the variant, so it has to be out-ranked at compound level too.
-        list: 'border-b-0 mb-0',
+        // * The rail comes back as a 1px secondary rule — the separator's own style (annex §13, Ruled band). The board has no rule here; this is for scrolling, so the edge the content passes under is visible rather than guessed.
+        list: 'border-b border-secondary mb-0',
         trigger: [
-          'h-9 px-5 py-0 border-2 border-secondary-700 bg-secondary',
+          'h-9 px-2 py-0 border-2 border-secondary-700 bg-secondary sm:px-5',
           'font-heading font-bold uppercase tracking-label',
           'data-[state=inactive]:text-neutral-100 hover:data-[state=inactive]:not-disabled:text-neutral-100 hover:data-[state=inactive]:not-disabled:bg-secondary/80',
           'data-[state=active]:bg-default data-[state=active]:text-highlighted data-[state=active]:border-accented',

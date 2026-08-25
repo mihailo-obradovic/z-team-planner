@@ -2,9 +2,12 @@ import type { SelectConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
+    // * Changes: a select trigger is the annex's label role, not body text — the boards' `.selectbox` is the same condensed uppercase bold as the buttons it sits beside, and a sentence-case trigger was the one control in the drawer breaking that line. Tracking is the label token rather than the boards' 0.04em: the annex carries two tracking values and a third is not a decision yet.
+    // * Default: 'relative group rounded-md inline-flex items-center focus:outline-none disabled:cursor-not-allowed disabled:opacity-75'
     base: [
       'relative group rounded-md inline-flex items-center focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
-      'transition-colors'
+      'transition-colors',
+      'font-heading font-bold uppercase tracking-label'
     ],
     leading: 'absolute inset-y-0 start-0 flex items-center',
     leadingIcon: 'shrink-0 text-dimmed',
@@ -15,8 +18,9 @@ export default {
     value: 'truncate pointer-events-none',
     placeholder: 'truncate text-dimmed',
     arrow: 'fill-default',
+    // * Changes: `scroll-paper` only — the menu is a paper surface that is not a `panel`, so it does not inherit the paper scrollbar and has to name it (annex §1).
     content:
-      'max-h-60 w-(--reka-select-trigger-width) bg-default shadow-lg rounded-md ring ring-default overflow-hidden data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] origin-(--reka-select-content-transform-origin) pointer-events-auto flex flex-col',
+      'max-h-60 w-(--reka-select-trigger-width) bg-default scroll-paper shadow-lg rounded-md ring ring-default overflow-hidden data-[state=open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] origin-(--reka-select-content-transform-origin) pointer-events-auto flex flex-col',
     viewport:
       'relative divide-y divide-default scroll-py-1 overflow-y-auto flex-1',
     group: 'p-1 isolate',
@@ -38,7 +42,9 @@ export default {
     itemTrailing: 'ms-auto inline-flex gap-1.5 items-center',
     itemTrailingIcon: 'shrink-0',
     itemWrapper: 'flex-1 flex flex-col min-w-0',
-    itemLabel: 'truncate',
+    // * Changes: an option carries the trigger's casing, or picking one would change the case of the value on screen.
+    // * Default: 'truncate'
+    itemLabel: ['truncate', 'font-heading font-bold uppercase tracking-label'],
     itemDescription: 'truncate text-muted'
   },
   variants: {

@@ -169,12 +169,27 @@
     --duration-baseline: 150ms;
     --duration-slow: 250ms;
     --duration-slowest: 400ms;
+
+    /* * Scrollbars (annex §1). Two pairs — thumb then track — because the app scrolls on two grounds: the dark page and the paper surfaces. Written as one variable each so the value is a single decision applied at several roots, not repeated. */
+    --scrollbar-ground: var(--ui-color-secondary-300)
+        var(--ui-color-secondary-950);
+    --scrollbar-paper: var(--ui-color-neutral-600) var(--ui-color-neutral-200);
 }
 
 @layer base {
     /* * Nuxt UI paints body with --ui-bg (paper); the ground is the dark one */
     body {
         background-color: var(--ui-color-secondary-900);
+    }
+
+    /* * `scrollbar-width` does not inherit — it applies to whichever element actually scrolls, and that element differs per component (main, a tabs panel, a modal body, a select viewport). Declaring it once universally is cheaper and more honest than adding a class to each of them and missing the next one. */
+    * {
+        scrollbar-width: thin;
+    }
+
+    /* * `scrollbar-color` does inherit, so the ground value is set once here and paper surfaces override it further down the tree (the `panel` utility, or `scroll-paper` where the surface is paper without being a panel). */
+    :root {
+        scrollbar-color: var(--scrollbar-ground);
     }
 }
 
@@ -184,6 +199,12 @@
     box-shadow:
         0 0 0 1px var(--ui-color-primary-700),
         var(--shadow-panel);
+    scrollbar-color: var(--scrollbar-paper);
+}
+
+/* * The paper scrollbar on a paper surface that is not a panel — the select menu and the mobile slideover's body. Every other paper scroll region inherits it from `panel`. */
+@utility scroll-paper {
+    scrollbar-color: var(--scrollbar-paper);
 }
 
 @utility plate {
@@ -215,4 +236,12 @@ button,
 [role='button'] {
     @apply cursor-pointer;
     @apply disabled:cursor-not-allowed;
+}
+
+/* * Annex §14.4: transform-based enter/exit must short-circuit under reduced motion. The overlays animate via Tailwind `animate-[slide-in-from-right_200ms_…]` utilities baked into their theme configs, so there is no per-component prop to disable — the animation is cancelled here instead, for every overlay at once. Colour and opacity transitions stay: they are at the baseline duration and need no guard. */
+@media (prefers-reduced-motion: reduce) {
+    [data-state='open'],
+    [data-state='closed'] {
+        animation: none !important;
+    }
 }

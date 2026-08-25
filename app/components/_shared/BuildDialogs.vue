@@ -1,0 +1,161 @@
+<template>
+  <!-- * Mounted once at the shell. The controls that open these render in two places (header and mobile action bar), so the dialogs cannot live beside them — see useBuildDialogs. -->
+  <u-modal v-model:open="saveSharedOpen" title="Save as my build">
+    <template #body>
+      <u-form-field label="Build name">
+        <u-input
+          v-model="newBuildName"
+          placeholder="My build"
+          autofocus
+          @keydown.enter="confirmSaveShared"
+        />
+      </u-form-field>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <u-button
+          variant="ghost"
+          color="neutral"
+          @click="saveSharedOpen = false"
+        >
+          Cancel
+        </u-button>
+        <u-button @click="confirmSaveShared">Save</u-button>
+      </div>
+    </template>
+  </u-modal>
+
+  <u-modal v-model:open="newBuildOpen" title="New build">
+    <template #body>
+      <u-form-field label="Build name">
+        <u-input
+          v-model="newBuildName"
+          placeholder="My build"
+          autofocus
+          @keydown.enter="confirmNewBuild"
+        />
+      </u-form-field>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <u-button variant="ghost" color="neutral" @click="newBuildOpen = false">
+          Cancel
+        </u-button>
+        <u-button @click="confirmNewBuild">Create</u-button>
+      </div>
+    </template>
+  </u-modal>
+
+  <u-modal v-model:open="deleteOpen" title="Delete build">
+    <template #body>
+      <p class="text-sm text-muted">
+        Are you sure you want to delete "{{ activeBuildName }}"?
+      </p>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <u-button variant="ghost" color="neutral" @click="deleteOpen = false">
+          Cancel
+        </u-button>
+        <u-button color="error" @click="confirmDelete">Delete</u-button>
+      </div>
+    </template>
+  </u-modal>
+
+  <u-modal v-model:open="renameOpen" title="Rename build">
+    <template #body>
+      <u-form-field label="Build name">
+        <u-input
+          v-model="renameBuildName"
+          autofocus
+          @keydown.enter="confirmRename"
+        />
+      </u-form-field>
+    </template>
+
+    <template #footer>
+      <div class="flex w-full justify-end gap-2">
+        <u-button variant="ghost" color="neutral" @click="renameOpen = false">
+          Cancel
+        </u-button>
+        <u-button @click="confirmRename">Rename</u-button>
+      </div>
+    </template>
+  </u-modal>
+</template>
+
+<script setup lang="ts">
+const toast = useToast();
+
+// ---
+
+const {
+  activeBuildId,
+  activeBuildName,
+  saveAsNewBuild,
+  saveSharedAsMyBuild,
+  deleteBuild,
+  loadBuild,
+  renameBuild,
+  savedBuilds
+} = useHeroPlanner();
+
+const {
+  saveSharedOpen,
+  newBuildOpen,
+  deleteOpen,
+  renameOpen,
+  newBuildName,
+  renameBuildName
+} = useBuildDialogs();
+
+// ---
+
+function confirmSaveShared() {
+  const name = newBuildName.value.trim() || 'Imported build';
+
+  saveSharedAsMyBuild(name);
+  saveSharedOpen.value = false;
+  newBuildName.value = '';
+  toast.add({ title: `Saved as "${name}"`, color: 'success' });
+}
+
+function confirmNewBuild() {
+  const name = newBuildName.value.trim() || 'New build';
+
+  saveAsNewBuild(name);
+  newBuildOpen.value = false;
+  newBuildName.value = '';
+  toast.add({ title: `Created "${name}"`, color: 'success' });
+}
+
+function confirmDelete() {
+  if (!activeBuildId.value) return;
+
+  const name = activeBuildName.value;
+
+  deleteBuild(activeBuildId.value);
+  deleteOpen.value = false;
+
+  // Load the next available build
+  if (savedBuilds.value.length > 0) {
+    loadBuild(savedBuilds.value[0]!.id);
+  }
+
+  toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
+}
+
+function confirmRename() {
+  if (!activeBuildId.value) return;
+
+  const name = renameBuildName.value.trim();
+  if (!name) return;
+
+  renameBuild(activeBuildId.value, name);
+  renameOpen.value = false;
+  renameBuildName.value = '';
+}
+</script>

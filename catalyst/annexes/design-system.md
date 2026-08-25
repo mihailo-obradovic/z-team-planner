@@ -41,7 +41,7 @@ signal  50 #eff6fc  100 #dbeaf8  200 #b9d5f0  300 #8ab8e4  400 #5c9bd6  500 #3d8
         600 #2f6ea8  700 #245a8c  800 #1e4a72  900 #1a3d5d  950 #102538
 ```
 
-**Steps carrying a designed value** — these came from the mockups and are not interpolation; changing one changes the product's look: `paper` 50/100/200/300/400/500/600/900, `ember` 500/600/700/800, `lagoon` 300/500/600/700/800/900, `moss` 500, `gold` 500, `brick` 500/600, `signal` 500/700. Every other step is a filler for completeness — no component may depend on one without promoting it here first.
+**Steps carrying a designed value** — these came from the mockups and are not interpolation; changing one changes the product's look: `paper` 50/100/200/300/400/500/600/900, `ember` 500/600/700/800, `lagoon` 300/400/500/600/700/800/900, `moss` 500, `gold` 500, `brick` 500/600, `signal` 500/700. Every other step is a filler for completeness — no component may depend on one without promoting it here first.
 
 Two steps deliberately leave their ramp's hue line, and both are intentional: `ember-700` is the rust panel edge, not a darker amber, and is used only by the `panel` utility; `lagoon-800`/`900` leave the teal for the charcoal-green ground the whole app sits on.
 
@@ -111,6 +111,31 @@ The mockups' panel anatomy is one treatment used everywhere, so it lives once as
 
 `panel` is the card, dialog, dropdown and toast surface; `plate` is the titled header band on top of one.
 
+### Scrollbars
+
+The app scrolls on two grounds, so there are two scrollbars and no third: the dark page ground (`main`, a tabs panel) and paper (a dialog or slideover body, a menu). Both use the standard properties only — `scrollbar-width: thin` plus `scrollbar-color`, no `::-webkit-scrollbar`. The consequence is accepted rather than worked around: Chromium rounds a `thin` thumb and the standard property cannot square it, so this is the one place `--ui-radius: 0` does not hold, and there is no hover state.
+
+| Ground | Thumb        | Track        | Applied by          |
+| ------ | ------------ | ------------ | ------------------- |
+| Page   | `lagoon-300` | `lagoon-950` | `:root`, inherited  |
+| Paper  | `paper-600`  | `paper-200`  | the `panel` utility |
+
+```css
+:root {
+  --scrollbar-ground: var(--ui-color-secondary-300)
+    var(--ui-color-secondary-950);
+  --scrollbar-paper: var(--ui-color-neutral-600) var(--ui-color-neutral-200);
+}
+
+@utility scroll-paper {
+  scrollbar-color: var(--scrollbar-paper);
+}
+```
+
+Two mechanics decide where each is declared. `scrollbar-color` **inherits**, so the page value is set once on `:root` and the paper value once on `panel` — every paper scroll region inside a dialog, slideover, dropdown or card is covered without naming it. A paper surface that is **not** a panel does not inherit it and must name `scroll-paper`; today that is the select menu's content and the mobile slideover's body, both annotated in their configs. `scrollbar-width` does **not** inherit — it applies to whichever element actually scrolls — so it is declared once universally in `@layer base` rather than chased per component.
+
+The thumb is `paper-600` (ink-soft) rather than the muted `paper-500` the eye first reaches for: `paper-500` on a `paper-200` track is 2.86:1 and misses the 3:1 non-text floor (§14.1). The track is not load-bearing — it is a groove, and carries no information the thumb does not.
+
 ### Dark mode — a recorded exception
 
 The template requires both themes and that every colour can flip. **This project defines one fixed theme and no colour modes** (`ui: { colorMode: false }`), because the design is a single artefact modelled on the game's own interface rather than a neutral document surface; there is no `.dark` block and no `.light` block, and the colour-mode button does not exist. A light theme would be a new decision record, not a toggle. The rule this replaces still binds in one direction: no component may hardcode a colour that assumes the ground is dark — it names an alias, and the alias is what a future theme would change.
@@ -141,7 +166,7 @@ Both families are self-hosted by `@nuxt/fonts` (registered by Nuxt UI; configure
 
 Line height by role: **tight** (1.05–1.15) for display and title and for any standalone number, **normal** (1.2–1.4) for labels, tags and controls, **relaxed** (1.5) for running body text.
 
-`display` is the hero name in the detail dialog; `title` is a panel's plate heading and a hero card's name; `label` is every stat name, field label and button; `tag` is the small bordered status chips. Emphasis inside body text is a weight step to 600, never a size change. Heading levels follow document hierarchy — one `h1` per page — and take their look from these roles, not the reverse.
+`display` is the hero name in the detail dialog; `title` is a panel's plate heading and a hero card's name; `label` is every stat name, field label and button — and a control that is a button in all but name: a select trigger, its options, and a dropdown menu item, all of which the mockups draw in the same condensed bold as the buttons beside them. The role's uppercase stops at the words the UI itself supplies: a select holding a hero's name keeps the name's own casing, because a name is not a label. `tag` is the small bordered status chips. Emphasis inside body text is a weight step to 600, never a size change. Heading levels follow document hierarchy — one `h1` per page — and take their look from these roles, not the reverse.
 
 The scale is registered as Tailwind text tokens (`--text-display`, `--text-title`, `--text-label`, `--text-tag`, each with its `--*--line-height`, `--*--font-weight` and `--*--letter-spacing`), so `text-title` carries size, weight and leading together and no component sets the three separately. `body` and `small` are Tailwind's `text-sm` and `text-xs` with `--text-sm--line-height: 1.5` decided here.
 
@@ -178,14 +203,16 @@ Four steps, every one clearing the 24px touch floor. A row of mixed controls ali
 
 | Token                 | Height | Used by                                                                   |
 | --------------------- | ------ | ------------------------------------------------------------------------- |
-| `--control-h-xs`      | 24px   | Stat steppers in a hero card, inline reset buttons                        |
-| `--control-h-sm`      | 28px   | Power and flight chips                                                    |
+| `--control-h-xs`      | 24px   | Stat steppers, power chips and per-hero glyphs in a hero card             |
+| `--control-h-sm`      | 28px   | The Story Setup drawer's per-budget reset glyphs                          |
 | `--control-h-default` | 32px   | Buttons, inputs, selects, dropdown triggers, stepper in the detail dialog |
 | `--control-h-lg`      | 44px   | Primary actions on touch layouts, the mobile action bar                   |
 
 `--control-h-plate` (40px) is the titled header band on a panel — a surface, not a control, but sized here so nothing re-measures it.
 
 An icon-only button is **square at its step** (`width` = `height`), never a padded rectangle. The mockups' 30px dialog steppers and 27px chips were snapped to 32 and 28 (decision 003) so the scale stays four values wide.
+
+The power chips started at 28 and are 24: four of them plus their gaps is 108 at the smaller step and 124 at the larger. 24 is the floor in §14.2, so this is the last step down available to them — and the card portrait is 108 rather than 112 so that a full row of four lines up with the image edge to edge (§13, Card body). The 108 is derived from the chips, not chosen: no gap on the scale takes four 24s to 112, since `gap-1` lands on 108 and `gap-1.5` overshoots to 114.
 
 ### Widths
 
@@ -212,7 +239,9 @@ Nothing holding content takes a fixed height — `min-height` and let content si
 
 `--ui-radius: 0` is the whole story — Nuxt UI derives Tailwind's `--radius-*` steps from it, so every `rounded-*` utility resolves flat and there is no second radius token to keep in sync. Hard edges are the design, not a default left unset.
 
-Two things do not follow `--ui-radius` and must be overridden explicitly in the component config that uses them: `rounded-full` is a literal in Nuxt UI's themes (the switch track and thumb, the tabs indicator) and becomes `rounded-none`; anything drawn as an SVG circle is geometry, not radius, and stays round where the design shows a disc.
+Two things do not follow `--ui-radius` and must be overridden explicitly in the component config that uses them: `rounded-full` is a literal in Nuxt UI's themes (the switch track and thumb, the tabs indicator) and becomes `rounded-none!`; anything drawn as an SVG circle is geometry, not radius, and stays round where the design shows a disc.
+
+The `!` on that override is load-bearing. A config extends the upstream theme rather than replacing it, so both radius utilities reach the class list, and which one paints is decided by their order in the stylesheet — not by their order in the string. Without it the flat track holds most of the time and reverts to a pill whenever the build orders the two the other way.
 
 ### Border width
 
@@ -238,7 +267,15 @@ Separation is a border **or** a shadow, not both — except the `panel` treatmen
 | Dialog / modal     | `panel` + scrim (§7) |                                                            |
 | Toast              | `panel`              |                                                            |
 
-One shadow value, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, and no ad-hoc one-offs.
+One shadow value for elevation, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, and no ad-hoc one-offs.
+
+**Selection is not elevation.** A control that is _on_ — a toggled power chip, the active tab — is marked with a 1px gold halo drawn as a shadow, `0 0 0 1px var(--ui-color-warning-500)`, and never by raising it. This is the second and last shadow the system spends, and it is a state marker rather than a depth cue: it sits flush against the control's edge and reads as the gold that §1 gives selection. The halo is only half the state: an on control also **flips to the solid treatment of its own colour**, ink on the fill and an ink edge, rather than tinting the variant it wears when off. That is the difference the mockups draw between `.chip` (tan, a subtle control) and `.chip.on` (amber with ink on it), and it is why `active` is a variant change and not a colour change — a `subtle` control reads as `solid` for as long as it is on. Larger selected objects — a hero portrait, a mission template panel — take the same gold at 2px instead, as a ring rather than a halo.
+
+| Selected thing     | Marker                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| Button / chip (on) | 1px gold halo + its colour's solid fill, ink on it, ink edge |
+| Tab (active)       | 1px gold halo + paper fill + 3px inset `primary` underline   |
+| Portrait / panel   | 2px gold ring                                                |
 
 The template's "in dark mode, elevation is surface colour, not shadow" does not apply here and is not a deviation: the surfaces are light and the ground is dark, so a dark shadow under a cream panel reads exactly as intended. It would apply to any surface drawn _on_ the paper, which instead separates with a border.
 
@@ -297,6 +334,7 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 **This project uses `NuxtImg` (`@nuxt/image`), not a plain `<img>`** — a deliberate departure from the template's default, recorded here: every image in the product is a bundled hero portrait, and the module's sizing and format handling is what serves them. The rule the default protects still holds: every image ships explicit dimensions or a sized box, so nothing reflows when it loads.
 
 - **Aspect ratio, not height:** portraits are `1/1` in a hero card and `4/3` in a roster strip, with `object-fit: cover` and `object-position: top` on the strips so faces survive the crop.
+- **Card portrait: 108 × 108** (`size-27`). The value comes from the power-chip row beneath it (§4) — four 24px chips and their gaps — not from the imagery scale, so it moves only if that row does.
 - **Radius** is 0 like everything else; a portrait's separation is its 2px ink border.
 - **Placeholder:** a `--ui-bg-elevated` block at the same aspect ratio while loading, occupying the final geometry.
 - **Alt text is required** — the hero's name for a portrait. `alt=""` only for imagery that is decorative and already `aria-hidden` in effect.
@@ -331,33 +369,52 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 
 The scales above, resolved per element. Every value here was measured from the built UI, not intended — a component is checked against this table, and a value that is not here is not a decision yet.
 
-| Element            | Height / size             | Padding          | Radius | Border         | Shadow  |
-| ------------------ | ------------------------- | ---------------- | ------ | -------------- | ------- |
-| Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none           | none    |
-| Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none           | none    |
-| Icon button        | square at its step        | none             | 0      | none           | none    |
-| Input / select     | 32                        | `px-2.5`         | 0      | 2px inset ring | none    |
-| Switch             | 32 × 18 track             | —                | 0      | 2px            | none    |
-| Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)   | none    |
-| Tab trigger        | 36                        | `px-5`           | 0      | 2px            | none    |
-| Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom     | none    |
-| Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`        | `panel` |
-| Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom     | none    |
-| Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`        | `panel` |
-| Dropdown / popover | auto                      | —                | 0      | `panel`        | `panel` |
-| Toast              | auto                      | `p-4`            | 0      | `panel`        | `panel` |
+| Element            | Height / size             | Padding          | Radius | Border          | Shadow        |
+| ------------------ | ------------------------- | ---------------- | ------ | --------------- | ------------- |
+| Button xs / sm     | 24 / 28                   | `px-2`/`px-2.5`  | 0      | none            | none          |
+| Button md / lg     | 32 / 44                   | `px-3`/`px-4`    | 0      | none            | none          |
+| Icon button        | square at its step        | none             | 0      | none            | none          |
+| Button / chip (on) | its step                  | its step's       | 0      | 1px ink ring    | 1px gold halo |
+| Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none          |
+| Switch             | 44 × 24 track, 16 thumb   | `p-0.5`          | 0      | 2px             | none          |
+| Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none          |
+| Tab trigger        | 36                        | `px-2`/`sm:px-5` | 0      | 2px             | none          |
+| Header             | 64 (`--ui-header-height`) | `px-4`/`sm:px-6` | 0      | 2px bottom      | none          |
+| Mobile action bar  | 70 (44 buttons + `p-3`)   | `p-3`            | 0      | 2px top         | none          |
+| Card / panel       | auto, max 368 (`w-92`)    | `p-3`            | 0      | `panel`         | `panel`       |
+| Ruled band         | its content's height      | —                | 0      | 1px `secondary` | none          |
+| Plate band         | 40 (`--control-h-plate`)  | `px-3`/`px-4`    | 0      | 2px bottom      | none          |
+| Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`         | `panel`       |
+| Dropdown / popover | auto                      | —                | 0      | `panel`         | `panel`       |
+| Toast              | auto                      | `p-4`            | 0      | `panel`         | `panel`       |
+| Scrollbar          | `thin` (~8, UA-decided)   | —                | UA     | none            | none          |
 
 **Layouts:**
 
-| Layout         | Spec                                                                                                       |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| Page container | full width; inline padding `p-4`, `md:p-6`                                                                 |
-| Roster grid    | `gap-4`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`. |
-| Card body      | portrait column beside the stat rows, `gap-3`                                                              |
-| Header         | wordmark · filters · build actions, single row; the wordmark truncates below `lg`                          |
-| Form           | `gap-4` between fields, label above or beside its control per orientation                                  |
+| Layout            | Spec                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page container    | full width; inline padding `p-4`, `md:p-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Roster grid       | `gap-x-6 gap-y-12`; one column, `md` two, `2xl` four. Each column is a synergy pair, capped at the card's `max-w-92`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Synergy pair      | the pair's two cards `gap-2` apart around a ruled band carrying a `warning` outline badge — 44px end to end. The grid's `gap-y-12` (48) is measured against that: at one column wide the columns are gone, so unpaired neighbours must sit further apart than the band's own span, not merely further than a bare gap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Recruit row       | a ruled band carrying the section heading (`label` role, `text-secondary-300`), `gap-4` to a centred `gap-x-6 gap-y-12` grid — one column, two from `md`. There are always exactly two recruits, so a third track would never fill. From `md` the block is `w-fit` so the band spans the cards rather than the frame; below it the cards are fluid and the band spans with them.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Card body         | portrait column pinned to the portrait's own 108px (`w-27 shrink-0`) beside the stat rows, `gap-3`. Under the portrait sits a fixed 108 × 24 box holding the hero's power chips — one row, centred, `gap-1`, never wrapping. Sized for **four** 24px chips, which fill it exactly and align with the image's edges; a shorter row still centres under it. A fifth chip would widen the column and break every card's stat alignment, which is why flight lives in the card's header row instead. Each stat row reserves its two 24px stepper slots whether or not the hero can level up, or a fixed-level recruit's stat column measures 116 against everyone else's 172 and its card comes out narrower. A stat's value is bold and its label regular, so the number carries the row. |
+| Tab row           | below `sm` a 3-track grid, each trigger `w-full` — three equal thirds spanning the frame's width; from `sm` a content-width row, `shrink-0`, with `overflow-x-auto` as the safety net Carries a 1px `secondary` bottom rule — the ruled band's own style — so the edge the content scrolls under is visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Header            | wordmark · budget readout · build actions, single row; see the tier ladder below. A 1px × 28 `secondary-400` divider separates the readout from the actions, `mx-2` clear of both — lighter than the chrome so it reads as a divider rather than a seam, and dimmer than the labels either side so it does not compete with them.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Mobile action bar | below `md` only, pinned under the scrolling content: three equal-width 44px buttons on chrome                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Form              | `gap-4` between fields, label above or beside its control per orientation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
+
+**Header tier ladder.** Every header action is a 32px button (`md`, the button step — `xs` is the stepper step and was never a button height); the bare glyphs below `md` are 44. The 32px step also costs horizontal room: `md`'s `px-3` is 8px per labelled button more than `xs`'s `px-2`, so the labelled row is ~24px wider than the ~1120px it was measured at. It still cannot hold one shape across the range. What gives way, in order:
+
+| From | Wordmark             | Budget readout   | Actions                                                                                 |
+| ---- | -------------------- | ---------------- | --------------------------------------------------------------------------------------- |
+| `xl` | + `BUILD CALCULATOR` | three, labelled  | Story Setup · Save · build ▾ · Share, all labelled                                      |
+| `lg` | wordmark only        | three, labelled  | as above                                                                                |
+| `md` | wordmark only        | three, labelled  | icon-only with tooltips; build ▾ keeps a truncated name                                 |
+| base | wordmark only        | none — see below | bare Story Setup and menu glyphs; Save · Builds ▾ · Share move to the mobile action bar |
+
+Two rules this ladder encodes. **Labels go before information**: an unlabelled floppy disk is still recognisably Save, whereas a hidden `2/7` is simply gone — so button labels drop a tier before the readout does. And the readout's disappearance below `md` is **safe only because the same three budgets are always present in the Story Setup drawer**; if that ever stops being true, this row has to change with it.
 
 ---
 
@@ -365,49 +422,63 @@ A card is fluid below its maximum (`w-full max-w-92`) and its column is capped w
 
 ### 14.1 Colour contrast
 
-WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
+WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px rule that only decorates is exempt, and there are three: the band under a section heading, the tab row's bottom edge (`secondary-500` on the ground, 1.98:1) and the header's divider (`secondary-400` on the chrome, 2.74:1 — 500 was tried first and is invisible there at 1.29:1). None carries information the labels either side do not, and none is a target. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
 
-| Foreground              | On          | Ratio | Verdict                        |
-| ----------------------- | ----------- | ----- | ------------------------------ |
-| ink                     | paper       | 12.52 | AA                             |
-| ink                     | highlight   | 12.74 | AA                             |
-| ink                     | tan         | 9.22  | AA                             |
-| ink-soft (`text-muted`) | paper       | 6.11  | AA                             |
-| ink-soft                | tan         | 4.50  | AA, exactly at the floor       |
-| muted (`text-dimmed`)   | paper       | 3.13  | **labels and non-text only**   |
-| ink                     | amber solid | 6.08  | AA                             |
-| ink                     | gold solid  | 9.37  | AA                             |
-| amber-deep              | paper       | 3.12  | **large text only** (19px/800) |
-| `ember-800`             | paper       | 4.87  | AA — the small-text amber      |
-| `brick-600`             | paper       | 5.45  | AA — error text                |
-| brick-500               | paper       | 4.36  | fill only                      |
-| moss-500                | paper       | 4.58  | AA                             |
-| signal-500              | paper       | 2.98  | **fill only, never text**      |
-| `signal-700`            | paper       | 5.50  | AA — status text               |
-| cream                   | signal-700  | 5.50  | AA — the info solid            |
-| cream                   | chrome      | 9.03  | AA                             |
-| steel                   | chrome      | 5.09  | AA — header labels             |
-| gold                    | chrome      | 6.76  | AA — header counter values     |
-| cream                   | teal solid  | 6.99  | AA                             |
-| cream                   | ground      | 13.19 | AA                             |
-| gold                    | ground      | 9.87  | AA                             |
-| edge ring               | ground      | 3.31  | non-text, meets 3:1            |
+| Foreground              | On          | Ratio | Verdict                         |
+| ----------------------- | ----------- | ----- | ------------------------------- |
+| ink                     | paper       | 12.52 | AA                              |
+| ink                     | highlight   | 12.74 | AA                              |
+| ink                     | tan         | 9.22  | AA                              |
+| ink-soft (`text-muted`) | paper       | 6.11  | AA                              |
+| ink-soft                | tan         | 4.50  | AA, exactly at the floor        |
+| muted (`text-dimmed`)   | paper       | 3.13  | **labels and non-text only**    |
+| ink                     | amber solid | 6.08  | AA                              |
+| `paper-600`             | paper-200   | 5.58  | non-text — scrollbar on paper   |
+| `lagoon-300`            | lagoon-950  | 8.27  | non-text — scrollbar on ground  |
+| ink                     | gold solid  | 9.37  | AA — the Story Setup button     |
+| amber-deep              | paper       | 3.12  | **large text only** (19px/800)  |
+| `ember-800`             | paper       | 4.87  | AA — the small-text amber       |
+| `brick-600`             | paper       | 5.45  | AA — error text                 |
+| brick-500               | paper       | 4.36  | fill only                       |
+| moss-500                | paper       | 4.58  | AA                              |
+| signal-500              | paper       | 2.98  | **fill only, never text**       |
+| `signal-700`            | paper       | 5.50  | AA — status text                |
+| cream                   | signal-700  | 5.50  | AA — the info solid             |
+| gold-500                | ground      | 11.20 | AA — the pair marker            |
+| `secondary-300`         | ground      | 7.68  | AA — headings on the ground     |
+| gold-500 at 50%         | ground      | 3.59  | non-text — the marker's ring    |
+| cream                   | chrome      | 9.03  | AA                              |
+| steel                   | chrome      | 5.09  | AA — header labels              |
+| gold                    | chrome      | 6.76  | AA — counters, Story Setup      |
+| `secondary-400`         | chrome      | 2.74  | non-text — the header divider   |
+| secondary solid         | chrome      | 1.29  | **fails — no control, no rule** |
+| neutral subtle          | chrome      | 6.65  | AA — Story Setup and Save       |
+| cream                   | teal solid  | 6.99  | AA                              |
+| cream                   | ground      | 13.19 | AA                              |
+| gold                    | ground      | 9.87  | AA                              |
+| edge ring               | ground      | 3.31  | non-text, meets 3:1             |
 
-Three findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; and the three fill colours that fail as small text each have a darker text-only step beside them (§1).
+Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
 
 Re-measure after any token change. A brand colour that fails as text is constrained to a fill role and recorded here rather than nudged until it passes.
 
 ### 14.2 Touch-target size
 
-The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, chips 28 × 28, buttons and selects 32, primary touch actions 44.
+The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44.
 
-The switch is the one control whose paint is under the floor — a 32 × 18 track. Its hit area is padded to 24 with an `::after` box rather than growing the track, because the floor is about the target, not the paint. Verified by hit-testing 2px above the visual track.
+The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there.
+
+The two bare glyph triggers in the mobile header — Story Setup and the menu — paint at 20-22px and pad their hit area to 44, not merely to the 24 floor: they are the only route to episode setup and to build management at that width, which makes them primary touch actions.
+
+The switch used to be the one control whose paint was under the floor. It is drawn at the mockup's size now — a 44 × 24 track — so the paint is the target, and the `::after` box that padded it to 24 stays in the theme only for the smaller size variants, which the app does not currently render.
 
 ### 14.3 Breakpoints & reflow
 
 `sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536` — Tailwind's defaults, unchanged. Every media query uses them.
 
-**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
+The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: the header stays 64 (`--ui-header-height` does not vary by breakpoint — the mockup's 52 was not worth a responsive token) and the action bar adds 70, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`. Measured at 320: no horizontal scroll and no element wider than the viewport.
+
+**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. The tab list used to be the one region that scrolled inside itself — at 320 the three short-label triggers measured 353px, and the shared `label` slot's `truncate` turned that into clipped names. It is now three equal thirds of the frame below `sm`, which removes the overflow rather than scrolling it: measured 91px per trigger at 320, nothing clipped, `scrollWidth === clientWidth`. `overflow-x-auto` and `shrink-0` stay on the `sm`-and-up row, where the labels are full-length, as the safety net. `overflow-x-auto` on the list with `shrink-0` on the trigger is the pair that matters — without the second the triggers compress and there is nothing to scroll. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
 
 ### 14.4 Motion & reduced motion
 

@@ -553,10 +553,20 @@ export function useBuildPersistence() {
     });
   }
 
+  // * Derived here rather than in a component: both the build controls and the
+  // * dialogs that rename or delete the active build need the same name, and they
+  // * no longer share a component to compute it in.
+  const activeBuildName = computed(
+    () =>
+      savedBuilds.value.find((b) => b.id === activeBuildId.value)?.name ??
+      'Untitled'
+  );
+
   return {
     // State
     savedBuilds: computed(() => savedBuilds.value),
     activeBuildId: computed(() => activeBuildId.value),
+    activeBuildName,
     isViewingSharedBuild: computed(() => isViewingSharedBuild.value),
     hasUnsavedChanges,
 

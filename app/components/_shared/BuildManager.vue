@@ -1,260 +1,147 @@
 <template>
-  <div class="flex items-center gap-1.5">
+  <div class="flex items-center gap-2">
     <!-- Shared build banner -->
     <template v-if="isViewingSharedBuild">
       <!-- * Solid, not subtle: a subtle badge is its own hue on a near-paper tint, and both signal and gold fail AA that way (3.0:1 and worse). Solid puts ink on the fill instead. -->
-      <u-badge color="info" variant="solid" size="sm">
+      <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
         Viewing shared build
       </u-badge>
 
-      <u-button
-        size="xs"
-        variant="soft"
-        icon="i-lucide-save"
-        @click="showSaveSharedDialog = true"
-      >
-        Save as mine
-      </u-button>
+      <u-tooltip text="Save as mine" :disabled="labelled">
+        <u-button
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-save"
+          :label="labelled ? 'Save as mine' : undefined"
+          :aria-label="labelled ? undefined : 'Save as mine'"
+          :block="block"
+          @click="saveSharedOpen = true"
+        />
+      </u-tooltip>
 
-      <u-button
-        v-if="hasSavedBuilds"
-        size="xs"
-        variant="ghost"
-        color="neutral"
-        icon="i-lucide-undo-2"
-        @click="handleBackToMyBuild"
-      >
-        Back to my build
-      </u-button>
+      <u-tooltip text="Back to my build" :disabled="labelled">
+        <u-button
+          v-if="savedBuilds.length > 0"
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-undo-2"
+          :label="labelled ? 'Back to my build' : undefined"
+          :aria-label="labelled ? undefined : 'Back to my build'"
+          :block="block"
+          @click="backToMyBuild"
+        />
+      </u-tooltip>
     </template>
 
     <!-- Normal mode -->
     <template v-else>
-      <!-- Build selector -->
+      <u-tooltip text="Save" :disabled="labelled">
+        <u-button
+          v-if="hasUnsavedChanges || savedBuilds.length === 0"
+          :size="size"
+          variant="subtle"
+          color="neutral"
+          icon="i-lucide-save"
+          :label="labelled ? 'Save' : undefined"
+          :aria-label="labelled ? undefined : 'Save'"
+          :block="block"
+          @click="handleSave"
+        />
+      </u-tooltip>
+
+      <!-- * The build selector doubles as the build menu: switching, renaming, creating and deleting are all build management, and giving each its own icon button is what crowded the header (feature 003, Story Setup drawer). -->
       <u-dropdown-menu
         v-if="savedBuilds.length > 0"
         :items="buildMenuItems"
         :ui="{ content: 'min-w-48' }"
+        :class="block ? 'flex-1' : undefined"
       >
         <u-button
-          size="xs"
-          variant="subtle"
-          color="neutral"
+          :size="size"
+          variant="solid"
+          color="secondary"
           trailing-icon="i-lucide-chevron-down"
+          :block="block"
+          class="max-w-40"
+          :ui="{ label: 'truncate' }"
         >
           {{ activeBuildName }}
         </u-button>
       </u-dropdown-menu>
 
-      <!-- Unsaved changes indicator -->
+      <!-- * Not a badge on the button: unsaved state has to read at a glance next to Save, and a dot inside the label would be lost at the icon-only tier. -->
       <u-badge
-        v-if="hasUnsavedChanges"
+        v-if="hasUnsavedChanges && savedBuilds.length > 0"
         color="warning"
         variant="solid"
         size="sm"
+        class="max-lg:hidden"
       >
         Unsaved changes
       </u-badge>
-
-      <!-- Save button -->
-      <u-button
-        v-if="hasUnsavedChanges || savedBuilds.length === 0"
-        size="xs"
-        variant="soft"
-        icon="i-lucide-save"
-        @click="handleSave"
-      >
-        {{ savedBuilds.length === 0 ? 'Save' : '' }}
-      </u-button>
-
-      <!-- New build -->
-      <u-button
-        v-if="savedBuilds.length > 0"
-        size="xs"
-        variant="ghost"
-        color="neutral"
-        icon="i-lucide-plus"
-        @click="showNewBuildDialog = true"
-      />
-
-      <!-- Delete build -->
-      <u-button
-        v-if="savedBuilds.length > 1 && activeBuildId"
-        size="xs"
-        variant="ghost"
-        color="neutral"
-        icon="i-lucide-trash-2"
-        @click="showDeleteDialog = true"
-      />
     </template>
 
-    <!-- Share button (always visible) -->
-    <u-button
-      size="xs"
-      variant="ghost"
-      color="neutral"
-      icon="i-lucide-share-2"
-      @click="handleShare"
-    />
-
-    <!-- Save shared build dialog -->
-    <u-modal v-model:open="showSaveSharedDialog">
-      <template #content>
-        <div class="flex flex-col gap-4 p-4">
-          <h3 class="text-lg font-medium">Save as my build</h3>
-
-          <u-form-field label="Build name">
-            <u-input
-              v-model="newBuildName"
-              placeholder="My build"
-              autofocus
-              @keydown.enter="confirmSaveShared"
-            />
-          </u-form-field>
-
-          <div class="flex justify-end gap-2">
-            <u-button
-              variant="ghost"
-              color="neutral"
-              @click="showSaveSharedDialog = false"
-            >
-              Cancel
-            </u-button>
-
-            <u-button @click="confirmSaveShared"> Save </u-button>
-          </div>
-        </div>
-      </template>
-    </u-modal>
-
-    <!-- New build dialog -->
-    <u-modal v-model:open="showNewBuildDialog">
-      <template #content>
-        <div class="flex flex-col gap-4 p-4">
-          <h3 class="text-lg font-medium">New build</h3>
-
-          <u-form-field label="Build name">
-            <u-input
-              v-model="newBuildName"
-              placeholder="My build"
-              autofocus
-              @keydown.enter="confirmNewBuild"
-            />
-          </u-form-field>
-
-          <div class="flex justify-end gap-2">
-            <u-button
-              variant="ghost"
-              color="neutral"
-              @click="showNewBuildDialog = false"
-            >
-              Cancel
-            </u-button>
-
-            <u-button @click="confirmNewBuild"> Create </u-button>
-          </div>
-        </div>
-      </template>
-    </u-modal>
-
-    <!-- Delete confirmation dialog -->
-    <u-modal v-model:open="showDeleteDialog">
-      <template #content>
-        <div class="flex flex-col gap-4 p-4">
-          <h3 class="text-lg font-medium">Delete build</h3>
-
-          <p class="text-sm text-muted">
-            Are you sure you want to delete "{{ activeBuildName }}"?
-          </p>
-
-          <div class="flex justify-end gap-2">
-            <u-button
-              variant="ghost"
-              color="neutral"
-              @click="showDeleteDialog = false"
-            >
-              Cancel
-            </u-button>
-
-            <u-button color="error" @click="confirmDelete"> Delete </u-button>
-          </div>
-        </div>
-      </template>
-    </u-modal>
-
-    <!-- Rename dialog -->
-    <u-modal v-model:open="showRenameDialog">
-      <template #content>
-        <div class="flex flex-col gap-4 p-4">
-          <h3 class="text-lg font-medium">Rename build</h3>
-
-          <u-form-field label="Build name">
-            <u-input
-              v-model="renameBuildName"
-              autofocus
-              @keydown.enter="confirmRename"
-            />
-          </u-form-field>
-
-          <div class="flex justify-end gap-2">
-            <u-button
-              variant="ghost"
-              color="neutral"
-              @click="showRenameDialog = false"
-            >
-              Cancel
-            </u-button>
-
-            <u-button @click="confirmRename"> Rename </u-button>
-          </div>
-        </div>
-      </template>
-    </u-modal>
+    <u-tooltip text="Share" :disabled="labelled">
+      <u-button
+        :size="size"
+        variant="solid"
+        color="primary"
+        icon="i-lucide-share-2"
+        :label="labelled ? 'Share' : undefined"
+        :aria-label="labelled ? undefined : 'Share'"
+        :block="block"
+        @click="handleShare"
+      />
+    </u-tooltip>
   </div>
 </template>
 
 <script setup lang="ts">
-const toast = useToast();
+import type { DropdownMenuItem } from '@nuxt/ui';
 
 // ---
+
+withDefaults(
+  defineProps<{
+    // * The tier ladder (annex §13) drops button labels a step before it drops
+    // * information, so the same controls render labelled in the header at `lg`
+    // * and up, icon-only at `md`, and labelled again in the mobile action bar
+    // * where there is width for them.
+    labelled?: boolean;
+    // * The mobile action bar is three equal-width 44px buttons.
+    block?: boolean;
+    // * md is the annex's button step (§13); xs is the 24px stepper step and
+    // * was never a button height.
+    size?: 'md' | 'lg';
+  }>(),
+  { labelled: true, block: false, size: 'md' }
+);
+
+// ---
+
+const toast = useToast();
 
 const {
   savedBuilds,
   activeBuildId,
+  activeBuildName,
   isViewingSharedBuild,
   hasUnsavedChanges,
   saveBuild,
-  saveAsNewBuild,
   loadBuild,
-  deleteBuild,
-  renameBuild,
-  shareBuild
+  shareBuild,
+  backToMyBuild
 } = useHeroPlanner();
+
+const { saveSharedOpen, deleteOpen, openNewBuild, openRename } =
+  useBuildDialogs();
 
 // ---
 
-const hasSavedBuilds = computed(() => savedBuilds.value.length > 0);
-
-const activeBuildName = computed(() => {
-  const build = savedBuilds.value.find(
-    (b: { id: string }) => b.id === activeBuildId.value
-  );
-  return build?.name ?? 'Untitled';
-});
-
-// --- Dialogs ---
-
-const showSaveSharedDialog = ref(false);
-const showNewBuildDialog = ref(false);
-const showDeleteDialog = ref(false);
-const showRenameDialog = ref(false);
-const newBuildName = ref('');
-const renameBuildName = ref('');
-
-// --- Build menu ---
-
-const buildMenuItems = computed(() => {
-  const items = savedBuilds.value.map(
+const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
+  const builds = savedBuilds.value.map(
     (build: { id: string; name: string }) => ({
       label: build.name,
       icon: build.id === activeBuildId.value ? 'i-lucide-check' : undefined,
@@ -264,24 +151,47 @@ const buildMenuItems = computed(() => {
     })
   );
 
-  items.push({
-    label: 'Rename...',
-    icon: 'i-lucide-pencil',
-    onSelect: () => {
-      renameBuildName.value = activeBuildName.value;
-      showRenameDialog.value = true;
+  // * The menu's own actions are words the UI supplies, so they take the label
+  // * role's casing; the build names above them are the user's text and keep
+  // * theirs (annex §2). The menu theme cannot tell the two apart — only this
+  // * call site can — so the class lands per item rather than on the slot.
+  const management: DropdownMenuItem[] = [
+    {
+      label: 'New build...',
+      icon: 'i-lucide-plus',
+      class: 'uppercase',
+      onSelect: () => openNewBuild('')
+    },
+    {
+      label: 'Rename...',
+      icon: 'i-lucide-pencil',
+      class: 'uppercase',
+      onSelect: () => openRename(activeBuildName.value)
     }
-  });
+  ];
 
-  return items;
+  // * Deleting the last remaining build would leave the selector with nothing to
+  // * select and no way back, so it is offered only from the second build on.
+  if (savedBuilds.value.length > 1 && activeBuildId.value) {
+    management.push({
+      label: 'Delete...',
+      icon: 'i-lucide-trash-2',
+      color: 'error',
+      class: 'uppercase',
+      onSelect: () => {
+        deleteOpen.value = true;
+      }
+    });
+  }
+
+  return [builds, management];
 });
 
-// --- Handlers ---
+// ---
 
 function handleSave() {
   if (savedBuilds.value.length === 0) {
-    showNewBuildDialog.value = true;
-    newBuildName.value = 'Build 1';
+    openNewBuild('Build 1');
     return;
   }
 
@@ -289,64 +199,13 @@ function handleSave() {
   toast.add({ title: 'Build saved', color: 'success' });
 }
 
-function handleBackToMyBuild() {
-  const { backToMyBuild } = useHeroPlanner();
-  backToMyBuild();
-}
-
 async function handleShare() {
   const success = await shareBuild();
 
-  if (success) {
-    toast.add({ title: 'Link copied to clipboard', color: 'success' });
-  } else {
-    toast.add({ title: 'Failed to copy link', color: 'error' });
-  }
-}
-
-function confirmSaveShared() {
-  const name = newBuildName.value.trim() || 'Imported build';
-  const { saveSharedAsMyBuild } = useHeroPlanner();
-
-  saveSharedAsMyBuild(name);
-  showSaveSharedDialog.value = false;
-  newBuildName.value = '';
-  toast.add({ title: `Saved as "${name}"`, color: 'success' });
-}
-
-function confirmNewBuild() {
-  const name = newBuildName.value.trim() || 'New build';
-
-  saveAsNewBuild(name);
-  showNewBuildDialog.value = false;
-  newBuildName.value = '';
-  toast.add({ title: `Created "${name}"`, color: 'success' });
-}
-
-function confirmDelete() {
-  if (!activeBuildId.value) return;
-
-  const name = activeBuildName.value;
-
-  deleteBuild(activeBuildId.value);
-  showDeleteDialog.value = false;
-
-  // Load the next available build
-  if (savedBuilds.value.length > 0) {
-    loadBuild(savedBuilds.value[0]!.id);
-  }
-
-  toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
-}
-
-function confirmRename() {
-  if (!activeBuildId.value) return;
-
-  const name = renameBuildName.value.trim();
-  if (!name) return;
-
-  renameBuild(activeBuildId.value, name);
-  showRenameDialog.value = false;
-  renameBuildName.value = '';
+  toast.add(
+    success
+      ? { title: 'Link copied to clipboard', color: 'success' }
+      : { title: 'Failed to copy link', color: 'error' }
+  );
 }
 </script>

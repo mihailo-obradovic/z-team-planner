@@ -8,15 +8,15 @@ A **context document** (`references/context-documents.md`), project-specific: th
 
 The approved boards live on a design canvas: **https://claude.ai/code/artifact/51fc2111-3159-46e4-9fc1-708097ffaaad**
 
-| Board              | Shows                                                                             | Status                                          |
-| ------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Overview           | Hero card grid in synergy-pair columns, top bar, tabs, Episode 8 recruits row     | Reskin target for the shipped screen            |
-| Hero Detail        | Tabbed dialog: portrait panel beside a merged stats + radar panel, roster strip   | Reskin target for `HeroDetailDialog`            |
-| Story Setup drawer | Episode filters and the training budget moved out of the top bar into a slideover | Future feature — changes feature 003's contract |
-| Synergy Pairs      | The four pairs with combined stat bars                                            | Concept for the empty tab                       |
-| Mission Simulator  | Three user-defined mission templates, required-vs-team radar, success calculation | Concept for the empty tab                       |
-| Mobile Overview    | Phone-width hero cards, bottom action bar                                         | Responsive reference                            |
-| Design System Seed | The token sheet the annex was measured from                                       | Superseded by the annex once written            |
+| Board              | Shows                                                                             | Status                                      |
+| ------------------ | --------------------------------------------------------------------------------- | ------------------------------------------- |
+| Overview           | Hero card grid in synergy-pair columns, top bar, tabs, Episode 8 recruits row     | Reskin target for the shipped screen        |
+| Hero Detail        | Tabbed dialog: portrait panel beside a merged stats + radar panel, roster strip   | Reskin target for `HeroDetailDialog`        |
+| Story Setup drawer | Episode filters and the training budget moved out of the top bar into a slideover | Being built — feature 003 amendment         |
+| Synergy Pairs      | The four pairs with combined stat bars                                            | Concept for the empty tab                   |
+| Mission Simulator  | Three user-defined mission templates, required-vs-team radar, success calculation | Concept for the empty tab                   |
+| Mobile Overview    | Phone-width hero cards, 52px top bar with two bare glyphs, bottom action bar      | Responsive reference — the base tier in §13 |
+| Design System Seed | The token sheet the annex was measured from                                       | Superseded by the annex once written        |
 
 ## Direction
 

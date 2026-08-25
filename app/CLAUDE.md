@@ -7,8 +7,8 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 ## Structure
 
 - `pages/index.vue` — the single route; the whole planner lives on it (`/` is prerendered via `routeRules`).
-- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `PlannerFilters`, `IconButton`, `TooltipButton`).
-- `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization).
+- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `BudgetCounters`, `StorySetupDrawer`, `IconButton`, `TooltipButton`).
+- `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization), `useBuildDialogs` (open state for the build dialogs, which mount once at the shell while their controls render in two places).
 - `types/` — `hero.ts` and `build.ts` domain types; `nuxt-ui.d.ts` theme-config helper types.
 - `config/nuxt-ui/` — one vendored theme per NuxtUI component the app renders, loaded from `app.config.ts`. Each holds the complete upstream default with the project's deviations annotated on top; a config extends the upstream theme rather than replacing it, so a deviation has to out-rank the default, not omit it.
 - `utils/` — `statIcons.ts`, the Lucide glyph per stat, shared by the roster and the detail dialog.
@@ -35,4 +35,5 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 - Hero ids (`types/hero.ts`, `server/api/heroes.get.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
 - Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.
-- `BuildManager` is wrapped in `ClientOnly` in `app.vue` because it renders localStorage state; server-rendering it desynchronises hydration and every id below it.
+- `BuildManager` and `BuildDialogs` are wrapped in `ClientOnly` in `app.vue` because they render localStorage state; server-rendering them desynchronises hydration and every id below it.
+- The shell's tier ladder (`app.vue`, annex §13) is CSS-only: the header renders the build cluster twice and the Story Setup trigger three times, hidden per breakpoint. A JS breakpoint would have to resolve before first paint or the header flickers through the wrong tier on load.
