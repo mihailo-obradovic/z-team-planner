@@ -111,6 +111,31 @@ The mockups' panel anatomy is one treatment used everywhere, so it lives once as
 
 `panel` is the card, dialog, dropdown and toast surface; `plate` is the titled header band on top of one.
 
+### Scrollbars
+
+The app scrolls on two grounds, so there are two scrollbars and no third: the dark page ground (`main`, a tabs panel) and paper (a dialog or slideover body, a menu). Both use the standard properties only — `scrollbar-width: thin` plus `scrollbar-color`, no `::-webkit-scrollbar`. The consequence is accepted rather than worked around: Chromium rounds a `thin` thumb and the standard property cannot square it, so this is the one place `--ui-radius: 0` does not hold, and there is no hover state.
+
+| Ground | Thumb        | Track        | Applied by          |
+| ------ | ------------ | ------------ | ------------------- |
+| Page   | `lagoon-300` | `lagoon-950` | `:root`, inherited  |
+| Paper  | `paper-600`  | `paper-200`  | the `panel` utility |
+
+```css
+:root {
+  --scrollbar-ground: var(--ui-color-secondary-300)
+    var(--ui-color-secondary-950);
+  --scrollbar-paper: var(--ui-color-neutral-600) var(--ui-color-neutral-200);
+}
+
+@utility scroll-paper {
+  scrollbar-color: var(--scrollbar-paper);
+}
+```
+
+Two mechanics decide where each is declared. `scrollbar-color` **inherits**, so the page value is set once on `:root` and the paper value once on `panel` — every paper scroll region inside a dialog, slideover, dropdown or card is covered without naming it. A paper surface that is **not** a panel does not inherit it and must name `scroll-paper`; today that is the select menu's content and the mobile slideover's body, both annotated in their configs. `scrollbar-width` does **not** inherit — it applies to whichever element actually scrolls — so it is declared once universally in `@layer base` rather than chased per component.
+
+The thumb is `paper-600` (ink-soft) rather than the muted `paper-500` the eye first reaches for: `paper-500` on a `paper-200` track is 2.86:1 and misses the 3:1 non-text floor (§14.1). The track is not load-bearing — it is a groove, and carries no information the thumb does not.
+
 ### Dark mode — a recorded exception
 
 The template requires both themes and that every colour can flip. **This project defines one fixed theme and no colour modes** (`ui: { colorMode: false }`), because the design is a single artefact modelled on the game's own interface rather than a neutral document surface; there is no `.dark` block and no `.light` block, and the colour-mode button does not exist. A light theme would be a new decision record, not a toggle. The rule this replaces still binds in one direction: no component may hardcode a colour that assumes the ground is dark — it names an alias, and the alias is what a future theme would change.
@@ -246,11 +271,11 @@ One shadow value for elevation, `--shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5)`, 
 
 **Selection is not elevation.** A control that is _on_ — a toggled power chip, the active tab — is marked with a 1px gold halo drawn as a shadow, `0 0 0 1px var(--ui-color-warning-500)`, and never by raising it. This is the second and last shadow the system spends, and it is a state marker rather than a depth cue: it sits flush against the control's edge and reads as the gold that §1 gives selection. The halo is only half the state: an on control also **flips to the solid treatment of its own colour**, ink on the fill and an ink edge, rather than tinting the variant it wears when off. That is the difference the mockups draw between `.chip` (tan, a subtle control) and `.chip.on` (amber with ink on it), and it is why `active` is a variant change and not a colour change — a `subtle` control reads as `solid` for as long as it is on. Larger selected objects — a hero portrait, a mission template panel — take the same gold at 2px instead, as a ring rather than a halo.
 
-| Selected thing     | Marker                                                     |
-| ------------------ | ---------------------------------------------------------- |
+| Selected thing     | Marker                                                       |
+| ------------------ | ------------------------------------------------------------ |
 | Button / chip (on) | 1px gold halo + its colour's solid fill, ink on it, ink edge |
-| Tab (active)       | 1px gold halo + paper fill + 3px inset `primary` underline |
-| Portrait / panel   | 2px gold ring                                              |
+| Tab (active)       | 1px gold halo + paper fill + 3px inset `primary` underline   |
+| Portrait / panel   | 2px gold ring                                                |
 
 The template's "in dark mode, elevation is surface colour, not shadow" does not apply here and is not a deviation: the surfaces are light and the ground is dark, so a dark shadow under a cream panel reads exactly as intended. It would apply to any surface drawn _on_ the paper, which instead separates with a border.
 
@@ -362,6 +387,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Dialog / slideover | `panel`, plate header     | `p-4`/`sm:p-6`   | 0      | `panel`         | `panel`       |
 | Dropdown / popover | auto                      | —                | 0      | `panel`         | `panel`       |
 | Toast              | auto                      | `p-4`            | 0      | `panel`         | `panel`       |
+| Scrollbar          | `thin` (~8, UA-decided)   | —                | UA     | none            | none          |
 
 **Layouts:**
 
@@ -406,6 +432,8 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A rule
 | ink-soft                | tan         | 4.50  | AA, exactly at the floor        |
 | muted (`text-dimmed`)   | paper       | 3.13  | **labels and non-text only**    |
 | ink                     | amber solid | 6.08  | AA                              |
+| `paper-600`             | paper-200   | 5.58  | non-text — scrollbar on paper   |
+| `lagoon-300`            | lagoon-950  | 8.27  | non-text — scrollbar on ground  |
 | ink                     | gold solid  | 9.37  | AA — the Story Setup button     |
 | amber-deep              | paper       | 3.12  | **large text only** (19px/800)  |
 | `ember-800`             | paper       | 4.87  | AA — the small-text amber       |

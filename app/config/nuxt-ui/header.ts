@@ -29,9 +29,9 @@ export default {
     // * Default: 'px-4 sm:px-6 h-(--ui-header-height) shrink-0 flex items-center justify-between gap-3'
     header:
       'px-4 sm:px-6 h-(--ui-header-height) shrink-0 flex items-center justify-between gap-3 bg-default text-default border-b-2 border-accented',
-    // * Changes: the slideover panel is paper, like every other surface.
+    // * Changes: the slideover panel is paper, like every other surface. It scrolls and is not a `panel`, so the paper scrollbar is named here rather than inherited (annex §1).
     // * Default: 'p-4 sm:p-6 overflow-y-auto'
-    body: 'p-4 sm:p-6 overflow-y-auto bg-default text-default'
+    body: 'p-4 sm:p-6 overflow-y-auto bg-default scroll-paper text-default'
   },
   variants: {
     toggleSide: {
