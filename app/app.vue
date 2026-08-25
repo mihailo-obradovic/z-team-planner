@@ -28,6 +28,11 @@
     <u-main>
       <NuxtPage />
     </u-main>
+
+    <!-- * Mounted once, outside the header: the controls that open these render in more than one place. Client-only for the same reason BuildManager is — they read localStorage state. -->
+    <ClientOnly>
+      <BuildDialogs />
+    </ClientOnly>
   </u-app>
 </template>
 

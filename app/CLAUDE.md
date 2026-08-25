@@ -7,8 +7,8 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 ## Structure
 
 - `pages/index.vue` — the single route; the whole planner lives on it (`/` is prerendered via `routeRules`).
-- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `PlannerFilters`, `IconButton`, `TooltipButton`).
-- `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization).
+- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `PlannerFilters`, `IconButton`, `TooltipButton`).
+- `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization), `useBuildDialogs` (open state for the build dialogs, which mount once at the shell while their controls render in two places).
 - `types/` — `hero.ts` and `build.ts` domain types; `nuxt-ui.d.ts` theme-config helper types.
 - `config/nuxt-ui/` — one vendored theme per NuxtUI component the app renders, loaded from `app.config.ts`. Each holds the complete upstream default with the project's deviations annotated on top; a config extends the upstream theme rather than replacing it, so a deviation has to out-rank the default, not omit it.
 - `utils/` — `statIcons.ts`, the Lucide glyph per stat, shared by the roster and the detail dialog.
