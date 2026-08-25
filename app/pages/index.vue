@@ -18,7 +18,7 @@
 
     <template #overview>
       <div
-        class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-8 p-4 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
+        class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 p-4 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
       >
         <div
           v-for="pair in synergyPairColumns"
@@ -54,7 +54,7 @@
         </u-separator>
 
         <div
-          class="grid grid-cols-1 justify-center justify-items-center gap-6 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
+          class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(3,auto)]"
         >
           <HeroCard
             v-for="hero in ep8Recruits"
