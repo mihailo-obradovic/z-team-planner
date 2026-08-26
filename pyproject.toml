@@ -39,6 +39,10 @@ extend-exclude = ["catalyst"]
 # * The select floor from stacks/_lang/python/toolchain.md. Ruff's defaults are the house
 # * style, so nothing else is stated — target-version is read from requires-python.
 select = ["E", "F", "I", "UP", "B"]
+# * E501 off: conventions/code-annotations.md requires a comment to stay on one line however
+# * long, never hard-wrapped to a column, which E501 structurally forbids. `ruff format` still
+# * holds *code* to 88 columns, so this only frees comments and unsplittable strings.
+ignore = ["E501"]
 
 [tool.pyright]
 # * basic, not strict: toolchain.md calls strict a per-project opt-in, not the entry price.
