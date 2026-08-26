@@ -55,7 +55,7 @@ export function useApiErrorWatcher(
           const body = (conflict as { data?: unknown } | null)?.data;
 
           // * A 412 body that will not parse falls through to the generic toast: without the
-          // * other device's build there is nothing for the dialog to offer (feature 006).
+          // * other device's build there is nothing for the dialog to offer (feature 008).
           if (!openConflict(body)) {
             showToast(extractMessage(conflict));
           }

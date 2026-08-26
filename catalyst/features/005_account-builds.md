@@ -14,15 +14,15 @@ A signed-in player's builds live on the server and follow them to any device. Th
 
 ## Inputs
 
-| Input               | Type                        | Source                      | Constraints                             |
-| ------------------- | --------------------------- | --------------------------- | --------------------------------------- |
-| bearer token        | `Authorization` header      | feature 004                 | required on every route here            |
-| `name`              | string                      | create, patch, import       | trimmed, 1–80; unique per account       |
-| `data`              | `SerializedBuild` JSON      | create, patch, import       | `v: 1`; the five tiers; ≤ 8 KB          |
-| `Idempotency-Key`   | header, opaque string ≤ 128 | create, import              | required; 24 h window per user          |
-| `If-Match`          | header, the build's `ETag`  | patch                       | the `updated_at` from the last read     |
-| `page`, `page_size` | query ints                  | list                        | defaults 1 and 20; `page_size` ≤ 100    |
-| `{id}`              | UUIDv4 path segment         | read, patch, delete         | unguessable; unknown or unowned → `404` |
+| Input               | Type                        | Source                | Constraints                             |
+| ------------------- | --------------------------- | --------------------- | --------------------------------------- |
+| bearer token        | `Authorization` header      | feature 004           | required on every route here            |
+| `name`              | string                      | create, patch, import | trimmed, 1–80; unique per account       |
+| `data`              | `SerializedBuild` JSON      | create, patch, import | `v: 1`; the five tiers; ≤ 8 KB          |
+| `Idempotency-Key`   | header, opaque string ≤ 128 | create, import        | required; 24 h window per user          |
+| `If-Match`          | header, the build's `ETag`  | patch                 | the `updated_at` from the last read     |
+| `page`, `page_size` | query ints                  | list                  | defaults 1 and 20; `page_size` ≤ 100    |
+| `{id}`              | UUIDv4 path segment         | read, patch, delete   | unguessable; unknown or unowned → `404` |
 
 ## Outputs And Side Effects
 

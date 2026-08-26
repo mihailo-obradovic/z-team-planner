@@ -49,7 +49,7 @@ There is no module-level `app` object — importing `main` would then read the e
 - This scaffold and its deferrals → `catalyst/decisions/005_bootstrap_api.md`
 - Neon quirks, run and recovery commands → `catalyst/operations.md`
 - Comment markers (`# *`, `# !`) → `catalyst/conventions/code-annotations.md`
-- The API's behavior contracts → `catalyst/features/004_accounts.md`, `catalyst/features/005_account-builds.md`
+- The API's behavior contracts → `catalyst/features/004_accounts.md`, `catalyst/features/005_account-builds.md`, `catalyst/features/007_share-links.md`
 
 ## Local invariants
 

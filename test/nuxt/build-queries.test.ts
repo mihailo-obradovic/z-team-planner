@@ -33,7 +33,7 @@ function harness(setup: () => unknown) {
 }
 
 describe('query keys', () => {
-  it('match the keys feature 006 fixes', () => {
+  it('match the keys feature 008 fixes', () => {
     // ! These are a contract: invalidation targets them by value, so a rename here silently
     // ! stops a list refreshing rather than failing loudly.
     expect(buildsQueryKeys.fetchBuilds).toEqual(['builds', 'fetch']);

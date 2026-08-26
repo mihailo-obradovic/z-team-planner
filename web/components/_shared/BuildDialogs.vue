@@ -110,7 +110,7 @@ const {
 } = useBuildDialogs();
 
 // * Only the length rule here: feature 001 documents an empty name as falling back to a
-// * generated one, and feature 006 leaves that behaviour alone.
+// * generated one, and feature 008 leaves that behaviour alone.
 const { r$: nameForm } = useBuildNameForm(newBuildName, { requireName: false });
 
 const nameError = computed(() => nameForm.$errors.name?.[0]);

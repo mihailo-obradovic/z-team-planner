@@ -14,23 +14,23 @@ What a signed-in player actually touches: account builds listed beside the local
 
 ## Inputs
 
-| Input                  | Type            | Source                | Constraints                                    |
-| ---------------------- | --------------- | --------------------- | ---------------------------------------------- |
-| auth status            | store           | feature 006           | account queries fire only at `signed-in`       |
-| `activeAccountBuildId` | store, nullable | opening a build       | which build **Save** patches; `null` means local |
-| build name             | form field      | BuildManager dialogs  | Regle: required and ≤ 80, both after trim      |
-| planner state          | `useState`      | feature 003           | serialized by feature 001 into the `data` sent |
-| local builds           | localStorage    | feature 001           | the offer's candidates, capped at 50           |
+| Input                  | Type            | Source               | Constraints                                      |
+| ---------------------- | --------------- | -------------------- | ------------------------------------------------ |
+| auth status            | store           | feature 006          | account queries fire only at `signed-in`         |
+| `activeAccountBuildId` | store, nullable | opening a build      | which build **Save** patches; `null` means local |
+| build name             | form field      | BuildManager dialogs | Regle: required and ≤ 80, both after trim        |
+| planner state          | `useState`      | feature 003          | serialized by feature 001 into the `data` sent   |
+| local builds           | localStorage    | feature 001          | the offer's candidates, capped at 50             |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type         | Description                                                            |
-| -------------------- | ------------ | ---------------------------------------------------------------------- |
-| account build list   | UI           | in BuildManager beside local builds; skeleton while pending            |
-| `POST` / `PATCH` / `DELETE` | request | create, save, remove — each invalidating `['builds']`             |
-| conflict dialog      | UI           | the other device's build, with **Reload theirs** / **Save mine as new** |
-| inline field error   | UI           | a server `422` on the name, rendered on the field                      |
-| import report        | UI           | the offer's per-item outcomes as one summary toast                     |
+| Output / Side Effect        | Type    | Description                                                             |
+| --------------------------- | ------- | ----------------------------------------------------------------------- |
+| account build list          | UI      | in BuildManager beside local builds; skeleton while pending             |
+| `POST` / `PATCH` / `DELETE` | request | create, save, remove — each invalidating `['builds']`                   |
+| conflict dialog             | UI      | the other device's build, with **Reload theirs** / **Save mine as new** |
+| inline field error          | UI      | a server `422` on the name, rendered on the field                       |
+| import report               | UI      | the offer's per-item outcomes as one summary toast                      |
 
 ## Scope And Non-Goals
 
@@ -66,18 +66,18 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 
 ## Examples
 
-| Input                                   | Expected Output                                        | Notes                       |
-| --------------------------------------- | ------------------------------------------------------ | --------------------------- |
-| load `/` signed out                     | no account request at all                              | `enabled` gate              |
-| sign in                                 | `GET /builds?page=1` exactly once                      |                             |
-| **Save** on a build edited elsewhere    | conflict dialog with the other build; no toast         | `412`, body parsed          |
-| **Save as new** with a 90-char name     | inline field error; no request                         | Regle catches it first      |
-| server-only `422` (a rule drifted)      | inline field error from `externalErrors`; no toast     | mutation opts the toast out |
-| 21st **Save as new**                    | toast "You can keep up to 20 builds"                   | `409 build_limit`           |
-| delete the active build                 | list refetches; `activeAccountBuildId` clears          | invalidate `['builds']`     |
-| delete a non-active build               | list refetches; the active id is left alone            |                             |
-| the offer imports 3, one invalid        | one summary toast naming the outcome per item          | feature 005's report        |
-| a `412` whose body will not parse       | generic toast, no dialog                               | nothing to choose between   |
+| Input                                | Expected Output                                    | Notes                       |
+| ------------------------------------ | -------------------------------------------------- | --------------------------- |
+| load `/` signed out                  | no account request at all                          | `enabled` gate              |
+| sign in                              | `GET /builds?page=1` exactly once                  |                             |
+| **Save** on a build edited elsewhere | conflict dialog with the other build; no toast     | `412`, body parsed          |
+| **Save as new** with a 90-char name  | inline field error; no request                     | Regle catches it first      |
+| server-only `422` (a rule drifted)   | inline field error from `externalErrors`; no toast | mutation opts the toast out |
+| 21st **Save as new**                 | toast "You can keep up to 20 builds"               | `409 build_limit`           |
+| delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`     |
+| delete a non-active build            | list refetches; the active id is left alone        |                             |
+| the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report        |
+| a `412` whose body will not parse    | generic toast, no dialog                           | nothing to choose between   |
 
 ## Business Rules
 

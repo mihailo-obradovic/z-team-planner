@@ -64,7 +64,7 @@ One role, **user** — plus the anonymous visitor.
 | Resource / action                    | Anonymous | User (own) | User (other's) |
 | ------------------------------------ | --------- | ---------- | -------------- |
 | plan, save locally, `?build=` links  | ✓         | ✓          | —              |
-| read a build by id (feature 005)     | ✓         | ✓          | ✓              |
+| read a build by id (feature 007)     | ✓         | ✓          | ✓              |
 | list / create / edit / delete builds | —         | ✓          | 404            |
 | import local builds                  | —         | ✓          | —              |
 | `GET /me`, `DELETE /me`              | —         | ✓          | —              |

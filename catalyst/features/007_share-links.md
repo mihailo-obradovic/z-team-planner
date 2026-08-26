@@ -14,20 +14,20 @@ An account build shares by a **live** link: `/b/{id}` always shows the owner's c
 
 ## Inputs
 
-| Input       | Type                | Source          | Constraints                                             |
-| ----------- | ------------------- | --------------- | ------------------------------------------------------- |
-| `{id}`      | UUIDv4 path segment | the share link  | unguessable; unknown or deleted → `404`                 |
-| bearer token| —                   | —               | **never** read: the only route with no `CurrentUserDep` |
-| caller IP   | socket peer         | the request     | the limiter's key; behind a proxy, the proxy            |
+| Input        | Type                | Source         | Constraints                                             |
+| ------------ | ------------------- | -------------- | ------------------------------------------------------- |
+| `{id}`       | UUIDv4 path segment | the share link | unguessable; unknown or deleted → `404`                 |
+| bearer token | —                   | —              | **never** read: the only route with no `CurrentUserDep` |
+| caller IP    | socket peer         | the request    | the limiter's key; behind a proxy, the proxy            |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type         | Description                                                          |
-| -------------------- | ------------ | -------------------------------------------------------------------- |
+| Output / Side Effect | Type         | Description                                                            |
+| -------------------- | ------------ | ---------------------------------------------------------------------- |
 | public build         | JSON         | `{ id, name, data, updated_at }` — never the owner, never `created_at` |
-| `/b/{id}` page       | rendered     | read-only planner with **Save a copy**; the 404 page when gone       |
-| clipboard link       | UI           | `https://<web>/b/{id}`, from **Share** on an account build           |
-| query cache entry    | Pinia Colada | key `['shared','get',id]`; gated on nothing, invalidates nothing     |
+| `/b/{id}` page       | rendered     | read-only planner with **Save a copy**; the 404 page when gone         |
+| clipboard link       | UI           | `https://<web>/b/{id}`, from **Share** on an account build             |
+| query cache entry    | Pinia Colada | key `['shared','get',id]`; gated on nothing, invalidates nothing       |
 
 ## Scope And Non-Goals
 
@@ -63,18 +63,18 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Examples
 
-| Input                                          | Expected Output                                  | Notes                        |
-| ---------------------------------------------- | ------------------------------------------------ | ---------------------------- |
-| `GET /shared/{id}` signed out                  | `200`, no owner field                            | the only token-less route    |
-| `GET /shared/{id}` after the owner deleted it  | `404 not_found`                                  | same answer as never-existed |
-| `GET /shared/{id}` 61st in a minute, one IP    | `429 rate_limited`                               | stopgap limiter              |
-| open `/b/<valid id>`                           | skeleton, then read-only planner + **Save a copy** |                            |
-| open `/b/<deleted id>`                         | the 404 page                                     | `createError`, not a toast   |
-| **Save a copy** signed in                      | `POST /builds`; toast names the build            | may come back suffixed (005) |
-| **Save a copy** signed out                     | a local save                                     | feature 001                  |
-| **Share** on an account build                  | clipboard holds `/b/{id}`                        | live                         |
-| **Share** on a local build                     | clipboard holds `?build=`                        | snapshot (001)               |
-| the owner opens their own link                 | read-only planner                                | no edit path on this page    |
+| Input                                         | Expected Output                                    | Notes                        |
+| --------------------------------------------- | -------------------------------------------------- | ---------------------------- |
+| `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route    |
+| `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed |
+| `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter              |
+| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                              |
+| open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast   |
+| **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005) |
+| **Save a copy** signed out                    | a local save                                       | feature 001                  |
+| **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                         |
+| **Share** on a local build                    | clipboard holds `?build=`                          | snapshot (001)               |
+| the owner opens their own link                | read-only planner                                  | no edit path on this page    |
 
 ## Business Rules
 

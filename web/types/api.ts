@@ -39,7 +39,7 @@ export const BuildSchema = BuildSummarySchema.extend({
   data: SerializedBuildSchema
 });
 
-// * The public read: never the owner (feature 005).
+// * The public read: never the owner (feature 007).
 export const PublicBuildSchema = z.object({
   id: z.uuid(),
   name: z.string(),
