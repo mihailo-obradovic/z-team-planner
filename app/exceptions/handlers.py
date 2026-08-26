@@ -5,6 +5,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.logging import request_id_var
@@ -100,6 +101,16 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = _STATUS_TO_CODE.get(exc.status_code, ErrorCode.INTERNAL_ERROR)
         return _respond(exc.status_code, code, str(exc.detail))
+
+    @app.exception_handler(OperationalError)
+    async def _database_unavailable(_: Request, exc: OperationalError) -> JSONResponse:
+        # ! Retryable, and a client must be able to tell that without parsing a message. A suspended Neon compute that will not wake looks exactly like this, and it is not the caller's fault (feature 005, Error Handling).
+        logger.warning("Database unavailable: %s", type(exc).__name__, exc_info=True)
+        return _respond(
+            503,
+            ErrorCode.SERVICE_UNAVAILABLE,
+            "The service is temporarily unavailable. Please try again.",
+        )
 
     @app.exception_handler(Exception)
     async def _unhandled(_: Request, exc: Exception) -> JSONResponse:

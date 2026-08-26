@@ -18,7 +18,7 @@ from app.middleware import (
     RequestLoggingMiddleware,
 )
 from app.middleware.metrics import MetricsMiddleware
-from app.routes import health, metrics
+from app.routes import builds, health, metrics
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,8 @@ def create_app() -> FastAPI:
         app.include_router(metrics.router)
 
     api_v1 = APIRouter(prefix=API_V1_PREFIX)
-    # * Feature routers mount here: 004 adds me, 005 adds builds and shared.
+    api_v1.include_router(builds.router)
+    # * Feature 004 adds me here; feature 005's public read follows in this file.
     app.include_router(api_v1)
 
     logger.info("Application configured (env=%s)", settings.app_env)

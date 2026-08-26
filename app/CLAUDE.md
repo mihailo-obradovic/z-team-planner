@@ -14,11 +14,11 @@ The backend owns exactly two things — **accounts** and **account builds**. Gam
 - `core/logging.py` — `CatalystFormatter` and `request_id_var`, the contextvar the whole request-tracing chain hangs off.
 - `middleware/` — request id, the access line, the body limit, metrics. CORS is Starlette's own, configured in `main.py`.
 - `exceptions/` — `errors.py` holds the envelope and the `ErrorCode` vocabulary; `handlers.py` registers the four central handlers.
-- `routes/` — `health.py` (`/healthz`, `/readyz`) and `metrics.py`. Transport only, no business logic.
+- `routes/` — `health.py` (`/healthz`, `/readyz`), `metrics.py`, and `builds.py` under `/api/v1`. Transport only, no business logic.
 - `models/` — `base.py` holds the declarative `Base`; the package `__init__` imports every model, which is what Alembic's autogenerate diffs against. `users` landed with feature 005 (its owner is feature 004); `builds` follows in the same feature.
 - `schemas/` — Pydantic DTOs. `builds.py` holds `BuildDocument` (the structural half of a saved build), the request and response shapes, and `render_timestamp` — the one rendering used for both a body's `updated_at` and the `ETag` header, so a client can hand back exactly what it was given.
 - `repositories/` — database operations only, one module per table: `users.py`, `builds.py`, `idempotency.py`.
-- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `users.py` (resolving a token to an account row).
+- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `builds.py` (naming, the cap, idempotency), `users.py` (resolving a token to an account row).
 - `auth/` — `get_current_user` and `CurrentUserDep`, the one seam every user-scoped route names; `core/firebase.py` initialises the SDK it calls.
 - `core/game_data.py` — the generated game-data fixture, read once.
 
@@ -59,6 +59,8 @@ There is no module-level `app` object — importing `main` would then read the e
 - **The emulator guard is in `core/config.py`.** `FIREBASE_AUTH_EMULATOR_HOST` outside development stops the process: emulator tokens are unsigned, so serving with it set is a total auth bypass.
 - **Metric labels use the route template**, never the raw path — build ids must never become labels.
 - **`builds.format_version` is a generated column.** It is `GENERATED ALWAYS AS ((data ->> 'v'))::integer STORED`, so no statement can set it to something the document does not say. Do not add it to an INSERT.
+- **An account's creates are serialised by a row lock on `users`.** The naming search and the cap both read then insert, so without `lock_owner` two requests each find the same name free, or each take the last slot. Proven by a real race in `tests/services/test_builds_concurrency.py`.
+- **Only a successful response is stored under an `Idempotency-Key`.** A rejected document rolls the claim back with it, so a client that fixes the document can retry rather than meet the old rejection for a day.
 - **Name uniqueness and the deletion cascade are the schema's.** `uq_builds_owner_name` settles two concurrent creates that both found a name free, and `ON DELETE CASCADE` is what makes feature 004's total deletion true.
 - **Game data is never hand-copied here.** `shared/game-data.json` is generated from `web/types/hero.ts`; a frontend test fails if the committed fixture drifts. Change the hero data in `web/`, re-export, and commit both.
 - **`verify_id_token` failures split three ways.** A bad or expired token is `401`; certificates the SDK cannot fetch are `503`, because the token may be fine and a `401` would sign every user out over a Google outage.

@@ -66,25 +66,25 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 
 ## Examples
 
-| Input                                                | Expected Output                                    | Notes                        |
-| ---------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
-| `POST /builds` `{name:"Main", data:{v:1}}` + key     | `201`, build with `name:"Main"`                    |                              |
-| same request, same key, within 24 h                  | `201`, the **same** build                          | idempotent replay            |
-| same body, **different** key                         | `201`, `name:"Main (2)"`                           | unique per account, suffixed |
-| `PATCH` rename to a name another own build has       | `200`, `name:"<name> (2)"`                         | suffix on rename too         |
-| `PATCH` without `If-Match`                           | `428 precondition_required`                        |                              |
-| `PATCH` with a stale `If-Match`                      | `412 precondition_failed`, body = current build    | two-device conflict          |
-| any `data` from `shared/build-cases.json`            | that file's verdict and exact `details[].path` set | every tier and episode rule  |
-| `POST /builds` with a 9 KB document                  | `413 payload_too_large`                            |                              |
-| 21st `POST /builds`                                  | `409 build_limit`                                  | cap 20                       |
-| `GET /builds?page=2&page_size=5` with 7 builds       | `200`, 2 summaries, `total: 7`                     |                              |
-| `GET /builds/{other user's id}`                      | `404 not_found`                                    | never `403`                  |
-| `GET /shared/{id}` signed out                        | `200`, no owner field                              |                              |
-| `GET /shared/{id}` after the owner deleted it        | `404`                                              |                              |
-| `GET /shared/{id}` 61st time in a minute from one IP | `429 rate_limited`                                 | stopgap limiter              |
-| import of 3 items, one with an unknown hero id       | `200`, statuses `created, invalid, created`        | partial success              |
-| import of 51 items                                   | `422`, path `$`                                    | batch cap                    |
-| `DELETE /me` (feature 004) with 5 builds             | all 5 rows gone; their `/b/` links `404`           | cascade                      |
+| Input                                            | Expected Output                                 | Notes               |
+| ------------------------------------------------ | ----------------------------------------------- | ------------------- |
+| `POST /builds` `{name:"Main", data:{v:1}}` + key | `201`, build with `name:"Main"`                 |                     |
+| same request, same key, within 24 h              | `201`, the **same** build                       | idempotent replay   |
+| same body, **different** key                     | `201`, `name:"Main (2)"`                        | suffixed            |
+| `PATCH` rename to a name another own build has   | `200`, `name:"<name> (2)"`                      | renames suffix too  |
+| `PATCH` without `If-Match`                       | `428 precondition_required`                     |                     |
+| `PATCH` with a stale `If-Match`                  | `412 precondition_failed`, body = current build | two-device conflict |
+| any `data` from `shared/build-cases.json`        | its verdict and exact `details[].path` set      | all tiers + episode |
+| `POST /builds` with a 9 KB document              | `413 payload_too_large`                         |                     |
+| 21st `POST /builds`                              | `409 build_limit`                               | cap 20              |
+| `GET /builds?page=2&page_size=5` with 7 builds   | `200`, 2 summaries, `total: 7`                  |                     |
+| `GET /builds/{other user's id}`                  | `404 not_found`                                 | never `403`         |
+| `GET /shared/{id}` signed out                    | `200`, no owner field                           |                     |
+| `GET /shared/{id}` after the owner deleted it    | `404`                                           |                     |
+| `GET /shared/{id}` 61st in a minute, one IP      | `429 rate_limited`                              | stopgap limiter     |
+| import of 3 items, one with an unknown hero id   | `200`, statuses `created, invalid, created`     | partial success     |
+| import of 51 items                               | `422`, path `builds`                            | batch cap           |
+| `DELETE /me` (feature 004) with 5 builds         | all 5 rows gone; their `/b/` links `404`        | cascade             |
 
 ## Business Rules
 
@@ -93,7 +93,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 - **Episode rules**: the cut hero (`ec`) holds no state; recruits — Blonde Blazer and the episode-4 option not hired — may reveal a starting power (`pw` `[1,0]`, which the planner offers on their card) but hold no trained power, `sp` or `fl`; a non-fixed-level recruit may hold `lu`/`bl`; fixed-level heroes never hold `lu`/`bl`.
 - **Names**: unique per `(owner_id, name)`, enforced by a database unique index; on collision the server appends ` (n)` with the smallest free `n ≥ 2` and returns the final name. Applies to create, import and rename alike.
 - **Cap**: 20 builds per account. **Payload**: 8 KB per document, 50 items per import.
-- **Idempotency**: `Idempotency-Key` required on create and import; the key plus the user identify a stored response for 24 h; the same key with a different body → `409 idempotency_conflict`.
+- **Idempotency**: `Idempotency-Key` required on create and import — without it, `422` naming the header. The key plus the user identify a stored response for 24 h; the same key with a different body → `409 idempotency_conflict`. Only a **success** is stored: a rejected document is re-judged on the next attempt, never answered from a day-old cache.
 - **Concurrency**: `PATCH` requires `If-Match` equal to the current `updated_at`; the update is a single `UPDATE … WHERE id = ? AND updated_at = ?` so two writers cannot both win.
 - **Public read** exposes id, name, document and `updated_at` only. Stopgap rate limit until the hosting effort names the edge: an in-process token bucket on `/shared/*`, 60 requests per minute per IP, stdlib only — recorded as a stopgap, to be removed when the edge exists.
 - **Error schema**, every route: `{ "error": { "code", "message", "details"?: [{ "path", "message" }] } }`; `details` on `422` only; `X-Request-ID` echoed on every response. Codes: `unauthenticated`, `forbidden`, `not_found`, `validation_failed`, `precondition_required`, `precondition_failed`, `build_limit`, `payload_too_large`, `rate_limited`, `idempotency_conflict`.

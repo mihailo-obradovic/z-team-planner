@@ -1,0 +1,79 @@
+"""`/api/v1/builds` — transport only, no business logic."""
+
+from typing import Annotated, Any
+from uuid import UUID
+
+from fastapi import APIRouter, Header, Query, status
+from fastapi.responses import JSONResponse
+
+from app.auth import CurrentUserDep
+from app.core.database import DbSession
+from app.schemas.builds import (
+    BuildListOut,
+    BuildOut,
+    BuildSummaryOut,
+    CreateBuildIn,
+)
+from app.services import builds as builds_service
+
+router = APIRouter(prefix="/builds", tags=["builds"])
+
+# * Required, so a create with no key is a 422 naming the header rather than a silent second build on the next retry.
+IdempotencyKeyHeader = Annotated[
+    str, Header(alias="Idempotency-Key", min_length=1, max_length=128)
+]
+
+
+def with_etag(body: dict[str, Any], status_code: int = 200) -> JSONResponse:
+    """A build response and the `ETag` a later `If-Match` is compared against.
+
+    The header is the body's own `updated_at`, character for character, so a client can hand
+    back what it was given without reformatting it.
+    """
+    response = JSONResponse(status_code=status_code, content=body)
+    response.headers["ETag"] = body["updated_at"]
+
+    return response
+
+
+@router.get("", response_model=BuildListOut, summary="List the account's builds")
+def list_builds(
+    session: DbSession,
+    user: CurrentUserDep,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> BuildListOut:
+    items, total = builds_service.list_builds(session, user.id, page, page_size)
+
+    return BuildListOut(
+        items=[BuildSummaryOut.model_validate(build) for build in items],
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=BuildOut,
+    summary="Create a build",
+)
+def create_build(
+    session: DbSession,
+    user: CurrentUserDep,
+    payload: CreateBuildIn,
+    idempotency_key: IdempotencyKeyHeader,
+) -> JSONResponse:
+    status_code, body = builds_service.create_build(
+        session, user.id, payload, idempotency_key
+    )
+
+    return with_etag(body, status_code)
+
+
+@router.get("/{build_id}", response_model=BuildOut, summary="Read one build")
+def get_build(session: DbSession, user: CurrentUserDep, build_id: UUID) -> JSONResponse:
+    build = builds_service.get_build(session, user.id, build_id)
+
+    return with_etag(BuildOut.model_validate(build).model_dump(mode="json"))
