@@ -44,10 +44,19 @@ def test_env_uses_the_direct_url_not_the_pooled_one(
     command.upgrade(_alembic_config(), "head")
 
 
-def test_the_committed_revisions_are_this_feature_s() -> None:
-    # * The scaffold deliberately shipped zero revisions; the first one arrives with the table it creates, so a reader can tell which change owns which migration.
-    versions = sorted(p.name for p in (REPO_ROOT / "alembic" / "versions").glob("*.py"))
-    assert [name.split("_", 2)[2] for name in versions] == ["users.py"]
+def test_the_revisions_run_in_dependency_order() -> None:
+    """The scaffold shipped zero revisions; each one arrives with the table it creates.
+
+    Walked as a chain rather than as sorted filenames: the date prefix is shared and the rest
+    is a random hash, so the file order says nothing. `builds` carries a foreign key into
+    `users`, so a chain in the other order would fail on a fresh database only.
+    """
+    from alembic.script import ScriptDirectory
+
+    scripts = ScriptDirectory.from_config(_alembic_config())
+    chain = [script.doc for script in scripts.walk_revisions()]
+
+    assert list(reversed(chain)) == ["users", "builds"]
 
 
 @pytest.mark.integration

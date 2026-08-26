@@ -1,8 +1,23 @@
 """Pydantic DTOs for the builds resource — declared here, never inlined in a route."""
 
-from typing import Any, Literal
+from datetime import UTC, datetime
+from typing import Annotated, Any, Literal
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    field_serializer,
+)
+
+from app.exceptions.errors import ErrorDetail
+
+# * Trimmed, then 1–80 characters — the same rule the build-name form mirrors (feature 006).
+BuildName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)
+]
 
 
 class BuildDocument(BaseModel):
@@ -38,3 +53,80 @@ class BuildDocument(BaseModel):
 # * BuildDocument, but what goes into the column is the caller's own object (feature 005,
 # * Invariants — `data` round-trips, the server never normalizes it).
 RawDocument = dict[str, Any]
+
+
+def render_timestamp(moment: datetime) -> str:
+    """UTC, ISO-8601, always six microsecond digits and a `Z`.
+
+    One rendering for the body and for the `ETag`, so a client can hand back exactly what it
+    was given and `If-Match` compares equal. `datetime.fromisoformat` reads it back.
+    """
+    return moment.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
+
+
+class _FromRow(BaseModel):
+    """Shared serialization for anything read straight off a `builds` row."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", "updated_at", check_fields=False)
+    def _stamp(self, value: datetime) -> str:
+        return render_timestamp(value)
+
+
+class BuildSummaryOut(_FromRow):
+    """A list item: everything but the document, which no list needs to carry."""
+
+    id: UUID
+    name: str
+    format_version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class BuildOut(BuildSummaryOut):
+    data: dict[str, Any]
+
+
+class PublicBuildOut(_FromRow):
+    """The public read — never the owner, and never when it was created (feature 005)."""
+
+    id: UUID
+    name: str
+    data: dict[str, Any]
+    updated_at: datetime
+
+
+class BuildListOut(BaseModel):
+    items: list[BuildSummaryOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class CreateBuildIn(BaseModel):
+    name: BuildName
+    # * Raw on purpose: the 8 KB rule has to run before structural parsing, so that an oversized document answers 413 rather than a list of field errors (services/validation.py).
+    data: dict[str, Any]
+
+
+class UpdateBuildIn(BaseModel):
+    """A rename, a new document, or both — an absent key means "leave it alone"."""
+
+    name: BuildName | None = None
+    data: dict[str, Any] | None = None
+
+
+class ImportBuildsIn(BaseModel):
+    # * The batch cap is declared here so an oversized import is refused at the boundary, before a single item is validated or inserted.
+    builds: list[CreateBuildIn] = Field(max_length=50)
+
+
+class ImportItemOut(BaseModel):
+    """One item's outcome. Import succeeds per item, so a report carries both verdicts."""
+
+    index: int
+    status: Literal["created", "invalid"]
+    id: UUID | None = None
+    name: str | None = None
+    errors: list[ErrorDetail] | None = None

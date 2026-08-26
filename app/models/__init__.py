@@ -5,6 +5,8 @@ Importing this package registers every table on `Base.metadata`, which is what A
 """
 
 from app.models.base import Base
+from app.models.build import Build
+from app.models.idempotency_key import IdempotencyKey
 from app.models.user import User
 
-__all__ = ["Base", "User"]
+__all__ = ["Base", "Build", "IdempotencyKey", "User"]
