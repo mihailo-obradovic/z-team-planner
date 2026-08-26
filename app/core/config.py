@@ -1,6 +1,7 @@
 """Central configuration — the one entry point for environment access."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
@@ -38,7 +39,12 @@ class Settings(BaseSettings):
 
     metrics_enabled: bool = False
 
-    # * The scaffold never *uses* this — it exists only so the guard below can refuse it.
+    # * The Firebase project every accepted token must be minted for: firebase-admin checks the issuer and the audience against it, so a token from another project is refused (feature 004).
+    firebase_project_id: str
+    # * The service-account JSON firebase-admin authenticates with. Optional only when the emulator is in use, which the guard below already confines to development.
+    firebase_service_account_file: Path | None = None
+
+    # * Read by firebase-admin itself, straight from the environment. Nothing here passes it on; these two guards are the only code that looks at it.
     firebase_auth_emulator_host: str | None = None
 
     @field_validator("database_url", "database_url_direct")
@@ -57,6 +63,24 @@ class Settings(BaseSettings):
                 f"FIREBASE_AUTH_EMULATOR_HOST is set while APP_ENV is {self.app_env!r}. "
                 "Emulator tokens are unsigned, so this would disable authentication "
                 "entirely. Refusing to start."
+            )
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _needs_credentials_unless_emulated(self) -> Settings:
+        # * Without either, every request would fail at token verification instead of at startup — the same fail-fast reasoning as the database URLs (decision 005).
+        if self.firebase_service_account_file is None:
+            if not self.firebase_auth_emulator_host:
+                msg = (
+                    "FIREBASE_SERVICE_ACCOUNT_FILE is required unless "
+                    "FIREBASE_AUTH_EMULATOR_HOST is set."
+                )
+                raise ValueError(msg)
+        elif not self.firebase_service_account_file.is_file():
+            msg = (
+                "FIREBASE_SERVICE_ACCOUNT_FILE does not exist: "
+                f"{self.firebase_service_account_file}"
             )
             raise ValueError(msg)
         return self

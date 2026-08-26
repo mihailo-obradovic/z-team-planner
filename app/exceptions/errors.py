@@ -24,6 +24,8 @@ class ErrorCode(StrEnum):
     IDEMPOTENCY_CONFLICT = "idempotency_conflict"
     # * Not in feature 005's list: it says a 500 carries a request id and no detail, but says nothing about its code. An unlabelled 500 body is worse than a labelled one, so the envelope stays uniform.
     INTERNAL_ERROR = "internal_error"
+    # * Also beyond that list, for the 503s the document does promise but never names: a database that will not answer, and Firebase certificates we cannot fetch. Both mean "try again", which a client must be able to tell from a 500.
+    SERVICE_UNAVAILABLE = "service_unavailable"
 
 
 class ErrorDetail(BaseModel):
@@ -55,9 +57,12 @@ class AppError(Exception):
         *,
         status_code: int,
         details: list[ErrorDetail] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
         self.status_code = status_code
         self.details = details
+        # * Some failures are only correct with a header: a 401 without WWW-Authenticate is not a challenge, it is just a refusal.
+        self.headers = headers

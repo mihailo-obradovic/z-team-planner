@@ -15,10 +15,14 @@ The backend owns exactly two things — **accounts** and **account builds**. Gam
 - `middleware/` — request id, the access line, the body limit, metrics. CORS is Starlette's own, configured in `main.py`.
 - `exceptions/` — `errors.py` holds the envelope and the `ErrorCode` vocabulary; `handlers.py` registers the four central handlers.
 - `routes/` — `health.py` (`/healthz`, `/readyz`) and `metrics.py`. Transport only, no business logic.
-- `models/` — the declarative `Base` and nothing else yet; `users` arrives with feature 004, `builds` with feature 005.
-- `schemas/`, `repositories/`, `services/`, `auth/` — not yet created. They arrive in the stack module's scaffold order as features need them.
+- `models/` — `base.py` holds the declarative `Base`; the package `__init__` imports every model, which is what Alembic's autogenerate diffs against. `users` landed with feature 005 (its owner is feature 004); `builds` follows in the same feature.
+- `schemas/` — Pydantic DTOs. `builds.py` holds `BuildDocument`, the structural half of a saved build.
+- `repositories/` — database operations only, one module per table.
+- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `users.py` (resolving a token to an account row).
+- `auth/` — `get_current_user` and `CurrentUserDep`, the one seam every user-scoped route names; `core/firebase.py` initialises the SDK it calls.
+- `core/game_data.py` — the generated game-data fixture, read once.
 
-Migrations are `alembic/` at the repo root; tests are `tests/`; the development reset is `scripts/reset_db.py`.
+Migrations are `alembic/` at the repo root; tests are `tests/`; the development reset is `scripts/reset_db.py`. The two fixtures the server validates against are `shared/`, generated from `web/` by `pnpm run game-data:export`.
 
 ## Entry points and verbs
 
@@ -54,4 +58,6 @@ There is no module-level `app` object — importing `main` would then read the e
 - **The error envelope is `exceptions/errors.py`.** A feature adds a code to `ErrorCode`; it never invents a second response shape. `details` appears on `422` only, and `X-Request-ID` is on every response — the handlers set it themselves, because the 500 handler runs outside the middleware stack.
 - **The emulator guard is in `core/config.py`.** `FIREBASE_AUTH_EMULATOR_HOST` outside development stops the process: emulator tokens are unsigned, so serving with it set is a total auth bypass.
 - **Metric labels use the route template**, never the raw path — build ids must never become labels.
-- Integration tests run against a real PostgreSQL through testcontainers, never a SQLite stand-in; without Docker they skip loudly.
+- **Game data is never hand-copied here.** `shared/game-data.json` is generated from `web/types/hero.ts`; a frontend test fails if the committed fixture drifts. Change the hero data in `web/`, re-export, and commit both.
+- **`verify_id_token` failures split three ways.** A bad or expired token is `401`; certificates the SDK cannot fetch are `503`, because the token may be fine and a `401` would sign every user out over a Google outage.
+- Integration tests run against a real PostgreSQL through testcontainers, never a SQLite stand-in; without Docker they skip loudly. A test needing tables takes the `migrated_db` fixture, which migrates and truncates.

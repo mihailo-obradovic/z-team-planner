@@ -1,7 +1,9 @@
 """Shared fixtures."""
 
+import json
 import logging
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
@@ -14,6 +16,40 @@ except ImportError:  # pragma: no cover
 
 _POOLED = "postgresql+psycopg://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neondb"
 _DIRECT = "postgresql+psycopg://u:p@ep-x.eu-central-1.aws.neon.tech/neondb"
+FIREBASE_PROJECT = "z-team-planner-test"
+
+
+@pytest.fixture(scope="session")
+def service_account_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A syntactically real service-account key, generated for this run.
+
+    firebase-admin parses the private key the moment it builds a Certificate, so a stub file
+    will not do — and a real key must never be committed. Generating one keeps the credential
+    path under test without a secret in the repository (prime directive, Honest Inputs).
+    """
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    path = tmp_path_factory.mktemp("firebase") / "service-account.json"
+    path.write_text(
+        json.dumps(
+            {
+                "type": "service_account",
+                "project_id": FIREBASE_PROJECT,
+                "private_key_id": "test-key",
+                "private_key": key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption(),
+                ).decode(),
+                "client_email": f"test@{FIREBASE_PROJECT}.iam.gserviceaccount.com",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        )
+    )
+
+    return path
 
 
 @pytest.fixture(autouse=True)
@@ -25,9 +61,17 @@ def _clear_settings_cache() -> Iterator[None]:
 
 
 @pytest.fixture
-def base_env(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
+def base_env(
+    monkeypatch: pytest.MonkeyPatch, service_account_file: Path
+) -> dict[str, str]:
     """A minimal valid environment; tests mutate what they are about."""
-    env = {"DATABASE_URL": _POOLED, "DATABASE_URL_DIRECT": _DIRECT}
+    # * Credentials rather than the emulator host, so an app built here works under any APP_ENV — the emulator variable is refused outside development, and the tests about that guard set it themselves.
+    env = {
+        "DATABASE_URL": _POOLED,
+        "DATABASE_URL_DIRECT": _DIRECT,
+        "FIREBASE_PROJECT_ID": FIREBASE_PROJECT,
+        "FIREBASE_SERVICE_ACCOUNT_FILE": str(service_account_file),
+    }
     for key, value in env.items():
         monkeypatch.setenv(key, value)
     # * The repo's own .env must not leak into tests — a developer's real values would make these pass or fail for the wrong reason.
@@ -81,12 +125,34 @@ def postgres_container():
 
 
 @pytest.fixture
+def migrated_db(container_env: None) -> Iterator[None]:
+    """A container database at head, emptied before each test that uses it."""
+    from alembic import command
+    from alembic.config import Config
+    from sqlalchemy import create_engine, text
+
+    from app.core.config import get_settings
+
+    command.upgrade(Config("alembic.ini"), "head")
+    engine = create_engine(get_settings().database_url_direct)
+    try:
+        with engine.begin() as connection:
+            # * TRUNCATE ... CASCADE rather than dropping and re-migrating per test: it is far quicker, and CASCADE reaches whatever later features hang off users.
+            connection.execute(text("TRUNCATE TABLE users CASCADE"))
+        yield
+    finally:
+        engine.dispose()
+
+
+@pytest.fixture
 def container_env(
-    postgres_container, monkeypatch: pytest.MonkeyPatch
+    postgres_container, monkeypatch: pytest.MonkeyPatch, service_account_file: Path
 ) -> Iterator[None]:
     url = postgres_container.get_connection_url()
     monkeypatch.setenv("DATABASE_URL", url)
     monkeypatch.setenv("DATABASE_URL_DIRECT", url)
+    monkeypatch.setenv("FIREBASE_PROJECT_ID", FIREBASE_PROJECT)
+    monkeypatch.setenv("FIREBASE_SERVICE_ACCOUNT_FILE", str(service_account_file))
     monkeypatch.setattr("app.core.config.Settings.model_config", {"extra": "ignore"})
     get_settings.cache_clear()
     yield

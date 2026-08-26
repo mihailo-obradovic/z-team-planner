@@ -29,6 +29,7 @@ _STATUS_TO_CODE: dict[int, ErrorCode] = {
     413: ErrorCode.PAYLOAD_TOO_LARGE,
     428: ErrorCode.PRECONDITION_REQUIRED,
     429: ErrorCode.RATE_LIMITED,
+    503: ErrorCode.SERVICE_UNAVAILABLE,
 }
 
 
@@ -37,6 +38,7 @@ def _respond(
     code: ErrorCode,
     message: str,
     details: list[ErrorDetail] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     envelope = ErrorEnvelope(
         error=ErrorBody(code=code, message=message, details=details)
@@ -49,6 +51,7 @@ def _respond(
     request_id = request_id_var.get()
     if request_id:
         response.headers[REQUEST_ID_HEADER] = request_id
+    response.headers.update(headers or {})
     return response
 
 
@@ -78,7 +81,9 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return _respond(exc.status_code, exc.code, exc.message, exc.details)
+        return _respond(
+            exc.status_code, exc.code, exc.message, exc.details, exc.headers
+        )
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(

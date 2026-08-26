@@ -44,7 +44,42 @@ def test_env_uses_the_direct_url_not_the_pooled_one(
     command.upgrade(_alembic_config(), "head")
 
 
-def test_no_revisions_are_committed_yet() -> None:
-    # * The first revision arrives with feature 004's users table; an empty baseline would be a no-op artifact someone later has to explain.
+def test_the_committed_revisions_are_this_feature_s() -> None:
+    # * The scaffold deliberately shipped zero revisions; the first one arrives with the table it creates, so a reader can tell which change owns which migration.
     versions = sorted(p.name for p in (REPO_ROOT / "alembic" / "versions").glob("*.py"))
-    assert versions == []
+    assert [name.split("_", 2)[2] for name in versions] == ["users.py"]
+
+
+@pytest.mark.integration
+def test_users_is_created_with_its_unique_index(container_env: None) -> None:
+    from app.core.config import get_settings
+
+    command.upgrade(_alembic_config(), "head")
+    engine = create_engine(get_settings().database_url_direct)
+    try:
+        inspector = inspect(engine)
+        assert "users" in inspector.get_table_names()
+        # ! The upsert conflicts on this constraint, so its absence would not fail loudly — it would silently let one account have two rows.
+        constraints = {
+            constraint["name"]
+            for constraint in inspector.get_unique_constraints("users")
+        }
+        assert "uq_users_firebase_uid" in constraints
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.integration
+def test_downgrade_removes_the_table(container_env: None) -> None:
+    from app.core.config import get_settings
+
+    config = _alembic_config()
+    command.upgrade(config, "head")
+    command.downgrade(config, "base")
+    engine = create_engine(get_settings().database_url_direct)
+    try:
+        assert "users" not in inspect(engine).get_table_names()
+    finally:
+        engine.dispose()
+    # * Left at head so the ordering of tests in this module cannot strand the database empty.
+    command.upgrade(config, "head")

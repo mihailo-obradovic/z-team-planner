@@ -66,25 +66,25 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 
 ## Examples
 
-| Input                                                | Expected Output                                   | Notes                            |
-| ---------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
-| `POST /builds` `{name:"Main", data:{v:1}}` + key     | `201`, build with `name:"Main"`                   |                                  |
-| same request, same key, within 24 h                  | `201`, the **same** build                         | idempotent replay                |
-| same body, **different** key                         | `201`, `name:"Main (2)"`                          | unique per account, suffixed     |
-| `PATCH` rename to a name another own build has       | `200`, `name:"<name> (2)"`                        | suffix on rename too             |
-| `PATCH` without `If-Match`                           | `428 precondition_required`                       |                                  |
-| `PATCH` with a stale `If-Match`                      | `412 precondition_failed`, body = current build   | two-device conflict              |
-| any `data` from `shared/build-cases.json`            | that file's verdict and exact `details[].path` set | every tier and episode rule      |
-| `POST /builds` with a 9 KB document                  | `413 payload_too_large`                           |                                  |
-| 21st `POST /builds`                                  | `409 build_limit`                                 | cap 20                           |
-| `GET /builds?page=2&page_size=5` with 7 builds       | `200`, 2 summaries, `total: 7`                    |                                  |
-| `GET /builds/{other user's id}`                      | `404 not_found`                                   | never `403`                      |
-| `GET /shared/{id}` signed out                        | `200`, no owner field                             |                                  |
-| `GET /shared/{id}` after the owner deleted it        | `404`                                             |                                  |
-| `GET /shared/{id}` 61st time in a minute from one IP | `429 rate_limited`                                | stopgap limiter                  |
-| import of 3 items, one with an unknown hero id       | `200`, statuses `created, invalid, created`       | partial success                  |
-| import of 51 items                                   | `422`, path `$`                                   | batch cap                        |
-| `DELETE /me` (feature 004) with 5 builds             | all 5 rows gone; their `/b/` links `404`          | cascade                          |
+| Input                                                | Expected Output                                    | Notes                        |
+| ---------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
+| `POST /builds` `{name:"Main", data:{v:1}}` + key     | `201`, build with `name:"Main"`                    |                              |
+| same request, same key, within 24 h                  | `201`, the **same** build                          | idempotent replay            |
+| same body, **different** key                         | `201`, `name:"Main (2)"`                           | unique per account, suffixed |
+| `PATCH` rename to a name another own build has       | `200`, `name:"<name> (2)"`                         | suffix on rename too         |
+| `PATCH` without `If-Match`                           | `428 precondition_required`                        |                              |
+| `PATCH` with a stale `If-Match`                      | `412 precondition_failed`, body = current build    | two-device conflict          |
+| any `data` from `shared/build-cases.json`            | that file's verdict and exact `details[].path` set | every tier and episode rule  |
+| `POST /builds` with a 9 KB document                  | `413 payload_too_large`                            |                              |
+| 21st `POST /builds`                                  | `409 build_limit`                                  | cap 20                       |
+| `GET /builds?page=2&page_size=5` with 7 builds       | `200`, 2 summaries, `total: 7`                     |                              |
+| `GET /builds/{other user's id}`                      | `404 not_found`                                    | never `403`                  |
+| `GET /shared/{id}` signed out                        | `200`, no owner field                              |                              |
+| `GET /shared/{id}` after the owner deleted it        | `404`                                              |                              |
+| `GET /shared/{id}` 61st time in a minute from one IP | `429 rate_limited`                                 | stopgap limiter              |
+| import of 3 items, one with an unknown hero id       | `200`, statuses `created, invalid, created`        | partial success              |
+| import of 51 items                                   | `422`, path `$`                                    | batch cap                    |
+| `DELETE /me` (feature 004) with 5 builds             | all 5 rows gone; their `/b/` links `404`           | cascade                      |
 
 ## Business Rules
 
@@ -116,8 +116,8 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 
 ## Error Handling
 
-- Statuses and codes as listed; unexpected errors are `500` with a request id and no detail.
-- Postgres unavailable (Neon suspended and not yet awake) → the pool pre-pings and retries the connection once; a persistent failure is `503` with the request id.
+- Statuses and codes as listed, plus `service_unavailable` for the `503`s below — a client must be able to tell "try again" from a `500`. Unexpected errors are `500` with a request id and no detail.
+- Postgres unavailable (Neon suspended and not yet awake) → the pool pre-pings and retries the connection once; a persistent failure is `503` with the request id. Firebase signing certificates unfetchable → `503` too, never `401`: the token may be perfectly good, and signing every user out over a Google outage is what feature 004 calls "no outage-time data loss".
 
 ## Entry Points
 

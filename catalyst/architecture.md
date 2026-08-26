@@ -210,11 +210,12 @@ This table lists what **this project** runs — pruned from the template's full 
 
 Packages this project runs that the adopted stack modules' Approved Libraries do not already name. One row per package, added with the user's explicit approval in the same change that introduces it (Dependency Change Rule).
 
-| Package             | Group   | Layer   | Why it is needed                                                                                                | Approved by  |
-| ------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------- | ------------ |
-| `uvicorn[standard]` | runtime | Backend | FastAPI is an ASGI framework and ships no server; nothing runs without one.                                     | decision 005 |
-| `pydantic-settings` | runtime | Backend | Pydantic v2 moved `BaseSettings` into its own distribution; the module's one-`Settings`-class binding needs it. | decision 005 |
-| `httpx`             | dev     | Backend | Starlette's `TestClient` is a thin wrapper over it; no route can be tested without it.                          | decision 005 |
+| Package             | Group   | Layer   | Why it is needed                                                                                                                                                                                                               | Approved by  |
+| ------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| `uvicorn[standard]` | runtime | Backend | FastAPI is an ASGI framework and ships no server; nothing runs without one.                                                                                                                                                    | decision 005 |
+| `pydantic-settings` | runtime | Backend | Pydantic v2 moved `BaseSettings` into its own distribution; the module's one-`Settings`-class binding needs it.                                                                                                                | decision 005 |
+| `httpx`             | dev     | Backend | Starlette's `TestClient` is a thin wrapper over it; no route can be tested without it.                                                                                                                                         | decision 005 |
+| `firebase-admin`    | runtime | Backend | Google's own SDK is the only sanctioned way to check a Firebase ID token's signature, time bounds, issuer and audience, and it caches the signing certificates correctly; feature 004 also needs it to delete a Firebase user. | feature 005  |
 
 `psycopg` is not listed here — the persistence module's Backend Pairings table already names it as the `python-fastapi` client.
 

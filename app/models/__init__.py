@@ -1,14 +1,10 @@
 """SQLAlchemy models.
 
-Holds the declarative base only. The tables arrive with the features that own them:
-`users` with feature 004, `builds` with feature 005.
+Importing this package registers every table on `Base.metadata`, which is what Alembic's
+`env.py` diffs against — a model that is not imported here is invisible to autogenerate.
 """
 
-from sqlalchemy.orm import DeclarativeBase
+from app.models.base import Base
+from app.models.user import User
 
-
-class Base(DeclarativeBase):
-    """The metadata Alembic autogenerates against."""
-
-
-__all__ = ["Base"]
+__all__ = ["Base", "User"]

@@ -1,33 +1,47 @@
 """reset_db refuses far more often than it runs."""
 
+from pathlib import Path
+
 import pytest
 
 from app.core.config import Settings, get_settings
 from scripts.reset_db import RefusedError, guard, main
+from tests.conftest import FIREBASE_PROJECT
 
 _POOLED = "postgresql+psycopg://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neondb"
 _DIRECT = "postgresql+psycopg://u:p@ep-x.eu-central-1.aws.neon.tech/neondb"
 
 
-def _settings(**overrides: str) -> Settings:
-    values = {"database_url": _POOLED, "database_url_direct": _DIRECT} | overrides
+def _settings(service_account_file: Path, **overrides: str) -> Settings:
+    values = {
+        "database_url": _POOLED,
+        "database_url_direct": _DIRECT,
+        "firebase_project_id": FIREBASE_PROJECT,
+        "firebase_service_account_file": service_account_file,
+    } | overrides
     return Settings(**values)  # pyright: ignore[reportArgumentType]
 
 
-def test_development_passes_the_guard() -> None:
-    guard(_settings(app_env="development"))
+def test_development_passes_the_guard(service_account_file: Path) -> None:
+    guard(_settings(service_account_file, app_env="development"))
 
 
 @pytest.mark.parametrize("app_env", ["staging", "production"])
-def test_refuses_outside_development(app_env: str) -> None:
+def test_refuses_outside_development(service_account_file: Path, app_env: str) -> None:
     with pytest.raises(RefusedError, match="Refusing"):
-        guard(_settings(app_env=app_env))
+        guard(_settings(service_account_file, app_env=app_env))
 
 
-def test_refuses_a_pooled_direct_url() -> None:
+def test_refuses_a_pooled_direct_url(service_account_file: Path) -> None:
     # ! DDL through PgBouncer is the silent-failure path; refuse rather than half-drop.
     with pytest.raises(RefusedError, match="pooled endpoint"):
-        guard(_settings(app_env="development", database_url_direct=_POOLED))
+        guard(
+            _settings(
+                service_account_file,
+                app_env="development",
+                database_url_direct=_POOLED,
+            )
+        )
 
 
 def test_does_nothing_without_yes(base_env: dict[str, str]) -> None:

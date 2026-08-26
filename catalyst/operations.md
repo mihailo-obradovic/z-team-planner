@@ -100,6 +100,8 @@ Spark plan, Google sign-in only. Firebase holds identities; the app's own `users
 
 ### Operate
 
+The API needs two variables: `FIREBASE_PROJECT_ID` (the issuer and audience every token is checked against) and `FIREBASE_SERVICE_ACCOUNT_FILE` (the key, kept outside this public repository). In development the emulator replaces the key — set `FIREBASE_AUTH_EMULATOR_HOST` instead, and the SDK stops checking signatures.
+
 ```bash
 firebase auth:export users.json --format=json           # full user list, round-trippable
 firebase auth:import users.json --hash-algo=...         # import (hash options per the Firebase docs)

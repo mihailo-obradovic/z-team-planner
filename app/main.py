@@ -9,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import Settings, get_settings
 from app.core.database import build_engine, build_session_factory
+from app.core.firebase import init_firebase
 from app.core.logging import configure_logging
 from app.exceptions import register_exception_handlers
 from app.middleware import (
@@ -62,6 +63,8 @@ def create_app() -> FastAPI:
     # * Eager, so a missing or malformed variable aborts import and uvicorn never binds.
     settings = get_settings()
     configure_logging(settings)
+    # * Eager too: a missing or unreadable service-account key must stop the process, not surface as a 503 on the first signed-in request (decision 005, fail fast).
+    init_firebase(settings)
 
     app = FastAPI(
         title="Z-Team Planner API",
