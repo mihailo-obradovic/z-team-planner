@@ -29,6 +29,25 @@ pnpm typecheck   # vue-tsc via nuxt
 pnpm test        # vitest (unit + nuxt projects)
 ```
 
+## Backend (API)
+
+The FastAPI service lives in `app/`. It needs [uv](https://docs.astral.sh/uv/) and a `.env` — copy `.env.example` and fill in the Neon connection strings (the pooled one for `DATABASE_URL`, the direct one for `DATABASE_URL_DIRECT`; they are not interchangeable).
+
+```bash
+uv sync --locked
+uv run uvicorn app.main:create_app --factory --reload --port 8000
+```
+
+```bash
+uv run ruff check .                 # lint
+uv run ruff format .                # format
+uv run pyright                      # typecheck
+uv run pytest                       # tests; -m "not integration" skips the ones needing Docker
+uv run alembic upgrade head         # migrations — direct endpoint only
+```
+
+Integration tests start a real PostgreSQL through testcontainers, so they need a running Docker daemon; without one they skip. `app/CLAUDE.md` is the orientation map for the service.
+
 ## Production
 
 Build and locally preview:
