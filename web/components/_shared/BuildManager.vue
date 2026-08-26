@@ -56,6 +56,7 @@
 
         <u-dropdown-menu
           v-if="savedBuilds.length > 0 || isSignedIn"
+          v-model:open="isMenuOpen"
           :items="buildMenuItems"
           :ui="{ content: 'min-w-48' }"
           :class="block ? 'min-w-0 flex-1 basis-0' : undefined"
@@ -94,6 +95,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
+import type { HeaderTier } from '@/types/ui';
+
 import {
   useCreateBuild,
   useFetchBuild,
@@ -106,8 +109,9 @@ const props = withDefaults(
     labelled?: boolean;
     block?: boolean;
     size?: 'md' | 'lg';
+    tier?: HeaderTier;
   }>(),
-  { labelled: true, block: false, size: 'md' }
+  { labelled: true, block: false, size: 'md', tier: 'labelled' }
 );
 
 const toast = useToast();
@@ -126,6 +130,7 @@ const {
 } = useHeroPlanner();
 
 const {
+  buildMenuTier,
   saveSharedOpen,
   deleteOpen,
   accountDeleteOpen,
@@ -133,6 +138,16 @@ const {
   openRename,
   openAccountSave
 } = useBuildDialogs();
+
+// * Open when this tier is the one asked for. The profile menu's "My builds" names a tier
+// * rather than flipping a boolean, because all three copies of this selector are mounted and
+// * a shared boolean would open every one of them (feature 004).
+const isMenuOpen = computed({
+  get: () => buildMenuTier.value === props.tier,
+  set: (open: boolean) => {
+    buildMenuTier.value = open ? props.tier : null;
+  }
+});
 
 const { loadAccountBuild } = useHeroPlanner();
 
@@ -227,7 +242,19 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   }
 
   if (!isSignedIn.value) {
-    return [builds, management];
+    // * The one place the anonymous player is told their builds live in this browser only.
+    // * Not a toast and not a banner: the selector is where the local controls already are,
+    // * and it is the only part of the header that survives every tier (feature 004).
+    const hint: DropdownMenuItem[] = [
+      {
+        label: 'Sign in to keep your builds stored securely',
+        icon: 'i-lucide-cloud-off',
+        class: 'whitespace-normal',
+        type: 'label'
+      }
+    ];
+
+    return [builds, management, hint];
   }
 
   const account: DropdownMenuItem[] = accountBuildsPending.value

@@ -1,4 +1,5 @@
 import { BuildSchema, type Build } from '@/types/api';
+import type { HeaderTier } from '@/types/ui';
 
 /**
  * Open state and draft names for the four build dialogs.
@@ -10,6 +11,14 @@ import { BuildSchema, type Build } from '@/types/api';
  * live at the shell while the buttons live wherever the tier ladder puts them.
  */
 export function useBuildDialogs() {
+  // * Which tier's build selector is open, rather than a boolean: the selector is mounted
+  // * once per header tier and its menu teleports to `body`, so a shared boolean would open
+  // * every copy at once and stack three identical menus over each other.
+  const buildMenuTier = useState<HeaderTier | null>(
+    'build-menu-open-tier',
+    () => null
+  );
+
   const saveSharedOpen = useState('build-dialog-save-shared', () => false);
   const newBuildOpen = useState('build-dialog-new', () => false);
   const deleteOpen = useState('build-dialog-delete', () => false);
@@ -65,12 +74,18 @@ export function useBuildDialogs() {
     return true;
   }
 
+  function openBuildMenu(tier: HeaderTier) {
+    buildMenuTier.value = tier;
+  }
+
   function openAccountSave(name = '') {
     accountSaveName.value = name;
     accountSaveOpen.value = true;
   }
 
   return {
+    buildMenuTier,
+    openBuildMenu,
     saveSharedOpen,
     accountSaveOpen,
     accountSaveName,

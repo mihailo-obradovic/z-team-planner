@@ -52,9 +52,22 @@
 
         <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
         <ClientOnly>
-          <BuildManager class="hidden lg:flex" />
-          <BuildManager class="hidden md:flex lg:hidden" :labelled="false" />
+          <BuildManager class="hidden lg:flex" tier="labelled" />
+          <BuildManager
+            class="hidden md:flex lg:hidden"
+            :labelled="false"
+            tier="icon"
+          />
         </ClientOnly>
+
+        <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
+             * the first client render alike, so both draw the same reserved slot and the
+             * prerendered page never shows the wrong button (feature 004). -->
+        <AuthMenu tier="labelled" />
+
+        <AuthMenu tier="icon" />
+
+        <AuthMenu tier="bare" />
       </template>
     </u-header>
 
@@ -73,7 +86,7 @@
       <div
         class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
       >
-        <BuildManager block size="lg" />
+        <BuildManager block size="lg" tier="bare" />
       </div>
     </ClientOnly>
 
