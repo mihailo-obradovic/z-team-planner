@@ -11,6 +11,26 @@ export default defineNuxtConfig({
   // * The Nuxt app lives in web/ so the FastAPI application can take the root app/ (decision 004)
   srcDir: 'web/',
 
+  // * Neither scripts/ nor test/unit/ is in any tsconfig Nuxt generates, so both went entirely
+  // * unchecked by `pnpm typecheck`. test/unit joins the app context for its `@/` alias; scripts
+  // * joins the node context. Paths are relative to the generated files in .nuxt/.
+  typescript: {
+    tsConfig: {
+      include: ['../test/unit/**/*'],
+      // * scripts/export-game-data.ts runs as `node scripts/export-game-data.ts`, where Node
+      // * strips types itself and the import extensions must be spelled. The test imports it.
+      compilerOptions: {
+        allowImportingTsExtensions: true
+      }
+    },
+    nodeTsConfig: {
+      include: ['../scripts/**/*'],
+      compilerOptions: {
+        allowImportingTsExtensions: true
+      }
+    }
+  },
+
   components: {
     dirs: ['@/components/_shared']
   },

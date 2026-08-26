@@ -27,6 +27,19 @@ function httpError(statusCode: number): Error & { statusCode: number } {
   return Object.assign(new Error(`${statusCode}`), { statusCode });
 }
 
+// * `noUncheckedIndexedAccess` types every `mock.calls[n]` as possibly absent. This asserts the
+// * call happened once, in one place, so a missing call fails as a readable test error rather
+// * than as a type error at each use.
+function callArgs(index: number): [path: string, options: FetchCallOptions] {
+  const call = fetchMock.mock.calls[index];
+
+  if (!call) {
+    throw new Error(`Expected $fetch to have been called at index ${index}`);
+  }
+
+  return call;
+}
+
 describe('fetcher', () => {
   beforeEach(() => {
     fetchMock.mockReset();
@@ -39,7 +52,7 @@ describe('fetcher', () => {
 
     await fetcher('/builds');
 
-    const [path, options] = fetchMock.mock.calls[0];
+    const [path, options] = callArgs(0);
     expect(path).toBe('/builds');
     expect(options.baseURL).toBe('https://api.test/api/v1');
     expect(options.credentials).toBe('omit');
@@ -65,7 +78,7 @@ describe('fetcher', () => {
 
     await fetcher('/shared/abc');
 
-    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined();
+    expect(callArgs(0)[1].headers.Authorization).toBeUndefined();
   });
 
   it('sends a bearer token when signed in', async () => {
@@ -76,9 +89,7 @@ describe('fetcher', () => {
     await fetcher('/me');
 
     expect(getIdToken).toHaveBeenCalledWith(false);
-    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe(
-      'Bearer token-1'
-    );
+    expect(callArgs(0)[1].headers.Authorization).toBe('Bearer token-1');
   });
 
   it('refreshes and retries once on 401, then succeeds', async () => {
@@ -94,9 +105,7 @@ describe('fetcher', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     // * The retry forces a new token; without `true` it would resend the same expired one.
     expect(getIdToken).toHaveBeenNthCalledWith(2, true);
-    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe(
-      'Bearer fresh'
-    );
+    expect(callArgs(1)[1].headers.Authorization).toBe('Bearer fresh');
   });
 
   it('does not retry the retry', async () => {
@@ -123,7 +132,7 @@ describe('fetcher', () => {
 
     await fetcher('/builds', { headers: { 'Idempotency-Key': 'key-1' } });
 
-    const { headers } = fetchMock.mock.calls[0][1];
+    const { headers } = callArgs(0)[1];
     expect(headers['Idempotency-Key']).toBe('key-1');
     expect(headers.Accept).toBe('application/json');
   });
