@@ -16,7 +16,8 @@ from app.middleware import (
     RequestIdMiddleware,
     RequestLoggingMiddleware,
 )
-from app.routes import health
+from app.middleware.metrics import MetricsMiddleware
+from app.routes import health, metrics
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,8 @@ API_V1_PREFIX = "/api/v1"
 
 def _register_middleware(app: FastAPI, settings: Settings) -> None:
     # ! Starlette applies these outermost-last, so the effective order is the reverse of the reading order: CORS -> RequestId -> RequestLogging -> BodyLimit.
+    if settings.metrics_enabled:
+        app.add_middleware(MetricsMiddleware)
     app.add_middleware(BodyLimitMiddleware, max_bytes=settings.max_request_bytes)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RequestIdMiddleware)
@@ -79,6 +82,9 @@ def create_app() -> FastAPI:
 
     # * Ops routes first and at the root — never under the versioned prefix the auth seam will guard.
     app.include_router(health.router)
+    if settings.metrics_enabled:
+        # * Not registered at all when disabled, so it 404s rather than existing-but-refusing — it is never routable in an environment that has not deliberately turned it on.
+        app.include_router(metrics.router)
 
     api_v1 = APIRouter(prefix=API_V1_PREFIX)
     # * Feature routers mount here: 004 adds me, 005 adds builds and shared.
