@@ -1,0 +1,303 @@
+{
+  "$comment": "Agreement fixture for feature 005. Every case is a SerializedBuild v1 document with the verdict the server must reach; `paths` lists every details[].path a rejection carries, exactly. Consumed by tests/services/test_validation.py (the server rules) and test/nuxt/build-cases.test.ts (the planner guards must never produce an invalid document).",
+  "cases": [
+    {
+      "name": "empty document",
+      "tier": "structure",
+      "data": { "v": 1 },
+      "valid": true
+    },
+    {
+      "name": "full valid build",
+      "tier": "budgets",
+      "valid": true,
+      "data": {
+        "v": 1,
+        "ec": "coupe",
+        "eh": "phenomaman",
+        "e8": 1,
+        "lu": { "golem": [3, 3, 3, 0, 0], "sonar": [0, 0, 0, 0, 8] },
+        "bl": { "golem": 2, "sonar": 2 },
+        "pw": {
+          "golem": [1, 1],
+          "sonar": [1, 2],
+          "flambae": [1, 2],
+          "phenomaman": [1, 1]
+        },
+        "sp": { "flambae": 1 },
+        "fl": ["flambae", "sonar"]
+      }
+    },
+    {
+      "name": "unknown format version",
+      "tier": "structure",
+      "data": { "v": 2 },
+      "valid": false,
+      "paths": ["data.v"]
+    },
+    {
+      "name": "unknown key",
+      "tier": "structure",
+      "data": { "v": 1, "xx": 1 },
+      "valid": false,
+      "paths": ["data.xx"]
+    },
+    {
+      "name": "null instead of an omitted key",
+      "tier": "structure",
+      "data": { "v": 1, "lu": null },
+      "valid": false,
+      "paths": ["data.lu"]
+    },
+    {
+      "name": "unknown hero in lu",
+      "tier": "identity",
+      "data": { "v": 1, "lu": { "batman": [1, 0, 0, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.batman"]
+    },
+    {
+      "name": "ec is not a cut option",
+      "tier": "identity",
+      "data": { "v": 1, "ec": "golem" },
+      "valid": false,
+      "paths": ["data.ec"]
+    },
+    {
+      "name": "eh is not a hire option",
+      "tier": "identity",
+      "data": { "v": 1, "eh": "golem" },
+      "valid": false,
+      "paths": ["data.eh"]
+    },
+    {
+      "name": "lu has the wrong number of stats",
+      "tier": "ranges",
+      "data": { "v": 1, "lu": { "golem": [1, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.golem"]
+    },
+    {
+      "name": "lu is negative",
+      "tier": "ranges",
+      "data": { "v": 1, "lu": { "golem": [-1, 0, 0, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.golem.combat"]
+    },
+    {
+      "name": "bl above the per-hero maximum",
+      "tier": "ranges",
+      "data": { "v": 1, "bl": { "golem": 5 } },
+      "valid": false,
+      "paths": ["data.bl.golem", "data.bl"]
+    },
+    {
+      "name": "bl of zero is written rather than omitted",
+      "tier": "ranges",
+      "data": { "v": 1, "bl": { "golem": 0 } },
+      "valid": false,
+      "paths": ["data.bl.golem"]
+    },
+    {
+      "name": "pw trained without the starting power revealed",
+      "tier": "ranges",
+      "data": { "v": 1, "pw": { "golem": [0, 1] } },
+      "valid": false,
+      "paths": ["data.pw.golem"]
+    },
+    {
+      "name": "pw beyond the hero's trainable count",
+      "tier": "ranges",
+      "data": { "v": 1, "e8": 1, "pw": { "blonde-blazer": [1, 1] } },
+      "valid": false,
+      "paths": ["data.pw.blonde-blazer"]
+    },
+    {
+      "name": "pw outside its two-slot shape",
+      "tier": "ranges",
+      "data": { "v": 1, "pw": { "golem": [1, 3] } },
+      "valid": false,
+      "paths": ["data.pw.golem"]
+    },
+    {
+      "name": "sp for a hero that has no special power",
+      "tier": "ranges",
+      "data": { "v": 1, "sp": { "golem": 1 } },
+      "valid": false,
+      "paths": ["data.sp.golem"]
+    },
+    {
+      "name": "supernova without its upgrade power trained",
+      "tier": "ranges",
+      "data": { "v": 1, "pw": { "flambae": [1, 1] }, "sp": { "flambae": 1 } },
+      "valid": false,
+      "paths": ["data.sp.flambae"]
+    },
+    {
+      "name": "coupe special power past its cycle",
+      "tier": "ranges",
+      "data": { "v": 1, "sp": { "coupe": 3 } },
+      "valid": false,
+      "paths": ["data.sp.coupe"]
+    },
+    {
+      "name": "flight for a hero that is not Flight School",
+      "tier": "ranges",
+      "data": { "v": 1, "fl": ["golem"] },
+      "valid": false,
+      "paths": ["data.fl[0]"]
+    },
+    {
+      "name": "the same hero listed twice in fl",
+      "tier": "ranges",
+      "data": { "v": 1, "fl": ["flambae", "flambae"] },
+      "valid": false,
+      "paths": ["data.fl[1]"]
+    },
+    {
+      "name": "bonus levels over the team budget",
+      "tier": "budgets",
+      "data": { "v": 1, "bl": { "golem": 3, "prism": 2 } },
+      "valid": false,
+      "paths": ["data.bl"]
+    },
+    {
+      "name": "an eighth power training",
+      "tier": "budgets",
+      "valid": false,
+      "paths": ["data.pw"],
+      "data": {
+        "v": 1,
+        "pw": {
+          "coupe": [1, 1],
+          "flambae": [1, 1],
+          "golem": [1, 1],
+          "invisigal": [1, 1],
+          "malevola": [1, 1],
+          "prism": [1, 1],
+          "punch-up": [1, 1],
+          "waterboy": [1, 1]
+        }
+      }
+    },
+    {
+      "$comment": "A third flight is doubly unreachable, so this case cannot isolate either rule. On the server the budget and the episode rule fire together, because one of the three Flight School heroes is always the episode 3 cut. In the planner that same cut leaves the third hero without a card, so visibility refuses the toggle before MAX_FLIGHT_TRAININGS ever would — the cap is defensive depth, not a reachable guard. A hand-written `?build=` link can still put three into state, which feature 001 allows and this feature answers with a 422.",
+      "name": "a third flight training",
+      "tier": "budgets",
+      "data": { "v": 1, "fl": ["coupe", "flambae", "sonar"] },
+      "valid": false,
+      "paths": ["data.fl[2]", "data.fl"]
+    },
+    {
+      "name": "more level-ups than the hero's level allows",
+      "tier": "budgets",
+      "data": { "v": 1, "lu": { "golem": [5, 5, 0, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.golem"]
+    },
+    {
+      "name": "nine level-ups plus two bonus levels",
+      "tier": "budgets",
+      "data": {
+        "v": 1,
+        "lu": { "golem": [5, 5, 1, 0, 0] },
+        "bl": { "golem": 2 }
+      },
+      "valid": true
+    },
+    {
+      "name": "a stat past the cap",
+      "tier": "caps",
+      "data": { "v": 1, "lu": { "coupe": [7, 0, 0, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.coupe.combat"]
+    },
+    {
+      "name": "the cut hero holds level-ups",
+      "tier": "episode",
+      "data": { "v": 1, "lu": { "sonar": [1, 0, 0, 0, 0] } },
+      "valid": false,
+      "paths": ["data.lu.sonar"]
+    },
+    {
+      "name": "a recruit trains a power",
+      "tier": "episode",
+      "data": { "v": 1, "eh": "phenomaman", "pw": { "waterboy": [1, 1] } },
+      "valid": false,
+      "paths": ["data.pw.waterboy"]
+    },
+    {
+      "name": "a visible recruit trains a power",
+      "tier": "episode",
+      "data": {
+        "v": 1,
+        "eh": "phenomaman",
+        "e8": 1,
+        "pw": { "waterboy": [1, 1] }
+      },
+      "valid": false,
+      "paths": ["data.pw.waterboy"]
+    },
+    {
+      "$comment": "A recruit may reveal a starting power — revealing is not training, and Blonde Blazer's starting power is the only thing she has. Her card renders that toggle, so the planner really produces this.",
+      "name": "a recruit reveals a starting power",
+      "tier": "episode",
+      "data": { "v": 1, "e8": 1, "pw": { "blonde-blazer": [1, 0] } },
+      "valid": true
+    },
+    {
+      "name": "a non-hired recruit reveals a starting power",
+      "tier": "episode",
+      "data": {
+        "v": 1,
+        "eh": "phenomaman",
+        "e8": 1,
+        "pw": { "waterboy": [1, 0] }
+      },
+      "valid": true
+    },
+    {
+      "name": "a non-fixed-level recruit levels up",
+      "tier": "episode",
+      "data": {
+        "v": 1,
+        "eh": "phenomaman",
+        "e8": 1,
+        "lu": { "waterboy": [1, 0, 0, 0, 0] }
+      },
+      "valid": true
+    },
+    {
+      "name": "a fixed-level hero levels up",
+      "tier": "episode",
+      "data": {
+        "v": 1,
+        "eh": "phenomaman",
+        "lu": { "phenomaman": [1, 0, 0, 0, 0] }
+      },
+      "valid": false,
+      "paths": ["data.lu.phenomaman"]
+    },
+    {
+      "name": "a fixed-level hero takes a bonus level",
+      "tier": "episode",
+      "data": { "v": 1, "e8": 1, "bl": { "blonde-blazer": 1 } },
+      "valid": false,
+      "paths": ["data.bl.blonde-blazer"]
+    },
+    {
+      "name": "Blonde Blazer is flight-trained",
+      "tier": "episode",
+      "data": { "v": 1, "e8": 1, "fl": ["blonde-blazer"] },
+      "valid": false,
+      "paths": ["data.fl[0]"]
+    },
+    {
+      "name": "the cut hero is flight-trained",
+      "tier": "episode",
+      "data": { "v": 1, "ec": "coupe", "fl": ["coupe"] },
+      "valid": false,
+      "paths": ["data.fl[0]"]
+    }
+  ]
+}
