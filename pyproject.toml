@@ -44,6 +44,14 @@ select = ["E", "F", "I", "UP", "B"]
 # * holds *code* to 88 columns, so this only frees comments and unsplittable strings.
 ignore = ["E501"]
 
+[tool.ruff.lint.isort]
+# * The alembic/ migrations directory makes isort read `alembic` as first-party. It is not — the installed package wins at import time (verified: it resolves to site-packages), so only the grouping was wrong.
+known-third-party = ["alembic"]
+
+[tool.ruff.lint.per-file-ignores]
+# * Alembic's generated revisions import op/sa whether or not a given revision uses them.
+"alembic/versions/*" = ["F401"]
+
 [tool.pyright]
 # * basic, not strict: toolchain.md calls strict a per-project opt-in, not the entry price.
 typeCheckingMode = "basic"
