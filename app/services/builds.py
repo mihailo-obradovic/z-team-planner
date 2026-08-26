@@ -19,7 +19,7 @@ from app.exceptions.errors import AppError, ErrorCode
 from app.models import Build
 from app.repositories import builds as builds_repo
 from app.repositories import idempotency as idempotency_repo
-from app.schemas.builds import BuildOut, CreateBuildIn
+from app.schemas.builds import BuildOut, CreateBuildIn, UpdateBuildIn
 from app.services.validation import validate_build_data
 
 MAX_BUILDS = 20
@@ -47,6 +47,19 @@ def free_name(taken: set[str], wanted: str) -> str:
         suffix += 1
 
     return f"{wanted} ({suffix})"
+
+
+class StaleBuildError(Exception):
+    """`If-Match` did not name the current version.
+
+    Carried as an exception rather than a return value because the route answers it with the
+    build itself, not the error envelope — the client needs the other device's document to
+    offer "reload theirs" (feature 005, User / System Behavior).
+    """
+
+    def __init__(self, build: Build) -> None:
+        super().__init__("stale If-Match")
+        self.build = build
 
 
 def not_found() -> AppError:
@@ -175,3 +188,91 @@ def create_build(
         request_hash(payload.model_dump(mode="json")),
         produce,
     )
+
+
+def parse_if_match(value: str) -> datetime | None:
+    """The instant an `If-Match` names, or None when it names nothing this server wrote.
+
+    A bare `updated_at` is what the client is given and what it sends back; a quoted or weak
+    entity-tag is tolerated because intermediaries add those. Anything unparseable, or without
+    an offset, is not the current version and is treated as stale rather than as a bad request.
+    """
+    candidate = value.strip().removeprefix("W/").strip('"')
+
+    try:
+        parsed = datetime.fromisoformat(candidate)
+    except ValueError:
+        return None
+
+    # ! Naive datetimes are refused rather than assumed to be UTC: comparing one to the stored aware timestamp raises, and guessing an offset could let a stale write through.
+    return parsed if parsed.tzinfo is not None else None
+
+
+def update_build(
+    session: Session,
+    owner_id: UUID,
+    build_id: UUID,
+    if_match: str | None,
+    payload: UpdateBuildIn,
+) -> Build:
+    """Rename, replace the document, or both — only if the caller holds the current version."""
+    if if_match is None:
+        # * Refused rather than defaulted: an unconditional PATCH is exactly the lost update this guard exists to prevent.
+        raise AppError(
+            ErrorCode.PRECONDITION_REQUIRED,
+            "If-Match is required. Send the ETag from your last read.",
+            status_code=428,
+        )
+
+    build = get_build(session, owner_id, build_id)
+    expected = parse_if_match(if_match)
+
+    if expected is None or expected != build.updated_at:
+        # * Before validating the document: a caller whose version is stale must reconcile first, and the document they are holding may not be the one they end up keeping.
+        raise StaleBuildError(build)
+
+    data = build.data
+
+    if payload.data is not None:
+        data = validate_build_data(payload.data, get_game_data()).model_dump(
+            exclude_unset=True
+        )
+
+    name = build.name
+
+    if payload.name is not None and payload.name != build.name:
+        builds_repo.lock_owner(session, owner_id)
+        # * Its own name is excluded, or a rename that only changes case or spacing would collide with itself.
+        name = free_name(
+            builds_repo.names_for_owner(session, owner_id) - {build.name}, payload.name
+        )
+
+    if name == build.name and payload.data is None:
+        # * Nothing to write. A rename to the build's own name is a no-op 200, and its ETag stays valid (feature 005, Edge Cases).
+        return build
+
+    updated = builds_repo.update_guarded(
+        session,
+        build_id=build_id,
+        owner_id=owner_id,
+        expected_updated_at=build.updated_at,
+        name=name,
+        data=data,
+    )
+
+    if updated is None:
+        # ! Someone committed between the check above and this statement. The guarded UPDATE is what actually settles it — the earlier comparison is only a fast path.
+        session.rollback()
+        raise StaleBuildError(get_build(session, owner_id, build_id))
+
+    session.commit()
+
+    return updated
+
+
+def delete_build(session: Session, owner_id: UUID, build_id: UUID) -> None:
+    """Remove one of the caller's builds. Deleting the same build twice is a 404, not a 500."""
+    if not builds_repo.delete_owned(session, owner_id, build_id):
+        raise not_found()
+
+    session.commit()

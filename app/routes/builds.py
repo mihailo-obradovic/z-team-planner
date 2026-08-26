@@ -3,7 +3,7 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Header, Query, Response, status
 from fastapi.responses import JSONResponse
 
 from app.auth import CurrentUserDep
@@ -13,6 +13,7 @@ from app.schemas.builds import (
     BuildOut,
     BuildSummaryOut,
     CreateBuildIn,
+    UpdateBuildIn,
 )
 from app.services import builds as builds_service
 
@@ -77,3 +78,43 @@ def get_build(session: DbSession, user: CurrentUserDep, build_id: UUID) -> JSONR
     build = builds_service.get_build(session, user.id, build_id)
 
     return with_etag(BuildOut.model_validate(build).model_dump(mode="json"))
+
+
+@router.patch(
+    "/{build_id}",
+    response_model=BuildOut,
+    # * The 412 answers with a build, not the error envelope — declared so OpenAPI says so too.
+    responses={412: {"model": BuildOut, "description": "Someone else saved first"}},
+    summary="Rename a build, replace its document, or both",
+)
+def update_build(
+    session: DbSession,
+    user: CurrentUserDep,
+    build_id: UUID,
+    payload: UpdateBuildIn,
+    if_match: Annotated[str | None, Header(alias="If-Match")] = None,
+) -> JSONResponse:
+    try:
+        build = builds_service.update_build(
+            session, user.id, build_id, if_match, payload
+        )
+    except builds_service.StaleBuildError as conflict:
+        # ! The one place a failure does not carry the error envelope: the client needs the other device's document to offer "reload theirs", and its ETag to save over it.
+        return with_etag(
+            BuildOut.model_validate(conflict.build).model_dump(mode="json"),
+            status.HTTP_412_PRECONDITION_FAILED,
+        )
+
+    return with_etag(BuildOut.model_validate(build).model_dump(mode="json"))
+
+
+@router.delete(
+    "/{build_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a build",
+)
+def delete_build(session: DbSession, user: CurrentUserDep, build_id: UUID) -> Response:
+    builds_service.delete_build(session, user.id, build_id)
+
+    # * 204, so there is no body and nothing to parse — and the share link is a 404 from now on.
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

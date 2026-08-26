@@ -50,6 +50,14 @@ class Api:
     def list(self, **query: Any) -> Response:
         return self.client.get(BUILDS, params=query)
 
+    def patch(self, build_id: str, etag: str | None = None, **payload: Any) -> Response:
+        headers = {"If-Match": etag} if etag is not None else {}
+
+        return self.client.patch(f"{BUILDS}/{build_id}", json=payload, headers=headers)
+
+    def delete(self, build_id: str) -> Response:
+        return self.client.delete(f"{BUILDS}/{build_id}")
+
 
 @pytest.fixture
 def api(migrated_db: None) -> Iterator[Api]:
