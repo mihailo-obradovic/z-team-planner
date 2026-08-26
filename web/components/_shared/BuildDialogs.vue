@@ -1,7 +1,7 @@
 <template>
   <u-modal v-model:open="saveSharedOpen" title="Save as my build">
     <template #body>
-      <u-form-field label="Build name">
+      <u-form-field label="Build name" :error="nameError">
         <u-input
           v-model="newBuildName"
           placeholder="My build"
@@ -16,14 +16,16 @@
         <u-button variant="ghost" color="neutral" @click="closeSaveShared">
           Cancel
         </u-button>
-        <u-button @click="confirmSaveShared">Save</u-button>
+        <u-button :disabled="isNameInvalid" @click="confirmSaveShared">
+          Save
+        </u-button>
       </div>
     </template>
   </u-modal>
 
   <u-modal v-model:open="newBuildOpen" title="New build">
     <template #body>
-      <u-form-field label="Build name">
+      <u-form-field label="Build name" :error="nameError">
         <u-input
           v-model="newBuildName"
           placeholder="My build"
@@ -38,7 +40,9 @@
         <u-button variant="ghost" color="neutral" @click="closeNewBuild">
           Cancel
         </u-button>
-        <u-button @click="confirmNewBuild">Create</u-button>
+        <u-button :disabled="isNameInvalid" @click="confirmNewBuild">
+          Create
+        </u-button>
       </div>
     </template>
   </u-modal>
@@ -105,11 +109,23 @@ const {
   renameBuildName
 } = useBuildDialogs();
 
+// * Only the length rule here: feature 001 documents an empty name as falling back to a
+// * generated one, and feature 006 leaves that behaviour alone.
+const { r$: nameForm } = useBuildNameForm(newBuildName, { requireName: false });
+
+const nameError = computed(() => nameForm.$errors.name?.[0]);
+
+const isNameInvalid = computed(() => nameForm.$invalid);
+
 function closeSaveShared() {
   saveSharedOpen.value = false;
 }
 
 function confirmSaveShared() {
+  if (nameForm.$invalid) {
+    return;
+  }
+
   const name = newBuildName.value.trim() || 'Imported build';
 
   saveSharedAsMyBuild(name);
@@ -123,6 +139,10 @@ function closeNewBuild() {
 }
 
 function confirmNewBuild() {
+  if (nameForm.$invalid) {
+    return;
+  }
+
   const name = newBuildName.value.trim() || 'New build';
 
   saveAsNewBuild(name);
