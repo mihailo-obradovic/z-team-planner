@@ -58,6 +58,15 @@ class Api:
     def delete(self, build_id: str) -> Response:
         return self.client.delete(f"{BUILDS}/{build_id}")
 
+    def import_builds(
+        self, items: list[dict[str, Any]], key: str | None = None
+    ) -> Response:
+        return self.client.post(
+            f"{BUILDS}/import",
+            json={"builds": items},
+            headers={"Idempotency-Key": key or uuid4().hex},
+        )
+
 
 @pytest.fixture
 def api(migrated_db: None) -> Iterator[Api]:

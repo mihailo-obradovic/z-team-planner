@@ -13,6 +13,8 @@ from app.schemas.builds import (
     BuildOut,
     BuildSummaryOut,
     CreateBuildIn,
+    ImportBuildsIn,
+    ImportItemOut,
     UpdateBuildIn,
 )
 from app.services import builds as builds_service
@@ -73,6 +75,25 @@ def create_build(
     return with_etag(body, status_code)
 
 
+@router.post(
+    "/import",
+    response_model=list[ImportItemOut],
+    summary="Import local builds, per item",
+)
+def import_builds(
+    session: DbSession,
+    user: CurrentUserDep,
+    payload: ImportBuildsIn,
+    idempotency_key: IdempotencyKeyHeader,
+) -> JSONResponse:
+    status_code, report = builds_service.import_builds(
+        session, user.id, payload, idempotency_key
+    )
+
+    return JSONResponse(status_code=status_code, content=report)
+
+
+# * Declared after /import as a precaution, not a fix: nothing here answers POST on a build id, so the two cannot collide today. Adding one later without this order would make "import" match as a build id.
 @router.get("/{build_id}", response_model=BuildOut, summary="Read one build")
 def get_build(session: DbSession, user: CurrentUserDep, build_id: UUID) -> JSONResponse:
     build = builds_service.get_build(session, user.id, build_id)

@@ -102,7 +102,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 ## Edge Cases
 
 - The suffix loop is bounded by the cap (20), never unbounded. A rename to the build's **own** name is a no-op `200`.
-- Import inserts one transaction per item, so a failure in item 3 never touches items 1 and 2.
+- Import inserts one transaction per item, so a failure in item 3 never touches items 1 and 2. An item's **name** is judged per item too — a local build predating the 80-character rule costs its own row, not the whole offer.
 - The `ETag` is Postgres's timestamp, so two writes to one row cannot share it.
 - A `?build=` receiver who signs in gets no import offer for the snapshot — they use **Save a copy** like any viewer.
 - A hand-written `?build=` link can carry a document the guards would refuse into planner state, which feature 001 allows deliberately. Saving it to an account is where it is caught: a `422` whose paths render inline (feature 006).

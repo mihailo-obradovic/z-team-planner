@@ -11,19 +11,30 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
+from pydantic import TypeAdapter, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.game_data import get_game_data
-from app.exceptions.errors import AppError, ErrorCode
+from app.exceptions.errors import AppError, ErrorCode, ErrorDetail
 from app.models import Build
 from app.repositories import builds as builds_repo
 from app.repositories import idempotency as idempotency_repo
-from app.schemas.builds import BuildOut, CreateBuildIn, UpdateBuildIn
+from app.schemas.builds import (
+    BuildName,
+    BuildOut,
+    CreateBuildIn,
+    ImportBuildsIn,
+    ImportItemOut,
+    UpdateBuildIn,
+)
 from app.services.validation import validate_build_data
 
 MAX_BUILDS = 20
 IDEMPOTENCY_WINDOW = timedelta(hours=24)
+
+# * The single-create route lets Pydantic hold the name at the boundary; import has to apply the same rule per item, so the rule itself is reused rather than restated.
+_NAME = TypeAdapter(BuildName)
 
 
 def request_hash(payload: Any) -> str:
@@ -276,3 +287,70 @@ def delete_build(session: Session, owner_id: UUID, build_id: UUID) -> None:
         raise not_found()
 
     session.commit()
+
+
+def validate_name(raw: str) -> str:
+    """The trimmed name, or a 422 naming the field — the same rule `CreateBuildIn` applies."""
+    try:
+        return _NAME.validate_python(raw)
+    except ValidationError as exc:
+        raise AppError(
+            ErrorCode.VALIDATION_FAILED,
+            "Validation failed.",
+            status_code=422,
+            details=[
+                ErrorDetail(path="name", message=error["msg"]) for error in exc.errors()
+            ],
+        ) from None
+
+
+def import_builds(
+    session: Session,
+    owner_id: UUID,
+    payload: ImportBuildsIn,
+    idempotency_key: str,
+) -> tuple[int, list[dict[str, Any]]]:
+    """Create what can be created, and say per item what happened to the rest.
+
+    The batch answers `200` whatever the items did: a report of outcomes is the result, not a
+    failure. Only a request the server could not read at all — too many items — is an error.
+    """
+
+    def produce() -> tuple[int, list[dict[str, Any]]]:
+        report: list[ImportItemOut] = []
+
+        for index, item in enumerate(payload.builds):
+            try:
+                # * A savepoint per item, so a failure at item 3 rolls back item 3 alone and leaves 1 and 2 exactly as they were (feature 005, Edge Cases).
+                with session.begin_nested():
+                    name = validate_name(item.name)
+                    document = validate_build_data(item.data, get_game_data())
+                    build = insert_named(
+                        session, owner_id, name, document.model_dump(exclude_unset=True)
+                    )
+
+                report.append(
+                    ImportItemOut(
+                        index=index, status="created", id=build.id, name=build.name
+                    )
+                )
+            except AppError as rejected:
+                # * A rejection that names no field — the cap, an oversized document — is reported against the item as a whole.
+                report.append(
+                    ImportItemOut(
+                        index=index,
+                        status="invalid",
+                        errors=rejected.details
+                        or [ErrorDetail(path="$", message=rejected.message)],
+                    )
+                )
+
+        return 200, [item.model_dump(mode="json", exclude_none=True) for item in report]
+
+    return run_idempotent(
+        session,
+        owner_id,
+        idempotency_key,
+        request_hash(payload.model_dump(mode="json")),
+        produce,
+    )

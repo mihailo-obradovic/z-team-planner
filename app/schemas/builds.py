@@ -117,9 +117,21 @@ class UpdateBuildIn(BaseModel):
     data: dict[str, Any] | None = None
 
 
+class ImportItemIn(BaseModel):
+    """One item of an import.
+
+    `name` is a plain string here, unlike `CreateBuildIn`: import succeeds per item, and a
+    single unusable name must not cost the caller every other build in the batch. It is held
+    to the same rule inside the loop, where the failure lands on that item's report row.
+    """
+
+    name: str
+    data: dict[str, Any]
+
+
 class ImportBuildsIn(BaseModel):
-    # * The batch cap is declared here so an oversized import is refused at the boundary, before a single item is validated or inserted.
-    builds: list[CreateBuildIn] = Field(max_length=50)
+    # * The batch cap is declared here, so an oversized import is refused at the boundary before a single item is validated or inserted.
+    builds: list[ImportItemIn] = Field(max_length=50)
 
 
 class ImportItemOut(BaseModel):
