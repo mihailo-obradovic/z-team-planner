@@ -1,0 +1,52 @@
+[project]
+name = "z-team-planner-api"
+version = "0.1.0"
+description = "FastAPI backend for the Z-Team build calculator"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "psycopg[binary]",
+    "alembic",
+    "pydantic-settings",
+    "prometheus-client",
+]
+
+# * No [build-system]: the API is an application, not a library, so uv keeps it a virtual
+# * project and never tries to build app/ as a package. pytest gets app/ on sys.path via
+# * [tool.pytest.ini_options] pythonpath instead.
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "testcontainers[postgres]",
+    "httpx",
+    "ruff",
+    "pyright",
+]
+
+# * Versions are pinned by uv.lock alone (stacks/_lang/python/toolchain.md); a second set of
+# * constraints here is exactly the drift that document warns about.
+
+[tool.ruff]
+# * catalyst/ is the vendored Catalyst bundle — decision 004 verified its documents and tools
+# * byte-identical to Catalyst v1.8.1 (cmp). Linting or formatting validate.py here would break
+# * that property and fight every upgrade, so the whole bundle is out of scope for our toolchain.
+extend-exclude = ["catalyst"]
+
+[tool.ruff.lint]
+# * The select floor from stacks/_lang/python/toolchain.md. Ruff's defaults are the house
+# * style, so nothing else is stated — target-version is read from requires-python.
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pyright]
+# * basic, not strict: toolchain.md calls strict a per-project opt-in, not the entry price.
+typeCheckingMode = "basic"
+include = ["app", "tests", "scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+markers = ["integration: requires a Docker daemon (testcontainers)"]

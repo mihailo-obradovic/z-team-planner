@@ -206,4 +206,16 @@ This table lists what **this project** runs — pruned from the template's full 
 | Deployment (optional)      | declined (`docker-compose` in the template) — a managed database and a hosted IdP leave no multi-service run to orchestrate (decision 004)                                                                                                     |
 | Maintenance (optional)     | deferred (`renovate` in the template) — decision 001                                                                                                                                                                                           |
 
+### Approved Dependencies Beyond The Modules
+
+Packages this project runs that the adopted stack modules' Approved Libraries do not already name. One row per package, added with the user's explicit approval in the same change that introduces it (Dependency Change Rule).
+
+| Package              | Group   | Layer   | Why it is needed                                                                                  | Approved by  |
+| -------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------- | ------------ |
+| `uvicorn[standard]`  | runtime | Backend | FastAPI is an ASGI framework and ships no server; nothing runs without one.                        | decision 005 |
+| `pydantic-settings`  | runtime | Backend | Pydantic v2 moved `BaseSettings` into its own distribution; the module's one-`Settings`-class binding needs it. | decision 005 |
+| `httpx`              | dev     | Backend | Starlette's `TestClient` is a thin wrapper over it; no route can be tested without it.             | decision 005 |
+
+`psycopg` is not listed here — the persistence module's Backend Pairings table already names it as the `python-fastapi` client.
+
 The composition floor is **at least one of Backend and Frontend, and a backend brings Persistence with it**. Every other layer is **optional**, adopted when its trigger fires, not in anticipation, and never replacing that floor. Background work: when work must run outside the request/response cycle — queues, scheduled jobs, fan-out. Deployment: when the project needs a reproducible multi-service run or ship story rather than each service started by hand. Identity: when the product gains end-user accounts, roles, or permissions beyond a single trusted operator group — a small internal tool never pays the IdP tax, and nobody hand-rolls auth to dodge it. Maintenance: once the project has a committed lockfile or pinned image tags to keep current; pins stay exact, and bumping an existing dependency is not a way around the Dependency Change Rule, which still owns every _new_ one.

@@ -26,6 +26,11 @@ logs
 # Test coverage
 coverage/
 
+# Python
+.venv
+.ruff_cache
+.pytest_cache
+
 # catalyst:begin
 __pycache__/
 .claude/settings.local.json
