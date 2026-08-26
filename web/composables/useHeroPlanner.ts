@@ -1,4 +1,4 @@
-import { FIXED_LEVEL_HEROES } from '@/types/hero';
+import { FIXED_LEVEL_HEROES, HEROES } from '@/types/hero';
 import { useBuildPersistence } from './useBuildPersistence';
 import { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import { useHeroFlightTraining } from './useHeroFlightTraining';
@@ -9,9 +9,9 @@ import type { Hero, HeroId } from '@/types/hero';
 //  * Main hero planner composable that aggregates all hero management functionality.
 //  * Acts as a unified interface for episode setup, level-ups, powers, and flight training.
 function createHeroPlanner() {
-  // * Heroes data is fetched in app.vue and read here via useNuxtData to avoid
-  // * SSR hydration issues (useFetch inside a singleton breaks Suspense awaiting)
-  const { data: heroes } = useNuxtData<Hero[]>('heroes');
+  // * A constant, not a fetch: the roster ships with the app (feature 006 retired the Nitro
+  // * route). Still a ref because every sub-composable takes one.
+  const heroes = ref<Hero[]>(HEROES);
 
   // * Initialize all sub-composables with explicit dependencies
   const episodeSetup = useHeroEpisodeSetup(heroes);

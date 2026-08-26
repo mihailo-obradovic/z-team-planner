@@ -87,8 +87,6 @@
 </template>
 
 <script setup lang="ts">
-await useFetch('/api/heroes', { key: 'heroes' });
-
 const { initialize, setupBeforeUnload } = useHeroPlanner();
 
 const storySetupOpen = ref(false);

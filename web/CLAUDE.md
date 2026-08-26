@@ -14,7 +14,7 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 - `utils/` — `statIcons.ts`, the Lucide glyph per stat, shared by the roster and the detail dialog.
 - `assets/css/main.css` — the design tokens: colour ramps, the type scale, the `--ui-*` surface remap, and the `panel`/`plate` utilities.
 
-Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this folder) — a static dataset transcribed from `catalyst/context/game-mechanics.md`.
+Hero base data is the `HEROES` constant in `types/hero.ts`, transcribed from `catalyst/context/game-mechanics.md`. It shipped as a Nitro route until feature 006 retired it; there is no `server/` directory and the app makes no `useFetch`/`useAsyncData` call.
 
 ## Governing documents
 
@@ -32,7 +32,7 @@ Hero base data is served by `server/api/heroes.get.ts` (Nitro, outside this fold
 ## Local invariants
 
 - Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
-- Hero ids (`types/hero.ts`, `server/api/heroes.get.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
+- Hero ids (`types/hero.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
 - Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.
 - `BuildManager` and `BuildDialogs` are wrapped in `ClientOnly` in `app.vue` because they render localStorage state; server-rendering them desynchronises hydration and every id below it.

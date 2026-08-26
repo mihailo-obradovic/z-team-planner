@@ -504,3 +504,142 @@ export interface Hero {
   name: string;
   startingStats: HeroStats;
 }
+
+/**
+ * The roster, transcribed from `catalyst/context/game-mechanics.md`.
+ *
+ * This is the single source of the game data (feature 002). It ships as a constant rather
+ * than an endpoint because it feeds the compile-time type system, which a database cannot;
+ * the API validates saved builds against a fixture generated from this (decision 004).
+ */
+export const HEROES: Hero[] = [
+  {
+    id: 'coupe',
+    name: 'Coupé',
+    startingStats: {
+      combat: 4,
+      intellect: 3,
+      vigor: 1,
+      charisma: 1,
+      mobility: 3
+    }
+  },
+  {
+    id: 'flambae',
+    name: 'Flambae',
+    startingStats: {
+      combat: 4,
+      intellect: 1,
+      vigor: 2,
+      charisma: 2,
+      mobility: 3
+    }
+  },
+  {
+    id: 'golem',
+    name: 'Golem',
+    startingStats: {
+      combat: 3,
+      intellect: 1,
+      vigor: 4,
+      charisma: 2,
+      mobility: 2
+    }
+  },
+  {
+    id: 'invisigal',
+    name: 'Invisigal',
+    startingStats: {
+      combat: 3,
+      intellect: 2,
+      vigor: 2,
+      charisma: 1,
+      mobility: 3
+    }
+  },
+  {
+    id: 'malevola',
+    name: 'Malevola',
+    startingStats: {
+      combat: 3,
+      intellect: 2,
+      vigor: 2,
+      charisma: 3,
+      mobility: 2
+    }
+  },
+  {
+    id: 'phenomaman',
+    name: 'Phenomaman',
+    startingStats: {
+      combat: 7,
+      intellect: 1,
+      vigor: 7,
+      charisma: 2,
+      mobility: 6
+    }
+  },
+  {
+    id: 'prism',
+    name: 'Prism',
+    startingStats: {
+      combat: 4,
+      intellect: 2,
+      vigor: 1,
+      charisma: 4,
+      mobility: 1
+    }
+  },
+  {
+    id: 'punch-up',
+    name: 'Punch Up',
+    startingStats: {
+      combat: 3,
+      intellect: 1,
+      vigor: 4,
+      charisma: 3,
+      mobility: 1
+    }
+  },
+  {
+    id: 'sonar',
+    name: 'Sonar',
+    startingStats: {
+      combat: 2,
+      intellect: 4,
+      vigor: 1,
+      charisma: 3,
+      mobility: 2
+    }
+  },
+  {
+    id: 'waterboy',
+    name: 'Waterboy',
+    startingStats: {
+      combat: 1,
+      intellect: 2,
+      vigor: 2,
+      charisma: 1,
+      mobility: 2
+    }
+  },
+  {
+    id: 'blonde-blazer',
+    name: 'Blonde Blazer',
+    startingStats: {
+      combat: 8,
+      intellect: 7,
+      vigor: 8,
+      charisma: 6,
+      mobility: 7
+    }
+  }
+];
+
+/**
+ * Starting stats keyed by hero id — the same data as `HEROES`, indexed for lookup.
+ */
+export const HERO_STARTING_STATS = Object.fromEntries(
+  HEROES.map((hero) => [hero.id, hero.startingStats])
+  // * Object.fromEntries widens the key to string; HEROES covers every HeroId by construction.
+) as Record<HeroId, HeroStats>;

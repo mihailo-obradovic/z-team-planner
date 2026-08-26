@@ -18,14 +18,13 @@ Everything the planner computes stands on the game data transcribed from Dispatc
 
 | Input                       | Type      | Source                    | Constraints                         |
 | --------------------------- | --------- | ------------------------- | ----------------------------------- |
-| `GET /api/heroes`           | HTTP GET  | Nitro endpoint, no params | static; no auth, no query           |
 | `context/game-mechanics.md` | reference | the game (upstream truth) | data is transcribed, never invented |
 
 ## Outputs And Side Effects
 
 | Output / Side Effect | Type                           | Description                                                             |
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------- |
-| hero list            | `Hero[]` JSON                  | 11 heroes: id, display name, starting stats (5 stats each)              |
+| `HEROES`             | `Hero[]` constant              | 11 heroes: id, display name, starting stats (5 stats each)              |
 | domain constants     | exports of `web/types/hero.ts` | powers, flight, synergy, episode options, and every budget/cap constant |
 
 ## Scope And Non-Goals
@@ -33,7 +32,7 @@ Everything the planner computes stands on the game data transcribed from Dispatc
 In scope:
 
 - The `HeroId` union (11 ids) and `Hero`/`HeroStats` shapes; `STAT_NAMES` order (combat, intellect, vigor, charisma, mobility).
-- Starting stats served by `server/api/heroes.get.ts`.
+- Starting stats in the `HEROES` constant, and `HERO_STARTING_STATS` keyed by hero id.
 - `HERO_POWERS`: exactly 3 powers per hero (starting + two trainable options; some trainables override the starting power; Blonde Blazer's two trainable slots are deliberately empty).
 - `SPECIAL_POWER_MECHANICS` (Flambae supernova, Coupé en-pointe), `HERO_FLIGHT` + `HERO_FLIGHT_CAPABILITY` (innate / conditional-power / trainable), `FLIGHT_SCHOOL_HEROES`.
 - `BASE_SYNERGY_PAIRS` (4) and `CONDITIONAL_SYNERGY_PAIRS` (4, keyed `<ep3Cut>-cut-<ep4Hire>-hired`).
@@ -48,7 +47,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- `GET /api/heroes` always returns the same 11 heroes with the same stats; the client fetches once (`useNuxtData('heroes')`, fetched in `app.vue`).
+- `HEROES` is the same 11 heroes with the same stats on every load; it is imported, not fetched (feature 006 retired the Nitro route and the `server/` directory with it).
 - All other domain data is imported directly from `web/types/hero.ts` — no request involved.
 
 ## Roles And Access
@@ -59,7 +58,7 @@ Not role-specific.
 
 | Input                                                   | Expected Output                                                           | Notes                                          |
 | ------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| `GET /api/heroes`                                       | 11 heroes; e.g. coupe → 4/3/1/1/3, blonde-blazer → 8/7/8/6/7 (C/I/V/Ch/M) | full table matches `context/game-mechanics.md` |
+| `HEROES`                                                | 11 heroes; e.g. coupe → 4/3/1/1/3, blonde-blazer → 8/7/8/6/7 (C/I/V/Ch/M) | full table matches `context/game-mechanics.md` |
 | `HERO_POWERS['blonde-blazer']`                          | Radiant Light + two empty trainable slots                                 | she has only the starting power                |
 | `CONDITIONAL_SYNERGY_PAIRS['coupe-cut-waterboy-hired']` | punch-up + waterboy                                                       | the cut hero's partner gains the new hire      |
 | `HERO_FLIGHT_CAPABILITY['phenomaman']`                  | conditional-power on trainable-1, inverted                                | Heavily Medicated _removes_ flight             |
@@ -87,7 +86,7 @@ Not role-specific.
 
 ## Entry Points
 
-- `server/api/heroes.get.ts`: the roster + starting stats.
+- `web/types/hero.ts`: the roster (`HEROES`), starting stats (`HERO_STARTING_STATS`), and every domain constant.
 - `web/types/hero.ts`: every other domain constant and type.
 
 ## Dependencies
@@ -102,7 +101,7 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 
 ## Tests
 
-- Honest gap: no automated test pins the served stats to the reference table. Wanted: a unit test comparing `server/api/heroes.get.ts` data against the documented table (the check exists as a one-off script run during this documentation pass).
+- Honest gap: no automated test pins the stats to the reference table. Wanted: a unit test comparing `HEROES` against the documented table (the check exists as a one-off script run during this documentation pass). Feature 005 adds `test/unit/game-data.test.ts`, which compares the committed server fixture against a fresh export of this constant.
 
 ## Verification
 
