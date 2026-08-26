@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 
 try:
     from testcontainers.postgres import PostgresContainer
@@ -52,6 +52,22 @@ def service_account_file(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return path
 
 
+@pytest.fixture
+def isolated_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Let `Settings` see only what the test sets — never the developer's own environment.
+
+    ! pydantic-settings reads the repository's `.env` and the real process environment on
+    ! every `Settings()`. Either can decide a test's outcome: following README's local
+    ! sign-in instructions and setting `FIREBASE_AUTH_EMULATOR_HOST` is by itself enough to
+    ! trip config.py's emulator guard before the assertion under test is ever reached.
+    """
+    # * Replacing model_config drops `env_file`, which is what closes the `.env` path.
+    monkeypatch.setattr("app.core.config.Settings.model_config", {"extra": "ignore"})
+    # * Derived from the model rather than listed, so a setting added later is covered too.
+    for name in Settings.model_fields:
+        monkeypatch.delenv(name.upper(), raising=False)
+
+
 @pytest.fixture(autouse=True)
 def _clear_settings_cache() -> Iterator[None]:
     # * get_settings is lru_cached, so without this a Settings built by one test leaks into every later one.
@@ -62,7 +78,7 @@ def _clear_settings_cache() -> Iterator[None]:
 
 @pytest.fixture
 def base_env(
-    monkeypatch: pytest.MonkeyPatch, service_account_file: Path
+    monkeypatch: pytest.MonkeyPatch, service_account_file: Path, isolated_env: None
 ) -> dict[str, str]:
     """A minimal valid environment; tests mutate what they are about."""
     # * Credentials rather than the emulator host, so an app built here works under any APP_ENV — the emulator variable is refused outside development, and the tests about that guard set it themselves.
@@ -74,8 +90,6 @@ def base_env(
     }
     for key, value in env.items():
         monkeypatch.setenv(key, value)
-    # * The repo's own .env must not leak into tests — a developer's real values would make these pass or fail for the wrong reason.
-    monkeypatch.setattr("app.core.config.Settings.model_config", {"extra": "ignore"})
     return env
 
 
@@ -146,14 +160,16 @@ def migrated_db(container_env: None) -> Iterator[None]:
 
 @pytest.fixture
 def container_env(
-    postgres_container, monkeypatch: pytest.MonkeyPatch, service_account_file: Path
+    postgres_container,
+    monkeypatch: pytest.MonkeyPatch,
+    service_account_file: Path,
+    isolated_env: None,
 ) -> Iterator[None]:
     url = postgres_container.get_connection_url()
     monkeypatch.setenv("DATABASE_URL", url)
     monkeypatch.setenv("DATABASE_URL_DIRECT", url)
     monkeypatch.setenv("FIREBASE_PROJECT_ID", FIREBASE_PROJECT)
     monkeypatch.setenv("FIREBASE_SERVICE_ACCOUNT_FILE", str(service_account_file))
-    monkeypatch.setattr("app.core.config.Settings.model_config", {"extra": "ignore"})
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
