@@ -99,6 +99,8 @@
       <BuildConflictDialog />
     </ClientOnly>
 
+    <AccountDialogs />
+
     <StorySetupDrawer v-model:open="storySetupOpen" />
   </u-app>
 </template>

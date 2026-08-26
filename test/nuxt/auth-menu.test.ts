@@ -99,7 +99,8 @@ describe('AuthMenu', () => {
 
     expect(groups.flat().map((item) => item.label)).toEqual([
       'My builds',
-      'Sign out'
+      'Sign out',
+      'Delete account...'
     ]);
   });
 

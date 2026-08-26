@@ -76,6 +76,8 @@ const { signIn, signOut } = useAuth();
 
 const { openBuildMenu } = useBuildDialogs();
 
+const { deleteAccountOpen } = useAccountDialogs();
+
 // * Google's own display name, and never editable here (feature 004, Non-goals). The email is
 // * the fallback the server applies too, so the header and `/me` agree on what to call someone.
 const accountName = computed(
@@ -121,6 +123,15 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
       class: 'uppercase',
       onSelect: () => {
         void signOut();
+      }
+    },
+    {
+      label: 'Delete account...',
+      icon: 'i-lucide-trash-2',
+      color: 'error',
+      class: 'uppercase',
+      onSelect: () => {
+        deleteAccountOpen.value = true;
       }
     }
   ]
