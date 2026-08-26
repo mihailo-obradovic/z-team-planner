@@ -491,6 +491,22 @@ export function useBuildPersistence() {
   async function loadSharedBuild(build: SerializedBuild) {
     isViewingSharedBuild.value = true;
 
+    await applySerializedBuild(build);
+  }
+
+  /**
+   * Load an account build (feature 005) into the planner.
+   *
+   * Same deserialisation as the shared path, but *not* shared-build mode: the signed-in owner
+   * is editing their own document, so the "viewing shared build" banner must not appear.
+   */
+  async function loadAccountBuild(build: SerializedBuild) {
+    isViewingSharedBuild.value = false;
+
+    await applySerializedBuild(build);
+  }
+
+  async function applySerializedBuild(build: SerializedBuild) {
     await deserializeIntoState(
       build,
       ep3Cut,
@@ -598,8 +614,9 @@ export function useBuildPersistence() {
     shareBuild,
     getShareUrl,
 
-    // Shared build actions
+    // Server-side build actions
     loadSharedBuild,
+    loadAccountBuild,
     saveSharedAsMyBuild,
     backToMyBuild,
 
