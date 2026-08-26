@@ -3,6 +3,7 @@ import {
   DEFAULT_EP4_HIRE,
   EP3_CUT_OPTIONS,
   EP4_HIRE_OPTIONS,
+  EP8_ALWAYS_RECRUITED,
   BASE_SYNERGY_PAIRS,
   CONDITIONAL_SYNERGY_PAIRS
 } from '@/types/hero';
@@ -34,7 +35,7 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
   );
 
   const ep8RecruitIds = computed<Set<HeroId>>(() => {
-    const ids = new Set<HeroId>(['blonde-blazer'] as HeroId[]);
+    const ids = new Set<HeroId>(EP8_ALWAYS_RECRUITED);
 
     for (const id of EP4_HIRE_OPTIONS) {
       if (id !== ep4Hire.value) ids.add(id as HeroId);

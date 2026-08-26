@@ -6,6 +6,7 @@ import {
   DEFAULT_EP4_HIRE,
   EP3_CUT_OPTIONS,
   EP4_HIRE_OPTIONS,
+  EP8_ALWAYS_RECRUITED,
   FIXED_LEVEL_HEROES,
   FLIGHT_SCHOOL_HEROES,
   HERO_POWERS,
@@ -41,6 +42,7 @@ export type GameData = {
   max_flight_trainings: number;
   ep3_cut_options: readonly HeroId[];
   ep4_hire_options: readonly HeroId[];
+  always_recruited: readonly HeroId[];
   default_ep3_cut: HeroId;
   default_ep4_hire: HeroId;
   fixed_level_heroes: HeroId[];
@@ -76,6 +78,7 @@ export function buildGameData(): GameData {
     max_flight_trainings: MAX_FLIGHT_TRAININGS,
     ep3_cut_options: EP3_CUT_OPTIONS,
     ep4_hire_options: EP4_HIRE_OPTIONS,
+    always_recruited: EP8_ALWAYS_RECRUITED,
     default_ep3_cut: DEFAULT_EP3_CUT,
     default_ep4_hire: DEFAULT_EP4_HIRE,
     fixed_level_heroes: Object.keys(FIXED_LEVEL_HEROES) as HeroId[],

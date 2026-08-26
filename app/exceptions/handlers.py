@@ -52,7 +52,7 @@ def _respond(
     return response
 
 
-def _location_to_path(location: tuple[int | str, ...]) -> str:
+def location_to_path(location: tuple[int | str, ...]) -> str:
     """Turn Pydantic's `loc` into the dotted path feature 005's examples assert.
 
     `("body", "data", "lu", "coupe", "combat")` -> `data.lu.coupe.combat`
@@ -85,7 +85,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         _: Request, exc: RequestValidationError
     ) -> JSONResponse:
         details = [
-            ErrorDetail(path=_location_to_path(error["loc"]), message=error["msg"])
+            ErrorDetail(path=location_to_path(error["loc"]), message=error["msg"])
             for error in exc.errors()
         ]
         # * details is populated on 422 only — every other status omits the key entirely.

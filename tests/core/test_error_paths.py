@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.exceptions.handlers import _location_to_path
+from app.exceptions.handlers import location_to_path
 
 
 @pytest.mark.parametrize(
@@ -29,8 +29,8 @@ from app.exceptions.handlers import _location_to_path
 def test_renders_documented_paths(
     location: tuple[int | str, ...], expected: str
 ) -> None:
-    assert _location_to_path(location) == expected
+    assert location_to_path(location) == expected
 
 
 def test_empty_location_is_the_document_root() -> None:
-    assert _location_to_path(()) == "$"
+    assert location_to_path(()) == "$"

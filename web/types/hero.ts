@@ -70,6 +70,11 @@ export const EP4_HIRE_OPTIONS = [
   'waterboy'
 ] as const satisfies readonly HeroId[];
 
+// * Blonde Blazer joins in episode 8 whatever the player chose earlier, so she is a recruit in every build — unlike the episode 4 options, which are recruits only when not hired.
+export const EP8_ALWAYS_RECRUITED = [
+  'blonde-blazer'
+] as const satisfies readonly HeroId[];
+
 // * The planner's episode defaults — the values feature 001's serializer omits. Exported so the game-data export (feature 005) reads them from the one source rather than a copy.
 export const DEFAULT_EP3_CUT: HeroId = 'sonar';
 export const DEFAULT_EP4_HIRE: HeroId = 'waterboy';

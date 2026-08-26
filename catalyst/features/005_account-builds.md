@@ -74,11 +74,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 | `PATCH` rename to a name another own build has       | `200`, `name:"<name> (2)"`                        | suffix on rename too             |
 | `PATCH` without `If-Match`                           | `428 precondition_required`                       |                                  |
 | `PATCH` with a stale `If-Match`                      | `412 precondition_failed`, body = current build   | two-device conflict              |
-| `POST /builds` with `data.lu.coupe = [7,0,0,0,0]`    | `422`, `details[0].path = "data.lu.coupe.combat"` | stat cap 4 + 7 > 10              |
-| `POST /builds` with `data.fl = ["golem"]`            | `422`, path `data.fl[0]`                          | not a Flight School hero         |
-| recruit Waterboy (`eh` phenomaman) with `pw = [1,1]` | `422`, path `data.pw.waterboy`                    | a recruit cannot train           |
-| recruit Waterboy with `lu = [1,0,0,0,0]`             | `201`                                             | a non-fixed recruit may level up |
-| `POST /builds` with `data.v = 2`                     | `422`, path `data.v`                              | unknown format version           |
+| any `data` from `shared/build-cases.json`            | that file's verdict and exact `details[].path` set | every tier and episode rule      |
 | `POST /builds` with a 9 KB document                  | `413 payload_too_large`                           |                                  |
 | 21st `POST /builds`                                  | `409 build_limit`                                 | cap 20                           |
 | `GET /builds?page=2&page_size=5` with 7 builds       | `200`, 2 summaries, `total: 7`                    |                                  |
@@ -94,7 +90,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 
 - **Storage**: one `builds` row per account build; `data` holds the `SerializedBuild` **exactly as validated** and is returned unchanged; `format_version` is generated from `data->>'v'`; the server accepts only versions it knows (`{1}`). No normalization.
 - **Validation tiers**, all before any write, `422` with a `path` per failure: (i) structure — only the known keys, `v == 1`; (ii) identity — hero ids among the eleven, `ec`/`eh` among their options; (iii) ranges — `lu` five non-negative ints in `STAT_NAMES` order, `bl` 1–4, `pw` `[0|1, 0|1|2]` within the hero's real trainable count and never without the starting power revealed, `sp` only for Flambae (0/1, needs trainable-2) and Coupé (0–2), `fl` ⊆ Flight School heroes; (iv) budgets — Σ`bl` ≤ 4, trained ≤ 7, distinct `fl` ≤ 2, per hero Σ`lu` ≤ 9 + `bl`; (v) caps — starting + `lu` ≤ 10 per stat.
-- **Episode rules**: the cut hero (`ec`) holds no state; recruits — Blonde Blazer and the episode-4 option not hired — hold no `pw`, `sp` or `fl`; a non-fixed-level recruit may hold `lu`/`bl`; fixed-level heroes never hold `lu`/`bl`.
+- **Episode rules**: the cut hero (`ec`) holds no state; recruits — Blonde Blazer and the episode-4 option not hired — may reveal a starting power (`pw` `[1,0]`, which the planner offers on their card) but hold no trained power, `sp` or `fl`; a non-fixed-level recruit may hold `lu`/`bl`; fixed-level heroes never hold `lu`/`bl`.
 - **Names**: unique per `(owner_id, name)`, enforced by a database unique index; on collision the server appends ` (n)` with the smallest free `n ≥ 2` and returns the final name. Applies to create, import and rename alike.
 - **Cap**: 20 builds per account. **Payload**: 8 KB per document, 50 items per import.
 - **Idempotency**: `Idempotency-Key` required on create and import; the key plus the user identify a stored response for 24 h; the same key with a different body → `409 idempotency_conflict`.
@@ -109,6 +105,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 - Import inserts one transaction per item, so a failure in item 3 never touches items 1 and 2.
 - The `ETag` is Postgres's timestamp, so two writes to one row cannot share it.
 - A `?build=` receiver who signs in gets no import offer for the snapshot — they use **Save a copy** like any viewer.
+- A hand-written `?build=` link can carry a document the guards would refuse into planner state, which feature 001 allows deliberately. Saving it to an account is where it is caught: a `422` whose paths render inline (feature 006).
 
 ## Invariants
 
@@ -144,7 +141,7 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 - `tests/services/test_validation.py`: every row of `shared/build-cases.json` — the valid ones pass, the invalid ones fail on exactly the expected paths.
 - `tests/routes/test_builds.py` (testcontainers Postgres): the Examples table row by row — idempotent replay, suffixing on create/import/rename, `428`/`412`, cap, cascade, `404` for unowned.
 - `tests/routes/test_shared.py`: public shape without owner, `404` after delete, the stopgap `429`.
-- `test/unit/game-data.test.ts`: the committed fixture equals a fresh export; `test/unit/build-cases.test.ts`: the composable guards agree with the cases file.
+- `test/unit/game-data.test.ts`: the committed fixture equals a fresh export; `test/nuxt/build-cases.test.ts`: the planner's guards agree with the cases file — a Nuxt-environment test, because those guards are `useState` composables.
 
 ## Verification
 

@@ -20,6 +20,9 @@
     "phenomaman",
     "waterboy"
   ],
+  "always_recruited": [
+    "blonde-blazer"
+  ],
   "default_ep3_cut": "sonar",
   "default_ep4_hire": "waterboy",
   "fixed_level_heroes": [
