@@ -80,6 +80,8 @@
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
     <ClientOnly>
       <BuildDialogs />
+
+      <BuildConflictDialog />
     </ClientOnly>
 
     <StorySetupDrawer v-model:open="storySetupOpen" />

@@ -24,6 +24,11 @@ export function useApiErrorWatcher(
   const route = useRoute();
   const toast = useToast();
   const { resetUser } = useAuthStore();
+  const { openConflict } = useBuildDialogs();
+
+  function showToast(message: string) {
+    toast.add({ title: message, color: 'error' });
+  }
 
   watch(error, (next) => {
     if (!next) {
@@ -35,7 +40,7 @@ export function useApiErrorWatcher(
       {
         routePath: route.path,
         resetUser,
-        showToast: (message) => toast.add({ title: message, color: 'error' }),
+        showToast,
         // * `createError` with fatal renders the error page rather than navigating away, so
         // * the URL keeps pointing at the share link that failed.
         showNotFoundPage: () =>
@@ -46,8 +51,15 @@ export function useApiErrorWatcher(
               fatal: true
             })
           ),
-        // * Filled in with the conflict dialog when the build manager lands (feature 006).
-        showConflictDialog: () => {}
+        showConflictDialog: (conflict) => {
+          const body = (conflict as { data?: unknown } | null)?.data;
+
+          // * A 412 body that will not parse falls through to the generic toast: without the
+          // * other device's build there is nothing for the dialog to offer (feature 006).
+          if (!openConflict(body)) {
+            showToast(extractMessage(conflict));
+          }
+        }
       },
       errorHandling
     );

@@ -310,6 +310,25 @@ export function useBuildPersistence() {
     );
   }
 
+  /**
+   * The planner's current state as a `SerializedBuild`.
+   *
+   * Exposed so an account save (feature 005) stores exactly the format a local save stores —
+   * one serialiser, so the two paths cannot drift.
+   */
+  function serializeCurrentBuild(): SerializedBuild {
+    return serializeCurrentState(
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
+      heroFlights
+    );
+  }
+
   function saveBuild(name?: string) {
     const data = serializeCurrentState(
       ep3Cut,
@@ -604,6 +623,7 @@ export function useBuildPersistence() {
     hasUnsavedChanges,
 
     // Build management
+    serializeCurrentBuild,
     saveBuild,
     saveAsNewBuild,
     loadBuild,

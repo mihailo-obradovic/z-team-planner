@@ -95,8 +95,10 @@
 import type { DropdownMenuItem } from '@nuxt/ui';
 
 import {
+  useCreateBuild,
   useFetchBuild,
-  useFetchBuilds
+  useFetchBuilds,
+  useUpdateBuild
 } from '@/services/queries/useBuildQueries';
 
 const props = withDefaults(
@@ -112,6 +114,7 @@ const toast = useToast();
 
 const {
   savedBuilds,
+  serializeCurrentBuild,
   activeBuildId,
   activeBuildName,
   isViewingSharedBuild,
@@ -153,6 +156,21 @@ const displayName = computed(
 watch(openedAccountBuild, async (build) => {
   if (build) {
     await loadAccountBuild(build.data);
+  }
+});
+
+// * The planner's current state, serialised the same way a local save serialises it — the
+// * account build stores exactly the format feature 001 owns.
+const { mutate: patchBuild, isLoading: isPatching } = useUpdateBuild({
+  onSuccess: (updated) => {
+    toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
+  }
+});
+
+const { mutate: postBuild } = useCreateBuild({
+  onSuccess: (created) => {
+    setActiveAccountBuildId(created.id);
+    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
   }
 });
 
@@ -237,6 +255,17 @@ function openSaveShared() {
 }
 
 function handleSave() {
+  // * An open account build saves to the account; the ETag comes from the cached build inside
+  // * the mutation, so this component never sees one (feature 006).
+  if (activeAccountBuildId.value) {
+    patchBuild({
+      id: activeAccountBuildId.value,
+      payload: { data: serializeCurrentBuild() }
+    });
+
+    return;
+  }
+
   if (savedBuilds.value.length === 0) {
     openNewBuild('Build 1');
     return;

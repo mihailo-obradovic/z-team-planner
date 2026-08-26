@@ -1,3 +1,5 @@
+import { BuildSchema, type Build } from '@/types/api';
+
 /**
  * Open state and draft names for the four build dialogs.
  *
@@ -13,6 +15,14 @@ export function useBuildDialogs() {
   const deleteOpen = useState('build-dialog-delete', () => false);
   const renameOpen = useState('build-dialog-rename', () => false);
 
+  // * The 412 conflict: another device saved the same account build first. The server sends
+  // * its current version back in the body, and the user chooses which one wins (feature 006).
+  const conflictOpen = useState('build-dialog-conflict', () => false);
+  const conflictBuild = useState<Build | null>(
+    'build-dialog-conflict-build',
+    () => null
+  );
+
   // * Drafts, not committed values: each dialog writes through to the store only on confirm.
   const newBuildName = useState('build-dialog-new-name', () => '');
   const renameBuildName = useState('build-dialog-rename-name', () => '');
@@ -27,8 +37,31 @@ export function useBuildDialogs() {
     renameOpen.value = true;
   }
 
+  /**
+   * Open the conflict dialog with the server's current build.
+   *
+   * A body that will not parse is not a conflict this dialog can present — without the other
+   * device's build there is nothing to choose between — so it falls through to the generic
+   * toast instead (feature 006, Edge Cases).
+   */
+  function openConflict(payload: unknown): boolean {
+    const parsed = BuildSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return false;
+    }
+
+    conflictBuild.value = parsed.data;
+    conflictOpen.value = true;
+
+    return true;
+  }
+
   return {
     saveSharedOpen,
+    conflictOpen,
+    conflictBuild,
+    openConflict,
     newBuildOpen,
     deleteOpen,
     renameOpen,

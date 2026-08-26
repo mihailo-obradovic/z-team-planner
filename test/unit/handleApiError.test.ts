@@ -161,3 +161,25 @@ describe('extractMessage', () => {
     );
   });
 });
+
+describe('the 412 conflict path', () => {
+  it('never toasts, even when the dialog cannot open', () => {
+    const context = makeContext();
+
+    handleApiError(apiError(412), context);
+
+    // ! The dialog is the whole point of a 412: the user has to see the other device's build
+    // ! to choose between reloading it and saving theirs as new.
+    expect(context.showConflictDialog).toHaveBeenCalledOnce();
+    expect(context.showToast).not.toHaveBeenCalled();
+  });
+
+  it('hands the whole error to the dialog so it can read the body', () => {
+    const context = makeContext();
+    const error = apiError(412);
+
+    handleApiError(error, context);
+
+    expect(context.showConflictDialog).toHaveBeenCalledWith(error);
+  });
+});
