@@ -3,6 +3,7 @@ import type { TVConfig } from '#ui/types';
 
 export type BadgeConfig = TVConfig<typeof theme>['badge'];
 export type ButtonConfig = TVConfig<typeof theme>['button'];
+export type CheckboxConfig = TVConfig<typeof theme>['checkbox'];
 export type DropdownMenuConfig = TVConfig<typeof theme>['dropdownMenu'];
 export type FormFieldConfig = TVConfig<typeof theme>['formField'];
 export type HeaderConfig = TVConfig<typeof theme>['header'];

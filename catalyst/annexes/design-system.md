@@ -382,6 +382,7 @@ The scales above, resolved per element. Every value here was measured from the b
 | Icon button        | square at its step        | none             | 0      | none            | none          |
 | Button / chip (on) | its step                  | its step's       | 0      | 1px ink ring    | 1px gold halo |
 | Input / select     | 32 (40 in Story Setup)    | `px-2.5`/`px-3`  | 0      | 2px inset ring  | none          |
+| Checkbox           | 20 box in a 24 row (`xl`) | —                | 0      | 2px inset ring  | none          |
 | Switch             | 44 × 24 track, 16 thumb   | `p-0.5`          | 0      | 2px             | none          |
 | Badge / chip (md)  | 28                        | `px-2`           | 0      | none (solid)    | none          |
 | Tab trigger        | 36                        | `px-2`/`sm:px-5` | 0      | 2px             | none          |
@@ -474,7 +475,7 @@ Re-measure after any token change. A brand colour that fails as text is constrai
 
 ### 14.2 Touch-target size
 
-The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44.
+The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44. A checkbox is the one control whose box is under the floor at every size the library offers: `xl` is the largest and paints at 20, in a 24 row. It is used with a label, which is part of the target, so the row is what clears the floor — a bare checkbox with no label would not, and does not belong in this design.
 
 The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there.
 

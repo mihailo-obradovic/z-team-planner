@@ -9,7 +9,7 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 - `pages/index.vue` — the planner (`/` is prerendered via `routeRules`); `pages/b/[id].vue` — the read-only view of a shared account build (`/b/**` is `ssr: false`).
 - `services/` — one pure `*.api.ts` per resource (no store, toast, or cache access) plus `services/queries/` for the Pinia Colada composables that wrap them; imported explicitly, never auto-imported.
 - `stores/` — `useAuthStore`, the only Pinia store: identity and the active account build id, never server data.
-- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `AuthMenu`, `AccountDialogs`, `BudgetCounters`, `StorySetupDrawer`, `IconButton`, `TooltipButton`).
+- `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `AuthMenu`, `AccountDialogs`, `FirstLoginOffer`, `BudgetCounters`, `StorySetupDrawer`, `IconButton`, `TooltipButton`).
 - `composables/` — auto-imported feature logic: `useAppQuery`/`useAppMutation`/`useApiErrorWatcher` (the query wrappers), `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization), `useBuildDialogs` (open state for the build dialogs, which mount once at the shell while their controls render in two places, plus which header tier's build selector is open), `useAccountDialogs` (the same, for the delete-account dialog), `useAuth` (Google sign-in and sign-out).
 - `types/` — `hero.ts` and `build.ts` domain types; `ui.ts` the header tier ladder as a value; `nuxt-ui.d.ts` theme-config helper types.
 - `config/nuxt-ui/` — one vendored theme per NuxtUI component the app renders, loaded from `app.config.ts`. Each holds the complete upstream default with the project's deviations annotated on top; a config extends the upstream theme rather than replacing it, so a deviation has to out-rank the default, not omit it.
@@ -33,7 +33,7 @@ Hero base data is the `HEROES` constant in `types/hero.ts`, transcribed from `ca
 
 ## Local invariants
 
-- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
+- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`; `z-team-import-offer-seen` records that the first-login offer has been answered) and share via the `build` URL parameter — the serialized-build format in `useBuildPersistence.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
 - Hero ids (`types/hero.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
 - Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.

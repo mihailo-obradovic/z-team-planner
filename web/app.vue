@@ -97,6 +97,8 @@
       <BuildAccountDialogs />
 
       <BuildConflictDialog />
+
+      <FirstLoginOffer />
     </ClientOnly>
 
     <AccountDialogs />

@@ -1,6 +1,7 @@
 // ! Don't use aliases because .nuxt/ is not available during app.config.ts load in SSR mode
 import badge from './config/nuxt-ui/badge';
 import button from './config/nuxt-ui/button';
+import checkbox from './config/nuxt-ui/checkbox';
 import dropdownMenu from './config/nuxt-ui/dropdown-menu';
 import formField from './config/nuxt-ui/form-field';
 import header from './config/nuxt-ui/header';
@@ -30,6 +31,7 @@ export default defineAppConfig({
     },
     badge,
     button,
+    checkbox,
     dropdownMenu,
     formField,
     header,
