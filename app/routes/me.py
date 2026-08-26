@@ -1,6 +1,6 @@
 """`/api/v1/me` — the signed-in account. Transport only, no business logic."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 
 from app.auth import CurrentUserDep
 from app.core.database import DbSession
@@ -21,3 +21,14 @@ def read_me(session: DbSession, user: CurrentUserDep) -> MeOut:
         created_at=row.created_at,
         build_count=build_count,
     )
+
+
+@router.delete(
+    "",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete the account and everything it owns",
+)
+def delete_me(session: DbSession, user: CurrentUserDep) -> Response:
+    users_service.delete_account(session, user)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

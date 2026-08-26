@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import func
+from sqlalchemy import delete, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,15 @@ from app.models import User
 def get_by_id(session: Session, user_id: UUID) -> User | None:
     """The account row, or `None` — absence is a domain outcome, never an exception here."""
     return session.get(User, user_id)
+
+
+def delete_by_id(session: Session, user_id: UUID) -> None:
+    """Remove the account row.
+
+    Every build goes with it: `builds.owner_id` is `ON DELETE CASCADE`, so one statement
+    empties both tables for this owner (feature 004, Invariants — no soft-delete state).
+    """
+    session.execute(delete(User).where(User.id == user_id))
 
 
 def upsert_by_firebase_uid(

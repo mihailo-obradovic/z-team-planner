@@ -19,7 +19,7 @@ The backend owns exactly two things — **accounts** and **account builds**. Gam
 - `models/` — `base.py` holds the declarative `Base`; the package `__init__` imports every model, which is what Alembic's autogenerate diffs against. `users` landed with feature 005 (its owner is feature 004); `builds` follows in the same feature.
 - `schemas/` — Pydantic DTOs. `builds.py` holds `BuildDocument` (the structural half of a saved build), the request and response shapes, and `render_timestamp` — the one rendering used for both a body's `updated_at` and the `ETag` header, so a client can hand back exactly what it was given.
 - `repositories/` — database operations only, one module per table: `users.py`, `builds.py`, `idempotency.py`.
-- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `builds.py` (naming, the cap, idempotency), `users.py` (resolving a token to an account row, and the profile behind `/me`).
+- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `builds.py` (naming, the cap, idempotency), `users.py` (resolving a token to an account row, the profile behind `/me`, and the deletion cascade).
 - `auth/` — `get_current_user` and `CurrentUserDep`, the one seam every user-scoped route names; `core/firebase.py` initialises the SDK it calls.
 - `core/game_data.py` — the generated game-data fixture, read once.
 
@@ -66,5 +66,6 @@ There is no module-level `app` object — importing `main` would then read the e
 - **Only a successful response is stored under an `Idempotency-Key`.** A rejected document rolls the claim back with it, so a client that fixes the document can retry rather than meet the old rejection for a day.
 - **Name uniqueness and the deletion cascade are the schema's.** `uq_builds_owner_name` settles two concurrent creates that both found a name free, and `ON DELETE CASCADE` is what makes feature 004's total deletion true.
 - **Game data is never hand-copied here.** `shared/game-data.json` is generated from `web/types/hero.ts`; a frontend test fails if the committed fixture drifts. Change the hero data in `web/`, re-export, and commit both.
+- **Account deletion goes to Firebase first.** `DELETE /me` removes the Firebase user before the row, so an unreachable Firebase is a `503` with nothing deleted and a retry that still works. The other order can strand an identity that signs in and owns nothing, which no later request can find again. `UserNotFoundError` is the one SDK failure that continues: the identity is already gone and our row is what is left.
 - **`verify_id_token` failures split three ways.** A bad or expired token is `401`; certificates the SDK cannot fetch are `503`, because the token may be fine and a `401` would sign every user out over a Google outage.
 - Integration tests run against a real PostgreSQL through testcontainers, never a SQLite stand-in; without Docker they skip loudly. A test needing tables takes the `migrated_db` fixture, which migrates and truncates.
