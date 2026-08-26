@@ -110,3 +110,65 @@ describe('BuildManager account list', () => {
     });
   });
 });
+
+describe('BuildManager share', () => {
+  const written: string[] = [];
+
+  beforeEach(() => {
+    written.length = 0;
+    fetchBuildsSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: (text: string) => {
+          written.push(text);
+
+          return Promise.resolve();
+        }
+      }
+    });
+  });
+
+  async function share(withAccountBuild: boolean) {
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          signIn();
+          // ! Set both ways round: the store outlives a mount, so leaving it alone would
+          // ! carry the previous test's account build into this one and pass vacuously.
+          useAuthStore().setActiveAccountBuildId(
+            withAccountBuild ? ACCOUNT_BUILDS.items[0]!.id : null
+          );
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    const button = page
+      .findAll('button')
+      .find((candidate) => /share/i.test(candidate.text()));
+
+    expect(button, 'the share control rendered').toBeTruthy();
+    await button!.trigger('click');
+    await vi.waitFor(() => expect(written).toHaveLength(1));
+
+    return written[0]!;
+  }
+
+  it('copies the live link for an account build', async () => {
+    // ! Feature 005: an account build shares as /b/{id}, which always shows the owner's
+    // ! current document. A ?build= snapshot would freeze whatever was on screen.
+    expect(await share(true)).toContain(`/b/${ACCOUNT_BUILDS.items[0]!.id}`);
+  });
+
+  it('copies a snapshot for a local build', async () => {
+    // * A local build has no id on the server, so the URL has to carry the whole document.
+    const url = await share(false);
+
+    expect(url).toContain('?build=');
+    expect(url).not.toContain('/b/');
+  });
+});

@@ -120,3 +120,27 @@ def test_each_application_counts_on_its_own(api: Api) -> None:
     from app.main import create_app
 
     assert api.client.app.state.shared_limiter is not create_app().state.shared_limiter  # pyright: ignore[reportAttributeAccessIssue]
+
+
+def test_deleting_the_account_makes_every_link_gone(api: Api) -> None:
+    """Feature 004's promise, from the outside.
+
+    `DELETE /me` does not exist yet; what it will rely on is the schema's cascade, so the
+    account row is removed directly here and the share links are checked the way a visitor
+    would find them.
+    """
+    from sqlalchemy import text
+
+    links = [api.create(f"build-{index}").json()["id"] for index in range(5)]
+    assert all(api.client.get(f"{SHARED}/{link}").status_code == 200 for link in links)
+
+    with api.client.app.state.session_factory() as session:  # pyright: ignore[reportAttributeAccessIssue]
+        session.execute(
+            text("DELETE FROM users WHERE id = :id"),
+            {"id": api.accounts["ann"].id},
+        )
+        session.commit()
+
+    assert [api.client.get(f"{SHARED}/{link}").status_code for link in links] == [
+        404
+    ] * 5

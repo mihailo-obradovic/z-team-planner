@@ -303,12 +303,30 @@ function handleSave() {
 }
 
 async function handleShare() {
-  const success = await shareBuild();
+  // * An account build shares as a live link: `/b/{id}` always shows the owner's current
+  // * document, where `?build=` freezes whatever was on screen when it was copied
+  // * (feature 005). A local build has no id on the server, so it keeps the snapshot.
+  const success = activeAccountBuildId.value
+    ? await copyAccountBuildLink(activeAccountBuildId.value)
+    : await shareBuild();
 
   toast.add(
     success
       ? { title: 'Link copied to clipboard', color: 'success' }
       : { title: 'Failed to copy link', color: 'error' }
   );
+}
+
+async function copyAccountBuildLink(id: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(
+      new URL(`/b/${id}`, window.location.origin).toString()
+    );
+
+    return true;
+  } catch {
+    // * Same degradation as the snapshot path: an error toast, and nothing else breaks.
+    return false;
+  }
 }
 </script>

@@ -1,5 +1,10 @@
 import { initializeApp } from 'firebase/app';
-import { type Auth, getAuth, onAuthStateChanged } from 'firebase/auth';
+import {
+  type Auth,
+  connectAuthEmulator,
+  getAuth,
+  onAuthStateChanged
+} from 'firebase/auth';
 
 // ! Client-only by filename. The Firebase SDK is a browser SDK, and the server must never hold
 // ! a user's token — feature 006: the server never calls the API and nothing is forwarded.
@@ -19,6 +24,13 @@ export default defineNuxtPlugin(() => {
         appId: firebase.appId
       })
     );
+    if (firebase.authEmulatorHost) {
+      // * Points the SDK at the local emulator so its tokens match the ones the API accepts
+      // * while it too is emulated. Never set outside development (nuxt.config.ts).
+      connectAuthEmulator(auth, `http://${firebase.authEmulatorHost}`, {
+        disableWarnings: true
+      });
+    }
   } catch (error) {
     // * The anonymous app keeps working: status stays `unknown`, and the header disables
     // * sign-in with a tooltip rather than offering a button that cannot work (feature 006).

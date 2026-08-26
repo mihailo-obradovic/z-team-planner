@@ -52,7 +52,12 @@ export default defineNuxtConfig({
         apiKey: '',
         authDomain: '',
         projectId: '',
-        appId: ''
+        appId: '',
+
+        // * Development only, and empty everywhere else: with this set the web SDK talks to a
+        // * local Auth emulator whose tokens are unsigned. The API refuses to start with its
+        // * own emulator variable set outside development, which is the matching guard.
+        authEmulatorHost: ''
       }
     }
   },
