@@ -1,11 +1,14 @@
 """The application factory and its wiring order."""
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import Settings, get_settings
+from app.core.database import build_engine, build_session_factory
 from app.core.logging import configure_logging
 from app.exceptions import register_exception_handlers
 from app.middleware import (
@@ -44,6 +47,13 @@ def _register_middleware(app: FastAPI, settings: Settings) -> None:
     )
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # * The engine is built once per application, not per request, and disposed on shutdown so a reload does not leak Neon connections.
+    yield
+    app.state.engine.dispose()
+
+
 def create_app() -> FastAPI:
     """Build the application. Order below is load-bearing."""
     # * Eager, so a missing or malformed variable aborts import and uvicorn never binds.
@@ -57,7 +67,12 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.app_env == "development" else None,
         redoc_url=None,
         openapi_url="/openapi.json" if settings.app_env == "development" else None,
+        lifespan=_lifespan,
     )
+
+    # * Held on app.state so get_db can reach it through the request, and so a test can build an app against a different database without touching module globals.
+    app.state.engine = build_engine(settings)
+    app.state.session_factory = build_session_factory(app.state.engine)
 
     register_exception_handlers(app)
     _register_middleware(app, settings)
