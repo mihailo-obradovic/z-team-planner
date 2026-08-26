@@ -500,7 +500,7 @@ export function useBuildPersistence() {
    * Load a build document fetched from the API into the planner, in shared-build mode.
    *
    * The `?build=` path decodes a snapshot out of the URL; this one takes an already-decoded
-   * document from `/b/{id}` (feature 006). Both end in the same deserialisation, so the
+   * document from `/b/{id}` (feature 007). Both end in the same deserialisation, so the
    * ordering guarantee — episode choices first, dependent state after `nextTick()` — holds
    * for either entry point.
    */
@@ -511,7 +511,7 @@ export function useBuildPersistence() {
   }
 
   /**
-   * Load an account build (feature 005) into the planner.
+   * Load an account build (feature 008) into the planner.
    *
    * Same deserialisation as the shared path, but *not* shared-build mode: the signed-in owner
    * is editing their own document, so the "viewing shared build" banner must not appear.

@@ -90,7 +90,7 @@ def create_app() -> FastAPI:
         # * Not registered at all when disabled, so it 404s rather than existing-but-refusing — it is never routable in an environment that has not deliberately turned it on.
         app.include_router(metrics.router)
 
-    # * Held on app.state, not module scope: a second application in the same process (every test builds one) must not inherit the first one's counts. 60 a minute per caller, feature 005's stopgap figure.
+    # * Held on app.state, not module scope: a second application in the same process (every test builds one) must not inherit the first one's counts. 60 a minute per caller, feature 007's stopgap figure.
     app.state.shared_limiter = TokenBucketLimiter(capacity=60, refill_per_second=1.0)
 
     api_v1 = APIRouter(prefix=API_V1_PREFIX)

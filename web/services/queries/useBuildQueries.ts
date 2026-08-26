@@ -49,7 +49,7 @@ export function useFetchBuilds(
     key: () => [...buildsQueryKeys.fetchBuilds, page.value],
     query: () => fetchBuilds(page.value),
     // * Never fires while the store is `unknown` or `anonymous`: a signed-out load makes no
-    // * request at all (feature 006, Examples).
+    // * request at all (feature 008, Examples).
     enabled: () => isSignedIn.value,
     ...options
   });
@@ -96,7 +96,7 @@ export function useUpdateBuild(
 
   return useAppMutation<Build, { id: string; payload: UpdateBuildPayload }>({
     mutation: ({ id, payload }) => {
-      // * The ETag comes from the cached build, so a component never sees one (feature 006).
+      // * The ETag comes from the cached build, so a component never sees one (feature 008).
       const cached = queryCache.getQueryData<Build>([
         ...buildsQueryKeys.fetchBuild,
         id

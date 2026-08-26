@@ -1,6 +1,6 @@
 """An in-process token bucket.
 
-A **stopgap** (feature 005, Business Rules): the public read is the one route an outsider can
+A **stopgap** (feature 007, Business Rules): the public read is the one route an outsider can
 reach without an account, and it needs some ceiling until the hosting effort names a real
 edge. Stdlib only, and it goes away when that edge exists.
 

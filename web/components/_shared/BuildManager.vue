@@ -139,7 +139,7 @@ const { loadAccountBuild } = useHeroPlanner();
 const { isSignedIn, activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
 
-// * Disabled until signed in, so a signed-out load makes no request (feature 006).
+// * Disabled until signed in, so a signed-out load makes no request (feature 008).
 const { data: accountBuilds, isPending: accountBuildsPending } = useFetchBuilds(
   ref(1)
 );
@@ -283,7 +283,7 @@ function openSaveShared() {
 
 function handleSave() {
   // * An open account build saves to the account; the ETag comes from the cached build inside
-  // * the mutation, so this component never sees one (feature 006).
+  // * the mutation, so this component never sees one (feature 008).
   if (activeAccountBuildId.value) {
     patchBuild({
       id: activeAccountBuildId.value,
@@ -305,7 +305,7 @@ function handleSave() {
 async function handleShare() {
   // * An account build shares as a live link: `/b/{id}` always shows the owner's current
   // * document, where `?build=` freezes whatever was on screen when it was copied
-  // * (feature 005). A local build has no id on the server, so it keeps the snapshot.
+  // * (feature 007). A local build has no id on the server, so it keeps the snapshot.
   const success = activeAccountBuildId.value
     ? await copyAccountBuildLink(activeAccountBuildId.value)
     : await shareBuild();

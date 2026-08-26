@@ -16,7 +16,7 @@ export function useBuildDialogs() {
   const renameOpen = useState('build-dialog-rename', () => false);
 
   // * The 412 conflict: another device saved the same account build first. The server sends
-  // * its current version back in the body, and the user chooses which one wins (feature 006).
+  // * its current version back in the body, and the user chooses which one wins (feature 008).
   // * Saving the planner's current state to the account as a new build, and removing one.
   const accountSaveOpen = useState('build-dialog-account-save', () => false);
   const accountSaveName = useState('build-dialog-account-save-name', () => '');
@@ -50,7 +50,7 @@ export function useBuildDialogs() {
    *
    * A body that will not parse is not a conflict this dialog can present — without the other
    * device's build there is nothing to choose between — so it falls through to the generic
-   * toast instead (feature 006, Edge Cases).
+   * toast instead (feature 008, Edge Cases).
    */
   function openConflict(payload: unknown): boolean {
     const parsed = BuildSchema.safeParse(payload);

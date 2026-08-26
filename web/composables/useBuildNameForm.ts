@@ -17,7 +17,7 @@ export function useBuildNameForm(
      * Whether an empty name is a validation failure.
      *
      * `false` for feature 001's local dialogs, which document an empty name as falling back to
-     * a generated one — that behaviour is unchanged by feature 006. `true` (the default) for
+     * a generated one — that behaviour is unchanged by feature 008. `true` (the default) for
      * anything that posts to the API, where the server requires 1–80 characters after trim.
      */
     requireName?: boolean;

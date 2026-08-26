@@ -1,4 +1,4 @@
-# Feature: Account builds and share links
+# Feature: Account builds
 
 ## Status
 
@@ -10,19 +10,19 @@ Hard
 
 ## Purpose
 
-A signed-in player's builds live on the server, follow them to any device, and share by a **live** link that always shows the owner's latest edits. This is the resource half of accounts (feature 004): every `/builds` endpoint, the public read, the import that the first-login offer calls, and the storage and validation rules behind them. Anonymous local builds and `?build=` snapshot links (feature 001) are untouched.
+A signed-in player's builds live on the server and follow them to any device. This is the resource half of accounts (feature 004): every `/builds` endpoint, the import the first-login offer calls, and the storage and validation rules behind them. The public read that share links go through is feature 007; the surface a player touches is feature 008. Anonymous local builds and `?build=` snapshot links (feature 001) are untouched.
 
 ## Inputs
 
-| Input               | Type                        | Source                      | Constraints                             |
-| ------------------- | --------------------------- | --------------------------- | --------------------------------------- |
-| bearer token        | `Authorization` header      | feature 004                 | required except on the public read      |
-| `name`              | string                      | create, patch, import       | trimmed, 1–80; unique per account       |
-| `data`              | `SerializedBuild` JSON      | create, patch, import       | `v: 1`; the five tiers; ≤ 8 KB          |
-| `Idempotency-Key`   | header, opaque string ≤ 128 | create, import              | required; 24 h window per user          |
-| `If-Match`          | header, the build's `ETag`  | patch                       | the `updated_at` from the last read     |
-| `page`, `page_size` | query ints                  | list                        | defaults 1 and 20; `page_size` ≤ 100    |
-| `{id}`              | UUIDv4 path segment         | read, patch, delete, public | unguessable; unknown or unowned → `404` |
+| Input               | Type                        | Source                | Constraints                             |
+| ------------------- | --------------------------- | --------------------- | --------------------------------------- |
+| bearer token        | `Authorization` header      | feature 004           | required on every route here            |
+| `name`              | string                      | create, patch, import | trimmed, 1–80; unique per account       |
+| `data`              | `SerializedBuild` JSON      | create, patch, import | `v: 1`; the five tiers; ≤ 8 KB          |
+| `Idempotency-Key`   | header, opaque string ≤ 128 | create, import        | required; 24 h window per user          |
+| `If-Match`          | header, the build's `ETag`  | patch                 | the `updated_at` from the last read     |
+| `page`, `page_size` | query ints                  | list                  | defaults 1 and 20; `page_size` ≤ 100    |
+| `{id}`              | UUIDv4 path segment         | read, patch, delete   | unguessable; unknown or unowned → `404` |
 
 ## Outputs And Side Effects
 
@@ -31,16 +31,13 @@ A signed-in player's builds live on the server, follow them to any device, and s
 | `builds` row         | Postgres | `id, owner_id, name, data jsonb, format_version (generated), created_at, updated_at` |
 | build summary        | JSON     | `{ id, name, format_version, created_at, updated_at }` — list items                  |
 | build                | JSON     | summary plus `data`; `ETag` header = `updated_at`                                    |
-| public build         | JSON     | `{ id, name, data, updated_at }` — never the owner                                   |
 | import report        | JSON     | `[{ index, status: "created" \| "invalid", id?, name?, errors? }]`                   |
-| `/b/{id}` page       | rendered | read-only planner in shared mode with **Save a copy**; `404` page when gone          |
 
 ## Scope And Non-Goals
 
 In scope:
 
 - List, create, read, update (rename and/or replace data), delete — own builds only.
-- The public read and its `/b/{id}` page; "save a copy" as a plain create.
 - Import of local builds, per item, partial success.
 - Storage shape, validation tiers, name uniqueness, per-account cap, idempotency, lost-update protection, the error schema every API route uses.
 
@@ -48,21 +45,21 @@ Non-goals:
 
 - Any query into a build's contents (search by hero, by power) — the document is opaque to the database.
 - Server-side migration of stored format versions — the client decodes every version it supports.
-- Anonymous server-side saves; a snapshot-style link for account builds (the `?build=` link already is one).
-- Rate limiting at a real edge — the hosting effort names it; see Business Rules for the stopgap.
+- Anonymous server-side saves.
+- The public read, the share link and its page — feature 007.
+- Everything a player sees: the account list, the save paths, the conflict and name dialogs — feature 008.
 
 ## User / System Behavior
 
-- **My builds** lists the account's builds newest-updated first; opening one loads its document into the planner and makes it the active account build. Saving writes back with `PATCH` and the held `ETag`.
-- Save-as-new and the first-login offer create builds; the UI shows the name the server returned, which may be suffixed.
-- **Share** on an account build copies `https://<web>/b/{id}`; every open shows the owner's current document, read-only, with **Save a copy** (signed in: `POST /builds`; signed out: local "Save as mine"). Deleting the build makes the link a `404` page.
-- Editing the same build from two devices: the second `PATCH` with a stale `ETag` gets `412` plus the current build, and the UI offers "reload theirs" or "save mine as new".
+- The list is the caller's own builds, newest-updated first and paginated; every other route addresses one build by id, and a build the caller does not own is a `404` rather than a `403`.
+- Create, import and rename all return the **final** name: on a collision the server suffixes it and answers with what it stored, so the caller never has to guess.
+- Editing the same build from two devices: the second `PATCH` carries a stale `ETag` and gets `412` with the current build in the body — enough for the caller to offer a choice rather than silently losing a write.
 - A request retried after a network failure carries the same `Idempotency-Key` and gets the original response, not a second build.
-- At the cap, create and import answer `409 build_limit` and the UI says so.
+- At the cap, create and import answer `409 build_limit` with a message naming the limit.
 
 ## Roles And Access
 
-Per feature 004's matrix: anonymous — public read only; user — every route on their own builds; another user's build — `404` on every route. Not role-specific beyond that.
+Per feature 004's matrix: a user reaches every route here on their own builds, and another user's build is a `404` on all of them. Anonymous callers reach nothing here — the one route they can reach is feature 007's. Not role-specific beyond that.
 
 ## Examples
 
@@ -79,9 +76,6 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 | 21st `POST /builds`                              | `409 build_limit`                               | cap 20              |
 | `GET /builds?page=2&page_size=5` with 7 builds   | `200`, 2 summaries, `total: 7`                  |                     |
 | `GET /builds/{other user's id}`                  | `404 not_found`                                 | never `403`         |
-| `GET /shared/{id}` signed out                    | `200`, no owner field                           |                     |
-| `GET /shared/{id}` after the owner deleted it    | `404`                                           |                     |
-| `GET /shared/{id}` 61st in a minute, one IP      | `429 rate_limited`                              | stopgap limiter     |
 | import of 3 items, one with an unknown hero id   | `200`, statuses `created, invalid, created`     | partial success     |
 | import of 51 items                               | `422`, path `builds`                            | batch cap           |
 | `DELETE /me` (feature 004) with 5 builds         | all 5 rows gone; their `/b/` links `404`        | cascade             |
@@ -95,7 +89,6 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 - **Cap**: 20 builds per account. **Payload**: 8 KB per document, 50 items per import.
 - **Idempotency**: `Idempotency-Key` required on create and import — without it, `422` naming the header. The key plus the user identify a stored response for 24 h; the same key with a different body → `409 idempotency_conflict`. Only a **success** is stored: a rejected document is re-judged on the next attempt, never answered from a day-old cache.
 - **Concurrency**: `PATCH` requires `If-Match` equal to the current `updated_at`; the update is a single `UPDATE … WHERE id = ? AND updated_at = ?` so two writers cannot both win.
-- **Public read** exposes id, name, document and `updated_at` only. Stopgap rate limit until the hosting effort names the edge: an in-process token bucket on `/shared/*`, 60 requests per minute per IP, stdlib only — recorded as a stopgap, to be removed when the edge exists.
 - **Error schema**, every route: `{ "error": { "code", "message", "details"?: [{ "path", "message" }] } }`; `details` on `422` only; `X-Request-ID` echoed on every response. Codes: `unauthenticated`, `forbidden`, `not_found`, `validation_failed`, `precondition_required`, `precondition_failed`, `build_limit`, `payload_too_large`, `rate_limited`, `idempotency_conflict`.
 - Timestamps UTC ISO-8601 with `Z`; the list is ordered by `updated_at` desc.
 
@@ -104,14 +97,13 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 - The suffix loop is bounded by the cap (20), never unbounded. A rename to the build's **own** name is a no-op `200`.
 - Import inserts one transaction per item, so a failure in item 3 never touches items 1 and 2. An item's **name** is judged per item too — a local build predating the 80-character rule costs its own row, not the whole offer.
 - The `ETag` is Postgres's timestamp, so two writes to one row cannot share it.
-- A `?build=` receiver who signs in gets no import offer for the snapshot — they use **Save a copy** like any viewer.
-- A hand-written `?build=` link can carry a document the guards would refuse into planner state, which feature 001 allows deliberately. Saving it to an account is where it is caught: a `422` whose paths render inline (feature 006).
+- A hand-written `?build=` link can carry a document the guards would refuse into planner state, which feature 001 allows deliberately. Saving it to an account is where it is caught: a `422` whose paths render inline (feature 008).
 
 ## Invariants
 
 - `data` round-trips byte-for-byte: what was validated is what is returned.
 - The `SerializedBuild` v1 format stays a Protected Area (feature 001); this feature adds validation, never a new key.
-- Unlisted-by-id is the only access control on the public read; ids are never enumerable and never appear in any list an outsider can see.
+- A build id never appears in any list an outsider can read — every route here is owner-scoped.
 - Game data has one source, `web/types/hero.ts`; the server validates against a fixture **generated** from it, never a hand copy.
 
 ## Error Handling
@@ -121,15 +113,14 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 
 ## Entry Points
 
-- API: `app/routes/{builds,shared}.py` (transport), `app/services/{builds,validation}.py` (the rules), `app/models/build.py` + its Alembic revision, `app/utils/ratelimit.py`.
+- API: `app/routes/builds.py` (transport), `app/services/{builds,validation}.py` (the rules), `app/repositories/builds.py`, `app/schemas/builds.py`, `app/models/build.py` + its Alembic revision.
 - Fixtures: `shared/game-data.json` (generated by `pnpm run game-data:export`) and `shared/build-cases.json`.
-- Web: `web/pages/b/[id].vue`, `web/services/builds.api.ts`, `web/services/queries/useBuildQueries.ts`, `web/components/_shared/BuildManager.vue` (the share link).
 
 ## Dependencies
 
 - Feature 004: the bearer token, the owner, the deletion cascade, the first-login offer that calls import.
 - Feature 001: the protected format. Feature 002: `web/types/hero.ts` as the fixture's source.
-- Feature 006: the fetcher, query composables and the `/b/{id}` page's data path.
+- Feature 007 reads these rows publicly; feature 008 is the UI that calls these endpoints; feature 006 is the layer both reach them through.
 - Decision 004: Neon (pooled endpoint for these routes, direct for migrations), psycopg 3, sync sessions.
 
 ## Open Questions
@@ -137,12 +128,14 @@ Per feature 004's matrix: anonymous — public read only; user — every route o
 ## Tests
 
 - `tests/services/test_validation.py`: every row of `shared/build-cases.json`, failing on exactly the expected paths. `tests/services/test_builds_concurrency.py`: the naming lock, the cap and the `If-Match` guard, by really racing threads.
-- `tests/routes/` against testcontainers Postgres: the Examples table row by row, plus the cascade and the stopgap `429`. `tests/repositories/`: the schema's own guarantees. `tests/utils/`: the limiter.
+- `tests/routes/` against testcontainers Postgres: the Examples table row by row, plus the deletion cascade. `tests/repositories/`: the schema's own guarantees.
 - `test/unit/game-data.test.ts`: the committed fixture equals a fresh export. `test/nuxt/build-cases.test.ts`: the planner's guards agree with the cases file — a Nuxt test, because those guards are `useState` composables.
 
 ## Verification
 
-Ten steps on `feature/005-account-builds`, each verified before its commit; the commit messages carry what each proved. All verbs exit 0: **251 API tests** against real PostgreSQL, **114 web tests**. Some forty mutations were run against the rules; six survived as real gaps, now closed. The live walk against the Neon dev branch and the Auth emulator found **Share** copying a snapshot rather than the live link — fixed and pinned. No real-Google sign-in; the limiter is per process; nothing is deployed.
+Ten steps on `feature/005-account-builds`, each verified before its commit; the commit messages carry what each proved. All verbs exit 0: **251 API tests** against real PostgreSQL, **114 web tests**. Some forty mutations were run against the rules; six survived as real gaps, now closed. The endpoints were walked live against the Neon dev branch and the Auth emulator.
+
+Remaining risks: no sign-in through Google itself, and nothing is deployed. Step 9's public read and its limiter are now feature 007, which carries that evidence.
 
 ## Agent Change Rules
 

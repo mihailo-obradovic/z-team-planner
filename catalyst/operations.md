@@ -33,7 +33,7 @@ The API is stateless — recovery is "start it again". The data drill is the Neo
 - `/healthz` deliberately does not touch the database. Pointing a liveness probe at `/readyz` would restart the process every time Neon suspends.
 - There is **no module-level `app`** — uvicorn needs `app.main:create_app --factory`. `uvicorn app.main:app` fails with an attribute error.
 - `/metrics` is absent (404) unless `METRICS_ENABLED=true`, and must never be publicly routable. Single-process only: under `--workers N` each worker keeps its own registry and the numbers silently under-report.
-- The `/shared/*` rate limit is **in process**: 60 a minute per caller, counted per worker, and keyed on the socket peer — which behind a proxy is the proxy. Two workers therefore allow 120, and it protects nothing once something sits in front of it. It is feature 005's stopgap and comes out when the hosting effort names a real edge.
+- The `/shared/*` rate limit is **in process**: 60 a minute per caller, counted per worker, and keyed on the socket peer — which behind a proxy is the proxy. Two workers therefore allow 120, and it protects nothing once something sits in front of it. It is feature 007's stopgap and comes out when the hosting effort names a real edge.
 - `uvicorn --reload` is development only.
 - `FIREBASE_AUTH_EMULATOR_HOST` set while `APP_ENV` is not `development` stops the process at startup. That is the guard working, not a bug.
 

@@ -14,7 +14,7 @@ from pydantic import (
 
 from app.exceptions.errors import ErrorDetail
 
-# * Trimmed, then 1–80 characters — the same rule the build-name form mirrors (feature 006).
+# * Trimmed, then 1–80 characters — the same rule the build-name form mirrors (feature 008).
 BuildName = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)
 ]
@@ -89,7 +89,7 @@ class BuildOut(BuildSummaryOut):
 
 
 class PublicBuildOut(_FromRow):
-    """The public read — never the owner, and never when it was created (feature 005)."""
+    """The public read — never the owner, and never when it was created (feature 007)."""
 
     id: UUID
     name: str
