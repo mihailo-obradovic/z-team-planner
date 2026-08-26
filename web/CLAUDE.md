@@ -6,12 +6,14 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 
 ## Structure
 
-- `pages/index.vue` — the single route; the whole planner lives on it (`/` is prerendered via `routeRules`).
+- `pages/index.vue` — the planner (`/` is prerendered via `routeRules`); `pages/b/[id].vue` — the read-only view of a shared account build (`/b/**` is `ssr: false`).
+- `services/` — one pure `*.api.ts` per resource (no store, toast, or cache access) plus `services/queries/` for the Pinia Colada composables that wrap them; imported explicitly, never auto-imported.
+- `stores/` — `useAuthStore`, the only Pinia store: identity and the active account build id, never server data.
 - `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `BudgetCounters`, `StorySetupDrawer`, `IconButton`, `TooltipButton`).
-- `composables/` — auto-imported feature logic: `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization), `useBuildDialogs` (open state for the build dialogs, which mount once at the shell while their controls render in two places).
+- `composables/` — auto-imported feature logic: `useAppQuery`/`useAppMutation`/`useApiErrorWatcher` (the query wrappers), `useHeroPlanner` (roster state), `useHeroLevelUp`, `useHeroPowerTraining`, `useHeroFlightTraining`, `useHeroEpisodeSetup` (ep3 cut / ep4 hire flags), `useBuildPersistence` (localStorage + URL-param serialization), `useBuildDialogs` (open state for the build dialogs, which mount once at the shell while their controls render in two places).
 - `types/` — `hero.ts` and `build.ts` domain types; `nuxt-ui.d.ts` theme-config helper types.
 - `config/nuxt-ui/` — one vendored theme per NuxtUI component the app renders, loaded from `app.config.ts`. Each holds the complete upstream default with the project's deviations annotated on top; a config extends the upstream theme rather than replacing it, so a deviation has to out-rank the default, not omit it.
-- `utils/` — `statIcons.ts`, the Lucide glyph per stat, shared by the roster and the detail dialog.
+- `utils/` — `statIcons.ts` (the Lucide glyph per stat), `fetcher.ts` (the one path to the API, with its single 401 retry), `handleApiError.ts` (the central error policy), `parseResponse.ts`.
 - `assets/css/main.css` — the design tokens: colour ramps, the type scale, the `--ui-*` surface remap, and the `panel`/`plate` utilities.
 
 Hero base data is the `HEROES` constant in `types/hero.ts`, transcribed from `catalyst/context/game-mechanics.md`. It shipped as a Nitro route until feature 006 retired it; there is no `server/` directory and the app makes no `useFetch`/`useAsyncData` call.
@@ -36,4 +38,5 @@ Hero base data is the `HEROES` constant in `types/hero.ts`, transcribed from `ca
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
 - Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.
 - `BuildManager` and `BuildDialogs` are wrapped in `ClientOnly` in `app.vue` because they render localStorage state; server-rendering them desynchronises hydration and every id below it.
+- No component calls the network, holds a loading `ref`, or wraps a query in try-catch — the query layer and `handleApiError` own that (feature 006).
 - The shell's tier ladder (`app.vue`, annex §13) is CSS-only: the header renders the build cluster twice and the Story Setup trigger three times, hidden per breakpoint. A JS breakpoint would have to resolve before first paint or the header flickers through the wrong tier on load.
