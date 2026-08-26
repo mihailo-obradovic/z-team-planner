@@ -135,6 +135,16 @@ Not role-specific; visibility follows the auth store (feature 004).
 
 ## Verification
 
+Fourteen steps on `feature/006-frontend-data-layer`, each verified before its commit. `lint`, `format:check`, `typecheck`, `test` all exit 0; **77 tests passing**.
+
+Examples walked row by row. By test: the single `401` retry, and a persistent `401` stopping at two requests; every central-policy row, `412`/`422` included; query keys, `enabled` gating, invalidation awaited before the caller's hook; a 90-character name erroring inline; a response missing `updated_at` throwing generically with the Zod issue logged.
+
+In a browser, against the dev server and a throwaway stub for feature 005: `unknown → anonymous` on the real Firebase project; a signed-out load issuing **no** request, sign-in issuing exactly `GET /builds?page=1`; `/b/<unknown id>` rendering the 404 page; `/b/<valid id>` read-only with **Save a copy**, correctly deserialised; a `412` opening the conflict dialog and a server-only `422` rendering inline, both without a toast; delete refetching the list and clearing `activeAccountBuildId`; the build failing with `NUXT_PUBLIC_API_BASE_URL` unset.
+
+Deliberately unverified: `GET /me`, wired but unconsumed until feature 004's profile menu. Recorded in the tests: a Colada query inside a _page_ SFC does not activate under `mountSuspended`, so `/b/[id]` is browser-verified.
+
+Status stays `Approved` — the walk used stubs; it flips to `Active` against feature 005's real endpoints.
+
 ## Agent Change Rules
 
 Before changing this feature, an agent must:
