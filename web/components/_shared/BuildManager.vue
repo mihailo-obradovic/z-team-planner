@@ -125,8 +125,14 @@ const {
   backToMyBuild
 } = useHeroPlanner();
 
-const { saveSharedOpen, deleteOpen, openNewBuild, openRename } =
-  useBuildDialogs();
+const {
+  saveSharedOpen,
+  deleteOpen,
+  accountDeleteOpen,
+  openNewBuild,
+  openRename,
+  openAccountSave
+} = useBuildDialogs();
 
 const { loadAccountBuild } = useHeroPlanner();
 
@@ -245,9 +251,30 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
         }
       }));
 
+  const accountActions: DropdownMenuItem[] = [
+    {
+      label: 'Save to account...',
+      icon: 'i-lucide-cloud-upload',
+      class: 'uppercase',
+      onSelect: () => openAccountSave(displayName.value)
+    }
+  ];
+
+  if (activeAccountBuildId.value) {
+    accountActions.push({
+      label: 'Delete from account...',
+      icon: 'i-lucide-cloud-off',
+      color: 'error',
+      class: 'uppercase',
+      onSelect: () => {
+        accountDeleteOpen.value = true;
+      }
+    });
+  }
+
   // * Account builds are their own group so it is obvious which ones follow you across
   // * devices and which live in this browser.
-  return [builds, account, management];
+  return [builds, account, accountActions, management];
 });
 
 function openSaveShared() {

@@ -81,6 +81,8 @@
     <ClientOnly>
       <BuildDialogs />
 
+      <BuildAccountDialogs />
+
       <BuildConflictDialog />
     </ClientOnly>
 

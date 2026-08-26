@@ -17,6 +17,14 @@ export function useBuildDialogs() {
 
   // * The 412 conflict: another device saved the same account build first. The server sends
   // * its current version back in the body, and the user chooses which one wins (feature 006).
+  // * Saving the planner's current state to the account as a new build, and removing one.
+  const accountSaveOpen = useState('build-dialog-account-save', () => false);
+  const accountSaveName = useState('build-dialog-account-save-name', () => '');
+  const accountDeleteOpen = useState(
+    'build-dialog-account-delete',
+    () => false
+  );
+
   const conflictOpen = useState('build-dialog-conflict', () => false);
   const conflictBuild = useState<Build | null>(
     'build-dialog-conflict-build',
@@ -57,8 +65,17 @@ export function useBuildDialogs() {
     return true;
   }
 
+  function openAccountSave(name = '') {
+    accountSaveName.value = name;
+    accountSaveOpen.value = true;
+  }
+
   return {
     saveSharedOpen,
+    accountSaveOpen,
+    accountSaveName,
+    accountDeleteOpen,
+    openAccountSave,
     conflictOpen,
     conflictBuild,
     openConflict,
