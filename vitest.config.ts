@@ -6,6 +6,13 @@ export default defineConfig({
   test: {
     projects: [
       {
+        // * The unit project runs outside Nuxt, so it needs the srcDir alias spelled out;
+        // * inside the nuxt project Nuxt resolves @/ itself.
+        resolve: {
+          alias: {
+            '@': fileURLToPath(new URL('./web', import.meta.url))
+          }
+        },
         test: {
           name: 'unit',
           include: ['test/unit/*.{test,spec}.ts'],
@@ -26,8 +33,6 @@ export default defineConfig({
         }
       })
     ],
-    // The unit project is empty until the first real unit tests land (feature docs list the wanted ones)
-    passWithNoTests: true,
     coverage: {
       enabled: true,
       provider: 'v8'
