@@ -480,6 +480,30 @@ export function useBuildPersistence() {
   }
 
   // * Initialization
+  /**
+   * Load a build document fetched from the API into the planner, in shared-build mode.
+   *
+   * The `?build=` path decodes a snapshot out of the URL; this one takes an already-decoded
+   * document from `/b/{id}` (feature 006). Both end in the same deserialisation, so the
+   * ordering guarantee — episode choices first, dependent state after `nextTick()` — holds
+   * for either entry point.
+   */
+  async function loadSharedBuild(build: SerializedBuild) {
+    isViewingSharedBuild.value = true;
+
+    await deserializeIntoState(
+      build,
+      ep3Cut,
+      ep4Hire,
+      showEp8Recruits,
+      heroLevelUps,
+      heroBonusLevels,
+      heroPowers,
+      heroSpecialPowers,
+      heroFlights
+    );
+  }
+
   async function initialize() {
     // * Only run on client
     if (import.meta.server) return;
@@ -575,6 +599,7 @@ export function useBuildPersistence() {
     getShareUrl,
 
     // Shared build actions
+    loadSharedBuild,
     saveSharedAsMyBuild,
     backToMyBuild,
 
