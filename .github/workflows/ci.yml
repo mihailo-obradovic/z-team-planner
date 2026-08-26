@@ -3,13 +3,8 @@ name: ci
 on: push
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [22]
+  web:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -21,7 +16,8 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node }}
+          # * From .nvmrc, so CI cannot drift from what package.json's engines field requires.
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -32,3 +28,39 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+
+  api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # * uv provisions the interpreter from .python-version; no setup-python step is needed.
+      - name: Install dependencies
+        # * --locked fails on a stale lockfile instead of silently resolving other versions.
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Typecheck
+        run: uv run pyright
+
+      # * No DATABASE_URL here on purpose: the suite builds its own settings and gets a real
+      # * PostgreSQL from testcontainers. Verified by running it with no .env and no env vars.
+      # * ubuntu-latest ships a running Docker daemon, so the integration tests really run
+      # * here rather than skipping.
+      - name: Test
+        run: uv run pytest
