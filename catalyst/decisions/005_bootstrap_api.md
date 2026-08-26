@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -30,13 +30,13 @@ Two things land early on purpose. The shared log line format, with an `X-Request
 
 `app/` (`core`, `middleware`, `exceptions`, `routes`, and a `models` package holding only the declarative base), `alembic/`, `tests/`, `scripts/reset_db.py`, `pyproject.toml`, `.python-version`, `uv.lock`, `.env.example`, `.editorconfig`, `.gitignore`, `app/CLAUDE.md`, `README.md`, `operations.md`, `.github/workflows/ci.yml`, and `architecture.md` for the dependency rows.
 
-Untouched: `web/`, and every behavior contract. Not created: `shared/` (feature 005 — it needs an export script that does not exist yet), a `Dockerfile` (Deployment is declined and no host is chosen), the `users` and `builds` tables, and the seed script.
+Untouched: `web/`, and every behavior contract. Not created: `shared/` (feature 005 needs an export script that does not exist yet), a `Dockerfile` (Deployment is declined, no host chosen), the `users` and `builds` tables, the seed script.
 
 ## Consequences
 
 A second language and toolchain in one repository, and a second CI job. Three packages sit outside the adopted modules' Approved Libraries and are approved here, recorded in `architecture.md` in the same change: `uvicorn[standard]` (FastAPI ships no server), `pydantic-settings` (Pydantic v2 moved `BaseSettings` into its own distribution), and `httpx` (Starlette's `TestClient` is a wrapper over it). `psycopg` needs no approval — the persistence module's pairing table already names it.
 
-`requires-python = ">=3.14"` also sets Ruff's `target-version`, so `UP` rewrites code to syntax older interpreters reject. Testcontainers needs a Docker daemon: present locally and on `ubuntu-latest`; where it is absent the database tests skip loudly rather than fall back to a SQLite lookalike.
+`requires-python = ">=3.14"` also sets Ruff's `target-version`, so `UP` rewrites to syntax older interpreters reject. Testcontainers needs a Docker daemon; without one the database tests skip loudly rather than fall back to a SQLite lookalike.
 
 Metrics ship with the mechanism but no destination — the numbers go nowhere until a host and a scrape target exist. The bootstrap flow's seed script is deliberately deferred to feature 004: there are no tables yet, and the rules governing what may enter a non-production database arrive with that feature's personal-data declaration. A Dockerfile arrives with the hosting decision, not before.
 
@@ -51,4 +51,8 @@ Metrics ship with the mechanism but no destination — the numbers go nowhere un
 
 ## Verification
 
-Pending.
+Thirteen steps on `decision/005-bootstrap-api`, each verified before its commit. The four verbs exit 0, `pyright` at 0 errors, `pytest` **68 passed** — 62 unit plus 6 integration against a real PostgreSQL 17 via testcontainers.
+
+Against the running API: `/healthz` → `200`; `/readyz` → `200 {"status":"ready","database":"ok"}` on the real Neon `dev` branch, 1.12 s while the suspended compute woke; an unknown route → `404` in the envelope; every response carries `X-Request-ID` and the access line logs the same id. `alembic upgrade head` succeeds on the direct endpoint with zero revisions; `reset_db.py` refused twice before rebuilding the dev schema.
+
+Two guards were proven by firing them: the emulator variable with `APP_ENV=staging` aborts startup, and `/readyz` answers `503` against a dead database while `/healthz` still answers `200`. `validate.py .` reports 0 errors. Nothing is deployed; CI's first real run comes with the push.

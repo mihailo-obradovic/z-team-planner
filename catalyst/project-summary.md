@@ -29,7 +29,7 @@ One line per record: type, status, title, link.
 | 002 | tooling     | Implemented | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md)           |
 | 003 | design      | Implemented | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                       |
 | 004 | infra       | Implemented | Adopt a backend — FastAPI, Neon Postgres, Firebase identity                     | [004_infra_backend-adoption](decisions/004_infra_backend-adoption.md)                   |
-| 005 | bootstrap   | Accepted    | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic      | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                     |
+| 005 | bootstrap   | Implemented | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic      | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                     |
 
 ## Domain Decision Index
 
