@@ -2,7 +2,39 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: the components below are adopted but not yet built. Every command reflects the decided shape (`decisions/004_infra_backend-adoption.md`); a recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+Status note: the API and its Neon database are built and running locally (`decisions/005_bootstrap_api.md`); the nightly backup workflow is not, and nothing is deployed anywhere. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+
+## API service
+
+FastAPI in `app/`, run with uv. Stateless: it holds no data of its own, so everything below is about starting it and reading what it says. Structure and invariants are `app/CLAUDE.md`.
+
+### Operate
+
+```bash
+uv sync --locked                                        # install exactly the lockfile
+uv run uvicorn app.main:create_app --factory --reload --port 8000   # development
+curl -sS localhost:8000/healthz                         # liveness: {"status":"ok"}
+curl -sS -i localhost:8000/readyz                       # readiness: 200 ready / 503 not_ready
+curl -sS -i localhost:8000/healthz | grep -i x-request-id   # the id every response carries
+uv run pytest                                           # -m "not integration" without Docker
+uv run python -m scripts.reset_db --yes                 # drop + migrate, development only
+METRICS_ENABLED=true uv run uvicorn app.main:create_app --factory   # then GET /metrics
+```
+
+Grepping one request across the logs: every line carries `[req <id>]`, and the id is either the caller's `X-Request-ID` or one generated at the edge.
+
+### Recovery
+
+The API is stateless — recovery is "start it again". The data drill is the Neon section's; there is nothing here to restore. A process that will not start is almost always configuration: `Settings` validates at startup and refuses rather than serving degraded, so read the first line of the traceback.
+
+### Quirks
+
+- `/readyz` answers **503 while a suspended Neon compute wakes**, and the first request after idle takes ~1.1s (measured). A readiness timeout shorter than that marks the API dead every time it has been idle.
+- `/healthz` deliberately does not touch the database. Pointing a liveness probe at `/readyz` would restart the process every time Neon suspends.
+- There is **no module-level `app`** — uvicorn needs `app.main:create_app --factory`. `uvicorn app.main:app` fails with an attribute error.
+- `/metrics` is absent (404) unless `METRICS_ENABLED=true`, and must never be publicly routable. Single-process only: under `--workers N` each worker keeps its own registry and the numbers silently under-report.
+- `uvicorn --reload` is development only.
+- `FIREBASE_AUTH_EMULATOR_HOST` set while `APP_ENV` is not `development` stops the process at startup. That is the guard working, not a bug.
 
 ## Neon Postgres
 
@@ -14,7 +46,7 @@ One Neon project, one long-lived `dev` branch besides `main`, CI branches create
 neon branches list                                      # branches, their computes, expiry
 neon connection-string --branch dev                     # direct endpoint (migrations)
 neon connection-string --branch dev --pooled            # pooled endpoint (the API)
-uv run alembic current                                  # applied revision, DATABASE_URL_DIRECT in env
+uv run alembic current                                  # applied revision (env.py reads DATABASE_URL_DIRECT itself)
 uv run alembic upgrade head                             # apply migrations — direct endpoint only
 neon branches create --name ci-<sha> --expires-at <rfc3339>   # throwaway CI branch, ≤30 days
 ```
