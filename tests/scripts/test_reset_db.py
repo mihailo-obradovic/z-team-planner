@@ -12,6 +12,17 @@ _POOLED = "postgresql+psycopg://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neond
 _DIRECT = "postgresql+psycopg://u:p@ep-x.eu-central-1.aws.neon.tech/neondb"
 
 
+@pytest.fixture(autouse=True)
+def _never_the_developers_env(isolated_env: None) -> None:
+    """Every test here builds `Settings` directly, so none of them may see a real environment.
+
+    ! `_settings()` is a plain function and cannot take a fixture, so the isolation is applied
+    ! for the whole module instead. Without it these tests assert against whatever the
+    ! developer's `.env` happens to hold, and the emulator host README asks for locally is
+    ! enough to make config.py refuse before `guard()` is ever called.
+    """
+
+
 def _settings(service_account_file: Path, **overrides: str) -> Settings:
     values = {
         "database_url": _POOLED,
