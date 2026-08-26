@@ -1,4 +1,4 @@
-"""The harness every `/builds` test drives: a real database, two accounts, one client."""
+"""The harness every `/builds` and `/me` test drives: a real database, two accounts, one client."""
 
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -14,6 +14,7 @@ from app.main import API_V1_PREFIX, create_app
 from app.repositories import users as users_repo
 
 BUILDS = f"{API_V1_PREFIX}/builds"
+ME = f"{API_V1_PREFIX}/me"
 
 
 @dataclass
@@ -57,6 +58,12 @@ class Api:
 
     def delete(self, build_id: str) -> Response:
         return self.client.delete(f"{BUILDS}/{build_id}")
+
+    def me(self) -> Response:
+        return self.client.get(ME)
+
+    def delete_me(self) -> Response:
+        return self.client.delete(ME)
 
     def import_builds(
         self, items: list[dict[str, Any]], key: str | None = None

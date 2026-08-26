@@ -18,7 +18,7 @@ from app.middleware import (
     RequestLoggingMiddleware,
 )
 from app.middleware.metrics import MetricsMiddleware
-from app.routes import builds, health, metrics, shared
+from app.routes import builds, health, me, metrics, shared
 from app.utils.ratelimit import TokenBucketLimiter
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def create_app() -> FastAPI:
     api_v1 = APIRouter(prefix=API_V1_PREFIX)
     api_v1.include_router(builds.router)
     api_v1.include_router(shared.router)
-    # * Feature 004 adds me here.
+    api_v1.include_router(me.router)
     app.include_router(api_v1)
 
     logger.info("Application configured (env=%s)", settings.app_env)

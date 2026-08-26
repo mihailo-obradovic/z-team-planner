@@ -1,10 +1,17 @@
 """`users` — database operations only."""
 
+from uuid import UUID
+
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.models import User
+
+
+def get_by_id(session: Session, user_id: UUID) -> User | None:
+    """The account row, or `None` — absence is a domain outcome, never an exception here."""
+    return session.get(User, user_id)
 
 
 def upsert_by_firebase_uid(

@@ -14,12 +14,12 @@ The backend owns exactly two things — **accounts** and **account builds**. Gam
 - `core/logging.py` — `CatalystFormatter` and `request_id_var`, the contextvar the whole request-tracing chain hangs off.
 - `middleware/` — request id, the access line, the body limit, metrics. CORS is Starlette's own, configured in `main.py`.
 - `exceptions/` — `errors.py` holds the envelope and the `ErrorCode` vocabulary; `handlers.py` registers the four central handlers.
-- `routes/` — `health.py` (`/healthz`, `/readyz`), `metrics.py`, and under `/api/v1` `builds.py` and `shared.py`. Transport only, no business logic.
+- `routes/` — `health.py` (`/healthz`, `/readyz`), `metrics.py`, and under `/api/v1` `builds.py`, `shared.py` and `me.py`. Transport only, no business logic.
 - `utils/ratelimit.py` — the in-process token bucket guarding the public read. A stopgap; see `operations.md` for what it cannot do.
 - `models/` — `base.py` holds the declarative `Base`; the package `__init__` imports every model, which is what Alembic's autogenerate diffs against. `users` landed with feature 005 (its owner is feature 004); `builds` follows in the same feature.
 - `schemas/` — Pydantic DTOs. `builds.py` holds `BuildDocument` (the structural half of a saved build), the request and response shapes, and `render_timestamp` — the one rendering used for both a body's `updated_at` and the `ETag` header, so a client can hand back exactly what it was given.
 - `repositories/` — database operations only, one module per table: `users.py`, `builds.py`, `idempotency.py`.
-- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `builds.py` (naming, the cap, idempotency), `users.py` (resolving a token to an account row).
+- `services/` — business logic and transaction boundaries: `validation.py` (the five tiers), `builds.py` (naming, the cap, idempotency), `users.py` (resolving a token to an account row, and the profile behind `/me`).
 - `auth/` — `get_current_user` and `CurrentUserDep`, the one seam every user-scoped route names; `core/firebase.py` initialises the SDK it calls.
 - `core/game_data.py` — the generated game-data fixture, read once.
 
