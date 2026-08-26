@@ -78,11 +78,14 @@ const { openBuildMenu } = useBuildDialogs();
 
 const { deleteAccountOpen } = useAccountDialogs();
 
-// * Google's own display name, and never editable here (feature 004, Non-goals). The email is
-// * the fallback the server applies too, so the header and `/me` agree on what to call someone.
-const accountName = computed(
-  () => user.value?.displayName || user.value?.email || 'Account'
-);
+// * Google's own display name, and never editable here (feature 004, Non-goals). The fallback
+// * is the email's *local part*, which is the same fallback the service applies when it writes
+// * the row — otherwise the header would say `ada@example.com` where `/me` says `ada`.
+const accountName = computed(() => {
+  const { displayName, email } = user.value ?? {};
+
+  return displayName || email?.split('@', 1)[0] || 'Account';
+});
 
 // * The tier ladder, applied the way the header already applies it: one control per tier,
 // * each showing at its own breakpoint (annex §13). A component cannot ask how wide the

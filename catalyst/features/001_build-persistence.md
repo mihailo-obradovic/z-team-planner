@@ -44,8 +44,8 @@ In scope:
 
 Non-goals:
 
-- Server-side storage or accounts (product non-goal — `context/product-description.md`).
-- Cross-browser/device sync other than by sharing a URL.
+- Server-side storage and accounts — features 004 and 005. This document owns the browser's copy of a build, and every behavior in it works with no account.
+- Cross-browser/device sync other than by sharing a URL; signing in adds that (feature 008) without changing anything here.
 - Migration of hypothetical future format versions; `v: 1` is the only version, and an unknown version is ignored, not migrated.
 
 ## User / System Behavior

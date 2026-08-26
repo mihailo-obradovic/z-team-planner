@@ -104,12 +104,15 @@ describe('AuthMenu', () => {
     ]);
   });
 
-  it('falls back to the email when Google has no display name', async () => {
+  it('falls back to the email local part when Google has no display name', async () => {
     const page = await mountSuspended(
       withStore(() => useAuthStore().setUser({ ...ALICE, displayName: null })),
       { global: { stubs: STUBS } }
     );
 
-    expect(page.text()).toContain('alice@example.com');
+    // * The local part, not the whole address: that is the fallback the service applies when
+    // * it writes the row, and the header must not disagree with `/me` (feature 004).
+    expect(page.text()).toContain('alice');
+    expect(page.text()).not.toContain('alice@example.com');
   });
 });

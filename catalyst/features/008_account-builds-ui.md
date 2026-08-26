@@ -135,7 +135,7 @@ Split out of feature 006 after it was `Active`; it adds no behavior, so the evid
 
 By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds?page=1`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, and `409` toasted the server's own limit message.
 
-Remaining risk: the first-login offer's import path is verified by test and against the endpoint, but has not been walked through a real Google sign-in — feature 004 is still `Approved`, not `Active`.
+The first-login offer's import path was walked end to end when feature 004 landed: four local builds offered, two kept, two rows created and the outcome reported as one toast.
 
 ## Agent Change Rules
 

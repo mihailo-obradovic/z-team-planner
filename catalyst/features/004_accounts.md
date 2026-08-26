@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -142,6 +142,12 @@ Walkthrough — anonymous sees today's app plus a Sign in button and the hint. A
 - `test/nuxt/auth.test.ts`: tri-state store transitions, the 401-refresh-retry-then-sign-out path, the first-login offer shown once.
 
 ## Verification
+
+By test: the six `401` cases and the emulator guard; `/me`'s shape and scoped `build_count`; `DELETE /me`'s cascade, its `503` with nothing deleted, and Firebase-before-row ordering; the popup outcomes; the store and the `401` refresh-retry.
+
+In a browser on 2026-08-26 against the API, the Neon dev branch and the Auth emulator: the signed-out header resolved to **Sign in** with no reflow; a never-seen account created its row with `google_sub` captured; the offer kept 2 of 4 local builds, left all 4 local, and never returned; **Delete account** named the count, answered `204`, took both builds and the Firebase user, and turned a live share link into a `404`; signing in again gave a fresh row, zero builds, and the email's local part as the name. At 320px nothing in the header exceeds the viewport and the sign-in glyph is 44 × 44.
+
+Two defects older than this feature were fixed first — emulator mode reached for Application Default Credentials, and `FIREBASE_AUTH_EMULATOR_HOST` never left `Settings`. Not walked live: a Firebase outage, and a real Google consent screen.
 
 ## Agent Change Rules
 
