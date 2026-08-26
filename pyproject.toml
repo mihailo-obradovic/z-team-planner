@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings",
     "prometheus-client",
     "firebase-admin",
+    "google-auth",
 ]
 
 # * No [build-system]: the API is an application, not a library, so uv keeps it a virtual

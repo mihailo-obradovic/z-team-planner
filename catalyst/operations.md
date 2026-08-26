@@ -116,6 +116,7 @@ Firebase is a vendor: there is no restore, only export. The documented `auth:exp
 ### Quirks
 
 - `FIREBASE_AUTH_EMULATOR_HOST` set outside development is a **total auth bypass** — emulator tokens are unsigned. The API refuses to start with it set unless the environment is explicitly development.
+- **The emulator needs `--project`, and it must match `FIREBASE_PROJECT_ID`.** `firebase emulators:start --only auth` on its own mints tokens for `demo-no-project`, and the API refuses every one of them with a `401` — it checks the audience, so the failure looks like a broken sign-in rather than a misconfigured emulator.
 - The token's `sub` is the Firebase uid, not the Google account id. The Google subject is in `firebase.identities`; copy it at first sign-in, never rely on reading it later.
 - Do not upgrade the project to Identity Platform: it caps social sign-in at 3,000 DAU/day where plain Firebase Auth has no cap, and the upgrade has no documented downgrade path.
 - Unverified Google-only apps show `<project-id>.firebaseapp.com` on the consent screen, not the app name. Harmless, but users will ask.

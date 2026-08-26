@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     # * The service-account JSON firebase-admin authenticates with. Optional only when the emulator is in use, which the guard below already confines to development.
     firebase_service_account_file: Path | None = None
 
-    # * Read by firebase-admin itself, straight from the environment. Nothing here passes it on; these two guards are the only code that looks at it.
+    # * Read by firebase-admin itself, straight from os.environ — which is why init_firebase exports it back out after this class has read it from `.env`. The two guards below are the only other code that looks at it.
     firebase_auth_emulator_host: str | None = None
 
     @field_validator("database_url", "database_url_direct")

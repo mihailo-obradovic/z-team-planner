@@ -51,12 +51,14 @@ uv run alembic upgrade head                                          # direct en
 ```
 
 ```bash
-firebase emulators:start --only auth                                 # :9099, for signing in
+firebase emulators:start --only auth --project z-team-planner        # :9099, for signing in
 uv run uvicorn app.main:create_app --factory --reload --port 8000    # the API
 pnpm dev                                                             # the app, :3000
 ```
 
 To sign in against the emulator rather than a real Google account, also set `NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost:9099`; the web SDK then talks to it instead of Google, and the API accepts the tokens it mints.
+
+`--project` is not optional, and it must match `FIREBASE_PROJECT_ID`. Without it the emulator mints tokens for `demo-no-project`, and the API refuses every one of them with a `401` — it checks the audience, so a token for another project never passes (feature 004).
 
 Check the API is alive with `curl localhost:8000/healthz` and that it can reach the database with `curl localhost:8000/readyz`. A suspended Neon compute makes the first `/readyz` take about a second while it wakes — that is normal, not a fault.
 
