@@ -9,6 +9,7 @@
     "preview": "nuxt preview",
     "preinstall": "npx only-allow pnpm",
     "postinstall": "nuxt prepare",
+    "game-data:export": "node scripts/export-game-data.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",

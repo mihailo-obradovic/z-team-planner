@@ -70,6 +70,10 @@ export const EP4_HIRE_OPTIONS = [
   'waterboy'
 ] as const satisfies readonly HeroId[];
 
+// * The planner's episode defaults — the values feature 001's serializer omits. Exported so the game-data export (feature 005) reads them from the one source rather than a copy.
+export const DEFAULT_EP3_CUT: HeroId = 'sonar';
+export const DEFAULT_EP4_HIRE: HeroId = 'waterboy';
+
 // ============================================================================
 // LEVEL SYSTEM
 // ============================================================================

@@ -1,4 +1,6 @@
 import {
+  DEFAULT_EP3_CUT,
+  DEFAULT_EP4_HIRE,
   EP3_CUT_OPTIONS,
   EP4_HIRE_OPTIONS,
   BASE_SYNERGY_PAIRS,
@@ -9,8 +11,8 @@ import type { Hero, HeroId } from '@/types/hero';
 //  * Composable for managing episode choices and hero visibility.
 //  * Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
 export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
-  const ep3Cut = useState<HeroId>('ep3Cut', () => 'sonar');
-  const ep4Hire = useState<HeroId>('ep4Hire', () => 'waterboy');
+  const ep3Cut = useState<HeroId>('ep3Cut', () => DEFAULT_EP3_CUT);
+  const ep4Hire = useState<HeroId>('ep4Hire', () => DEFAULT_EP4_HIRE);
   const showEp8Recruits = useState('showEp8Recruits', () => false);
 
   const ep3CutItems = computed(

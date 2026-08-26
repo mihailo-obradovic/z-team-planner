@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["pyproject.toml", "uv.lock"],
+  "ignorePatterns": ["pyproject.toml", "uv.lock", "shared/game-data.json"],
   "singleQuote": true,
   "trailingComma": "none",
   "semi": true,

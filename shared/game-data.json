@@ -1,0 +1,155 @@
+{
+  "stat_names": [
+    "combat",
+    "intellect",
+    "vigor",
+    "charisma",
+    "mobility"
+  ],
+  "max_stat_value": 10,
+  "max_level_ups": 9,
+  "max_bonus_points": 4,
+  "max_bonus_level_per_hero": 4,
+  "max_power_trainings": 7,
+  "max_flight_trainings": 2,
+  "ep3_cut_options": [
+    "coupe",
+    "sonar"
+  ],
+  "ep4_hire_options": [
+    "phenomaman",
+    "waterboy"
+  ],
+  "default_ep3_cut": "sonar",
+  "default_ep4_hire": "waterboy",
+  "fixed_level_heroes": [
+    "phenomaman",
+    "blonde-blazer"
+  ],
+  "flight_school_heroes": [
+    "coupe",
+    "flambae",
+    "sonar"
+  ],
+  "special_powers": {
+    "flambae": {
+      "max": 1,
+      "requires_trainable": 2
+    },
+    "coupe": {
+      "max": 2
+    }
+  },
+  "heroes": {
+    "coupe": {
+      "starting_stats": [
+        4,
+        3,
+        1,
+        1,
+        3
+      ],
+      "trainable_powers": 2
+    },
+    "flambae": {
+      "starting_stats": [
+        4,
+        1,
+        2,
+        2,
+        3
+      ],
+      "trainable_powers": 2
+    },
+    "golem": {
+      "starting_stats": [
+        3,
+        1,
+        4,
+        2,
+        2
+      ],
+      "trainable_powers": 2
+    },
+    "invisigal": {
+      "starting_stats": [
+        3,
+        2,
+        2,
+        1,
+        3
+      ],
+      "trainable_powers": 2
+    },
+    "malevola": {
+      "starting_stats": [
+        3,
+        2,
+        2,
+        3,
+        2
+      ],
+      "trainable_powers": 2
+    },
+    "phenomaman": {
+      "starting_stats": [
+        7,
+        1,
+        7,
+        2,
+        6
+      ],
+      "trainable_powers": 2
+    },
+    "prism": {
+      "starting_stats": [
+        4,
+        2,
+        1,
+        4,
+        1
+      ],
+      "trainable_powers": 2
+    },
+    "punch-up": {
+      "starting_stats": [
+        3,
+        1,
+        4,
+        3,
+        1
+      ],
+      "trainable_powers": 2
+    },
+    "sonar": {
+      "starting_stats": [
+        2,
+        4,
+        1,
+        3,
+        2
+      ],
+      "trainable_powers": 2
+    },
+    "waterboy": {
+      "starting_stats": [
+        1,
+        2,
+        2,
+        1,
+        2
+      ],
+      "trainable_powers": 2
+    },
+    "blonde-blazer": {
+      "starting_stats": [
+        8,
+        7,
+        8,
+        6,
+        7
+      ],
+      "trainable_powers": 0
+    }
+  }
+}

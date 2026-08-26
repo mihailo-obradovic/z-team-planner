@@ -1,4 +1,4 @@
-import { STAT_NAMES } from '@/types/hero';
+import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SavedBuild, SerializedBuild } from '@/types/build';
 
@@ -9,9 +9,6 @@ import type { SavedBuild, SerializedBuild } from '@/types/build';
 const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 const URL_PARAM = 'build';
-
-const DEFAULT_EP3_CUT: HeroId = 'sonar';
-const DEFAULT_EP4_HIRE: HeroId = 'waterboy';
 
 // ============================================================================
 // LOCAL STORAGE HELPER
