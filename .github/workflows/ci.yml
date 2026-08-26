@@ -26,6 +26,10 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
+      # * Was missing, and master drifted out of format while CI stayed green.
+      - name: Format check
+        run: pnpm run format:check
+
       - name: Typecheck
         run: pnpm run typecheck
 

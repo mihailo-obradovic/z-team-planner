@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["pyproject.toml", "uv.lock"],
   "singleQuote": true,
   "trailingComma": "none",
   "semi": true,

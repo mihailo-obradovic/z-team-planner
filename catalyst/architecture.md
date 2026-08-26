@@ -210,12 +210,26 @@ This table lists what **this project** runs — pruned from the template's full 
 
 Packages this project runs that the adopted stack modules' Approved Libraries do not already name. One row per package, added with the user's explicit approval in the same change that introduces it (Dependency Change Rule).
 
-| Package              | Group   | Layer   | Why it is needed                                                                                  | Approved by  |
-| -------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------- | ------------ |
-| `uvicorn[standard]`  | runtime | Backend | FastAPI is an ASGI framework and ships no server; nothing runs without one.                        | decision 005 |
-| `pydantic-settings`  | runtime | Backend | Pydantic v2 moved `BaseSettings` into its own distribution; the module's one-`Settings`-class binding needs it. | decision 005 |
-| `httpx`              | dev     | Backend | Starlette's `TestClient` is a thin wrapper over it; no route can be tested without it.             | decision 005 |
+| Package             | Group   | Layer   | Why it is needed                                                                                                | Approved by  |
+| ------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------- | ------------ |
+| `uvicorn[standard]` | runtime | Backend | FastAPI is an ASGI framework and ships no server; nothing runs without one.                                     | decision 005 |
+| `pydantic-settings` | runtime | Backend | Pydantic v2 moved `BaseSettings` into its own distribution; the module's one-`Settings`-class binding needs it. | decision 005 |
+| `httpx`             | dev     | Backend | Starlette's `TestClient` is a thin wrapper over it; no route can be tested without it.                          | decision 005 |
 
 `psycopg` is not listed here — the persistence module's Backend Pairings table already names it as the `python-fastapi` client.
+
+| Package              | Group   | Layer    | Why it is needed                                                            | Approved by |
+| -------------------- | ------- | -------- | --------------------------------------------------------------------------- | ----------- |
+| `pinia`              | runtime | Frontend | The store library the Nuxt module's client-state rules are written against. | feature 006 |
+| `@pinia/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
+| `@pinia/colada`      | runtime | Frontend | Server-state cache; the only home for API responses.                        | feature 006 |
+| `@pinia/colada-nuxt` | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
+| `zod`                | runtime | Frontend | Responses are parsed at the service boundary, never asserted.               | feature 006 |
+| `firebase`           | runtime | Frontend | The web SDK that issues the ID token every request carries.                 | feature 006 |
+| `@regle/core`        | runtime | Frontend | Form validation whose rules mirror the server's.                            | feature 006 |
+| `@regle/rules`       | runtime | Frontend | The rule set for the above.                                                 | feature 006 |
+| `@regle/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
+
+`@vueuse/core` was considered and deliberately not added (feature 006).
 
 The composition floor is **at least one of Backend and Frontend, and a backend brings Persistence with it**. Every other layer is **optional**, adopted when its trigger fires, not in anticipation, and never replacing that floor. Background work: when work must run outside the request/response cycle — queues, scheduled jobs, fan-out. Deployment: when the project needs a reproducible multi-service run or ship story rather than each service started by hand. Identity: when the product gains end-user accounts, roles, or permissions beyond a single trusted operator group — a small internal tool never pays the IdP tax, and nobody hand-rolls auth to dodge it. Maintenance: once the project has a committed lockfile or pinned image tags to keep current; pins stay exact, and bumping an existing dependency is not a way around the Dependency Change Rule, which still owns every _new_ one.
