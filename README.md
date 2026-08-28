@@ -81,7 +81,7 @@ pnpm test        # vitest            uv run pytest
 
 Open the repository root, not either sub-directory. On first open the editor offers the recommended extensions from `.vscode/extensions.json` — accept them: oxc provides lint and format for TypeScript, Vue, CSS and JSON (`.vscode/settings.json` already sets it as the formatter and turns on format-on-save), Volar handles Vue SFCs, and Better Comments colours the `// *` and `// !` annotation markers this codebase uses throughout.
 
-For the Python side, add **ms-python.python** and **charliermarsh.ruff** yourself — they are not in the recommendation list, which Catalyst generates and which currently ships no Python entries. Point the interpreter at `.venv/bin/python`, which `uv sync` creates.
+The Python side is in the same list: the Python extension and its debugger, Ruff as formatter (`settings.json` makes it the Python formatter and organises imports on save), and Pyright for the editor — **anysphere.cursorpyright** on Cursor, **ms-python.vscode-pylance** on VS Code; each editor reports the other as not found, so install the one yours can. mise (**hverlin.mise-vscode**) picks up the Node pin from `mise.toml`. `settings.json` points the interpreter at `.venv/bin/python`, which `uv sync` creates.
 
 ## Production
 
