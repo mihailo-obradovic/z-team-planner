@@ -9,8 +9,7 @@ import {
 } from '@/types/hero';
 import type { Hero, HeroId } from '@/types/hero';
 
-//  * Composable for managing episode choices and hero visibility.
-//  * Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
+// * Composable for managing episode choices and hero visibility. Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
 export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
   const ep3Cut = useState<HeroId>('ep3Cut', () => DEFAULT_EP3_CUT);
   const ep4Hire = useState<HeroId>('ep4Hire', () => DEFAULT_EP4_HIRE);
@@ -43,6 +42,11 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
 
     return ids;
   });
+
+  // * Who cannot be trained, asked as its own question rather than reusing `ep8RecruitIds` at the call sites. Arriving that late is what removes the training, so the two sets currently hold the same heroes — but they answer different questions, and the arrival set is also what decides who gets a card, which is not a training concern. A hero hired in episode 4 is never in here: that is what keeps Heavily Medicated reachable for Phenomaman, and it is the reason this is separate from FIXED_LEVEL_HEROES, which fixes his level in both cases.
+  const untrainableIds = computed<Set<HeroId>>(
+    () => new Set<HeroId>(ep8RecruitIds.value)
+  );
 
   const visibleHeroes = computed(
     () =>
@@ -116,6 +120,8 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     ep8RecruitIds,
     ep8Recruits,
     showEp8Recruits,
+
+    untrainableIds,
 
     // * The heroes that have a card, and so the only ones any control can reach. Derived here already for `ep8Recruits` and `synergyPairColumns`; exposed so feature 005's agreement test can ask the app which heroes are drivable instead of keeping its own copy of the rule.
     visibleHeroes,

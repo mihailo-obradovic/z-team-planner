@@ -19,11 +19,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button
-          variant="ghost"
-          color="neutral"
-          @click="deleteAccountOpen = false"
-        >
+        <u-button variant="ghost" color="neutral" @click="handleCancel">
           Cancel
         </u-button>
 
@@ -78,6 +74,10 @@ const { mutate: deleteAccount, isLoading: isDeleting } = useDeleteMe({
     toast.add({ title: 'Your account has been deleted', color: 'success' });
   }
 });
+
+function handleCancel() {
+  deleteAccountOpen.value = false;
+}
 
 function handleDelete() {
   deleteAccount();

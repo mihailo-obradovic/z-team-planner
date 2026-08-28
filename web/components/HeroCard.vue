@@ -66,7 +66,7 @@
             :icon="sonarFormIcon"
             :color="monsterForm ? 'primary' : 'neutral'"
             :active="monsterForm"
-            @click="monsterForm = !monsterForm"
+            @click="handleToggleForm"
           />
 
           <TooltipButton
@@ -212,7 +212,7 @@ const {
   toggleStartingPower,
   toggleTrainablePower,
   trainingsUsed,
-  ep8RecruitIds,
+  untrainableIds,
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
@@ -260,7 +260,7 @@ const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || ep8RecruitIds.value.has(props.heroId)) return [];
+  if (!powers.value || untrainableIds.value.has(props.heroId)) return [];
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
@@ -378,6 +378,10 @@ const sonarFormIcon = computed(() => {
 const sonarFormTooltip = computed(() => {
   return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
 });
+
+function handleToggleForm() {
+  monsterForm.value = !monsterForm.value;
+}
 
 function resolvedStat(stat: StatName): StatName {
   if (props.heroId === 'sonar' && monsterForm.value) {

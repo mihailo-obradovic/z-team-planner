@@ -1,23 +1,17 @@
 import type { HeroId } from '@/types/hero';
 
-// ============================================================================
-// BUILD SERIALIZATION
-// ============================================================================
+// * Build serialization
 
-/**
- * Compact serialized format for URL sharing and localStorage.
- * Only non-default values are included to keep URLs short.
- *
- * Field naming uses short keys to minimize URL length:
- * - ec = episode 3 cut
- * - eh = episode 4 hire
- * - e8 = show episode 8 recruits
- * - lu = level-ups (stat allocations per hero)
- * - bl = bonus levels per hero
- * - pw = power selections per hero [startingRevealed, trainableSelected]
- * - sp = special power states per hero
- * - fl = flight-trained hero IDs
- */
+// * Compact serialized format for URL sharing and localStorage. Only non-default values are included to keep URLs short.
+// * Field naming uses short keys to minimize URL length:
+// * - ec = episode 3 cut
+// * - eh = episode 4 hire
+// * - e8 = show episode 8 recruits
+// * - lu = level-ups (stat allocations per hero)
+// * - bl = bonus levels per hero
+// * - pw = power selections per hero [startingRevealed, trainableSelected]
+// * - sp = special power states per hero
+// * - fl = flight-trained hero IDs
 export interface SerializedBuild {
   v: 1;
   ec?: HeroId;
@@ -30,13 +24,9 @@ export interface SerializedBuild {
   fl?: string[];
 }
 
-// ============================================================================
-// BUILD STORAGE
-// ============================================================================
+// * Build storage
 
-/**
- * A named build saved in localStorage.
- */
+// * A named build saved in localStorage.
 export interface SavedBuild {
   id: string;
   name: string;

@@ -2,17 +2,13 @@ import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SavedBuild, SerializedBuild } from '@/types/build';
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+// * Constants
 
 const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 const URL_PARAM = 'build';
 
-// ============================================================================
-// LOCAL STORAGE HELPER
-// ============================================================================
+// * Local storage helper
 
 function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
   const data = ref(defaultValue) as Ref<T>;
@@ -41,9 +37,7 @@ function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
   return data;
 }
 
-// ============================================================================
-// SERIALIZATION HELPERS
-// ============================================================================
+// * Serialization helpers
 
 function statsToArray(stats: HeroStats): number[] {
   return STAT_NAMES.map((s) => stats[s]);
@@ -59,9 +53,7 @@ function isZeroStats(stats: HeroStats): boolean {
   return STAT_NAMES.every((s) => stats[s] === 0);
 }
 
-// ============================================================================
-// SERIALIZATION
-// ============================================================================
+// * Serialization
 
 function serializeCurrentState(
   ep3Cut: Ref<HeroId>,
@@ -143,8 +135,7 @@ async function deserializeIntoState(
   heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
   heroFlights: Ref<Partial<Record<HeroId, boolean>>>
 ) {
-  // * Set episode choices first — watchers in sub-composables reset
-  // * dependent state for cut/non-hired heroes during the next tick
+  // * Set episode choices first — watchers in sub-composables reset dependent state for cut/non-hired heroes during the next tick
   ep3Cut.value = build.ec ?? DEFAULT_EP3_CUT;
   ep4Hire.value = build.eh ?? DEFAULT_EP4_HIRE;
   showEp8Recruits.value = build.e8 === 1;
@@ -211,9 +202,7 @@ async function deserializeIntoState(
   heroFlights.value = fl;
 }
 
-// ============================================================================
-// URL ENCODING / DECODING
-// ============================================================================
+// * URL encoding / decoding
 
 function encodeBuildToUrl(build: SerializedBuild): string {
   const json = JSON.stringify(build);
@@ -236,9 +225,7 @@ function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
   }
 }
 
-// ============================================================================
-// COMPOSABLE
-// ============================================================================
+// * Composable
 
 export function useBuildPersistence() {
   // * Access all mutable state via useState (same refs as sub-composables)
@@ -265,8 +252,7 @@ export function useBuildPersistence() {
   // * Shared-build mode
   const isViewingSharedBuild = ref(false);
 
-  // * Dirty tracking
-  // * Snapshot of the last-saved state, used to detect unsaved changes
+  // * Dirty tracking Snapshot of the last-saved state, used to detect unsaved changes
   const savedSnapshot = ref<string>('');
 
   function takeSnapshot(): string {
@@ -307,12 +293,8 @@ export function useBuildPersistence() {
     );
   }
 
-  /**
-   * The planner's current state as a `SerializedBuild`.
-   *
-   * Exposed so an account save (feature 005) stores exactly the format a local save stores —
-   * one serialiser, so the two paths cannot drift.
-   */
+  // * The planner's current state as a `SerializedBuild`.
+  // * Exposed so an account save (feature 005) stores exactly the format a local save stores — one serialiser, so the two paths cannot drift.
   function serializeCurrentBuild(): SerializedBuild {
     return serializeCurrentState(
       ep3Cut,
@@ -496,26 +478,16 @@ export function useBuildPersistence() {
   }
 
   // * Initialization
-  /**
-   * Load a build document fetched from the API into the planner, in shared-build mode.
-   *
-   * The `?build=` path decodes a snapshot out of the URL; this one takes an already-decoded
-   * document from `/b/{id}` (feature 007). Both end in the same deserialisation, so the
-   * ordering guarantee — episode choices first, dependent state after `nextTick()` — holds
-   * for either entry point.
-   */
+  // * Load a build document fetched from the API into the planner, in shared-build mode.
+  // * The `?build=` path decodes a snapshot out of the URL; this one takes an already-decoded document from `/b/{id}` (feature 007). Both end in the same deserialisation, so the ordering guarantee — episode choices first, dependent state after `nextTick()` — holds for either entry point.
   async function loadSharedBuild(build: SerializedBuild) {
     isViewingSharedBuild.value = true;
 
     await applySerializedBuild(build);
   }
 
-  /**
-   * Load an account build (feature 008) into the planner.
-   *
-   * Same deserialisation as the shared path, but *not* shared-build mode: the signed-in owner
-   * is editing their own document, so the "viewing shared build" banner must not appear.
-   */
+  // * Load an account build (feature 008) into the planner.
+  // * Same deserialisation as the shared path, but *not* shared-build mode: the signed-in owner is editing their own document, so the "viewing shared build" banner must not appear.
   async function loadAccountBuild(build: SerializedBuild) {
     isViewingSharedBuild.value = false;
 
@@ -565,8 +537,7 @@ export function useBuildPersistence() {
     }
 
     if (!isViewingSharedBuild.value) {
-      // * No build param, or an undecodable one - fall back to the active
-      // * build and strip the dead param so a reload cannot re-trip on it
+      // * No build param, or an undecodable one - fall back to the active build and strip the dead param so a reload cannot re-trip on it
       if (buildParam) clearUrlParam();
 
       const active = getActiveBuild();
@@ -586,11 +557,11 @@ export function useBuildPersistence() {
       }
     }
 
-    // Take initial snapshot for dirty tracking
+    // * Take initial snapshot for dirty tracking
     updateSavedSnapshot();
   }
 
-  // --- Beforeunload ---
+  // * Beforeunload
 
   function setupBeforeUnload() {
     if (import.meta.server) return;
@@ -602,9 +573,7 @@ export function useBuildPersistence() {
     });
   }
 
-  // * Derived here rather than in a component: both the build controls and the
-  // * dialogs that rename or delete the active build need the same name, and they
-  // * no longer share a component to compute it in.
+  // * Derived here rather than in a component: both the build controls and the dialogs that rename or delete the active build need the same name, and they no longer share a component to compute it in.
   const activeBuildName = computed(
     () =>
       savedBuilds.value.find((b) => b.id === activeBuildId.value)?.name ??
@@ -612,14 +581,14 @@ export function useBuildPersistence() {
   );
 
   return {
-    // State
+    // * State
     savedBuilds: computed(() => savedBuilds.value),
     activeBuildId: computed(() => activeBuildId.value),
     activeBuildName,
     isViewingSharedBuild: computed(() => isViewingSharedBuild.value),
     hasUnsavedChanges,
 
-    // Build management
+    // * Build management
     serializeCurrentBuild,
     saveBuild,
     saveAsNewBuild,
@@ -627,17 +596,17 @@ export function useBuildPersistence() {
     deleteBuild,
     renameBuild,
 
-    // Sharing
+    // * Sharing
     shareBuild,
     getShareUrl,
 
-    // Server-side build actions
+    // * Server-side build actions
     loadSharedBuild,
     loadAccountBuild,
     saveSharedAsMyBuild,
     backToMyBuild,
 
-    // Lifecycle
+    // * Lifecycle
     initialize,
     setupBeforeUnload
   };

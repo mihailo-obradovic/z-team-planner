@@ -108,6 +108,10 @@
 </template>
 
 <script setup lang="ts">
+const title = 'Z-Team Planner';
+const description =
+  'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.';
+
 const { initialize, setupBeforeUnload } = useHeroPlanner();
 
 const storySetupOpen = ref(false);
@@ -129,11 +133,8 @@ useHead({
   }
 });
 
-const title = 'Z-Team Planner';
-const description =
-  'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.';
-
-// TODO: Extend
+// ! No ogImage or twitterImage on purpose. Both pointed at a Nuxt UI template screenshot left over from the starter, and decision 003 removed them rather than ship a picture of someone else's product — twitterCard dropped to `summary` at the same time, so cards render as text instead of a broken image.
+// TODO: Add a real share image, then restore ogImage/twitterImage here and set twitterCard back to `summary_large_image`.
 useSeoMeta({
   title,
   description,

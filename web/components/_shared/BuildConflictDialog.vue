@@ -41,8 +41,7 @@ const { loadAccountBuild, serializeCurrentBuild } = useHeroPlanner();
 
 const { setActiveAccountBuildId } = useAuthStore();
 
-// * Formatted, not the raw ISO string. Safe from a hydration mismatch because this dialog
-// * only ever renders after a failed save, which is client-side by definition.
+// * Formatted, not the raw ISO string. Safe from a hydration mismatch because this dialog only ever renders after a failed save, which is client-side by definition.
 const savedElsewhereAt = computed(() => {
   const timestamp = conflictBuild.value?.updated_at;
 
@@ -56,12 +55,8 @@ const { mutate: createBuild } = useCreateBuild({
   }
 });
 
-/**
- * Take the other device's version.
- *
- * The planner is replaced by their document, which also refreshes the cached build the next
- * save reads its `ETag` from — so the following save is no longer stale.
- */
+// * Take the other device's version.
+// * The planner is replaced by their document, which also refreshes the cached build the next save reads its `ETag` from — so the following save is no longer stale.
 async function handleReloadTheirs() {
   if (!conflictBuild.value) {
     return;
@@ -72,12 +67,8 @@ async function handleReloadTheirs() {
   conflictOpen.value = false;
 }
 
-/**
- * Keep the local edits as a separate build.
- *
- * A create rather than a patch, so neither version is lost — the server suffixes the name if
- * it collides, and the returned name is what the toast reports.
- */
+// * Keep the local edits as a separate build.
+// * A create rather than a patch, so neither version is lost — the server suffixes the name if it collides, and the returned name is what the toast reports.
 function handleSaveMineAsNew() {
   if (!conflictBuild.value) {
     return;

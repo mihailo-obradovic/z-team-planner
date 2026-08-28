@@ -1,29 +1,16 @@
-/**
- * Hero Type System for Z-Team Planner
- *
- * This file defines all types related to heroes in the Dispatch game.
- * For full game mechanics, see catalyst/context/game-mechanics.md
- *
- * ## Design Principles
- *
- * 1. **Separation of Data and State**: The `Hero` type contains only static data
- *    (id, name, starting stats). All dynamic state (level-ups, power selections,
- *    flight training) is managed separately in the useHeroPlanner composable.
- *
- * 2. **Type Safety**: Power and flight capabilities are strongly typed to prevent
- *    invalid configurations at compile time.
- *
- * 3. **Game Rule Encoding**: Types reflect game rules like:
- *    - Most heroes exactly 3 powers (1 starting + 2 trainable options)
- *    - Only 1 of the 2 trainable powers can be selected
- *    - Some powers override the starting power
- *    - Flight capability varies by hero type
- *    - Synergy pairs are specific combinations of heroes
- */
+// * Hero Type System for Z-Team Planner
+// * This file defines all types related to heroes in the Dispatch game. For full game mechanics, see catalyst/context/game-mechanics.md
+// * ## Design Principles
+// * 1. **Separation of Data and State**: The `Hero` type contains only static data (id, name, starting stats). All dynamic state (level-ups, power selections, flight training) is managed separately in the useHeroPlanner composable.
+// * 2. **Type Safety**: Power and flight capabilities are strongly typed to prevent invalid configurations at compile time.
+// * 3. **Game Rule Encoding**: Types reflect game rules like:
+// * - Most heroes exactly 3 powers (1 starting + 2 trainable options)
+// * - Only 1 of the 2 trainable powers can be selected
+// * - Some powers override the starting power
+// * - Flight capability varies by hero type
+// * - Synergy pairs are specific combinations of heroes
 
-// ============================================================================
-// HERO IDENTIFIERS
-// ============================================================================
+// * Hero identifiers
 
 export type HeroId =
   | 'blonde-blazer'
@@ -38,9 +25,7 @@ export type HeroId =
   | 'sonar'
   | 'waterboy';
 
-// ============================================================================
-// STATS SYSTEM
-// ============================================================================
+// * Stats system
 
 export const STAT_NAMES = [
   'combat',
@@ -56,9 +41,7 @@ export type HeroStats = Record<StatName, number>;
 
 export const MAX_STAT_VALUE = 10;
 
-// ============================================================================
-// EPISODE CHOICES
-// ============================================================================
+// * Episode choices
 
 export const EP3_CUT_OPTIONS = [
   'coupe',
@@ -79,9 +62,7 @@ export const EP8_ALWAYS_RECRUITED = [
 export const DEFAULT_EP3_CUT: HeroId = 'sonar';
 export const DEFAULT_EP4_HIRE: HeroId = 'waterboy';
 
-// ============================================================================
-// LEVEL SYSTEM
-// ============================================================================
+// * Level system
 
 export const FIXED_LEVEL_HEROES = {
   phenomaman: 12,
@@ -92,42 +73,28 @@ export const MAX_LEVEL_UPS = 9;
 export const MAX_BONUS_POINTS = 4;
 export const MAX_BONUS_LEVEL_PER_HERO = 4;
 
-// ============================================================================
-// POWER SYSTEM
-// ============================================================================
+// * Power system
 
-/**
- * Definition of a single hero power.
- * Most heroes have exactly 3 powers: 1 starting + 2 trainable options.
- * Only one of the two trainable powers can be selected.
- * Episode 8 hires have only 1 power: the starting power.
- */
+// * Definition of a single hero power. Most heroes have exactly 3 powers: 1 starting + 2 trainable options. Only one of the two trainable powers can be selected. Episode 8 hires have only 1 power: the starting power.
 export interface HeroPowerDefinition {
   name: string;
   description: string;
-  /** Which slot this power occupies in the hero's power set */
+  // * Which slot this power occupies in the hero's power set
   slot: 'starting' | 'trainable-1' | 'trainable-2';
-  /** If true, selecting this power replaces/upgrades the starting power */
+  // * If true, selecting this power replaces/upgrades the starting power
   overridesStarting?: boolean;
 }
 
-/**
- * A complete set of powers for a hero (always 3).
- * Index 0: Starting power (always present, may be overridden)
- * Index 1: First trainable option (mutually exclusive with index 2)
- * Index 2: Second trainable option (mutually exclusive with index 1)
- */
+// * A complete set of powers for a hero (always 3). Index 0: Starting power (always present, may be overridden) Index 1: First trainable option (mutually exclusive with index 2) Index 2: Second trainable option (mutually exclusive with index 1)
 export type HeroPowerSet = [
   HeroPowerDefinition,
   HeroPowerDefinition,
   HeroPowerDefinition
 ];
 
-/**
- * User's power selection state for a hero.
- * - startingRevealed: Whether the starting power has been revealed/used
- * - trainableSelected: Which trainable power is selected (0 = none, 1 = first, 2 = second)
- */
+// * User's power selection state for a hero.
+// * - startingRevealed: Whether the starting power has been revealed/used
+// * - trainableSelected: Which trainable power is selected (0 = none, 1 = first, 2 = second)
 export interface HeroPowerSelection {
   startingRevealed: boolean;
   trainableSelected: 0 | 1 | 2;
@@ -135,17 +102,13 @@ export interface HeroPowerSelection {
 
 export const MAX_POWER_TRAININGS = 7;
 
-// ============================================================================
-// FLIGHT SYSTEM
-// ============================================================================
+// * Flight system
 
-/**
- * Determines how/when a hero can fly. See catalyst/context/game-mechanics.md for flight mechanics details.
- * - 'innate': Always can fly
- * - 'conditional-power': Can fly based on power selection
- * - 'trainable': Can learn through Flight School
- * - 'none': Cannot fly
- */
+// * Determines how/when a hero can fly. See catalyst/context/game-mechanics.md for flight mechanics details.
+// * - 'innate': Always can fly
+// * - 'conditional-power': Can fly based on power selection
+// * - 'trainable': Can learn through Flight School
+// * - 'none': Cannot fly
 export type FlightCapability =
   | { type: 'innate' }
   | {
@@ -376,7 +339,7 @@ export const HERO_POWERS = {
         "All heroes that pass through Blazer's radiant light gain a protective shield that defends them against one injury.",
       slot: 'starting' as const
     },
-    // Blonde Blazer only has starting power, add dummy trainable slots
+    // * Blonde Blazer only has starting power, add dummy trainable slots
     {
       name: '',
       description: '',
@@ -390,10 +353,7 @@ export const HERO_POWERS = {
   ]
 } as const satisfies Partial<Record<HeroId, HeroPowerSet>>;
 
-/**
- * Special power mechanics for heroes with toggle-able stat bonuses.
- * Currently only Flambae (Supernova) and Coupe (En Pointe/À la Seconde) have special powers.
- */
+// * Special power mechanics for heroes with toggle-able stat bonuses. Currently only Flambae (Supernova) and Coupe (En Pointe/À la Seconde) have special powers.
 export const SPECIAL_POWER_MECHANICS = {
   flambae: {
     type: 'supernova' as const,
@@ -409,10 +369,7 @@ export const SPECIAL_POWER_MECHANICS = {
   }
 } as const satisfies Partial<Record<HeroId, any>>;
 
-/**
- * Flight capability information for each hero.
- * Name and description of their flight ability.
- */
+// * Flight capability information for each hero. Name and description of their flight ability.
 export interface FlightInfo {
   name: string;
   description: string;
@@ -445,30 +402,22 @@ export const HERO_FLIGHT = {
   }
 } as const satisfies Partial<Record<HeroId, FlightInfo>>;
 
-/**
- * Flight capability type for each hero.
- * Determines how/when a hero can fly.
- */
+// * Flight capability type for each hero. Determines how/when a hero can fly.
 export const HERO_FLIGHT_CAPABILITY = {
   'blonde-blazer': { type: 'innate' },
   phenomaman: {
     type: 'conditional-power',
     requiresPowerSlot: 'trainable-1',
     inverted: true
-  }, // Loses flight if Heavily Medicated selected
-  sonar: { type: 'trainable' }, // Must train at Flight School; only visually active when transformed (UI concern)
+  }, // * Loses flight if Heavily Medicated selected
+  sonar: { type: 'trainable' }, // * Must train at Flight School; only visually active when transformed
   coupe: { type: 'trainable' },
   flambae: { type: 'trainable' }
 } as const satisfies Partial<Record<HeroId, FlightCapability>>;
 
-// ============================================================================
-// SYNERGY SYSTEM
-// ============================================================================
+// * Synergy system
 
-/**
- * Synergy pairs increase success chance by 5% per level (max 15% at level 3).
- * Only certain hero combinations have synergy.
- */
+// * Synergy pairs increase success chance by 5% per level (max 15% at level 3). Only certain hero combinations have synergy.
 export interface SynergyPair {
   hero1: HeroId;
   hero2: HeroId;
@@ -476,9 +425,7 @@ export interface SynergyPair {
 
 export type SynergyLevel = 1 | 2 | 3;
 
-/**
- * Base synergy pairs that are always available (from Episode 3 onwards).
- */
+// * Base synergy pairs that are always available (from Episode 3 onwards).
 export const BASE_SYNERGY_PAIRS: readonly SynergyPair[] = [
   { hero1: 'golem', hero2: 'invisigal' },
   { hero1: 'prism', hero2: 'flambae' },
@@ -486,11 +433,7 @@ export const BASE_SYNERGY_PAIRS: readonly SynergyPair[] = [
   { hero1: 'punch-up', hero2: 'coupe' }
 ] as const;
 
-/**
- * Conditional synergy pairs that depend on Episode 3/4 choices.
- * When Coupé is cut, Punch Up loses his partner and gains a new one (Phenomaman or Waterboy).
- * When Sonar is cut, Malevola loses her partner and gains a new one (Phenomaman or Waterboy).
- */
+// * Conditional synergy pairs that depend on Episode 3/4 choices. When Coupé is cut, Punch Up loses his partner and gains a new one (Phenomaman or Waterboy). When Sonar is cut, Malevola loses her partner and gains a new one (Phenomaman or Waterboy).
 export const CONDITIONAL_SYNERGY_PAIRS = {
   'coupe-cut-phenomaman-hired': { hero1: 'punch-up', hero2: 'phenomaman' },
   'coupe-cut-waterboy-hired': { hero1: 'punch-up', hero2: 'waterboy' },
@@ -498,29 +441,17 @@ export const CONDITIONAL_SYNERGY_PAIRS = {
   'sonar-cut-waterboy-hired': { hero1: 'malevola', hero2: 'waterboy' }
 } as const satisfies Record<string, SynergyPair>;
 
-// ============================================================================
-// HERO DATA
-// ============================================================================
+// * Hero data
 
-/**
- * Hero data as returned from the API.
- * This is the static, unchanging information about a hero.
- * All dynamic state (level-ups, power selections, flight training) is managed
- * separately in the useHeroPlanner composable.
- */
+// * Hero data as returned from the API. This is the static, unchanging information about a hero. All dynamic state (level-ups, power selections, flight training) is managed separately in the useHeroPlanner composable.
 export interface Hero {
   id: HeroId;
   name: string;
   startingStats: HeroStats;
 }
 
-/**
- * The roster, transcribed from `catalyst/context/game-mechanics.md`.
- *
- * This is the single source of the game data (feature 002). It ships as a constant rather
- * than an endpoint because it feeds the compile-time type system, which a database cannot;
- * the API validates saved builds against a fixture generated from this (decision 004).
- */
+// * The roster, transcribed from `catalyst/context/game-mechanics.md`.
+// * This is the single source of the game data (feature 002). It ships as a constant rather than an endpoint because it feeds the compile-time type system, which a database cannot; the API validates saved builds against a fixture generated from this (decision 004).
 export const HEROES: Hero[] = [
   {
     id: 'coupe',
@@ -645,9 +576,7 @@ export const HEROES: Hero[] = [
   }
 ];
 
-/**
- * Starting stats keyed by hero id — the same data as `HEROES`, indexed for lookup.
- */
+// * Starting stats keyed by hero id — the same data as `HEROES`, indexed for lookup.
 export const HERO_STARTING_STATS = Object.fromEntries(
   HEROES.map((hero) => [hero.id, hero.startingStats])
   // * Object.fromEntries widens the key to string; HEROES covers every HeroId by construction.

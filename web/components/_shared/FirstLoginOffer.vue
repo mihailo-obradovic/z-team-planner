@@ -101,8 +101,7 @@ function markOfferSeen() {
   try {
     localStorage.setItem(OFFER_SEEN_KEY, '1');
   } catch {
-    // * Nothing to do: without storage the offer cannot be suppressed, and without storage
-    // * there are no local builds to raise it again.
+    // * Nothing to do: without storage the offer cannot be suppressed, and without storage there are no local builds to raise it again.
   }
 }
 
@@ -110,7 +109,7 @@ function close() {
   isOpen.value = false;
 }
 
-/** One toast for the whole batch — feature 008 owns the import's per-item reporting. */
+// * One toast for the whole batch — feature 008 owns the import's per-item reporting.
 function reportOutcome(report: ImportReport) {
   const created = report.filter((item) => item.status === 'created');
   const invalid = report.filter((item) => item.status === 'invalid');
@@ -124,8 +123,7 @@ function reportOutcome(report: ImportReport) {
       created.length > 0
         ? `${plural(created.length, 'build')} kept`
         : 'Nothing was kept',
-    // * Names the ones that failed rather than a count: the player has to know which build
-    // * to look at, and import succeeds per item (feature 005).
+    // * Names the ones that failed rather than a count: the player has to know which build to look at, and import succeeds per item (feature 005).
     description:
       names.length > 0 ? `Could not import: ${names.join(', ')}` : undefined,
     color: invalid.length > 0 ? 'warning' : 'success'
@@ -153,8 +151,7 @@ function handleDismiss() {
   close();
 }
 
-// * The offer is a one-time thing per browser, so it hangs off the transition into
-// * `signed-in` rather than off the signed-in state itself (feature 004).
+// * The offer is a one-time thing per browser, so it hangs off the transition into `signed-in` rather than off the signed-in state itself (feature 004).
 watch(isSignedIn, (signedIn, wasSignedIn) => {
   if (!signedIn || wasSignedIn) {
     return;
@@ -169,9 +166,7 @@ watch(isSignedIn, (signedIn, wasSignedIn) => {
   isOpen.value = true;
 });
 
-// ! Written when the dialog closes by any route — the scrim, Escape, the close button — and
-// ! not only from the two footer buttons. "Shown once per browser" has to survive a dismissal
-// ! the component did not initiate.
+// ! Written when the dialog closes by any route — the scrim, Escape, the close button — and not only from the two footer buttons. "Shown once per browser" has to survive a dismissal the component did not initiate.
 watch(isOpen, (open) => {
   if (!open) {
     markOfferSeen();

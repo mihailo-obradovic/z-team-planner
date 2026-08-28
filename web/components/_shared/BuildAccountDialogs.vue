@@ -13,11 +13,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button
-          variant="ghost"
-          color="neutral"
-          @click="accountSaveOpen = false"
-        >
+        <u-button variant="ghost" color="neutral" @click="handleCancelSave">
           Cancel
         </u-button>
 
@@ -45,11 +41,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button
-          variant="ghost"
-          color="neutral"
-          @click="accountDeleteOpen = false"
-        >
+        <u-button variant="ghost" color="neutral" @click="handleCancelDelete">
           Cancel
         </u-button>
 
@@ -85,8 +77,7 @@ const {
   isLoading: isCreating,
   error: createError
 } = useCreateBuild({
-  // * The name field renders the 422 itself, so the toast would be a second, vaguer copy of
-  // * the same message. Narrower than hideToast on purpose: a 500 here still surfaces.
+  // * The name field renders the 422 itself, so the toast would be a second, vaguer copy of the same message. Narrower than hideToast on purpose: a 500 here still surfaces.
   errorHandling: { hideValidationToast: true },
   onSuccess: (created) => {
     setActiveAccountBuildId(created.id);
@@ -117,6 +108,14 @@ const activeBuildLabel = computed(
       (build) => build.id === activeAccountBuildId.value
     )?.name ?? 'this build'
 );
+
+function handleCancelSave() {
+  accountSaveOpen.value = false;
+}
+
+function handleCancelDelete() {
+  accountDeleteOpen.value = false;
+}
 
 async function handleSave() {
   const { valid } = await nameForm.$validate();

@@ -14,7 +14,7 @@ Three files, and a component's theme touches all three:
 | Path                           | Holds                                                                                     |
 | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `app/config/nuxt-ui/<name>.ts` | One component's theme object — `slots`, `variants`, `compoundVariants`, `defaultVariants` |
-| `app/app.config.ts`            | The `ui` block: the colour aliases, and one key per imported component                    |
+| `web/app.config.ts`            | The `ui` block: the colour aliases, and one key per imported component                    |
 | `app/types/nuxt-ui.d.ts`       | One exported `TVConfig` type per component, so the config file is type-checked            |
 
 A component's theme is only ever customized here. A one-off `:ui` prop at a call site is a local exception (see Avoid By Default) — the global config is the default home.

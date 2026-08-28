@@ -80,8 +80,7 @@ const toast = useToast();
 
 const id = computed(() => route.params.id as string);
 
-// * A 404 becomes the error page rather than a toast — the central policy routes it that way
-// * for `/b/…` because a dead share link is a page-level outcome (feature 007).
+// * A 404 becomes the error page rather than a toast — the central policy routes it that way for `/b/…` because a dead share link is a page-level outcome (feature 007).
 const { data: build, isPending } = useFetchSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
@@ -109,8 +108,7 @@ function handleSaveCopy() {
     return;
   }
 
-  // * Signed in it becomes an account build; signed out it falls back to feature 001's local
-  // * save, so the link is useful without an account (feature 007).
+  // * Signed in it becomes an account build; signed out it falls back to feature 001's local save, so the link is useful without an account (feature 007).
   if (isSignedIn.value) {
     createBuild({ name: build.value.name, data: build.value.data });
 

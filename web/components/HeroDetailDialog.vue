@@ -220,7 +220,7 @@
                     ? 'border-accented bg-elevated'
                     : 'border-default hover:border-accented/50'
                 "
-                @click="monsterForm = !monsterForm"
+                @click="handleToggleForm"
               >
                 <div class="flex items-center gap-2">
                   <UIcon
@@ -294,12 +294,6 @@
 </template>
 
 <script setup lang="ts">
-import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
-
-const VueUiRadar = defineAsyncComponent(() =>
-  import('vue-data-ui').then((m) => m.VueUiRadar)
-);
-
 import {
   STAT_NAMES,
   FIXED_LEVEL_HEROES,
@@ -313,7 +307,12 @@ import {
   HERO_FLIGHT_CAPABILITY,
   SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
+import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
+
+const VueUiRadar = defineAsyncComponent(() =>
+  import('vue-data-ui').then((m) => m.VueUiRadar)
+);
 
 const POWER_ICONS = [
   'i-lucide-zap',
@@ -328,7 +327,13 @@ const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
   charisma: 'vigor'
 };
 
-// ---
+const RADAR_STAT_ORDER: StatName[] = [
+  'combat',
+  'vigor',
+  'mobility',
+  'charisma',
+  'intellect'
+];
 
 const props = defineProps<{
   heroId: HeroId | null;
@@ -338,11 +343,7 @@ defineEmits<{
   close: [];
 }>();
 
-// ---
-
 const monsterForm = ref(false);
-
-// ---
 
 const {
   heroes,
@@ -365,8 +366,6 @@ const {
   flightTrainingsUsed,
   resetHero
 } = useHeroPlanner();
-
-// ---
 
 const hero = computed(() => {
   if (!props.heroId) return null;
@@ -526,31 +525,11 @@ const specialAbility = computed(() => {
   return null;
 });
 
-const RADAR_STAT_ORDER: StatName[] = [
-  'combat',
-  'vigor',
-  'mobility',
-  'charisma',
-  'intellect'
-];
-
 // * vue-data-ui wants literal colours — a var() reference is not valid in the SVG attributes it writes — so the chart's palette is read off the design tokens once the component is mounted. The chart is already ClientOnly, so getComputedStyle is safe here, and the fallbacks are the token values themselves so a failed read degrades to the right colours rather than to vue-data-ui's defaults.
 const radarColors = ref({
   accent: '#df8a20',
   grid: '#8a7c5e',
   text: '#241f14'
-});
-
-onMounted(() => {
-  const root = getComputedStyle(document.documentElement);
-  const read = (name: string, fallback: string) =>
-    root.getPropertyValue(name).trim() || fallback;
-
-  radarColors.value = {
-    accent: read('--ui-primary', radarColors.value.accent),
-    grid: read('--ui-border', radarColors.value.grid),
-    text: read('--ui-text', radarColors.value.text)
-  };
 });
 
 const radarDataset = computed((): VueUiRadarDataset => ({
@@ -584,7 +563,7 @@ const radarConfig = computed((): VueUiRadarConfig => ({
         },
         dataPolygon: {
           strokeWidth: 2,
-          opacity: 50, // 50% transparency (0–100 range)
+          opacity: 50, // * 50% transparency (0–100 range)
           useGradient: false
         },
         plots: {
@@ -619,7 +598,9 @@ const radarConfig = computed((): VueUiRadarConfig => ({
   }
 }));
 
-// ---
+function handleToggleForm() {
+  monsterForm.value = !monsterForm.value;
+}
 
 function resolvedStat(stat: StatName): StatName {
   if (props.heroId === 'sonar' && monsterForm.value) {
@@ -682,6 +663,18 @@ function handlePowerClick(power: HeroPowerDefinition) {
     toggleTrainablePower(props.heroId, 2);
   }
 }
+
+onMounted(() => {
+  const root = getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) =>
+    root.getPropertyValue(name).trim() || fallback;
+
+  radarColors.value = {
+    accent: read('--ui-primary', radarColors.value.accent),
+    grid: read('--ui-border', radarColors.value.grid),
+    text: read('--ui-text', radarColors.value.text)
+  };
+});
 </script>
 
 <style scoped>

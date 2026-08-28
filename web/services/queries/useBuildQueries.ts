@@ -26,8 +26,7 @@ export const buildsQueryKeys = {
   fetchBuild: ['builds', 'get']
 } as const;
 
-// * Everything a mutation touches lives under ['builds'], so invalidating the root covers the
-// * list and every cached build in one call.
+// * Everything a mutation touches lives under ['builds'], so invalidating the root covers the list and every cached build in one call.
 const BUILDS_ROOT = ['builds'];
 
 type MutationOptions<TData, TVars> = Omit<
@@ -48,8 +47,7 @@ export function useFetchBuilds(
   return useAppQuery<BuildList>({
     key: () => [...buildsQueryKeys.fetchBuilds, page.value],
     query: () => fetchBuilds(page.value),
-    // * Never fires while the store is `unknown` or `anonymous`: a signed-out load makes no
-    // * request at all (feature 008, Examples).
+    // * Never fires while the store is `unknown` or `anonymous`: a signed-out load makes no request at all (feature 008, Examples).
     enabled: () => isSignedIn.value,
     ...options
   });
@@ -75,8 +73,7 @@ export function useCreateBuild(
   const queryCache = useQueryCache();
 
   return useAppMutation<Build, CreateBuildPayload>({
-    // * Generated per call, inside the hook — the fetcher's own 401 retry reuses the same
-    // * request options, so the replay carries this key and cannot create a second build.
+    // * Generated per call, inside the hook — the fetcher's own 401 retry reuses the same request options, so the replay carries this key and cannot create a second build.
     mutation: (payload) => createBuild(payload, newIdempotencyKey()),
     ...options,
     onSettled: chainOnSettled(

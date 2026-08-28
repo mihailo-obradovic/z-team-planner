@@ -1,15 +1,13 @@
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
-// * Google is the only provider (feature 004, Non-goals). Apple and email + password are
-// * backlog items, not a switch flipped here.
+// * Google is the only provider (feature 004, Non-goals). Apple and email + password are backlog items, not a switch flipped here.
 const PROVIDER = new GoogleAuthProvider();
 
 const POPUP_BLOCKED =
   'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.';
 const SIGN_IN_FAILED = 'Sign-in failed. Please try again.';
 
-// * Both mean the user changed their mind — the first by closing the window, the second by
-// * opening a second one. Neither is a failure to report.
+// * Both mean the user changed their mind — the first by closing the window, the second by opening a second one. Neither is a failure to report.
 const SILENT_CODES = [
   'auth/popup-closed-by-user',
   'auth/cancelled-popup-request'
@@ -21,13 +19,8 @@ function errorCode(error: unknown): string {
     : '';
 }
 
-/**
- * Signing in and out.
- *
- * Neither function touches the auth store: `onAuthStateChanged` in the Firebase plugin is the
- * single source of auth truth, and it fires for both (feature 004). Writing the store here as
- * well would give the app two answers to "who is signed in" that can disagree.
- */
+// * Signing in and out.
+// * Neither function touches the auth store: `onAuthStateChanged` in the Firebase plugin is the single source of auth truth, and it fires for both (feature 004). Writing the store here as well would give the app two answers to "who is signed in" that can disagree.
 export function useAuth() {
   const toast = useToast();
 

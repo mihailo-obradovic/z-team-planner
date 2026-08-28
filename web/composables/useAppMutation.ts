@@ -10,10 +10,7 @@ export type AppMutationOptions<
   errorHandling?: ErrorHandlingOptions;
 };
 
-/**
- * Every mutation goes through here. A component never wraps a mutation in try-catch; the
- * watcher below turns a failure into whatever the central policy says it should be.
- */
+// * Every mutation goes through here. A component never wraps a mutation in try-catch; the watcher below turns a failure into whatever the central policy says it should be.
 export function useAppMutation<TData, TVars, TError = Error>(
   options: AppMutationOptions<TData, TVars, TError>
 ) {

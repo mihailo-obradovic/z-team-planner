@@ -89,8 +89,6 @@
 </template>
 
 <script setup lang="ts">
-import TooltipButton from '@/components/_shared/TooltipButton.vue';
-
 import {
   MAX_POWER_TRAININGS,
   MAX_FLIGHT_TRAININGS,

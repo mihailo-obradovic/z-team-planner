@@ -25,8 +25,7 @@ const DEFAULT_POWER_STATE: HeroPowerSelection = {
   trainableSelected: 0
 };
 
-//  * Composable for managing power training and special power mechanics.
-//  * Handles power selections, training limits, and special powers for Flambae and Coupe.
+// * Composable for managing power training and special power mechanics. Handles power selections, training limits, and special powers for Flambae and Coupe.
 export function useHeroPowerTraining(
   heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
@@ -83,7 +82,8 @@ export function useHeroPowerTraining(
     const powers = heroPowers.value[id]!;
 
     if (!powers.startingRevealed) return;
-    if (episodeSetup.ep8RecruitIds.value.has(id)) return;
+    // * Arriving in episode 8 means there was never any training to do: whoever joins then keeps only their starting power. Level-ups are a separate question — an episode 8 Waterboy still levels up, which is why FIXED_LEVEL_HEROES is not consulted here.
+    if (episodeSetup.untrainableIds.value.has(id)) return;
 
     if (powers.trainableSelected === index) {
       // * Deselect: also reset any active special powers

@@ -9,10 +9,7 @@ export type AppQueryOptions<TData, TError = Error> = UseQueryOptions<
   errorHandling?: ErrorHandlingOptions;
 };
 
-/**
- * Every query in this app goes through here, so failure handling is attached in one place
- * rather than remembered at each call site.
- */
+// * Every query in this app goes through here, so failure handling is attached in one place rather than remembered at each call site.
 export function useAppQuery<TData, TError = Error>(
   options: AppQueryOptions<TData, TError>
 ) {

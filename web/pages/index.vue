@@ -27,7 +27,7 @@
           >
             <HeroCard
               :hero-id="pair.top.id as HeroId"
-              @view-detail="selectedHeroId = pair.top.id as HeroId"
+              @viewDetail="handleViewDetail(pair.top.id)"
             />
 
             <u-separator color="secondary" decorative>
@@ -38,7 +38,7 @@
 
             <HeroCard
               :hero-id="pair.bottom.id as HeroId"
-              @view-detail="selectedHeroId = pair.bottom.id as HeroId"
+              @viewDetail="handleViewDetail(pair.bottom.id)"
             />
           </div>
         </div>
@@ -60,7 +60,7 @@
               v-for="hero in ep8Recruits"
               :key="hero.id"
               :hero-id="hero.id as HeroId"
-              @view-detail="selectedHeroId = hero.id as HeroId"
+              @viewDetail="handleViewDetail(hero.id)"
             />
           </div>
         </div>
@@ -76,7 +76,7 @@
     </template>
   </UTabs>
 
-  <HeroDetailDialog :hero-id="selectedHeroId" @close="selectedHeroId = null" />
+  <HeroDetailDialog :hero-id="selectedHeroId" @close="handleCloseDetail" />
 </template>
 
 <script setup lang="ts">
@@ -109,4 +109,12 @@ const tabs = [
 ];
 
 const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
+
+function handleViewDetail(id: HeroId) {
+  selectedHeroId.value = id;
+}
+
+function handleCloseDetail() {
+  selectedHeroId.value = null;
+}
 </script>

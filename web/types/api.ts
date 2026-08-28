@@ -10,13 +10,8 @@ export const ErrorDetailSchema = z.object({
 
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 
-/**
- * The stored build document.
- *
- * Deliberately `z.custom` rather than a modelled schema: `SerializedBuild` is feature 001's
- * hand-written, protected format, and the server has already validated this payload against
- * the same rules. Re-describing it here would create a second definition to keep in step.
- */
+// * The stored build document.
+// * Deliberately `z.custom` rather than a modelled schema: `SerializedBuild` is feature 001's hand-written, protected format, and the server has already validated this payload against the same rules. Re-describing it here would create a second definition to keep in step.
 export const SerializedBuildSchema = z.custom<SerializedBuild>(
   (value) =>
     typeof value === 'object' &&
@@ -25,8 +20,7 @@ export const SerializedBuildSchema = z.custom<SerializedBuild>(
   { message: 'Unsupported build format version' }
 );
 
-// * Timestamps are UTC ISO-8601 with `Z` (feature 005); kept as strings — nothing formats them
-// * here, and parsing to Date would make the ETag comparison lossy.
+// * Timestamps are UTC ISO-8601 with `Z` (feature 005); kept as strings — nothing formats them here, and parsing to Date would make the ETag comparison lossy.
 export const BuildSummarySchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -79,8 +73,7 @@ export type ImportResult = z.infer<typeof ImportResultSchema>;
 export type ImportReport = z.infer<typeof ImportReportSchema>;
 export type Me = z.infer<typeof MeSchema>;
 
-// * Request payloads stay hand-written: there is no response to infer them from and nothing
-// * parses them at runtime (stacks/frontend/nuxt/validation.md).
+// * Request payloads stay hand-written: there is no response to infer them from and nothing parses them at runtime (stacks/frontend/nuxt/validation.md).
 export type CreateBuildPayload = {
   name: string;
   data: SerializedBuild;

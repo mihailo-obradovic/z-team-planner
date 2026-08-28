@@ -8,8 +8,7 @@ import type { HeroId } from '@/types/hero';
 import type { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import type { useHeroPowerTraining } from './useHeroPowerTraining';
 
-//  * Composable for managing flight training.
-//  * Handles flight state, training limits, and conditional flight logic.
+// * Composable for managing flight training. Handles flight state, training limits, and conditional flight logic.
 export function useHeroFlightTraining(
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
   powerTraining: ReturnType<typeof useHeroPowerTraining>
@@ -31,8 +30,8 @@ export function useHeroFlightTraining(
       const capability =
         HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-      // * An episode 8 recruit is a fixed portrait, not a build: nothing on the card can train or untrain them, so a flier among them flies unconditionally. That includes Phenomaman, whose flight is only conditional while he is the episode 4 hire and Heavily Medicated is still a power he can take.
-      if (episodeSetup.ep8RecruitIds.value.has(id)) {
+      // * A hero who arrives in episode 8 brings no trainable power with them, so nothing on the card can train or untrain them and a flier among them flies unconditionally. That is why Phenomaman's flight is conditional only while he is the episode 4 hire: Heavily Medicated is a power he can take just in that case.
+      if (episodeSetup.untrainableIds.value.has(id)) {
         result.add(id);
         continue;
       }
