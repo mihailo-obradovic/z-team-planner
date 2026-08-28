@@ -8,17 +8,12 @@ export default defineNuxtConfig({
     '@regle/nuxt'
   ],
 
-  // * The Nuxt app lives in web/ so the FastAPI application can take the root app/ (decision 004)
   srcDir: 'web/',
 
-  // * Neither scripts/ nor test/unit/ is in any tsconfig Nuxt generates, so both went entirely
-  // * unchecked by `pnpm typecheck`. test/unit joins the app context for its `@/` alias; scripts
-  // * joins the node context. Paths are relative to the generated files in .nuxt/.
+  // * Nuxt's generated tsconfigs cover neither test/unit/ (app context, for the `@/` alias) nor scripts/ (node context); paths are relative to .nuxt/. The extension flag: scripts/export-game-data.ts runs under bare `node`, so its imports spell `.ts`, and test/unit imports it the same way.
   typescript: {
     tsConfig: {
       include: ['../test/unit/**/*'],
-      // * scripts/export-game-data.ts runs as `node scripts/export-game-data.ts`, where Node
-      // * strips types itself and the import extensions must be spelled. The test imports it.
       compilerOptions: {
         allowImportingTsExtensions: true
       }
@@ -64,19 +59,15 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // * No default: NUXT_PUBLIC_API_BASE_URL is required, and the build:before hook below fails the build rather than shipping a bundle pointed at nothing (feature 006).
       apiBaseUrl: '',
 
-      // * Public by design — these four ship in the browser bundle and are not secrets.
       firebase: {
         apiKey: '',
         authDomain: '',
         projectId: '',
         appId: '',
 
-        // * Development only, and empty everywhere else: with this set the web SDK talks to a
-        // * local Auth emulator whose tokens are unsigned. The API refuses to start with its
-        // * own emulator variable set outside development, which is the matching guard.
+        // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
         authEmulatorHost: ''
       }
     }
@@ -84,9 +75,7 @@ export default defineNuxtConfig({
 
   hooks: {
     'build:before'() {
-      // * Only a real production build gates on these. `nuxt build` sets NODE_ENV=production;
-      // * vitest's Nuxt environment builds too but does not load .env, and a test run is not a
-      // * deployable artifact — gating it would fail the suite for a risk it does not carry.
+      // * Only a real production build gates on these (feature 006): `nuxt build` sets NODE_ENV=production, while vitest's Nuxt environment also builds, without .env, and is not a deployable artifact.
       if (process.env.NODE_ENV !== 'production') {
         return;
       }
