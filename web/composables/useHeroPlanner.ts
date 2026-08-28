@@ -9,8 +9,7 @@ import type { Hero, HeroId } from '@/types/hero';
 //  * Main hero planner composable that aggregates all hero management functionality.
 //  * Acts as a unified interface for episode setup, level-ups, powers, and flight training.
 function createHeroPlanner() {
-  // * A constant, not a fetch: the roster ships with the app (feature 006 retired the Nitro
-  // * route). Still a ref because every sub-composable takes one.
+  // * A constant, not a fetch: the roster ships with the app. Still a ref because every sub-composable takes one.
   const heroes = ref<Hero[]>(HEROES);
 
   // * Initialize all sub-composables with explicit dependencies
@@ -53,7 +52,7 @@ function createHeroPlanner() {
 export function useHeroPlanner() {
   const nuxtApp = useNuxtApp();
 
-  // Cache the composable instance to avoid duplicate computeds and watchers
+  // * Cache the composable instance to avoid duplicate computeds and watchers
   if (!(nuxtApp as any)._heroPlanner) {
     (nuxtApp as any)._heroPlanner = createHeroPlanner();
   }

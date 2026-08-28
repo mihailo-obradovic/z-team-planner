@@ -158,8 +158,7 @@ describe('useExternalErrors', () => {
 
     expect(mirrored?.value).toEqual({ name: ['Server said no'] });
 
-    // ! Regle clears a field's entry as the user edits; that must not reach the mutation's
-    // ! derived error state.
+    // ! Regle clears a field's entry as the user edits; that must not reach the mutation's derived error state.
     mirrored!.value = {};
 
     expect(source.value).toEqual({ name: ['Server said no'] });

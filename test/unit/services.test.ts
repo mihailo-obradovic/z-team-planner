@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { parseResponse } from '@/utils/parseResponse';
 
-// * Services call the auto-imported `fetcher` and `parseResponse`; the unit project runs
-// * outside Nuxt, so both are stubbed onto globalThis. parseResponse is the real one — these
-// * tests are partly about it actually rejecting a bad payload.
+// * Services call the auto-imported `fetcher` and `parseResponse`; the unit project runs outside Nuxt, so both are stubbed onto globalThis. parseResponse is the real one — these tests are partly about it actually rejecting a bad payload.
 const fetcherMock =
   vi.fn<
     (path: string, options?: Record<string, unknown>) => Promise<unknown>
@@ -174,8 +172,7 @@ describe('parseResponse', () => {
     fetcherMock.mockReset();
     fetcherMock.mockResolvedValue(withoutUpdatedAt);
 
-    // * Feature 006's Examples row: a schema failure is a developer error — generic message
-    // * to the user, the Zod issue in the console.
+    // * Feature 006's Examples row: a schema failure is a developer error — generic message to the user, the Zod issue in the console.
     await expect(fetchBuild(BUILD.id)).rejects.toThrow(
       'Something went wrong. Please try again.'
     );

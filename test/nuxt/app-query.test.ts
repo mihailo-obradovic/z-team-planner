@@ -47,8 +47,7 @@ describe('useAppQuery / useAppMutation', () => {
     page.value = 2;
     await nextTick();
 
-    // * The old page is still on screen while the new one loads — that is placeholderData
-    // * doing its job. Without it this reads undefined and the list flashes empty.
+    // * The old page is still on screen while the new one loads — that is placeholderData doing its job. Without it this reads undefined and the list flashes empty.
     expect(query?.data.value).toBe('data-1');
 
     await vi.waitFor(() => expect(query?.data.value).toBe('data-2'));

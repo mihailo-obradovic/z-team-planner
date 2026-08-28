@@ -8,10 +8,8 @@ import type { HeroId } from '@/types/hero';
 import type { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 import type { useHeroPowerTraining } from './useHeroPowerTraining';
 
-/**
- * Composable for managing flight training.
- * Handles flight state, training limits, and conditional flight logic.
- */
+//  * Composable for managing flight training.
+//  * Handles flight state, training limits, and conditional flight logic.
 export function useHeroFlightTraining(
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
   powerTraining: ReturnType<typeof useHeroPowerTraining>

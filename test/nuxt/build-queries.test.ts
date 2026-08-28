@@ -34,8 +34,7 @@ function harness(setup: () => unknown) {
 
 describe('query keys', () => {
   it('match the keys feature 008 fixes', () => {
-    // ! These are a contract: invalidation targets them by value, so a rename here silently
-    // ! stops a list refreshing rather than failing loudly.
+    // ! These are a contract: invalidation targets them by value, so a rename here silently stops a list refreshing rather than failing loudly.
     expect(buildsQueryKeys.fetchBuilds).toEqual(['builds', 'fetch']);
     expect(buildsQueryKeys.fetchBuild).toEqual(['builds', 'get']);
     expect(sharedQueryKeys.fetchSharedBuild).toEqual(['shared', 'get']);
@@ -59,9 +58,7 @@ describe('enabled gating', () => {
     });
   });
 
-  // ! The store must be touched inside the component's own setup: mountSuspended builds its
-  // ! own Nuxt app with its own Pinia, so a setActivePinia() in the test body is a different
-  // ! store entirely — and every gating assertion would pass for the wrong reason.
+  // ! The store must be touched inside the component's own setup: mountSuspended builds its own Nuxt app with its own Pinia, so a setActivePinia() in the test body is a different store entirely — and every gating assertion would pass for the wrong reason.
   async function mountWithAuth(
     prepare: (store: ReturnType<typeof useAuthStore>) => void
   ) {
@@ -108,8 +105,7 @@ describe('chainOnSettled', () => {
 
     const chained = chainOnSettled(
       async () => {
-        // ! A deliberately slow internal hook. Without the await, the caller's onSettled would
-        // ! run first and a page would close its dialog while the list was still stale.
+        // ! A deliberately slow internal hook. Without the await, the caller's onSettled would run first and a page would close its dialog while the list was still stale.
         await new Promise((resolve) => setTimeout(resolve, 30));
         order.push('invalidate');
       },

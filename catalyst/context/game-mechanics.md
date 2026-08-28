@@ -170,7 +170,13 @@ On occasion, Blonde Blazer will bring up the opportunity during calls that the f
 - Flambae - Flybae: Flambae flies to call locations, greatly reducing travel time.
 - Sonar - Strong Back: If transformed, Sonar flies to call locations, greatly reducing travel time. He also carries non-flying heroes.
 
-Phenomaman starts with the ability to fly (Fly-Nomenal), as does Blonde Blazer (though it doesn't have a specific name). Heavily Medicated does not weaken Fly-Nomenal, it takes it away — a medicated Phenomaman simply has no flight. Both join fixed if they arrive in Episode 8: they cannot be trained at all by then, so their flight is permanent — Heavily Medicated is only reachable for a Phenomaman hired in Episode 4.
+Phenomaman starts with the ability to fly (Fly-Nomenal), as does Blonde Blazer (though it doesn't have a specific name). Heavily Medicated does not weaken Fly-Nomenal, it takes it away — a medicated Phenomaman simply has no flight.
+
+Whoever joins in Episode 8 arrives with only their starting power — the training opportunities are behind them by that point. That is a rule about **powers**, not about the hero as a whole: it says nothing about levels, and the two do not move together.
+
+- **Phenomaman** cannot be trained when he arrives in Episode 8, so his flight is permanent there. Hired in Episode 4 he trains normally, which is the only way to reach Heavily Medicated and so the only way he loses his flight. His level is fixed (12) either way.
+- **Blonde Blazer** always arrives in Episode 8 and is always fixed: level 20, no trainable power (she has only her starting one), flight permanent.
+- **Waterboy** is fixed only in his powers, and only when he arrives in Episode 8: there is no training left by then, so he keeps just his starting power (Eager Sponge) and neither Eager Super Sponge nor Holy Water Spit is reachable. Hired in Episode 4 he trains normally. His level is never fixed — he levels up in both cases. He has no flight either way.
 
 ## Stats
 

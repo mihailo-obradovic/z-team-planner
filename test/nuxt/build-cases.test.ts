@@ -7,10 +7,7 @@ import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SerializedBuild } from '@/types/build';
 
-// * The other half of shared/build-cases.json: tests/services/test_validation.py holds the
-// * server to these verdicts, and this file holds the planner to them. A document the server
-// * rejects must be one the planner's guards cannot produce, or a user could build something
-// * their account refuses to save.
+// * The other half of shared/build-cases.json: tests/services/test_validation.py holds the server to these verdicts, and this file holds the planner to them. A document the server rejects must be one the planner's guards cannot produce, or a user could build something their account refuses to save.
 
 type Case = {
   name: string;
@@ -24,8 +21,7 @@ const { cases } = JSON.parse(
   readFileSync('shared/build-cases.json', 'utf8')
 ) as { cases: Case[] };
 
-// * Structure failures (an unknown key, a null, v: 2) have no planner state to replay — they
-// * are shapes the serializer cannot emit at all. The server test is where those are proven.
+// * Structure failures (an unknown key, a null, v: 2) have no planner state to replay — they are shapes the serializer cannot emit at all. The server test is where those are proven.
 const replayable = cases.filter((testCase) => testCase.tier !== 'structure');
 
 type Planner = ReturnType<typeof useHeroPlanner>;
@@ -59,7 +55,7 @@ beforeAll(async () => {
   );
 });
 
-/** The value an episode select could actually emit, or `undefined` if it is not one of its items. */
+// * The value an episode select could actually emit, or `undefined` if it is not one of its items.
 function choose(
   items: { value: string }[],
   wanted: string | undefined
@@ -69,13 +65,8 @@ function choose(
     : undefined;
 }
 
-/**
- * Drive the planner the way the interface does, then serialize what came out.
- *
- * Only guarded actions are called — never a direct write to the state refs — because the
- * guards are exactly what this test is about. Clearing between cases is setup, not behavior,
- * so that part does assign the refs.
- */
+// * Drive the planner the way the interface does, then serialize what came out.
+// * Only guarded actions are called — never a direct write to the state refs — because the guards are exactly what this test is about. Clearing between cases is setup, not behavior, so that part does assign the refs.
 async function replay(document: SerializedBuild): Promise<SerializedBuild> {
   state.levelUps.value = {};
   state.bonusLevels.value = {};
@@ -83,10 +74,7 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
   state.specialPowers.value = {};
   state.flights.value = {};
 
-  // * Episode choices first, exactly as deserialization does: the sub-composables' watchers
-  // * clear cut and non-hired heroes on the next tick and would otherwise wipe what follows.
-  // * Each select can only emit one of its own items, so a hero outside that list is not a
-  // * choice the interface offers — the ref itself is unguarded, the control is the guard.
+  // * Episode choices first, exactly as deserialization does: the sub-composables' watchers clear cut and non-hired heroes on the next tick and would otherwise wipe what follows. Each select can only emit one of its own items, so a hero outside that list is not a choice the interface offers — the ref itself is unguarded, the control is the guard.
   planner.ep3Cut.value =
     choose(planner.ep3CutItems.value, document.ec) ?? DEFAULT_EP3_CUT;
   planner.ep4Hire.value =
@@ -136,8 +124,7 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
     }
   }
 
-  // * Flight School is its own action, and `fl` is serialized in training order — so the
-  // * document's own order is replayed, and it decides which hero the two-training cap refuses.
+  // * Flight School is its own action, and `fl` is serialized in training order — so the document's own order is replayed, and it decides which hero the two-training cap refuses.
   for (const raw of document.fl ?? []) {
     const id = raw as HeroId;
 
@@ -155,8 +142,7 @@ function rows(valid: boolean) {
 
 describe('a document the server accepts', () => {
   it.each(rows(true))('is one the planner reaches: %s', async (_name, test) => {
-    // * Exact equality, key for key: the server stores what it validated and returns it
-    // * unchanged, so a document the planner cannot reproduce is one no user could have made.
+    // * Exact equality, key for key: the server stores what it validated and returns it unchanged, so a document the planner cannot reproduce is one no user could have made.
     expect(await replay(test.data)).toEqual(test.data);
   });
 });
@@ -165,8 +151,7 @@ describe('a document the server rejects', () => {
   it.each(rows(false))(
     'is one the planner refuses: %s',
     async (_name, test) => {
-      // ! The load-bearing half. If this ever fails, the planner can build something the account
-      // ! will not store — fix the guard, never the case.
+      // ! The load-bearing half. If this ever fails, the planner can build something the account will not store — fix the guard, never the case.
       expect(await replay(test.data)).not.toEqual(test.data);
     }
   );

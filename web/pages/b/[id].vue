@@ -37,11 +37,7 @@
       </u-button>
     </div>
 
-    <!-- * Read-only at one boundary rather than a disabled prop on forty controls: `inert`
-         takes the whole region out of the tab order and blocks pointer and keyboard input.
-         It does not stop a scripted `.click()`, which still reaches a handler — but the
-         guarantee that matters is structural: this page has no write path to the owner's
-         build, only "Save a copy", which creates a new one. -->
+    <!-- * Read-only at one boundary rather than a disabled prop on forty controls: `inert` takes the whole region out of the tab order and blocks pointer and keyboard input. It does not stop a scripted `.click()`, which still reaches a handler — but the guarantee that matters is structural: this page has no write path to the owner's build, only "Save a copy", which creates a new one. -->
     <div
       class="pointer-events-none select-none"
       inert

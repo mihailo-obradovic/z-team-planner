@@ -12,9 +12,7 @@ vi.mock('firebase/auth', () => ({
 const toasts: { title?: string; color?: string }[] = [];
 let firebaseAuth: object | null = { name: 'test' };
 
-// * Stubbed rather than mounted: the Firebase client plugin cannot initialise in a test
-// * environment (no project config), so a component mount would only ever exercise the
-// * sign-in-unavailable path. This is where the popup outcomes are provable.
+// * Stubbed rather than mounted: the Firebase client plugin cannot initialise in a test environment (no project config), so a component mount would only ever exercise the sign-in-unavailable path. This is where the popup outcomes are provable.
 vi.stubGlobal('useNuxtApp', () => ({ $firebaseAuth: firebaseAuth }));
 vi.stubGlobal('useToast', () => ({
   add: (toast: { title?: string; color?: string }) => toasts.push(toast)
@@ -40,8 +38,7 @@ describe('useAuth', () => {
     await useAuth().signIn();
 
     expect(signInWithPopup).toHaveBeenCalledOnce();
-    // * The store is deliberately not written here: onAuthStateChanged is the single source
-    // * of auth truth and fires for this sign-in (feature 004).
+    // * The store is deliberately not written here: onAuthStateChanged is the single source of auth truth and fires for this sign-in (feature 004).
     expect(toasts).toEqual([]);
   });
 

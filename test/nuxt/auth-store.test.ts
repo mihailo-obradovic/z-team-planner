@@ -50,8 +50,7 @@ describe('useAuthStore', () => {
 
     store.resetUser();
 
-    // * It identifies a build only that user could open; keeping it across sign-out would
-    // * leave the planner pointed at something the next visitor cannot load.
+    // * It identifies a build only that user could open; keeping it across sign-out would leave the planner pointed at something the next visitor cannot load.
     expect(store.activeAccountBuildId).toBeNull();
     expect(store.user).toBeNull();
   });
@@ -71,8 +70,7 @@ describe('useAuthStore', () => {
 
     store.markSignInUnavailable();
 
-    // ! Not `anonymous`: the app never learned whether anyone is signed in. The header
-    // ! disables the button rather than offering one that cannot work.
+    // ! Not `anonymous`: the app never learned whether anyone is signed in. The header disables the button rather than offering one that cannot work.
     expect(store.status).toBe('unknown');
     expect(store.isSignInUnavailable).toBe(true);
   });
@@ -80,9 +78,7 @@ describe('useAuthStore', () => {
   it('ignores a direct write, so actions are the only mutation path', () => {
     const store = useAuthStore();
 
-    // ! Vue's readonly() enforces this at runtime (the write is dropped with a warning), but
-    // ! Pinia's store type does not surface it as a compile error — so the guarantee is only
-    // ! as good as this assertion. Do not replace it with a type-level check.
+    // ! Vue's readonly() enforces this at runtime (the write is dropped with a warning), but Pinia's store type does not surface it as a compile error — so the guarantee is only as good as this assertion. Do not replace it with a type-level check.
     (store as { status: string }).status = 'signed-in';
 
     expect(store.status).toBe('unknown');

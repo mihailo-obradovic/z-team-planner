@@ -168,8 +168,7 @@ describe('the 412 conflict path', () => {
 
     handleApiError(apiError(412), context);
 
-    // ! The dialog is the whole point of a 412: the user has to see the other device's build
-    // ! to choose between reloading it and saving theirs as new.
+    // ! The dialog is the whole point of a 412: the user has to see the other device's build to choose between reloading it and saving theirs as new.
     expect(context.showConflictDialog).toHaveBeenCalledOnce();
     expect(context.showToast).not.toHaveBeenCalled();
   });

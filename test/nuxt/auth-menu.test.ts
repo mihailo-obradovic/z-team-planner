@@ -23,9 +23,7 @@ const STUBS = {
   }
 };
 
-// * Every test here runs the labelled tier — the only one that renders a text label, and so
-// * the only one whose markup can be asserted without measuring a viewport. The other two
-// * differ by a class list, which CSS decides and no mount can exercise.
+// * Every test here runs the labelled tier — the only one that renders a text label, and so the only one whose markup can be asserted without measuring a viewport. The other two differ by a class list, which CSS decides and no mount can exercise.
 function withStore(setup: () => void) {
   return defineComponent({
     setup() {
@@ -46,8 +44,7 @@ describe('AuthMenu', () => {
   it('reserves the slot rather than guessing while the SDK has not reported', async () => {
     const page = await mountSuspended(AuthMenu, { global: { stubs: STUBS } });
 
-    // ! Invisible, not absent: the button holds its geometry so the header does not reflow
-    // ! when the store resolves (feature 004, Examples — "no layout shift").
+    // ! Invisible, not absent: the button holds its geometry so the header does not reflow when the store resolves (feature 004, Examples — "no layout shift").
     const button = page.get('button');
     expect(button.classes()).toContain('invisible');
     expect(button.attributes('aria-hidden')).toBe('true');
@@ -67,10 +64,7 @@ describe('AuthMenu', () => {
   });
 
   it('disables sign-in when the SDK never initialised', async () => {
-    // ! Not arranged — observed. The Firebase plugin has no project config in a test
-    // ! environment, so it flags sign-in unavailable for real, which is exactly the
-    // ! degradation feature 006 asks for: a disabled button with a reason, never one that
-    // ! cannot work. Popup behaviour is proven in `test/unit/useAuth.test.ts` instead.
+    // ! Not arranged — observed. The Firebase plugin has no project config in a test environment, so it flags sign-in unavailable for real, which is exactly the degradation feature 006 asks for: a disabled button with a reason, never one that cannot work. Popup behaviour is proven in `test/unit/useAuth.test.ts` instead.
     const page = await mountSuspended(
       withStore(() => useAuthStore().resetUser()),
       { global: { stubs: STUBS } }
@@ -78,8 +72,7 @@ describe('AuthMenu', () => {
 
     expect(page.get('button').attributes('disabled')).toBeDefined();
 
-    // * The labelled tier still reads "Sign in" on the button, so the tooltip is the only
-    // * place that can say why it does nothing — which is why it is not suppressed here.
+    // * The labelled tier still reads "Sign in" on the button, so the tooltip is the only place that can say why it does nothing — which is why it is not suppressed here.
     const tooltip = page.findComponent({ name: 'UTooltip' });
     expect(tooltip.props('text')).toBe('Sign-in is unavailable');
     expect(tooltip.props('disabled')).toBe(false);
@@ -110,8 +103,7 @@ describe('AuthMenu', () => {
       { global: { stubs: STUBS } }
     );
 
-    // * The local part, not the whole address: that is the fallback the service applies when
-    // * it writes the row, and the header must not disagree with `/me` (feature 004).
+    // * The local part, not the whole address: that is the fallback the service applies when it writes the row, and the header must not disagree with `/me` (feature 004).
     expect(page.text()).toContain('alice');
     expect(page.text()).not.toContain('alice@example.com');
   });

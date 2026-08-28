@@ -6,8 +6,7 @@ type FetchCallOptions = {
   headers: Record<string, string>;
 };
 
-// * Stubbed rather than imported: the fetcher reaches for Nuxt's auto-imported globals, and the
-// * unit project runs outside a Nuxt app.
+// * Stubbed rather than imported: the fetcher reaches for Nuxt's auto-imported globals, and the unit project runs outside a Nuxt app.
 const fetchMock =
   vi.fn<(path: string, options: FetchCallOptions) => Promise<unknown>>();
 const getIdToken = vi.fn<(forceRefresh: boolean) => Promise<string>>();
@@ -21,15 +20,12 @@ vi.stubGlobal('crypto', globalThis.crypto);
 
 const { fetcher } = await import('@/utils/fetcher');
 
-// * Shaped like ofetch's FetchError, which carries `statusCode`. The fetcher reads that field
-// * rather than the class, so this is the same thing as far as the code under test is concerned.
+// * Shaped like ofetch's FetchError, which carries `statusCode`. The fetcher reads that field rather than the class, so this is the same thing as far as the code under test is concerned.
 function httpError(statusCode: number): Error & { statusCode: number } {
   return Object.assign(new Error(`${statusCode}`), { statusCode });
 }
 
-// * `noUncheckedIndexedAccess` types every `mock.calls[n]` as possibly absent. This asserts the
-// * call happened once, in one place, so a missing call fails as a readable test error rather
-// * than as a type error at each use.
+// * `noUncheckedIndexedAccess` types every `mock.calls[n]` as possibly absent. This asserts the call happened once, in one place, so a missing call fails as a readable test error rather than as a type error at each use.
 function callArgs(index: number): [path: string, options: FetchCallOptions] {
   const call = fetchMock.mock.calls[index];
 
@@ -114,8 +110,7 @@ describe('fetcher', () => {
     fetchMock.mockRejectedValue(httpError(401));
 
     await expect(fetcher('/me')).rejects.toMatchObject({ statusCode: 401 });
-    // ! Exactly two: the original and one retry. Recursion here would loop forever against a
-    // ! persistently rejected token.
+    // ! Exactly two: the original and one retry. Recursion here would loop forever against a persistently rejected token.
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

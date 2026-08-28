@@ -34,9 +34,7 @@ const ACCOUNT_BUILDS = {
   page_size: 20
 };
 
-// * BuildManager renders <u-tooltip>, which needs UApp's TooltipProvider. Stubbing the tooltip
-// * is enough here and keeps the mount shallow — these tests are about which requests the
-// * component triggers, not about tooltip behaviour.
+// * BuildManager renders <u-tooltip>, which needs UApp's TooltipProvider. Stubbing the tooltip is enough here and keeps the mount shallow — these tests are about which requests the component triggers, not about tooltip behaviour.
 const STUBS = {
   UTooltip: { template: '<div><slot /></div>' },
   UDropdownMenu: {
@@ -47,8 +45,7 @@ const STUBS = {
 };
 
 function signIn() {
-  // ! Called inside a component setup, so it is the component's own Pinia. A store created in
-  // ! the test body is a different instance and every assertion here would be vacuous.
+  // ! Called inside a component setup, so it is the component's own Pinia. A store created in the test body is a different instance and every assertion here would be vacuous.
   useAuthStore().setUser({ uid: 'u1', email: null, displayName: 'Alice' });
 }
 
@@ -99,9 +96,7 @@ describe('BuildManager account list', () => {
       { global: { stubs: STUBS } }
     );
 
-    // * The account builds are the dropdown's `items` prop, not markup — they only become
-    // * markup once the menu opens. No spy assertion either: the list is already cached under
-    // * the same key from the test above, so this mount legitimately serves it from cache.
+    // * The account builds are the dropdown's `items` prop, not markup — they only become markup once the menu opens. No spy assertion either: the list is already cached under the same key from the test above, so this mount legitimately serves it from cache.
     await vi.waitFor(() => {
       const menu = page.findComponent({ name: 'UDropdownMenu' });
       const groups = menu.props('items') as { label: string }[][];
@@ -135,8 +130,7 @@ describe('BuildManager share', () => {
       defineComponent({
         setup() {
           signIn();
-          // ! Set both ways round: the store outlives a mount, so leaving it alone would
-          // ! carry the previous test's account build into this one and pass vacuously.
+          // ! Set both ways round: the store outlives a mount, so leaving it alone would carry the previous test's account build into this one and pass vacuously.
           useAuthStore().setActiveAccountBuildId(
             withAccountBuild ? ACCOUNT_BUILDS.items[0]!.id : null
           );
@@ -159,8 +153,7 @@ describe('BuildManager share', () => {
   }
 
   it('copies the live link for an account build', async () => {
-    // ! Feature 005: an account build shares as /b/{id}, which always shows the owner's
-    // ! current document. A ?build= snapshot would freeze whatever was on screen.
+    // ! Feature 005: an account build shares as /b/{id}, which always shows the owner's current document. A ?build= snapshot would freeze whatever was on screen.
     expect(await share(true)).toContain(`/b/${ACCOUNT_BUILDS.items[0]!.id}`);
   });
 

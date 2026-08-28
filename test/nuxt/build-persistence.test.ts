@@ -2,17 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
-// Regression coverage for catalyst/features/001_build-persistence.md:
-// an undecodable ?build= param must fall back to the active saved build,
-// not leave the planner on defaults while the selector names the build.
+// * Regression coverage for catalyst/features/001_build-persistence.md: an undecodable ?build= param must fall back to the active saved build, not leave the planner on defaults while the selector names the build.
 
 const routeQuery: Record<string, string> = {};
 
 mockNuxtImport('useRoute', () => () => ({ query: routeQuery }));
 
-// The test environment's localStorage is a bare object without methods
-// (happy-dom via @nuxt/test-utils); install a functional Map-backed stand-in
-// before the composable first touches it.
+// * The test environment's localStorage is a bare object without methods (happy-dom via @nuxt/test-utils); install a functional Map-backed stand-in before the composable first touches it.
 const store = new Map<string, string>();
 
 Object.defineProperty(window, 'localStorage', {
