@@ -5,6 +5,5 @@ export async function fetchMe(): Promise<Me> {
 }
 
 export async function deleteMe(): Promise<void> {
-  // * 204. Deletes the row, every build, and the Firebase user (feature 004).
   await fetcher('/me', { method: 'DELETE' });
 }

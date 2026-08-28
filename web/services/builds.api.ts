@@ -10,8 +10,6 @@ import {
   type UpdateBuildPayload
 } from '@/types/api';
 
-// * Pure: one function per feature 005 endpoint, no store access, no toasts, no cache writes.
-
 export async function fetchBuilds(page = 1, pageSize = 20): Promise<BuildList> {
   return parseResponse(
     BuildListSchema,
@@ -54,7 +52,6 @@ export async function updateBuild(
 }
 
 export async function deleteBuild(id: string): Promise<void> {
-  // * 204, no body — nothing to parse.
   await fetcher(`/builds/${id}`, { method: 'DELETE' });
 }
 

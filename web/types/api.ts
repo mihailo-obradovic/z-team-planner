@@ -33,7 +33,6 @@ export const BuildSchema = BuildSummarySchema.extend({
   data: SerializedBuildSchema
 });
 
-// * The public read: never the owner (feature 007).
 export const PublicBuildSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -73,7 +72,6 @@ export type ImportResult = z.infer<typeof ImportResultSchema>;
 export type ImportReport = z.infer<typeof ImportReportSchema>;
 export type Me = z.infer<typeof MeSchema>;
 
-// * Request payloads stay hand-written: there is no response to infer them from and nothing parses them at runtime (stacks/frontend/nuxt/validation.md).
 export type CreateBuildPayload = {
   name: string;
   data: SerializedBuild;

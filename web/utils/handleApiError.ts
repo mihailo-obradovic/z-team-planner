@@ -45,12 +45,6 @@ export function extractMessage(error: unknown): string {
   );
 }
 
-export function isHandled(error: unknown): boolean {
-  return (
-    typeof error === 'object' && error !== null && handledErrors.has(error)
-  );
-}
-
 // * The one place a failed request becomes something a user sees.
 // * Statuses come from feature 006's central policy. Two never toast: `412` opens the conflict dialog, and `422` renders inline on the field that failed.
 export function handleApiError(
