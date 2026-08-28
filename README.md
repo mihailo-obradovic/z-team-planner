@@ -12,7 +12,7 @@ The repository holds two applications: a Nuxt front end in `web/` and a FastAPI 
 
 | Tool                                                     | Why                               | Notes                                                                                            |
 | -------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Node ≥ 24**                                            | the front end                     | `.nvmrc` pins `v24`; `nvm use` picks it up                                                       |
+| **Node ≥ 24**                                            | the front end                     | `mise.toml` pins Node 24; `mise install` picks it up                                             |
 | **pnpm 10**                                              | the only package manager accepted | `corepack enable` uses the version in `packageManager`; a `preinstall` hook rejects npm and yarn |
 | **[uv](https://docs.astral.sh/uv/)**                     | the back end                      | it installs Python 3.14 itself from `.python-version` — no separate Python needed                |
 | **Docker**                                               | back-end integration tests        | optional; without it those tests skip loudly rather than fall back to a fake database            |

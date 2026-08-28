@@ -26,16 +26,11 @@ export default defineConfig({
           environment: 'nuxt',
           environmentOptions: {
             nuxt: {
-              rootDir: fileURLToPath(new URL('.', import.meta.url)),
-              domEnvironment: 'happy-dom'
+              rootDir: fileURLToPath(new URL('.', import.meta.url))
             }
           }
         }
       })
-    ],
-    coverage: {
-      enabled: true,
-      provider: 'v8'
-    }
+    ]
   }
 });

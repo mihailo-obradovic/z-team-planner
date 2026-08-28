@@ -44,7 +44,7 @@ This file holds technical structure and dependency choices; everything else rout
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `annexes/design-system.md` | Colour ramps and the semantic aliases behind them, the type scale, spacing, control heights, radius, elevation, z-index, motion, iconography, imagery, and the per-element values components are checked against. | Styling anything, adding or changing a token, picking a size, shadow or spacing value, or building a new component. |
 
-Instantiated from `stacks/frontend/nuxt/design-system.md` by decision 003; the template stays pristine and the annex is the contract.
+Instantiated from `stacks/frontend/nuxt/design-system.md` by decision 003; the template stays pristine and the annex is the contract. Its load trigger is listed in `prime-directive.md` (Context Loading).
 
 ## Universal Rules
 
