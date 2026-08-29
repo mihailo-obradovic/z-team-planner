@@ -132,7 +132,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 Split out of features 005 and 006 after both were `Active`; it adds no behavior, so the evidence is theirs — `feature/005-account-builds` step 9 (the public read and the limiter) and `feature/006-frontend-data-layer` (the page, service and query).
 
-By test: the public shape carrying no owner and both its `404`s, against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the page's three states. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it — the same walk that caught **Share** copying a `?build=` snapshot where the live link was the contract.
+By test: the public shape carrying no owner and both its `404`s, against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the page's three states. Save-before-share, in a browser on 2026-08-29: **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it — the same walk that caught **Share** copying a `?build=` snapshot where the live link was the contract.
 
 Remaining risks: the limiter is per process and protects nothing once something sits in front of it, and nothing is deployed. A Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`, so `/b/[id]` is browser-verified rather than component-verified.
 
