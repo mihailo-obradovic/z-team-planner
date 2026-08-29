@@ -24,7 +24,7 @@ export const buildsQueryKeys = {
   fetchBuild: ['builds', 'get']
 } as const;
 
-const BUILDS_ROOT = ['builds'];
+export const BUILDS_ROOT = ['builds'];
 
 type MutationOptions<TData, TVars> = Omit<
   AppMutationOptions<TData, TVars>,

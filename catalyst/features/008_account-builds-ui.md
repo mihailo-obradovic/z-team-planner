@@ -54,6 +54,7 @@ Non-goals:
 - Signed out, nothing here fetches: every account query is gated on the store.
 - Signed in, BuildManager lists the account's builds newest-updated first — a skeleton while pending, the previous list held across refetches rather than flashing empty.
 - Opening an account build loads its document into the planner and makes it active. **Save** patches it, **Save as new** creates one; both invalidate `['builds']`, refreshing the list and every cached build together.
+- Opening an account build and saving one both re-baseline dirty tracking (feature 001), so **Save**'s unsaved-changes state and the unload guard describe the build the planner is actually on rather than the local build that preceded it. A save baselines against the document it sent, leaving an edit made while the request was in flight still unsaved.
 - Deleting the active build clears the active id, so the planner is not left pointed at something gone.
 - A rejected name appears **on the field**, not in a toast — whether Regle caught it or the server's `422` came back.
 - Saving a build another device already changed opens the conflict dialog holding that build: **Reload theirs** replaces the planner state, **Save mine as new** keeps the local work under a new build.
@@ -74,6 +75,8 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 | **Save as new** with a 90-char name  | inline field error; no request                     | Regle catches it first      |
 | server-only `422` (a rule drifted)   | inline field error from `externalErrors`; no toast | mutation opts the toast out |
 | 21st **Save as new**                 | toast "You can keep up to 20 builds"               | `409 build_limit`           |
+| open an account build, touch nothing | **Save** shows no unsaved-changes state            | baseline re-taken on load   |
+| **Save** an account build, succeed   | **Save** returns to its resting state              | baseline is what was sent   |
 | delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`     |
 | delete a non-active build            | list refetches; the active id is left alone        |                             |
 | the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report        |

@@ -67,6 +67,8 @@ const { accountSaveOpen, accountSaveName, accountDeleteOpen } =
 
 const plannerState = usePlannerState();
 
+const { updateSavedSnapshot } = useUnsavedChanges();
+
 const { activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
 
@@ -78,8 +80,9 @@ const {
   error: createError
 } = useCreateBuild({
   errorHandling: { suppressToasts: 'validation' },
-  onSuccess: (created) => {
+  onSuccess: (created, { data }) => {
     setActiveAccountBuildId(created.id);
+    updateSavedSnapshot(data);
     accountSaveOpen.value = false;
     accountSaveName.value = '';
     toast.add({ title: `Saved as "${created.name}"`, color: 'success' });

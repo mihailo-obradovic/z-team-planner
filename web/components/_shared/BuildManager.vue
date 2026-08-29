@@ -93,7 +93,6 @@
 
 <script setup lang="ts">
 import {
-  useCreateBuild,
   useFetchBuild,
   useFetchBuilds,
   useUpdateBuild
@@ -130,7 +129,7 @@ const {
 
 const { isViewingSharedBuild, loadAccountBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
-const { hasUnsavedChanges } = useUnsavedChanges();
+const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
 const {
   buildMenuTier,
@@ -164,16 +163,25 @@ const displayName = computed(
   () => activeAccountBuild.value?.name ?? activeBuildName.value
 );
 
-const { mutate: patchBuild, isLoading: isPatching } = useUpdateBuild({
-  onSuccess: (updated) => {
+const { mutate: patchBuild } = useUpdateBuild({
+  // * Baselined against the document that was sent, so an edit made while the request was in
+  // * flight is still reported as unsaved.
+  onSuccess: (updated, { payload }) => {
+    updateSavedSnapshot(payload.data);
     toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
   }
 });
 
-const { mutate: postBuild } = useCreateBuild({
-  onSuccess: (created) => {
-    setActiveAccountBuildId(created.id);
-    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
+// * Its own mutation rather than a mode flag on the one above: the two differ only in what they do
+// * once the save lands, and sequencing it here keeps the component free of the try-catch the data
+// * layer owns (feature 006). A failed save never reaches `onSuccess`, so nothing is copied and the
+// * central policy reports it — a 412 as the conflict dialog.
+const { mutate: patchThenShare } = useUpdateBuild({
+  onSuccess: async (updated, { payload }) => {
+    updateSavedSnapshot(payload.data);
+    reportShare(
+      (await copyAccountBuildLink(updated.id)) ? 'saved-and-copied' : 'failed'
+    );
   }
 });
 
@@ -249,7 +257,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
             ? 'i-lucide-check'
             : 'i-lucide-cloud',
         onSelect: () => {
-          setActiveAccountBuildId(build.id);
+          void openAccountBuild(build.id);
         }
       }));
 
@@ -277,6 +285,25 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   return [builds, account, accountActions, management];
 });
 
+// * Selecting records which build is open and the load watcher fills the planner from it.
+// ! Re-selecting the build already open changes neither the query key nor its data, so that
+// ! watcher never fires — without this branch, picking the open build to discard local edits
+// ! would silently do nothing. Reads the cached document, never the network (feature 008).
+async function openAccountBuild(id: string) {
+  if (id !== activeAccountBuildId.value) {
+    setActiveAccountBuildId(id);
+
+    return;
+  }
+
+  const opened = openedAccountBuild.value;
+
+  if (opened) {
+    await loadAccountBuild(opened.data);
+    updateSavedSnapshot();
+  }
+}
+
 function openSaveShared() {
   saveSharedOpen.value = true;
 }
@@ -300,16 +327,47 @@ function handleSave() {
   toast.add({ title: 'Build saved', color: 'success' });
 }
 
+// * An account build shares as a live link: `/b/{id}` always shows the owner's current document,
+// * where `?build=` freezes whatever was on screen when it was copied (feature 007). A local build
+// * has no id on the server, so it keeps the snapshot.
 async function handleShare() {
-  const success = activeAccountBuildId.value
-    ? await copyAccountBuildLink(activeAccountBuildId.value)
-    : await shareBuild();
+  const accountBuildId = activeAccountBuildId.value;
 
-  toast.add(
-    success
-      ? { title: 'Link copied to clipboard', color: 'success' }
-      : { title: 'Failed to copy link', color: 'error' }
+  if (!accountBuildId) {
+    reportShare((await shareBuild()) ? 'copied' : 'failed');
+
+    return;
+  }
+
+  // ! Save first. A live link resolves to the stored document, so sharing a build with unsaved
+  // ! edits hands out a link to something the sharer is not looking at.
+  if (hasUnsavedChanges.value) {
+    patchThenShare({
+      id: accountBuildId,
+      payload: { data: serializeBuild(plannerState) }
+    });
+
+    return;
+  }
+
+  reportShare(
+    (await copyAccountBuildLink(accountBuildId)) ? 'copied' : 'failed'
   );
+}
+
+// * The implicit save is named in the message: a player who pressed Share and got a silent write
+// * to their stored build has to be told it happened.
+function reportShare(outcome: 'copied' | 'saved-and-copied' | 'failed') {
+  const titles = {
+    copied: 'Link copied to clipboard',
+    'saved-and-copied': 'Saved, and link copied to clipboard',
+    failed: 'Failed to copy link'
+  };
+
+  toast.add({
+    title: titles[outcome],
+    color: outcome === 'failed' ? 'error' : 'success'
+  });
 }
 
 async function copyAccountBuildLink(id: string): Promise<boolean> {
@@ -324,9 +382,14 @@ async function copyAccountBuildLink(id: string): Promise<boolean> {
   }
 }
 
+// * Opening a cloud build re-baselines dirty tracking: the planner holds that document now, so
+// * Save and the unload guard describe it rather than the local build that was open before.
+// * The baseline is taken from the planner after deserialising, never from `build.data` — see
+// * the note on `updateSavedSnapshot`.
 watch(openedAccountBuild, async (build) => {
   if (build) {
     await loadAccountBuild(build.data);
+    updateSavedSnapshot();
   }
 });
 </script>
