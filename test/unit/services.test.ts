@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isSerializedBuild } from '@/utils/isSerializedBuild';
 import { parseResponse } from '@/utils/parseResponse';
 
-// * Services call the auto-imported `fetcher` and `parseResponse`; the unit project runs outside Nuxt, so both are stubbed onto globalThis. parseResponse is the real one — these tests are partly about it actually rejecting a bad payload.
+// * Services call the auto-imported `fetcher` and `parseResponse`, and the response schemas call `isSerializedBuild`; the unit project runs outside Nuxt, so all three are stubbed onto globalThis. The latter two are the real ones — these tests are partly about them actually rejecting a bad payload.
 const fetcherMock =
   vi.fn<
     (path: string, options?: Record<string, unknown>) => Promise<unknown>
@@ -10,6 +11,7 @@ const fetcherMock =
 
 vi.stubGlobal('fetcher', fetcherMock);
 vi.stubGlobal('parseResponse', parseResponse);
+vi.stubGlobal('isSerializedBuild', isSerializedBuild);
 
 const {
   createBuild,

@@ -69,6 +69,7 @@ Not role-specific.
 | open `?build=` of `{"v":1,"fl":["flambae"],"ec":"coupe"}` | shared mode: Flambae flight active, Coupé cut, Sonar on roster | local builds untouched                      |
 | `?build=` decoding to `{"v":2}`                           | param stripped; active local build loads                       | unknown version is rejected                 |
 | `?build=` with malformed base64/JSON                      | param stripped; active local build loads                       | never an error surface                      |
+| `?build=` decoding to `{"v":1,"fl":"flambae"}`            | param stripped; active local build loads                       | v1 but not a `SerializedBuild`              |
 | save, change a stat, reload page without saving           | browser unload prompt; after reload, last-saved state          | dirty tracking + beforeunload               |
 | serialize → encode → decode → deserialize                 | identical planner state                                        | round-trip is lossless                      |
 
