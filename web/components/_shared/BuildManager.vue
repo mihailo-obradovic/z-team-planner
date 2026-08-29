@@ -142,7 +142,6 @@ const {
   openAccountSave
 } = useBuildDialogs();
 
-// * Open when this tier is the one asked for. The profile menu's "My builds" names a tier rather than flipping a boolean, because all three copies of this selector are mounted and a shared boolean would open every one of them (feature 004).
 const isMenuOpen = computed({
   get: () => buildMenuTier.value === props.tier,
   set: (open: boolean) => {
@@ -150,14 +149,11 @@ const isMenuOpen = computed({
   }
 });
 
-// * Disabled until signed in, so a signed-out load makes no request (feature 008).
 const { data: accountBuilds, isPending: accountBuildsPending } =
   useFetchBuilds();
 
-// * Reads the build the user picked; the planner is filled from it in the watcher below.
 const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
 
-// * An account build's name wins while one is open — the local active build is a different thing and its name would be the wrong label.
 const activeAccountBuild = computed(() =>
   accountBuilds.value?.items.find(
     (build) => build.id === activeAccountBuildId.value
@@ -168,7 +164,6 @@ const displayName = computed(
   () => activeAccountBuild.value?.name ?? activeBuildName.value
 );
 
-// * The planner's current state, serialised the same way a local save serialises it — the account build stores exactly the format feature 001 owns.
 const { mutate: patchBuild, isLoading: isPatching } = useUpdateBuild({
   onSuccess: (updated) => {
     toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
@@ -214,7 +209,6 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
     }
   ];
 
-  // * Deleting the last remaining build would leave the selector with nothing to select and no way back, so it is offered only from the second build on.
   if (localBuilds.value.length > 1 && activeBuildId.value) {
     management.push({
       label: 'Delete...',
@@ -228,7 +222,6 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   }
 
   if (!isSignedIn.value) {
-    // * The one place the anonymous player is told their builds live in this browser only. Not a toast and not a banner: the selector is where the local controls already are, and it is the only part of the header that survives every tier (feature 004).
     const hint: DropdownMenuItem[] = [
       {
         label: 'Sign in to keep your builds stored securely',
@@ -256,7 +249,6 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
             ? 'i-lucide-check'
             : 'i-lucide-cloud',
         onSelect: () => {
-          // * Selecting only records which build is open; the query watcher loads it, so the component never fetches (feature 006, Invariants).
           setActiveAccountBuildId(build.id);
         }
       }));
@@ -282,7 +274,6 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
     });
   }
 
-  // * Account builds are their own group so it is obvious which ones follow you across devices and which live in this browser.
   return [builds, account, accountActions, management];
 });
 
@@ -291,7 +282,6 @@ function openSaveShared() {
 }
 
 function handleSave() {
-  // * An open account build saves to the account; the ETag comes from the cached build inside the mutation, so this component never sees one (feature 008).
   if (activeAccountBuildId.value) {
     patchBuild({
       id: activeAccountBuildId.value,
@@ -311,7 +301,6 @@ function handleSave() {
 }
 
 async function handleShare() {
-  // * An account build shares as a live link: `/b/{id}` always shows the owner's current document, where `?build=` freezes whatever was on screen when it was copied (feature 007). A local build has no id on the server, so it keeps the snapshot.
   const success = activeAccountBuildId.value
     ? await copyAccountBuildLink(activeAccountBuildId.value)
     : await shareBuild();
@@ -331,7 +320,6 @@ async function copyAccountBuildLink(id: string): Promise<boolean> {
 
     return true;
   } catch {
-    // * Same degradation as the snapshot path: an error toast, and nothing else breaks.
     return false;
   }
 }

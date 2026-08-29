@@ -6,7 +6,6 @@
           {{ summary }}
         </p>
 
-        <!-- ! Not a detail: a share link that stops working is visible to people who are not the account holder, and this is the only moment they can be warned about. -->
         <p v-if="hasBuilds" class="text-sm text-muted">
           Their share links will stop working.
         </p>
@@ -47,7 +46,6 @@ const { signOut } = useAuth();
 
 const { deleteAccountOpen } = useAccountDialogs();
 
-// * Only while the dialog is open: the count is what this dialog exists to say, and nothing else in the app reads the profile, so fetching it on every sign-in would buy nothing.
 const { data: me, isPending } = useFetchMe({
   enabled: () => isSignedIn.value && deleteAccountOpen.value
 });
@@ -69,7 +67,6 @@ const summary = computed(() => {
 const { mutate: deleteAccount, isLoading: isDeleting } = useDeleteMe({
   onSuccess: async () => {
     deleteAccountOpen.value = false;
-    // * Signing out only after the server confirms: a failed delete must leave the user signed in, with the account they still have (feature 004, Error Handling).
     await signOut();
     toast.add({ title: 'Your account has been deleted', color: 'success' });
   }

@@ -77,13 +77,11 @@ const {
   isLoading: isCreating,
   error: createError
 } = useCreateBuild({
-  // * The name field renders the 422 itself, so the toast would be a second, vaguer copy of the same message. Narrower than `all` on purpose: a 500 here still surfaces.
   errorHandling: { suppressToasts: 'validation' },
   onSuccess: (created) => {
     setActiveAccountBuildId(created.id);
     accountSaveOpen.value = false;
     accountSaveName.value = '';
-    // * The server suffixes a colliding name, so report what it actually stored.
     toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
   }
 });
@@ -97,7 +95,6 @@ const { mutate: deleteBuild, isLoading: isDeleting } = useDeleteBuild({
 
 const externalErrors = useExternalErrors(useValidationErrors(createError));
 
-// * requireName defaults to true here: this posts to the API, which demands 1–80 after trim.
 const { r$: nameForm } = useBuildNameForm(accountSaveName, { externalErrors });
 
 const nameError = computed(() => nameForm.$errors.name?.[0]);
@@ -132,7 +129,6 @@ async function handleSave() {
 
 function handleDelete() {
   if (activeAccountBuildId.value) {
-    // * Clearing the active id is the query layer's job (useDeleteBuild), not this dialog's.
     deleteBuild(activeAccountBuildId.value);
   }
 }

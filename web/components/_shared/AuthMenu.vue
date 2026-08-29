@@ -4,7 +4,6 @@
     :items="menuItems"
     :ui="{ content: 'min-w-48' }"
   >
-    <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
     <button
       v-if="tier === 'bare'"
       type="button"
@@ -78,14 +77,12 @@ const { openBuildMenu } = useBuildDialogs();
 
 const { deleteAccountOpen } = useAccountDialogs();
 
-// * Google's own display name, and never editable here (feature 004, Non-goals). The fallback is the email's *local part*, which is the same fallback the service applies when it writes the row — otherwise the header would say `ada@example.com` where `/me` says `ada`.
 const accountName = computed(() => {
   const { displayName, email } = user.value ?? {};
 
   return displayName || email?.split('@', 1)[0] || 'Account';
 });
 
-// * The tier ladder, applied the way the header already applies it: one control per tier, each showing at its own breakpoint (annex §13). A component cannot ask how wide the viewport is without breaking the prerender, and CSS answers it without asking.
 const visibilityClass = computed(
   () =>
     ({
@@ -99,7 +96,6 @@ const signInLabel = computed(() =>
   isSignInUnavailable.value ? 'Sign-in is unavailable' : 'Sign in'
 );
 
-// * The labelled tier already says "Sign in" on the button; a tooltip repeating it is noise. When sign-in is unavailable the tooltip is the only place that says why, so it stays.
 const isTooltipRedundant = computed(
   () => props.tier === 'labelled' && !isSignInUnavailable.value
 );
@@ -110,7 +106,6 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
       label: 'My builds',
       icon: 'i-lucide-cloud',
       class: 'uppercase',
-      // * Opens the build selector at this same tier — the one copy that is on screen.
       onSelect: () => openBuildMenu(props.tier)
     }
   ],

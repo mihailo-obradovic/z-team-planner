@@ -50,10 +50,8 @@ import { useImportBuilds } from '@/services/queries/useBuildQueries';
 import type { ImportReport } from '@/types/api';
 import type { LocalBuild } from '@/types/build';
 
-// * Feature 005 takes at most 50 items in one import.
 const IMPORT_LIMIT = 50;
 
-// * Alongside `z-team-builds` and `z-team-active-build` (feature 001).
 const OFFER_SEEN_KEY = 'z-team-import-offer-seen';
 
 const toast = useToast();
@@ -92,7 +90,6 @@ function hasSeenOffer(): boolean {
   try {
     return localStorage.getItem(OFFER_SEEN_KEY) !== null;
   } catch {
-    // * No storage means no local builds either — there would be nothing to offer.
     return true;
   }
 }
@@ -109,7 +106,6 @@ function close() {
   isOpen.value = false;
 }
 
-// * One toast for the whole batch — feature 008 owns the import's per-item reporting.
 function reportOutcome(report: ImportReport) {
   const created = report.filter((item) => item.status === 'created');
   const invalid = report.filter((item) => item.status === 'invalid');
@@ -123,7 +119,6 @@ function reportOutcome(report: ImportReport) {
       created.length > 0
         ? `${plural(created.length, 'build')} kept`
         : 'Nothing was kept',
-    // * Names the ones that failed rather than a count: the player has to know which build to look at, and import succeeds per item (feature 005).
     description:
       names.length > 0 ? `Could not import: ${names.join(', ')}` : undefined,
     color: invalid.length > 0 ? 'warning' : 'success'
@@ -151,7 +146,6 @@ function handleDismiss() {
   close();
 }
 
-// * The offer is a one-time thing per browser, so it hangs off the transition into `signed-in` rather than off the signed-in state itself (feature 004).
 watch(isSignedIn, (signedIn, wasSignedIn) => {
   if (!signedIn || wasSignedIn) {
     return;
@@ -161,12 +155,10 @@ watch(isSignedIn, (signedIn, wasSignedIn) => {
     return;
   }
 
-  // * All of them, so keeping everything is one click and dropping one is the deliberate act.
   selected.value = candidates.value.map((build) => build.id);
   isOpen.value = true;
 });
 
-// ! Written when the dialog closes by any route — the scrim, Escape, the close button — and not only from the two footer buttons. "Shown once per browser" has to survive a dismissal the component did not initiate.
 watch(isOpen, (open) => {
   if (!open) {
     markOfferSeen();

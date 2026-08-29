@@ -108,7 +108,6 @@ const {
   renameBuildName
 } = useBuildDialogs();
 
-// * Only the length rule here: feature 001 documents an empty name as falling back to a generated one, and feature 008 leaves that behaviour alone.
 const { r$: nameForm } = useBuildNameForm(newBuildName, { requireName: false });
 
 const nameError = computed(() => nameForm.$errors.name?.[0]);
@@ -163,7 +162,6 @@ function confirmDelete() {
   deleteLocalBuild(activeBuildId.value);
   deleteOpen.value = false;
 
-  // * Load the next available build
   if (localBuilds.value.length > 0) {
     loadLocalBuild(localBuilds.value[0]!.id);
   }
