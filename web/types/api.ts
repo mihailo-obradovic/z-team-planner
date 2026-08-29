@@ -18,7 +18,7 @@ export const SerializedBuildSchema = z.custom<SerializedBuild>(
 );
 
 // * Timestamps are UTC ISO-8601 with `Z` (feature 005); kept as strings — nothing formats them here, and parsing to Date would make the ETag comparison lossy.
-export const BuildSummarySchema = z.object({
+export const CloudBuildSummarySchema = z.object({
   id: z.uuid(),
   name: z.string(),
   format_version: z.number(),
@@ -26,11 +26,11 @@ export const BuildSummarySchema = z.object({
   updated_at: z.string()
 });
 
-export const BuildSchema = BuildSummarySchema.extend({
+export const CloudBuildSchema = CloudBuildSummarySchema.extend({
   data: SerializedBuildSchema
 });
 
-export const PublicBuildSchema = z.object({
+export const SharedBuildSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   data: SerializedBuildSchema,
@@ -38,8 +38,8 @@ export const PublicBuildSchema = z.object({
 });
 
 // * `total` is kept though nothing renders it yet: it is the only value that can say "18 of 20" without counting an array, and adding it back later would be a second contract change.
-export const BuildListSchema = z.object({
-  items: z.array(BuildSummarySchema),
+export const CloudBuildListSchema = z.object({
+  items: z.array(CloudBuildSummarySchema),
   total: z.number()
 });
 
@@ -60,10 +60,10 @@ export const MeSchema = z.object({
   build_count: z.number()
 });
 
-export type BuildSummary = z.infer<typeof BuildSummarySchema>;
-export type Build = z.infer<typeof BuildSchema>;
-export type PublicBuild = z.infer<typeof PublicBuildSchema>;
-export type BuildList = z.infer<typeof BuildListSchema>;
+export type CloudBuildSummary = z.infer<typeof CloudBuildSummarySchema>;
+export type CloudBuild = z.infer<typeof CloudBuildSchema>;
+export type SharedBuild = z.infer<typeof SharedBuildSchema>;
+export type CloudBuildList = z.infer<typeof CloudBuildListSchema>;
 export type ImportResult = z.infer<typeof ImportResultSchema>;
 export type ImportReport = z.infer<typeof ImportReportSchema>;
 export type Me = z.infer<typeof MeSchema>;

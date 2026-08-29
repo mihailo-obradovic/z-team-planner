@@ -1,4 +1,4 @@
-import { BuildSchema, type Build } from '@/types/api';
+import { CloudBuildSchema, type CloudBuild } from '@/types/api';
 
 import type { HeaderTier } from '@/types/ui';
 
@@ -26,7 +26,7 @@ export function useBuildDialogs() {
 
   // * The 412 conflict: another device saved the same account build first. The server sends its current version back in the body, and the user chooses which one wins (feature 008).
   const conflictOpen = useState('build-dialog-conflict', () => false);
-  const conflictBuild = useState<Build | null>(
+  const conflictBuild = useState<CloudBuild | null>(
     'build-dialog-conflict-build',
     () => null
   );
@@ -48,7 +48,7 @@ export function useBuildDialogs() {
   // * Open the conflict dialog with the server's current build.
   // * A body that will not parse is not a conflict this dialog can present — without the other device's build there is nothing to choose between — so it falls through to the generic toast instead (feature 008, Edge Cases).
   function openConflict(payload: unknown): boolean {
-    const parsed = BuildSchema.safeParse(payload);
+    const parsed = CloudBuildSchema.safeParse(payload);
 
     if (!parsed.success) {
       return false;

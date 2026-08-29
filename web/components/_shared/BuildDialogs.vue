@@ -92,12 +92,11 @@ const toast = useToast();
 const {
   activeBuildId,
   activeBuildName,
-  saveAsNewBuild,
-  saveSharedAsMyBuild,
-  deleteBuild,
-  loadBuild,
-  renameBuild,
-  savedBuilds
+  saveAsNewLocalBuild,
+  deleteLocalBuild,
+  loadLocalBuild,
+  renameLocalBuild,
+  localBuilds
 } = useHeroPlanner();
 
 const {
@@ -127,7 +126,7 @@ function confirmSaveShared() {
 
   const name = newBuildName.value.trim() || 'Imported build';
 
-  saveSharedAsMyBuild(name);
+  saveAsNewLocalBuild(name);
   saveSharedOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Saved as "${name}"`, color: 'success' });
@@ -144,7 +143,7 @@ function confirmNewBuild() {
 
   const name = newBuildName.value.trim() || 'New build';
 
-  saveAsNewBuild(name);
+  saveAsNewLocalBuild(name);
   newBuildOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Created "${name}"`, color: 'success' });
@@ -161,12 +160,12 @@ function confirmDelete() {
 
   const name = activeBuildName.value;
 
-  deleteBuild(activeBuildId.value);
+  deleteLocalBuild(activeBuildId.value);
   deleteOpen.value = false;
 
   // * Load the next available build
-  if (savedBuilds.value.length > 0) {
-    loadBuild(savedBuilds.value[0]!.id);
+  if (localBuilds.value.length > 0) {
+    loadLocalBuild(localBuilds.value[0]!.id);
   }
 
   toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
@@ -186,7 +185,7 @@ function confirmRename() {
     return;
   }
 
-  renameBuild(activeBuildId.value, name);
+  renameLocalBuild(activeBuildId.value, name);
   renameOpen.value = false;
   renameBuildName.value = '';
 }

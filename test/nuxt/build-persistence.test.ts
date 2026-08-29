@@ -24,8 +24,7 @@ Object.defineProperty(window, 'localStorage', {
 const SAVED_BUILD = {
   id: 'b1',
   name: 'Saved',
-  data: { v: 1, ec: 'coupe', fl: ['flambae'] },
-  savedAt: 1
+  data: { v: 1, ec: 'coupe', fl: ['flambae'] }
 };
 
 function seedActiveBuild() {

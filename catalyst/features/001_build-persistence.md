@@ -102,7 +102,7 @@ Not role-specific.
 
 ## Entry Points
 
-- `web/composables/useBuildPersistence.ts`: the whole mechanism — storage, serialization, URL codec, shared mode, dirty tracking (exposed through `useHeroPlanner`).
+- `web/utils/buildDocument.ts`: the format and its omission rules — the protected part. `buildUrlCodec.ts` does `?build=`; `useBuildPersistence.ts` is the facade (decision 006).
 - `web/types/build.ts`: the serialization contract (`SerializedBuild`, `SavedBuild`).
 - `web/components/_shared/BuildManager.vue`: all user-facing controls and dialogs.
 - `web/app.vue`: calls `initialize()` and `setupBeforeUnload()` on mount.

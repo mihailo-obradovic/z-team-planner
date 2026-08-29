@@ -6,7 +6,8 @@ How the engineering skills consume this repo's domain documentation. This projec
 
 - **`catalyst/project-summary.md`** — the index: purpose, Feature Index, ADR Index, Protected Areas, Technical Stack. This is the entry point, and it routes to everything below.
 - **`catalyst/context/product-description.md`** — what the product is for and its phases.
-- **`catalyst/context/game-mechanics.md`** — the Dispatch reference every hero stat, power, and synergy rule is transcribed from. This is the domain glossary: it defines the vocabulary.
+- **`catalyst/context/glossary.md`** — the application's own vocabulary: what a build document, local build, cloud build and shared build each are, and the planner terms around them. The glossary for anything the project invented.
+- **`catalyst/context/game-mechanics.md`** — the Dispatch reference every hero stat, power, and synergy rule is transcribed from. The glossary for anything the _game_ defines.
 - **`catalyst/features/<nnn>_<feature>.md`** — the behavioral contracts. Read the ones the Feature Index points at for your area.
 - **`catalyst/decisions/<nnn>_<type>_<decision>.md`** — the ADRs. Read the ones touching the area you're about to work in.
 
@@ -28,12 +29,19 @@ Never create the upstream directories. Two homes for one artifact type means nei
 
 `/domain-modeling` creates glossary entries and ADRs lazily, as terms and decisions get resolved. Here that means:
 
-- A resolved **term** goes into the relevant `catalyst/context/` document, in that document's own shape.
+- A resolved **term** goes into the relevant `catalyst/context/` document, in that document's own shape — `glossary.md` for anything the project defines, `game-mechanics.md` for anything the game does (see below).
 - A resolved **decision** goes through the Catalyst ADR flow — `catalyst/decisions/_template.md`, next free number, `Proposed` → user approval → `Accepted`, with a row in the ADR Index. It is never a bare file dropped in a directory.
 
 ## Use the glossary's vocabulary
 
-When output names a domain concept — an issue title, a refactor proposal, a test name — use the term as `catalyst/context/game-mechanics.md` defines it. Hero ids and game data are a protected area (`catalyst/features/002_hero-data.md`); renaming a term in code is never incidental.
+When output names a domain concept — an issue title, a refactor proposal, a test name — use the defined term.
+
+Two documents hold vocabulary, split by who owns the word, so there is exactly one home for any given term:
+
+- **The game defines it** → `catalyst/context/game-mechanics.md`. Heroes, stats, powers, synergy, dispatching. That document is a transcription and the game is upstream of it, so a term is never coined there. Hero ids and game data are a protected area (`catalyst/features/002_hero-data.md`); renaming one in code is never incidental.
+- **The project defines it** → `catalyst/context/glossary.md`. Builds, the planner, its modes — concepts that exist in this app and nowhere in Dispatch. A term resolved during `/domain-modeling` lands here unless the game already owns it.
+
+If a term seems to belong to both, it belongs to the game, and the glossary points at it rather than restating it.
 
 ## Flag ADR conflicts
 

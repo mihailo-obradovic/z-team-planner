@@ -1,6 +1,6 @@
 import { fetchSharedBuild } from '@/services/shared.api';
 
-import type { PublicBuild } from '@/types/api';
+import type { SharedBuild } from '@/types/api';
 
 export const sharedQueryKeys = {
   fetchSharedBuild: ['shared', 'get']
@@ -8,9 +8,9 @@ export const sharedQueryKeys = {
 
 export function useFetchSharedBuild(
   id: Ref<string>,
-  options: Omit<AppQueryOptions<PublicBuild>, 'key' | 'query'> = {}
+  options: Omit<AppQueryOptions<SharedBuild>, 'key' | 'query'> = {}
 ) {
-  return useAppQuery<PublicBuild>({
+  return useAppQuery<SharedBuild>({
     key: () => [...sharedQueryKeys.fetchSharedBuild, id.value],
     query: () => fetchSharedBuild(id.value),
     ...options

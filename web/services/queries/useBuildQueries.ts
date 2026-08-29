@@ -11,8 +11,8 @@ import {
 } from '@/services/builds.api';
 
 import type {
-  Build,
-  BuildList,
+  CloudBuild,
+  CloudBuildList,
   CreateBuildPayload,
   ImportBuildsPayload,
   ImportReport,
@@ -36,11 +36,11 @@ function newIdempotencyKey(): string {
 }
 
 export function useFetchBuilds(
-  options: Omit<AppQueryOptions<BuildList>, 'key' | 'query'> = {}
+  options: Omit<AppQueryOptions<CloudBuildList>, 'key' | 'query'> = {}
 ) {
   const { isSignedIn } = storeToRefs(useAuthStore());
 
-  return useAppQuery<BuildList>({
+  return useAppQuery<CloudBuildList>({
     key: () => [...buildsQueryKeys.fetchBuilds],
     query: () => fetchBuilds(),
     enabled: () => isSignedIn.value,
@@ -50,11 +50,11 @@ export function useFetchBuilds(
 
 export function useFetchBuild(
   id: Ref<string | null>,
-  options: Omit<AppQueryOptions<Build>, 'key' | 'query'> = {}
+  options: Omit<AppQueryOptions<CloudBuild>, 'key' | 'query'> = {}
 ) {
   const { isSignedIn } = storeToRefs(useAuthStore());
 
-  return useAppQuery<Build>({
+  return useAppQuery<CloudBuild>({
     key: () => [...buildsQueryKeys.fetchBuild, id.value ?? ''],
     query: () => fetchBuild(id.value as string),
     enabled: () => isSignedIn.value && !!id.value,
@@ -63,11 +63,11 @@ export function useFetchBuild(
 }
 
 export function useCreateBuild(
-  options: MutationOptions<Build, CreateBuildPayload> = {}
+  options: MutationOptions<CloudBuild, CreateBuildPayload> = {}
 ) {
   const queryCache = useQueryCache();
 
-  return useAppMutation<Build, CreateBuildPayload>({
+  return useAppMutation<CloudBuild, CreateBuildPayload>({
     mutation: (payload) => createBuild(payload, newIdempotencyKey()),
     ...options,
     onSettled: chainOnSettled(
@@ -79,15 +79,18 @@ export function useCreateBuild(
 
 export function useUpdateBuild(
   options: MutationOptions<
-    Build,
+    CloudBuild,
     { id: string; payload: UpdateBuildPayload }
   > = {}
 ) {
   const queryCache = useQueryCache();
 
-  return useAppMutation<Build, { id: string; payload: UpdateBuildPayload }>({
+  return useAppMutation<
+    CloudBuild,
+    { id: string; payload: UpdateBuildPayload }
+  >({
     mutation: ({ id, payload }) => {
-      const cached = queryCache.getQueryData<Build>([
+      const cached = queryCache.getQueryData<CloudBuild>([
         ...buildsQueryKeys.fetchBuild,
         id
       ]);
