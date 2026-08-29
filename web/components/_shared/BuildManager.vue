@@ -244,7 +244,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
             ? 'i-lucide-check'
             : 'i-lucide-cloud',
         onSelect: () => {
-          setActiveAccountBuildId(build.id);
+          void openAccountBuild(build.id);
         }
       }));
 
@@ -271,6 +271,25 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
 
   return [builds, account, accountActions, management];
 });
+
+// * Selecting records which build is open and the load watcher fills the planner from it.
+// ! Re-selecting the build already open changes neither the query key nor its data, so that
+// ! watcher never fires — without this branch, picking the open build to discard local edits
+// ! would silently do nothing. Reads the cached document, never the network (feature 008).
+async function openAccountBuild(id: string) {
+  if (id !== activeAccountBuildId.value) {
+    setActiveAccountBuildId(id);
+
+    return;
+  }
+
+  const opened = openedAccountBuild.value;
+
+  if (opened) {
+    await loadAccountBuild(opened.data);
+    updateSavedSnapshot();
+  }
+}
 
 function openSaveShared() {
   saveSharedOpen.value = true;
