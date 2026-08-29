@@ -85,7 +85,7 @@ const id = computed(() => route.params.id as string);
 const { data: build, isPending } = useFetchSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
-const { synergyPairColumns, loadSharedBuild, saveSharedAsMyBuild } =
+const { synergyPairColumns, loadSharedBuild, saveAsNewLocalBuild } =
   useHeroPlanner();
 
 const { mutate: createBuild, isLoading: isSaving } = useCreateBuild({
@@ -116,7 +116,7 @@ function handleSaveCopy() {
     return;
   }
 
-  saveSharedAsMyBuild(build.value.name);
+  saveAsNewLocalBuild(build.value.name);
   toast.add({ title: 'Saved to this browser', color: 'success' });
 }
 

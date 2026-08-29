@@ -1,7 +1,5 @@
 import type { HeroId } from '@/types/hero';
 
-// * Build serialization
-
 // * Compact serialized format for URL sharing and localStorage. Only non-default values are included to keep URLs short.
 // * Field naming uses short keys to minimize URL length:
 // * - ec = episode 3 cut
@@ -24,12 +22,8 @@ export interface SerializedBuild {
   fl?: string[];
 }
 
-// * Build storage
-
-// * A named build saved in localStorage.
-export interface SavedBuild {
+export interface LocalBuild {
   id: string;
   name: string;
   data: SerializedBuild;
-  savedAt: number;
 }

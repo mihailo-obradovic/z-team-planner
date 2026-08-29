@@ -6,7 +6,7 @@ import FirstLoginOffer from '@/components/_shared/FirstLoginOffer.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 import type { ImportBuildsPayload } from '@/types/api';
-import type { SavedBuild } from '@/types/build';
+import type { LocalBuild } from '@/types/build';
 
 const importBuildsSpy =
   vi.fn<(payload: ImportBuildsPayload) => Promise<unknown>>();
@@ -22,9 +22,9 @@ vi.mock('@/services/builds.api', () => ({
 
 mockNuxtImport('useRoute', () => () => ({ path: '/', params: {}, query: {} }));
 
-// * The planner exposes `savedBuilds` as a readonly computed, so the local builds are supplied here rather than written through it. The component reads nothing else from the planner.
-const savedBuilds = ref<SavedBuild[]>([]);
-mockNuxtImport('useHeroPlanner', () => () => ({ savedBuilds }));
+// * The planner exposes `localBuilds` as a readonly computed, so the local builds are supplied here rather than written through it. The component reads nothing else from the planner.
+const localBuilds = ref<LocalBuild[]>([]);
+mockNuxtImport('useHeroPlanner', () => () => ({ localBuilds }));
 
 // * The test environment's localStorage is a bare object without methods (happy-dom via @nuxt/test-utils); the same Map-backed stand-in build-persistence.test.ts installs.
 const storage = new Map<string, string>();
@@ -55,7 +55,7 @@ const STUBS = {
 const ALICE = { uid: 'u1', email: null, displayName: 'Alice' };
 
 function localBuild(id: string, name: string) {
-  return { id, name, data: { v: 1 as const }, savedAt: 0 };
+  return { id, name, data: { v: 1 as const } };
 }
 
 // ! Captured from inside the component's own setup. A store or planner reached from the test body is a different instance, and every assertion here would be vacuous.
@@ -67,7 +67,7 @@ async function mountWith(builds: ReturnType<typeof localBuild>[]) {
       setup() {
         store = useAuthStore();
         store.resetUser();
-        savedBuilds.value = builds;
+        localBuilds.value = builds;
 
         return () => h(FirstLoginOffer);
       }

@@ -27,7 +27,7 @@
 
         <u-tooltip text="Back to my build" :disabled="labelled">
           <u-button
-            v-if="savedBuilds.length > 0"
+            v-if="localBuilds.length > 0"
             :size="size"
             variant="subtle"
             color="neutral"
@@ -43,7 +43,7 @@
       <template v-else>
         <u-tooltip :text="saveLabel" :disabled="saveLabelled">
           <u-button
-            v-if="hasUnsavedChanges || savedBuilds.length === 0"
+            v-if="hasUnsavedChanges || localBuilds.length === 0"
             :size="size"
             :variant="hasUnsavedChanges ? 'solid' : 'subtle'"
             :color="hasUnsavedChanges ? 'warning' : 'neutral'"
@@ -55,7 +55,7 @@
         </u-tooltip>
 
         <u-dropdown-menu
-          v-if="savedBuilds.length > 0 || isSignedIn"
+          v-if="localBuilds.length > 0 || isSignedIn"
           v-model:open="isMenuOpen"
           :items="buildMenuItems"
           :ui="{ content: 'min-w-48' }"
@@ -118,14 +118,14 @@ const { isSignedIn, activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
 
 const {
-  savedBuilds,
+  localBuilds,
   serializeCurrentBuild,
   activeBuildId,
   activeBuildName,
   isViewingSharedBuild,
   hasUnsavedChanges,
-  saveBuild,
-  loadBuild,
+  saveLocalBuild,
+  loadLocalBuild,
   shareBuild,
   backToMyBuild,
   loadAccountBuild
@@ -188,12 +188,12 @@ const saveLabel = computed(() =>
 const saveLabelled = computed(() => props.labelled && !props.block);
 
 const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
-  const builds = savedBuilds.value.map(
+  const builds = localBuilds.value.map(
     (build: { id: string; name: string }) => ({
       label: build.name,
       icon: build.id === activeBuildId.value ? 'i-lucide-check' : undefined,
       onSelect: () => {
-        loadBuild(build.id);
+        loadLocalBuild(build.id);
       }
     })
   );
@@ -214,7 +214,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   ];
 
   // * Deleting the last remaining build would leave the selector with nothing to select and no way back, so it is offered only from the second build on.
-  if (savedBuilds.value.length > 1 && activeBuildId.value) {
+  if (localBuilds.value.length > 1 && activeBuildId.value) {
     management.push({
       label: 'Delete...',
       icon: 'i-lucide-trash-2',
@@ -300,12 +300,12 @@ function handleSave() {
     return;
   }
 
-  if (savedBuilds.value.length === 0) {
+  if (localBuilds.value.length === 0) {
     openNewBuild('Build 1');
     return;
   }
 
-  saveBuild();
+  saveLocalBuild();
   toast.add({ title: 'Build saved', color: 'success' });
 }
 

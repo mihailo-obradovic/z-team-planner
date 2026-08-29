@@ -13,6 +13,13 @@
     "correctness": "error"
   },
   "rules": {
-    "curly": ["error", "all"]
+    "curly": ["error", "all"],
+    "no-restricted-globals": [
+      "error",
+      {
+        "name": "Date",
+        "message": "Date is banned (catalyst/conventions/code-style.md). Timestamps are server-produced ISO-8601 strings; format them through utils/formatTimestamp.ts, which uses Temporal."
+      }
+    ]
   }
 }

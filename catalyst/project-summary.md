@@ -6,7 +6,7 @@ Catalyst version: 1.10.0
 
 This project provides a build calculator for the game **Dispatch** (AdHoc Studio) to players planning their Z-Team. It displays the whole roster with per-hero controls for stat leveling, power training, and flight capability, computes synergy pairs and team-wide totals, and lets setup flags mirror the story's roster changes (who was cut in episode 3, who was hired in episode 4). Builds persist in the browser (localStorage) and are shareable via a URL parameter; signing in with Google additionally saves builds to a FastAPI backend on Neon Postgres, where they follow the user across devices and share by live link (decision 004). The game-mechanics reference all hero data is transcribed from is `context/game-mechanics.md`.
 
-Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work), `context/design-reference.md` (project-specific — loads on UI styling or UI feature work) (`references/context-documents.md`)
+Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work), `context/design-reference.md` (project-specific — loads on UI styling or UI feature work), `context/glossary.md` (project-specific — loads when naming or reading anything that handles a build) (`references/context-documents.md`)
 
 ## Feature Index
 

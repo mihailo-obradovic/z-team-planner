@@ -1,29 +1,29 @@
 import {
-  BuildListSchema,
-  BuildSchema,
+  CloudBuildListSchema,
+  CloudBuildSchema,
   ImportReportSchema,
-  type Build,
-  type BuildList,
+  type CloudBuild,
+  type CloudBuildList,
   type CreateBuildPayload,
   type ImportBuildsPayload,
   type ImportReport,
   type UpdateBuildPayload
 } from '@/types/api';
 
-export async function fetchBuilds(): Promise<BuildList> {
-  return parseResponse(BuildListSchema, await fetcher('/builds'));
+export async function fetchBuilds(): Promise<CloudBuildList> {
+  return parseResponse(CloudBuildListSchema, await fetcher('/builds'));
 }
 
-export async function fetchBuild(id: string): Promise<Build> {
-  return parseResponse(BuildSchema, await fetcher(`/builds/${id}`));
+export async function fetchBuild(id: string): Promise<CloudBuild> {
+  return parseResponse(CloudBuildSchema, await fetcher(`/builds/${id}`));
 }
 
 export async function createBuild(
   payload: CreateBuildPayload,
   idempotencyKey: string
-): Promise<Build> {
+): Promise<CloudBuild> {
   return parseResponse(
-    BuildSchema,
+    CloudBuildSchema,
     await fetcher('/builds', {
       method: 'POST',
       body: payload,
@@ -36,9 +36,9 @@ export async function updateBuild(
   id: string,
   payload: UpdateBuildPayload,
   etag: string
-): Promise<Build> {
+): Promise<CloudBuild> {
   return parseResponse(
-    BuildSchema,
+    CloudBuildSchema,
     await fetcher(`/builds/${id}`, {
       method: 'PATCH',
       body: payload,

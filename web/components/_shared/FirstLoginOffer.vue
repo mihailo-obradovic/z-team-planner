@@ -48,7 +48,7 @@
 import { useImportBuilds } from '@/services/queries/useBuildQueries';
 
 import type { ImportReport } from '@/types/api';
-import type { SavedBuild } from '@/types/build';
+import type { LocalBuild } from '@/types/build';
 
 // * Feature 005 takes at most 50 items in one import.
 const IMPORT_LIMIT = 50;
@@ -60,20 +60,20 @@ const toast = useToast();
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 
-const { savedBuilds } = useHeroPlanner();
+const { localBuilds } = useHeroPlanner();
 
 const isOpen = ref(false);
 const selected = ref<string[]>([]);
 
-const candidates = computed<SavedBuild[]>(() =>
-  savedBuilds.value.slice(0, IMPORT_LIMIT)
+const candidates = computed<LocalBuild[]>(() =>
+  localBuilds.value.slice(0, IMPORT_LIMIT)
 );
 
-const isCapped = computed(() => savedBuilds.value.length > IMPORT_LIMIT);
+const isCapped = computed(() => localBuilds.value.length > IMPORT_LIMIT);
 
 const intro = computed(
   () =>
-    `You have ${plural(savedBuilds.value.length, 'build')} saved in this browser. ` +
+    `You have ${plural(localBuilds.value.length, 'build')} saved in this browser. ` +
     'Keep them in your account and they follow you to other devices — the copies here stay either way.'
 );
 
@@ -157,7 +157,7 @@ watch(isSignedIn, (signedIn, wasSignedIn) => {
     return;
   }
 
-  if (savedBuilds.value.length === 0 || hasSeenOffer()) {
+  if (localBuilds.value.length === 0 || hasSeenOffer()) {
     return;
   }
 
