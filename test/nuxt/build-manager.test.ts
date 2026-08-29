@@ -47,6 +47,15 @@ const STUBS = {
   }
 };
 
+// * `useState` is global to this file's Nuxt app and outlives a mount, so a test that cares about
+// * dirtiness has to start from a known planner rather than the previous test's leftovers.
+function resetPlanner() {
+  const state = usePlannerState();
+
+  state.showEp8Recruits.value = false;
+  state.heroFlights.value = {};
+}
+
 function signIn() {
   // ! Called inside a component setup, so it is the component's own Pinia. A store created in the test body is a different instance and every assertion here would be vacuous.
   useAuthStore().setUser({ uid: 'u1', email: null, displayName: 'Alice' });
@@ -115,6 +124,7 @@ describe('BuildManager share', () => {
   beforeEach(() => {
     written.length = 0;
     fetchBuildsSpy.mockReset();
+    fetchBuildSpy.mockReset();
     fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -137,6 +147,12 @@ describe('BuildManager share', () => {
           useAuthStore().setActiveAccountBuildId(
             withAccountBuild ? ACCOUNT_BUILDS.items[0]!.id : null
           );
+
+          // ! These two cover the clean path. Share on a *dirty* account build saves first and is
+          // ! covered below, so the planner has to be baselined or this exercises that path
+          // ! instead — `useState` carries the previous test's edits in.
+          resetPlanner();
+          useUnsavedChanges().updateSavedSnapshot();
 
           return () => h(BuildManager);
         }
@@ -221,10 +237,7 @@ describe('BuildManager dirty state across the two worlds', () => {
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
           useState<string | null>('z-team-active-build').value = LOCAL_BUILD.id;
 
-          // ! `useState` outlives a mount, so the planner carries the previous test's edits in.
-          const state = usePlannerState();
-          state.showEp8Recruits.value = false;
-          state.heroFlights.value = {};
+          resetPlanner();
 
           return () => h(BuildManager);
         }
@@ -260,5 +273,90 @@ describe('BuildManager dirty state across the two worlds', () => {
 
     // * Baselined against the document that was sent, so what succeeded is what clean means.
     await vi.waitFor(() => expect(findDirtySave(page)).toBeUndefined());
+  });
+});
+
+describe('BuildManager sharing an account build with unsaved changes', () => {
+  const written: string[] = [];
+
+  beforeEach(() => {
+    written.length = 0;
+    fetchBuildsSpy.mockReset();
+    fetchBuildSpy.mockReset();
+    updateBuildSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: (text: string) => {
+          written.push(text);
+
+          return Promise.resolve();
+        }
+      }
+    });
+  });
+
+  // ! Its own id per call, for the reason `openCloudBuild` gives: a repeated id is served from the
+  // ! query cache and the load watcher never fires.
+  async function shareDirty(id: string, overrideMocks?: () => void) {
+    const build = { ...CLOUD_BUILD, id };
+
+    fetchBuildSpy.mockResolvedValue(build);
+    updateBuildSpy.mockResolvedValue(build);
+    overrideMocks?.();
+
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          signIn();
+          useAuthStore().setActiveAccountBuildId(id);
+          useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
+          resetPlanner();
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    await vi.waitFor(() =>
+      expect(usePlannerState().heroFlights.value).toHaveProperty('flambae')
+    );
+
+    usePlannerState().showEp8Recruits.value = true;
+    await vi.waitFor(() => expect(findDirtySave(page)).toBeTruthy());
+
+    const share = page
+      .findAll('button')
+      .find((candidate) => /share/i.test(candidate.text()));
+
+    expect(share, 'the share control rendered').toBeTruthy();
+    await share!.trigger('click');
+
+    return page;
+  }
+
+  it('saves the build before copying its live link', async () => {
+    const id = 'dddddddd-4444-4444-8444-dddddddddddd';
+
+    await shareDirty(id);
+
+    // ! The defect this pins: /b/{id} resolves to the stored document, so copying without saving
+    // ! handed out a link to a build the sharer was not looking at.
+    await vi.waitFor(() => expect(updateBuildSpy).toHaveBeenCalled());
+    await vi.waitFor(() => expect(written).toHaveLength(1));
+    expect(written[0]).toContain(`/b/${id}`);
+  });
+
+  it('copies nothing when that save fails', async () => {
+    await shareDirty('eeeeeeee-5555-4555-8555-eeeeeeeeeeee', () => {
+      updateBuildSpy.mockRejectedValue({ statusCode: 500 });
+    });
+
+    await vi.waitFor(() => expect(updateBuildSpy).toHaveBeenCalled());
+    // * A stale link is worse than no link: the failure is the central policy's to report.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(written).toHaveLength(0);
   });
 });

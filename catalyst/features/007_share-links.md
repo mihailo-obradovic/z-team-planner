@@ -50,6 +50,7 @@ Non-goals:
 ## User / System Behavior
 
 - **Share** on an account build copies `https://<web>/b/{id}`. A local build has no server id, so it keeps the `?build=` snapshot instead.
+- **Share** on an account build holding unsaved changes saves it first, then copies — the link resolves to the stored document, so copying before saving would hand out a build the sharer is not looking at. A save that fails copies nothing and reports itself through the central policy (a `412` opens feature 008's conflict dialog); the toast names the save, since it was not asked for explicitly.
 - Every open of the link shows the owner's **current** document — an edit the owner saves is visible on the next load, with no new link.
 - A skeleton shows while the read is pending, then the planner read-only — one `inert` region rather than a disabled prop on forty controls; the page has no write path to the owner's build at all.
 - **Save a copy** creates an account build when signed in (`POST /builds`) and falls back to feature 001's local save when not. Either way the viewer gets their own copy; the owner's is untouched.
@@ -63,18 +64,20 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Examples
 
-| Input                                         | Expected Output                                    | Notes                        |
-| --------------------------------------------- | -------------------------------------------------- | ---------------------------- |
-| `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route    |
-| `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed |
-| `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter              |
-| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                              |
-| open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast   |
-| **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005) |
-| **Save a copy** signed out                    | a local save                                       | feature 001                  |
-| **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                         |
-| **Share** on a local build                    | clipboard holds `?build=`                          | snapshot (001)               |
-| the owner opens their own link                | read-only planner                                  | no edit path on this page    |
+| Input                                         | Expected Output                                    | Notes                           |
+| --------------------------------------------- | -------------------------------------------------- | ------------------------------- |
+| `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route       |
+| `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed    |
+| `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                 |
+| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                                 |
+| open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
+| **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005)    |
+| **Save a copy** signed out                    | a local save                                       | feature 001                     |
+| **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
+| **Share** on an account build, unsaved edits  | `PATCH` first, then `/b/{id}` copied               | link matches what is on screen  |
+| that save answers `412`                       | conflict dialog; clipboard untouched               | a stale link is worse than none |
+| **Share** on a local build                    | clipboard holds `?build=`                          | snapshot (001)                  |
+| the owner opens their own link                | read-only planner                                  | no edit path on this page       |
 
 ## Business Rules
 

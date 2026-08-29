@@ -172,6 +172,19 @@ const { mutate: patchBuild } = useUpdateBuild({
   }
 });
 
+// * Its own mutation rather than a mode flag on the one above: the two differ only in what they do
+// * once the save lands, and sequencing it here keeps the component free of the try-catch the data
+// * layer owns (feature 006). A failed save never reaches `onSuccess`, so nothing is copied and the
+// * central policy reports it — a 412 as the conflict dialog.
+const { mutate: patchThenShare } = useUpdateBuild({
+  onSuccess: async (updated, { payload }) => {
+    updateSavedSnapshot(payload.data);
+    reportShare(
+      (await copyAccountBuildLink(updated.id)) ? 'saved-and-copied' : 'failed'
+    );
+  }
+});
+
 const saveLabel = computed(() =>
   hasUnsavedChanges.value ? 'Save \u2014 unsaved changes' : 'Save'
 );
@@ -314,16 +327,47 @@ function handleSave() {
   toast.add({ title: 'Build saved', color: 'success' });
 }
 
+// * An account build shares as a live link: `/b/{id}` always shows the owner's current document,
+// * where `?build=` freezes whatever was on screen when it was copied (feature 007). A local build
+// * has no id on the server, so it keeps the snapshot.
 async function handleShare() {
-  const success = activeAccountBuildId.value
-    ? await copyAccountBuildLink(activeAccountBuildId.value)
-    : await shareBuild();
+  const accountBuildId = activeAccountBuildId.value;
 
-  toast.add(
-    success
-      ? { title: 'Link copied to clipboard', color: 'success' }
-      : { title: 'Failed to copy link', color: 'error' }
+  if (!accountBuildId) {
+    reportShare((await shareBuild()) ? 'copied' : 'failed');
+
+    return;
+  }
+
+  // ! Save first. A live link resolves to the stored document, so sharing a build with unsaved
+  // ! edits hands out a link to something the sharer is not looking at.
+  if (hasUnsavedChanges.value) {
+    patchThenShare({
+      id: accountBuildId,
+      payload: { data: serializeBuild(plannerState) }
+    });
+
+    return;
+  }
+
+  reportShare(
+    (await copyAccountBuildLink(accountBuildId)) ? 'copied' : 'failed'
   );
+}
+
+// * The implicit save is named in the message: a player who pressed Share and got a silent write
+// * to their stored build has to be told it happened.
+function reportShare(outcome: 'copied' | 'saved-and-copied' | 'failed') {
+  const titles = {
+    copied: 'Link copied to clipboard',
+    'saved-and-copied': 'Saved, and link copied to clipboard',
+    failed: 'Failed to copy link'
+  };
+
+  toast.add({
+    title: titles[outcome],
+    color: outcome === 'failed' ? 'error' : 'success'
+  });
 }
 
 async function copyAccountBuildLink(id: string): Promise<boolean> {
