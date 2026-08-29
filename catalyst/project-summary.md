@@ -33,7 +33,7 @@ One line per record: type, status, title, link.
 | 003 | design      | Implemented | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                         |
 | 004 | infra       | Implemented | Adopt a backend — FastAPI, Neon Postgres, Firebase identity                     | [004_infra_backend-adoption](decisions/004_infra_backend-adoption.md)                     |
 | 005 | bootstrap   | Implemented | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic       | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                       |
-| 006 | refactor    | Accepted    | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md) |
+| 006 | refactor    | Implemented | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md) |
 
 ## Domain Decision Index
 
