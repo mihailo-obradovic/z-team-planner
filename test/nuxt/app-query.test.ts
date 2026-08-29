@@ -83,7 +83,7 @@ describe('useAppQuery / useAppMutation', () => {
           query: async () => {
             throw Object.assign(new Error('nope'), { statusCode: 500 });
           },
-          errorHandling: { hideToast: true }
+          errorHandling: { suppressToasts: 'all' }
         })
       )
     );

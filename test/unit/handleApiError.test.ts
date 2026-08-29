@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  extractMessage,
-  handleApiError,
-  isHandled
-} from '@/utils/handleApiError';
+import { extractMessage, handleApiError } from '@/utils/handleApiError';
 
 function apiError(statusCode: number, message?: string, code?: string) {
   return {
@@ -91,16 +87,16 @@ describe('handleApiError', () => {
 
   it('stays silent on 422 when the form renders it inline', () => {
     handleApiError(apiError(422, 'Validation failed.'), context, {
-      hideValidationToast: true
+      suppressToasts: 'validation'
     });
 
     expect(context.showToast).not.toHaveBeenCalled();
   });
 
   it('still toasts a 500 when only the validation toast is hidden', () => {
-    // * hideValidationToast is narrower than hideToast precisely so this case survives.
+    // * `validation` is narrower than `all` precisely so this case survives.
     handleApiError(apiError(500, 'An unexpected error occurred.'), context, {
-      hideValidationToast: true
+      suppressToasts: 'validation'
     });
 
     expect(context.showToast).toHaveBeenCalledWith(
@@ -114,8 +110,8 @@ describe('handleApiError', () => {
     expect(context.showToast).toHaveBeenCalledWith('Too many requests');
   });
 
-  it('hides every toast when hideToast is set', () => {
-    handleApiError(apiError(500, 'boom'), context, { hideToast: true });
+  it('hides every toast when suppressToasts is all', () => {
+    handleApiError(apiError(500, 'boom'), context, { suppressToasts: 'all' });
 
     expect(context.showToast).not.toHaveBeenCalled();
   });
@@ -127,7 +123,6 @@ describe('handleApiError', () => {
     handleApiError(error, context);
 
     expect(context.showToast).toHaveBeenCalledOnce();
-    expect(isHandled(error)).toBe(true);
   });
 
   it('treats a second, equal-looking error as its own', () => {

@@ -66,7 +66,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 | sign in                                    | `GET /me` then `GET /builds?page=1` — exactly once each | enabled on `signed-in`                    |
 | token expired mid-session, click Save      | `401` → refresh → retry → `200`; no toast               | one retry, in `fetcher`                   |
 | refresh also fails                         | store → `anonymous`, one toast                          | second `401`                              |
-| a mutation that opts the toast out         | no toast; the caller renders the error itself           | `hideValidationToast`                     |
+| a mutation that opts the toast out         | no toast; the caller renders the error itself           | `suppressToasts: 'validation'`            |
 | a response missing a schema-required field | generic toast; Zod issue logged for developers          | schema failure, not user error            |
 | a query's key changes                      | previous data stays visible until the new data lands    | no empty flash                            |
 | `useAppQuery` called outside a component   | no-op rather than a thrown error                        |                                           |

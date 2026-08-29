@@ -77,8 +77,8 @@ const {
   isLoading: isCreating,
   error: createError
 } = useCreateBuild({
-  // * The name field renders the 422 itself, so the toast would be a second, vaguer copy of the same message. Narrower than hideToast on purpose: a 500 here still surfaces.
-  errorHandling: { hideValidationToast: true },
+  // * The name field renders the 422 itself, so the toast would be a second, vaguer copy of the same message. Narrower than `all` on purpose: a 500 here still surfaces.
+  errorHandling: { suppressToasts: 'validation' },
   onSuccess: (created) => {
     setActiveAccountBuildId(created.id);
     accountSaveOpen.value = false;
