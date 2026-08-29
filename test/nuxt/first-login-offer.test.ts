@@ -175,7 +175,7 @@ describe('FirstLoginOffer', () => {
     page.unmount();
   });
 
-  it('is shown once per browser, whichever way it is answered', async () => {
+  it('is answered once per browser, whichever way it is answered', async () => {
     const builds = [localBuild('a', 'Main squad')];
 
     const first = await mountWith(builds);
@@ -196,5 +196,57 @@ describe('FirstLoginOffer', () => {
     expect(importBuildsSpy).not.toHaveBeenCalled();
 
     second.unmount();
+  });
+
+  it('survives an import that fails, and is spent once one succeeds', async () => {
+    const builds = [localBuild('a', 'Main squad')];
+
+    importBuildsSpy.mockRejectedValue({ statusCode: 500 });
+
+    const failed = await mountWith(builds);
+    await signIn();
+
+    const keep = failed
+      .findAll('button')
+      .find((button) => button.text() === 'Keep selected');
+    await keep?.trigger('click');
+
+    await vi.waitFor(() => expect(importBuildsSpy).toHaveBeenCalledTimes(1));
+
+    // ! The defect this pins: the offer was spent before the import was attempted, so a 500 or a
+    // ! moment offline cost this browser the offer permanently and imported nothing.
+    expect(failed.text()).toContain('Main squad');
+    failed.unmount();
+
+    // * Next sign-in: still offered, and this time it lands.
+    importBuildsSpy.mockResolvedValue([
+      {
+        index: 0,
+        status: 'created',
+        id: crypto.randomUUID(),
+        name: 'Main squad'
+      }
+    ]);
+
+    const retried = await mountWith(builds);
+    await signIn();
+
+    expect(retried.text()).toContain('Main squad');
+
+    const retryKeep = retried
+      .findAll('button')
+      .find((button) => button.text() === 'Keep selected');
+    await retryKeep?.trigger('click');
+
+    await vi.waitFor(() => expect(importBuildsSpy).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(retried.text()).toBe(''));
+    retried.unmount();
+
+    // * Spent now: a success is an answer.
+    const after = await mountWith(builds);
+    await signIn();
+
+    expect(after.text()).toBe('');
+    after.unmount();
   });
 });
