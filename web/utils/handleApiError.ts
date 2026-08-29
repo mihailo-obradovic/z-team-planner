@@ -1,10 +1,8 @@
 import type { ErrorDetail } from '@/types/api';
 
 export type ErrorHandlingOptions = {
-  // * Suppress the toast for this call entirely.
-  hideToast?: boolean;
-  // * Suppress the `422` toast only — a 500 during the same submit must still be visible.
-  hideValidationToast?: boolean;
+  // * `all` silences every toast for this call; `validation` silences only the `422`, so a 500 during the same submit still surfaces.
+  suppressToasts?: 'all' | 'validation';
 };
 
 export type ApiErrorContext = {
@@ -36,7 +34,7 @@ function asStatusError(error: unknown): StatusError | null {
     : null;
 }
 
-// * The message worth showing a user, most specific first: what the API said, then the transport-level line, then a generic fallback.
+// * Most specific first: what the API said, then the transport-level line, then a generic fallback.
 export function extractMessage(error: unknown): string {
   const candidate = asStatusError(error);
 
@@ -45,7 +43,6 @@ export function extractMessage(error: unknown): string {
   );
 }
 
-// * The one place a failed request becomes something a user sees.
 // * Statuses come from feature 006's central policy. Two never toast: `412` opens the conflict dialog, and `422` renders inline on the field that failed.
 export function handleApiError(
   error: unknown,
@@ -62,7 +59,7 @@ export function handleApiError(
 
   const status = asStatusError(error)?.statusCode;
   const toast = (message: string) => {
-    if (!options.hideToast) {
+    if (options.suppressToasts !== 'all') {
       context.showToast(message);
     }
   };
@@ -96,8 +93,8 @@ export function handleApiError(
   }
 
   if (status === 422) {
-    // ! Never a toast when the form renders it inline; hideValidationToast is narrower than hideToast on purpose, so a 500 during the same submit still surfaces.
-    if (!options.hideValidationToast) {
+    // ! Never a toast when the form renders it inline; `validation` is narrower than `all` on purpose, so a 500 during the same submit still surfaces.
+    if (!options.suppressToasts) {
       toast(extractMessage(error));
     }
 

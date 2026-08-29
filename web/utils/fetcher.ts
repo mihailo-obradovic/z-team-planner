@@ -1,6 +1,9 @@
 export type FetcherOptions = Parameters<typeof $fetch>[1];
 
-// * Deviation from stacks/frontend/nuxt/error-handling.md, which writes this as `error instanceof FetchError`: `ofetch` is not a declared dependency of this project, only a transitive one through Nuxt, so importing it here would be relying on hoisting. Reading the status is also robust to ofetch changing which error class it throws.
+// * Whether the request may reuse the SDK's cached ID token or must mint a new one.
+export type TokenFreshness = 'cached-token' | 'fresh-token';
+
+// * Deviation from stacks/frontend/nuxt/error-handling.md, which writes this as `error instanceof FetchError`: `ofetch` is only a transitive dependency here, so importing it would rely on hoisting.
 function isUnauthorized(error: unknown): boolean {
   return (
     typeof error === 'object' &&
@@ -11,7 +14,7 @@ function isUnauthorized(error: unknown): boolean {
 
 const REQUEST_ID_HEADER = 'X-Request-ID';
 
-// * Mirrors the API's own generated id (12 hex chars) so a client-side id is indistinguishable from a server-side one when grepping logs.
+// * Twelve hex chars, matching the API's own generated id, so neither side is distinguishable when grepping logs.
 function generateRequestId(): string {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
@@ -22,7 +25,7 @@ function generateRequestId(): string {
 }
 
 async function buildHeaders(
-  forceRefresh: boolean
+  freshness: TokenFreshness
 ): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -33,8 +36,10 @@ async function buildHeaders(
   const user = $firebaseAuth?.currentUser;
 
   if (user) {
-    // * forceRefresh mints a new token rather than returning the cached one; that is the whole point of the retry below.
-    headers.Authorization = `Bearer ${await user.getIdToken(forceRefresh)}`;
+    // * The SDK's own signature is a boolean, so the union converts here and nowhere else.
+    const token = await user.getIdToken(freshness === 'fresh-token');
+
+    headers.Authorization = `Bearer ${token}`;
   }
 
   return headers;
@@ -43,7 +48,7 @@ async function buildHeaders(
 async function makeRequest(
   path: string,
   options: FetcherOptions,
-  forceRefresh = false
+  freshness: TokenFreshness = 'cached-token'
 ): Promise<unknown> {
   const { apiBaseUrl } = useRuntimeConfig().public;
 
@@ -53,15 +58,14 @@ async function makeRequest(
     credentials: 'omit',
     ...options,
     headers: {
-      ...(await buildHeaders(forceRefresh)),
+      ...(await buildHeaders(freshness)),
       ...options?.headers
     }
   });
 }
 
-// * The one way this app talks to its API.
-// * An expired ID token is recoverable, so a `401` refreshes the token and retries — exactly once. A second `401` is a real authentication failure and is thrown for the central policy to handle.
-// * Returns `unknown` on purpose: a type argument here would be an assertion the compiler believes and nothing verifies. Services parse the result with Zod instead.
+// * An expired ID token is recoverable, so a `401` refreshes and retries exactly once; a second one is a real authentication failure and goes to the central policy.
+// * Returns `unknown` because a type argument here would be an assertion nothing verifies — services parse the result with Zod instead.
 export async function fetcher(
   path: string,
   options: FetcherOptions = {}
@@ -71,7 +75,7 @@ export async function fetcher(
   } catch (error) {
     if (isUnauthorized(error)) {
       // ! Retries through makeRequest, never through fetcher: recursing would turn a persistently rejected token into an infinite loop of refresh attempts.
-      return await makeRequest(path, options, true);
+      return await makeRequest(path, options, 'fresh-token');
     }
 
     throw error;

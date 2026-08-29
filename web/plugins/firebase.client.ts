@@ -8,7 +8,7 @@ import {
 
 // ! Client-only by filename. The Firebase SDK is a browser SDK, and the server must never hold a user's token — feature 006: the server never calls the API and nothing is forwarded.
 export default defineNuxtPlugin(() => {
-  const authStore = useAuthStore();
+  const { setUser, resetUser, markSignInUnavailable } = useAuthStore();
   const { firebase } = useRuntimeConfig().public;
 
   // * Null when initialisation failed; the fetcher reads this and simply sends no token.
@@ -35,7 +35,7 @@ export default defineNuxtPlugin(() => {
       'Firebase failed to initialise; sign-in is unavailable.',
       error
     );
-    authStore.markSignInUnavailable();
+    markSignInUnavailable();
   }
 
   if (auth) {
@@ -44,12 +44,12 @@ export default defineNuxtPlugin(() => {
       auth,
       (user) => {
         if (!user) {
-          authStore.resetUser();
+          resetUser();
 
           return;
         }
 
-        authStore.setUser({
+        setUser({
           uid: user.uid,
           email: user.email,
           displayName: user.displayName
@@ -57,7 +57,7 @@ export default defineNuxtPlugin(() => {
       },
       (error) => {
         console.error('Firebase auth state subscription failed.', error);
-        authStore.markSignInUnavailable();
+        markSignInUnavailable();
       }
     );
   }
