@@ -85,8 +85,9 @@ const id = computed(() => route.params.id as string);
 const { data: build, isPending } = useFetchSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
-const { synergyPairColumns, loadSharedBuild, saveAsNewLocalBuild } =
-  useHeroPlanner();
+const { synergyPairColumns } = useHeroPlanner();
+const { loadSharedBuild } = useBuildMode();
+const { saveAsNewLocalBuild } = useLocalBuilds();
 
 const { mutate: createBuild, isLoading: isSaving } = useCreateBuild({
   onSuccess: (created) => {

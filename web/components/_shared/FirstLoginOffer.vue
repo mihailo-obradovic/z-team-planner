@@ -60,7 +60,7 @@ const toast = useToast();
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 
-const { localBuilds } = useHeroPlanner();
+const { localBuilds } = useLocalBuilds();
 
 const isOpen = ref(false);
 const selected = ref<string[]>([]);

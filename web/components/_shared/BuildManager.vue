@@ -117,19 +117,20 @@ const toast = useToast();
 const { isSignedIn, activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
 
+const plannerState = usePlannerState();
+
 const {
   localBuilds,
-  serializeCurrentBuild,
   activeBuildId,
   activeBuildName,
-  isViewingSharedBuild,
-  hasUnsavedChanges,
   saveLocalBuild,
   loadLocalBuild,
-  shareBuild,
-  backToMyBuild,
-  loadAccountBuild
-} = useHeroPlanner();
+  backToMyBuild
+} = useLocalBuilds();
+
+const { isViewingSharedBuild, loadAccountBuild } = useBuildMode();
+const { shareBuild } = useBuildSharing();
+const { hasUnsavedChanges } = useUnsavedChanges();
 
 const {
   buildMenuTier,
@@ -294,7 +295,7 @@ function handleSave() {
   if (activeAccountBuildId.value) {
     patchBuild({
       id: activeAccountBuildId.value,
-      payload: { data: serializeCurrentBuild() }
+      payload: { data: serializeBuild(plannerState) }
     });
 
     return;

@@ -3,6 +3,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
 import type { SerializedBuild } from '@/types/build';
+import type { PlannerState } from '@/composables/usePlannerState';
 
 // * Characterisation coverage for the build document format — the protected area feature 001 owns.
 // * Written against the planner's public surface rather than the serialiser, because the serialiser is module-private and takes eight refs. That is the point: these assertions describe the format, not the code that produces it, so decision 006's split has to leave every one of them passing.
@@ -30,27 +31,42 @@ Object.defineProperty(window, 'location', {
   value: new URL('https://planner.test/')
 });
 
+// * The persistence concerns are separate composables, so the harness composes the surface these assertions were written against. The assertions themselves are untouched — that is the point of a characterisation test.
 async function freshPlanner() {
   store.clear();
   delete routeQuery.build;
 
   let planner!: ReturnType<typeof useHeroPlanner>;
+  let state!: PlannerState;
+  let mode!: ReturnType<typeof useBuildMode>;
+  let sharing!: ReturnType<typeof useBuildSharing>;
+  let initial!: ReturnType<typeof useInitialBuild>;
 
   await mountSuspended(
     defineComponent({
       setup() {
         planner = useHeroPlanner();
+        state = usePlannerState();
+        mode = useBuildMode();
+        sharing = useBuildSharing();
+        initial = useInitialBuild();
+
         return () => h('div');
       }
     })
   );
 
-  await planner.initialize();
+  await initial.loadInitialBuild();
 
   // ! `useState` refs are shared for the lifetime of the module, so a hero trained in one test is still trained in the next. Loading an empty document is the reset: it puts every group back to `{}` and both episode choices back to their defaults, through the same path a real load takes.
-  await planner.loadAccountBuild({ v: 1 });
+  await mode.loadAccountBuild({ v: 1 });
 
-  return planner;
+  return {
+    ...planner,
+    serializeCurrentBuild: () => serializeBuild(state),
+    loadSharedBuild: mode.loadSharedBuild,
+    getShareUrl: sharing.getShareUrl
+  };
 }
 
 function decodeShareParam(url: string): SerializedBuild {

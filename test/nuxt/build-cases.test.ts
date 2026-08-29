@@ -26,6 +26,7 @@ const { cases } = JSON.parse(
 const replayable = cases.filter((testCase) => testCase.tier !== 'structure');
 
 type Planner = ReturnType<typeof useHeroPlanner>;
+type PlannerState = ReturnType<typeof usePlannerState>;
 type State = {
   levelUps: Ref<Partial<Record<HeroId, HeroStats>>>;
   bonusLevels: Ref<Partial<Record<HeroId, number>>>;
@@ -36,12 +37,14 @@ type State = {
 
 let planner!: Planner;
 let state!: State;
+let plannerState!: PlannerState;
 
 beforeAll(async () => {
   await mountSuspended(
     defineComponent({
       setup() {
         planner = useHeroPlanner();
+        plannerState = usePlannerState();
         state = {
           levelUps: useState('heroLevelUps'),
           bonusLevels: useState('heroBonusLevels'),
@@ -138,7 +141,7 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
     }
   }
 
-  return planner.serializeCurrentBuild();
+  return serializeBuild(plannerState);
 }
 
 function rows(valid: boolean) {

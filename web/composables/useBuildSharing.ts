@@ -1,11 +1,12 @@
-import type { PlannerState } from '@/composables/usePlannerState';
 import type { SerializedBuild } from '@/types/build';
 
 export const BUILD_URL_PARAM = 'build';
 
 // * The `?build=` share link: writing the current planner into one, and reading one back out.
 // * A link carries the build document itself, not a reference to a stored build — which is why it works signed out and why nothing here touches localStorage or the API.
-export function useBuildSharing(state: PlannerState) {
+export function useBuildSharing() {
+  const state = usePlannerState();
+
   function getShareUrl(): string {
     const url = new URL(window.location.href);
 

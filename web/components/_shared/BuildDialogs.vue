@@ -97,7 +97,7 @@ const {
   loadLocalBuild,
   renameLocalBuild,
   localBuilds
-} = useHeroPlanner();
+} = useLocalBuilds();
 
 const {
   saveSharedOpen,
