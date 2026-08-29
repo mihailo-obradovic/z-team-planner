@@ -423,7 +423,7 @@ export interface SynergyPair {
   hero2: HeroId;
 }
 
-export type SynergyLevel = 1 | 2 | 3;
+export type SynergyLevel = 0 | 1 | 2 | 3;
 
 // * Base synergy pairs that are always available (from Episode 3 onwards).
 export const BASE_SYNERGY_PAIRS: readonly SynergyPair[] = [

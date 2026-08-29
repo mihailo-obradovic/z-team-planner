@@ -42,7 +42,6 @@ export async function updateBuild(
     await fetcher(`/builds/${id}`, {
       method: 'PATCH',
       body: payload,
-      // * The build's `updated_at` from the last read; the server rejects a stale one with 412.
       headers: { 'If-Match': etag }
     })
   );

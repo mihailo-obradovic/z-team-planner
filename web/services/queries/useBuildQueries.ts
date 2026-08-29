@@ -24,7 +24,6 @@ export const buildsQueryKeys = {
   fetchBuild: ['builds', 'get']
 } as const;
 
-// * Everything a mutation touches lives under ['builds'], so invalidating the root covers the list and every cached build in one call.
 const BUILDS_ROOT = ['builds'];
 
 type MutationOptions<TData, TVars> = Omit<
@@ -44,7 +43,6 @@ export function useFetchBuilds(
   return useAppQuery<BuildList>({
     key: () => [...buildsQueryKeys.fetchBuilds],
     query: () => fetchBuilds(),
-    // * Never fires while the store is `unknown` or `anonymous`: a signed-out load makes no request at all (feature 008, Examples).
     enabled: () => isSignedIn.value,
     ...options
   });
@@ -70,7 +68,6 @@ export function useCreateBuild(
   const queryCache = useQueryCache();
 
   return useAppMutation<Build, CreateBuildPayload>({
-    // * Generated per call, inside the hook — the fetcher's own 401 retry reuses the same request options, so the replay carries this key and cannot create a second build.
     mutation: (payload) => createBuild(payload, newIdempotencyKey()),
     ...options,
     onSettled: chainOnSettled(
@@ -90,7 +87,6 @@ export function useUpdateBuild(
 
   return useAppMutation<Build, { id: string; payload: UpdateBuildPayload }>({
     mutation: ({ id, payload }) => {
-      // * The ETag comes from the cached build, so a component never sees one (feature 008).
       const cached = queryCache.getQueryData<Build>([
         ...buildsQueryKeys.fetchBuild,
         id
@@ -115,7 +111,6 @@ export function useDeleteBuild(options: MutationOptions<void, string> = {}) {
     mutation: (id) => deleteBuild(id),
     ...options,
     onSettled: chainOnSettled(async (_data, error, id) => {
-      // * Store side effects belong to the query layer, not to services or components.
       if (!error && activeAccountBuildId.value === id) {
         setActiveAccountBuildId(null);
       }

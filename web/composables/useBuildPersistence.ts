@@ -3,14 +3,11 @@ import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SavedBuild, SerializedBuild } from '@/types/build';
 
-// * Constants
-
 const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 const URL_PARAM = 'build';
 
 export function useBuildPersistence() {
-  // * Access all mutable state via useState (same refs as sub-composables)
   const ep3Cut = useState<HeroId>('ep3Cut');
   const ep4Hire = useState<HeroId>('ep4Hire');
   const showEp8Recruits = useState<boolean>('showEp8Recruits');
@@ -24,17 +21,14 @@ export function useBuildPersistence() {
     useState<Partial<Record<HeroId, number>>>('heroSpecialPowers');
   const heroFlights = useState<Partial<Record<HeroId, boolean>>>('heroFlights');
 
-  // * localStorage
   const savedBuilds = useLocalStorageRef<SavedBuild[]>(STORAGE_KEY_BUILDS, []);
   const activeBuildId = useLocalStorageRef<string | null>(
     STORAGE_KEY_ACTIVE,
     null
   );
 
-  // * Shared-build mode
   const isViewingSharedBuild = ref(false);
 
-  // * Dirty tracking Snapshot of the last-saved state, used to detect unsaved changes
   const savedSnapshot = ref<string>('');
 
   function takeSnapshot(): string {
@@ -62,7 +56,6 @@ export function useBuildPersistence() {
     return takeSnapshot() !== savedSnapshot.value;
   });
 
-  // * Build CRUD
   function generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
@@ -75,8 +68,6 @@ export function useBuildPersistence() {
     );
   }
 
-  // * The planner's current state as a `SerializedBuild`.
-  // * Exposed so an account save (feature 005) stores exactly the format a local save stores — one serialiser, so the two paths cannot drift.
   function serializeCurrentBuild(): SerializedBuild {
     return serializeCurrentState(
       ep3Cut,
@@ -190,7 +181,6 @@ export function useBuildPersistence() {
     if (build) build.name = name;
   }
 
-  // * URL sharing
   function clearUrlParam() {
     const url = new URL(window.location.href);
 
@@ -216,7 +206,6 @@ export function useBuildPersistence() {
     const url = new URL(window.location.href);
     url.searchParams.set(URL_PARAM, encoded);
 
-    // * Remove other params that might be stale
     return url.toString();
   }
 
@@ -231,7 +220,6 @@ export function useBuildPersistence() {
     }
   }
 
-  // * Shared build actions
   function saveSharedAsMyBuild(name: string) {
     saveAsNewBuild(name);
   }
@@ -259,17 +247,12 @@ export function useBuildPersistence() {
     updateSavedSnapshot();
   }
 
-  // * Initialization
-  // * Load a build document fetched from the API into the planner, in shared-build mode.
-  // * The `?build=` path decodes a snapshot out of the URL; this one takes an already-decoded document from `/b/{id}` (feature 007). Both end in the same deserialisation, so the ordering guarantee — episode choices first, dependent state after `nextTick()` — holds for either entry point.
   async function loadSharedBuild(build: SerializedBuild) {
     isViewingSharedBuild.value = true;
 
     await applySerializedBuild(build);
   }
 
-  // * Load an account build (feature 008) into the planner.
-  // * Same deserialisation as the shared path, but *not* shared-build mode: the signed-in owner is editing their own document, so the "viewing shared build" banner must not appear.
   async function loadAccountBuild(build: SerializedBuild) {
     isViewingSharedBuild.value = false;
 
@@ -291,14 +274,12 @@ export function useBuildPersistence() {
   }
 
   async function initialize() {
-    // * Only run on client
     if (import.meta.server) return;
 
     const route = useRoute();
     const buildParam = route.query[URL_PARAM] as string | undefined;
 
     if (buildParam) {
-      // * Load from URL - shared build mode
       const decoded = decodeBuildFromUrl(buildParam);
 
       if (decoded) {
@@ -319,7 +300,6 @@ export function useBuildPersistence() {
     }
 
     if (!isViewingSharedBuild.value) {
-      // * No build param, or an undecodable one - fall back to the active build and strip the dead param so a reload cannot re-trip on it
       if (buildParam) clearUrlParam();
 
       const active = getActiveBuild();
@@ -339,11 +319,8 @@ export function useBuildPersistence() {
       }
     }
 
-    // * Take initial snapshot for dirty tracking
     updateSavedSnapshot();
   }
-
-  // * Beforeunload
 
   function setupBeforeUnload() {
     if (import.meta.server) return;
@@ -355,7 +332,6 @@ export function useBuildPersistence() {
     });
   }
 
-  // * Derived here rather than in a component: both the build controls and the dialogs that rename or delete the active build need the same name, and they no longer share a component to compute it in.
   const activeBuildName = computed(
     () =>
       savedBuilds.value.find((b) => b.id === activeBuildId.value)?.name ??
@@ -393,8 +369,6 @@ export function useBuildPersistence() {
     setupBeforeUnload
   };
 }
-
-// * Local storage helper
 
 function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
   const data = ref(defaultValue) as Ref<T>;
