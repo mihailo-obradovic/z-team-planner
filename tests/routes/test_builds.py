@@ -139,49 +139,29 @@ def test_a_list_is_newest_updated_first_and_carries_no_documents(api: Api) -> No
 
     body = api.list().json()
 
-    assert body == {
-        "items": body["items"],
-        "total": 3,
-        "page": 1,
-        "page_size": 20,
-    }
+    assert body == {"items": body["items"], "total": 3}
     assert [item["name"] for item in body["items"]] == ["third", "second", "first"]
     assert "data" not in body["items"][0]
 
 
-def test_a_page_is_a_window_on_the_whole_set(api: Api) -> None:
+def test_a_list_is_the_whole_set(api: Api) -> None:
     for index in range(7):
+        api.create(f"build-{index}")
+
+    body = api.list().json()
+
+    # * No paging: the per-account cap is 20, so every build the caller owns fits in one answer (feature 005).
+    assert (len(body["items"]), body["total"]) == (7, 7)
+
+
+def test_an_undeclared_query_param_is_ignored(api: Api) -> None:
+    """An old client still sending `?page=` gets the whole list, not a 422."""
+    for index in range(3):
         api.create(f"build-{index}")
 
     body = api.list(page=2, page_size=5).json()
 
-    assert len(body["items"]) == 2
-    assert (body["total"], body["page"], body["page_size"]) == (7, 2, 5)
-
-
-def test_a_page_past_the_end_is_empty_rather_than_an_error(api: Api) -> None:
-    api.create("Main")
-
-    body = api.list(page=9).json()
-
-    assert (body["items"], body["total"]) == ([], 1)
-
-
-@pytest.mark.parametrize(
-    ("query", "path"),
-    [
-        ({"page": 0}, "page"),
-        ({"page_size": 0}, "page_size"),
-        ({"page_size": 101}, "page_size"),
-    ],
-)
-def test_pagination_outside_its_bounds_is_refused(
-    api: Api, query: dict[str, int], path: str
-) -> None:
-    response = api.list(**query)
-
-    assert response.status_code == 422
-    assert response.json()["error"]["details"][0]["path"] == path
+    assert (len(body["items"]), body["total"]) == (3, 3)
 
 
 def test_a_list_shows_only_the_caller_s_builds(api: Api) -> None:

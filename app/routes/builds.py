@@ -3,7 +3,7 @@
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Response, status
+from fastapi import APIRouter, Header, Response, status
 from fastapi.responses import JSONResponse
 
 from app.auth import CurrentUserDep
@@ -40,19 +40,13 @@ def with_etag(body: dict[str, Any], status_code: int = 200) -> JSONResponse:
 
 
 @router.get("", response_model=BuildListOut, summary="List the account's builds")
-def list_builds(
-    session: DbSession,
-    user: CurrentUserDep,
-    page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
-) -> BuildListOut:
-    items, total = builds_service.list_builds(session, user.id, page, page_size)
+def list_builds(session: DbSession, user: CurrentUserDep) -> BuildListOut:
+    # * Every build the caller owns, unpaged: the per-account cap is 20 (feature 005), so the whole list is the page.
+    items, total = builds_service.list_builds(session, user.id)
 
     return BuildListOut(
         items=[BuildSummaryOut.model_validate(build) for build in items],
         total=total,
-        page=page,
-        page_size=page_size,
     )
 
 

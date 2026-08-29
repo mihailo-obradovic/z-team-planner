@@ -52,7 +52,7 @@ Non-goals:
 ## User / System Behavior
 
 - Signed out, nothing here fetches: every account query is gated on the store.
-- Signed in, BuildManager lists the account's builds newest-updated first — a skeleton while pending, the previous page held across refetches rather than flashing empty.
+- Signed in, BuildManager lists the account's builds newest-updated first — a skeleton while pending, the previous list held across refetches rather than flashing empty.
 - Opening an account build loads its document into the planner and makes it active. **Save** patches it, **Save as new** creates one; both invalidate `['builds']`, refreshing the list and every cached build together.
 - Deleting the active build clears the active id, so the planner is not left pointed at something gone.
 - A rejected name appears **on the field**, not in a toast — whether Regle caught it or the server's `422` came back.
@@ -69,7 +69,7 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 | Input                                | Expected Output                                    | Notes                       |
 | ------------------------------------ | -------------------------------------------------- | --------------------------- |
 | load `/` signed out                  | no account request at all                          | `enabled` gate              |
-| sign in                              | `GET /builds?page=1` exactly once                  |                             |
+| sign in                              | `GET /builds` exactly once                         |                             |
 | **Save** on a build edited elsewhere | conflict dialog with the other build; no toast     | `412`, body parsed          |
 | **Save as new** with a 90-char name  | inline field error; no request                     | Regle catches it first      |
 | server-only `422` (a rule drifted)   | inline field error from `externalErrors`; no toast | mutation opts the toast out |
@@ -133,7 +133,7 @@ Every status goes through feature 006's central policy; this feature only decide
 
 Split out of feature 006 after it was `Active`; it adds no behavior, so the evidence is that feature's — fourteen steps on `feature/006-frontend-data-layer`, re-walked against feature 005's endpoints.
 
-By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds?page=1`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, and `409` toasted the server's own limit message.
+By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, and `409` toasted the server's own limit message.
 
 The first-login offer's import path was walked end to end when feature 004 landed: four local builds offered, two kept, two rows created and the outcome reported as one toast.
 

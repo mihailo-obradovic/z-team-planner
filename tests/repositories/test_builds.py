@@ -163,24 +163,26 @@ def test_a_list_is_newest_updated_first(session: Session, owner: User) -> None:
         builds_repo.insert(session, owner_id=owner.id, name=name, data={"v": 1})
         session.commit()
 
-    builds = builds_repo.list_for_owner(session, owner.id, offset=0, limit=10)
+    builds = builds_repo.list_for_owner(session, owner.id)
     stamps = [build.updated_at for build in builds]
 
     assert stamps == sorted(stamps, reverse=True)
     assert len(builds) == 3
 
 
-def test_a_page_is_a_window_on_that_order(session: Session, owner: User) -> None:
+def test_the_order_is_stable_across_reads(session: Session, owner: User) -> None:
+    """Two builds can share a timestamp, so `id` breaks the tie and the list never reshuffles."""
     for index in range(7):
         builds_repo.insert(
             session, owner_id=owner.id, name=f"build-{index}", data={"v": 1}
         )
-        session.commit()
+    session.commit()
 
-    everything = builds_repo.list_for_owner(session, owner.id, offset=0, limit=100)
-    page_two = builds_repo.list_for_owner(session, owner.id, offset=5, limit=5)
+    first = builds_repo.list_for_owner(session, owner.id)
+    second = builds_repo.list_for_owner(session, owner.id)
 
-    assert [build.id for build in page_two] == [build.id for build in everything[5:7]]
+    assert len(first) == 7
+    assert [build.id for build in first] == [build.id for build in second]
 
 
 def test_another_account_s_build_reads_as_absent(

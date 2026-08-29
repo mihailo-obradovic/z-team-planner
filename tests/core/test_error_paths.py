@@ -15,8 +15,7 @@ from app.exceptions.handlers import location_to_path
         (("body", "data", "v"), "data.v"),
         # * The batch-cap row: "import of 51 items -> 422, path `$`".
         (("body",), "$"),
-        # * Other transports lose their segment the same way.
-        (("query", "page_size"), "page_size"),
+        # * Other transports lose their segment the same way. No `query` row: no route declares a query parameter since feature 005 dropped paging.
         (("path", "id"), "id"),
         (("header", "if-match"), "if-match"),
         # * Nested indexing.

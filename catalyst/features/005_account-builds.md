@@ -14,15 +14,14 @@ A signed-in player's builds live on the server and follow them to any device. Th
 
 ## Inputs
 
-| Input               | Type                        | Source                | Constraints                             |
-| ------------------- | --------------------------- | --------------------- | --------------------------------------- |
-| bearer token        | `Authorization` header      | feature 004           | required on every route here            |
-| `name`              | string                      | create, patch, import | trimmed, 1–80; unique per account       |
-| `data`              | `SerializedBuild` JSON      | create, patch, import | `v: 1`; the five tiers; ≤ 8 KB          |
-| `Idempotency-Key`   | header, opaque string ≤ 128 | create, import        | required; 24 h window per user          |
-| `If-Match`          | header, the build's `ETag`  | patch                 | the `updated_at` from the last read     |
-| `page`, `page_size` | query ints                  | list                  | defaults 1 and 20; `page_size` ≤ 100    |
-| `{id}`              | UUIDv4 path segment         | read, patch, delete   | unguessable; unknown or unowned → `404` |
+| Input             | Type                        | Source                | Constraints                             |
+| ----------------- | --------------------------- | --------------------- | --------------------------------------- |
+| bearer token      | `Authorization` header      | feature 004           | required on every route here            |
+| `name`            | string                      | create, patch, import | trimmed, 1–80; unique per account       |
+| `data`            | `SerializedBuild` JSON      | create, patch, import | `v: 1`; the five tiers; ≤ 8 KB          |
+| `Idempotency-Key` | header, opaque string ≤ 128 | create, import        | required; 24 h window per user          |
+| `If-Match`        | header, the build's `ETag`  | patch                 | the `updated_at` from the last read     |
+| `{id}`            | UUIDv4 path segment         | read, patch, delete   | unguessable; unknown or unowned → `404` |
 
 ## Outputs And Side Effects
 
@@ -30,6 +29,7 @@ A signed-in player's builds live on the server and follow them to any device. Th
 | -------------------- | -------- | ------------------------------------------------------------------------------------ |
 | `builds` row         | Postgres | `id, owner_id, name, data jsonb, format_version (generated), created_at, updated_at` |
 | build summary        | JSON     | `{ id, name, format_version, created_at, updated_at }` — list items                  |
+| build list           | JSON     | `{ items: [summary], total }` — every build the caller owns                          |
 | build                | JSON     | summary plus `data`; `ETag` header = `updated_at`                                    |
 | import report        | JSON     | `[{ index, status: "created" \| "invalid", id?, name?, errors? }]`                   |
 
@@ -51,7 +51,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- The list is the caller's own builds, newest-updated first and paginated; every other route addresses one build by id, and a build the caller does not own is a `404` rather than a `403`.
+- The list is the caller's own builds, newest-updated first — all of them, since the cap is 20; every other route addresses one build by id, and a build the caller does not own is a `404` rather than a `403`.
 - Create, import and rename all return the **final** name: on a collision the server suffixes it and answers with what it stored, so the caller never has to guess.
 - Editing the same build from two devices: the second `PATCH` carries a stale `ETag` and gets `412` with the current build in the body — enough for the caller to offer a choice rather than silently losing a write.
 - A request retried after a network failure carries the same `Idempotency-Key` and gets the original response, not a second build.
@@ -63,22 +63,23 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 
 ## Examples
 
-| Input                                            | Expected Output                                 | Notes               |
-| ------------------------------------------------ | ----------------------------------------------- | ------------------- |
-| `POST /builds` `{name:"Main", data:{v:1}}` + key | `201`, build with `name:"Main"`                 |                     |
-| same request, same key, within 24 h              | `201`, the **same** build                       | idempotent replay   |
-| same body, **different** key                     | `201`, `name:"Main (2)"`                        | suffixed            |
-| `PATCH` rename to a name another own build has   | `200`, `name:"<name> (2)"`                      | renames suffix too  |
-| `PATCH` without `If-Match`                       | `428 precondition_required`                     |                     |
-| `PATCH` with a stale `If-Match`                  | `412 precondition_failed`, body = current build | two-device conflict |
-| any `data` from `shared/build-cases.json`        | its verdict and exact `details[].path` set      | all tiers + episode |
-| `POST /builds` with a 9 KB document              | `413 payload_too_large`                         |                     |
-| 21st `POST /builds`                              | `409 build_limit`                               | cap 20              |
-| `GET /builds?page=2&page_size=5` with 7 builds   | `200`, 2 summaries, `total: 7`                  |                     |
-| `GET /builds/{other user's id}`                  | `404 not_found`                                 | never `403`         |
-| import of 3 items, one with an unknown hero id   | `200`, statuses `created, invalid, created`     | partial success     |
-| import of 51 items                               | `422`, path `builds`                            | batch cap           |
-| `DELETE /me` (feature 004) with 5 builds         | all 5 rows gone; their `/b/` links `404`        | cascade             |
+| Input                                            | Expected Output                                     | Notes                           |
+| ------------------------------------------------ | --------------------------------------------------- | ------------------------------- |
+| `POST /builds` `{name:"Main", data:{v:1}}` + key | `201`, build with `name:"Main"`                     |                                 |
+| same request, same key, within 24 h              | `201`, the **same** build                           | idempotent replay               |
+| same body, **different** key                     | `201`, `name:"Main (2)"`                            | suffixed                        |
+| `PATCH` rename to a name another own build has   | `200`, `name:"<name> (2)"`                          | renames suffix too              |
+| `PATCH` without `If-Match`                       | `428 precondition_required`                         |                                 |
+| `PATCH` with a stale `If-Match`                  | `412 precondition_failed`, body = current build     | two-device conflict             |
+| any `data` from `shared/build-cases.json`        | its verdict and exact `details[].path` set          | all tiers + episode             |
+| `POST /builds` with a 9 KB document              | `413 payload_too_large`                             |                                 |
+| 21st `POST /builds`                              | `409 build_limit`                                   | cap 20                          |
+| `GET /builds` with 7 builds                      | `200`, 7 summaries, `total: 7`                      | no paging; the cap is the bound |
+| `GET /builds?page=2`                             | `200`, all 7 — an undeclared query param is ignored | an old client keeps working     |
+| `GET /builds/{other user's id}`                  | `404 not_found`                                     | never `403`                     |
+| import of 3 items, one with an unknown hero id   | `200`, statuses `created, invalid, created`         | partial success                 |
+| import of 51 items                               | `422`, path `builds`                                | batch cap                       |
+| `DELETE /me` (feature 004) with 5 builds         | all 5 rows gone; their `/b/` links `404`            | cascade                         |
 
 ## Business Rules
 

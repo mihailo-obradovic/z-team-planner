@@ -78,13 +78,9 @@ def not_found() -> AppError:
     return AppError(ErrorCode.NOT_FOUND, "Build not found.", status_code=404)
 
 
-def list_builds(
-    session: Session, owner_id: UUID, page: int, page_size: int
-) -> tuple[list[Build], int]:
+def list_builds(session: Session, owner_id: UUID) -> tuple[list[Build], int]:
     total = builds_repo.count_for_owner(session, owner_id)
-    items = builds_repo.list_for_owner(
-        session, owner_id, offset=(page - 1) * page_size, limit=page_size
-    )
+    items = builds_repo.list_for_owner(session, owner_id)
 
     return items, total
 

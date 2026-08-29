@@ -1,5 +1,5 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { chainOnSettled } from '@/services/queries/chainOnSettled';
@@ -66,7 +66,7 @@ describe('enabled gating', () => {
       harness(() => {
         prepare(useAuthStore());
 
-        return useFetchBuilds(ref(1));
+        return useFetchBuilds();
       })
     );
     await new Promise((resolve) => setTimeout(resolve, 60));
