@@ -60,7 +60,7 @@ const { user, isAdmin } = storeToRefs(useAuthStore());
 const { setUser, resetUser } = useAuthStore();
 ```
 
-Never wrap a store value in a local property that only re-exposes it (`const currentUser = computed(() => authStore.user)`) — it adds a name, a layer, and nothing else. Section 11 of `../_vue/vue-style.md` fixes where this sits in the script.
+Never wrap a store value in a local property that only re-exposes it (`const currentUser = computed(() => authStore.user)`) — it adds a name, a layer, and nothing else. Nor a local handle the members are then read off (`const authStore = useAuthStore()`, then `authStore.resetUser()`): that is the same layer without the name. The split binds **every file that consumes a store** — composables, plugins, and services as much as components. Section 11 of `../_vue/vue-style.md` fixes where it sits in an SFC's script.
 
 ## Stores do not call the API
 

@@ -14,6 +14,8 @@
     // ! Pyright in the editor is one of two extensions, by editor: Cursor cannot ship Pylance and uses its own Pyright fork (the default here); VS Code has no `anysphere.*` and takes Pylance instead. Each editor reports the other id as not found — install the one yours can.
     "anysphere.cursorpyright",
     "ms-python.vscode-pylance"
+    // catalyst:begin
+    // catalyst:end
   ],
   "unwantedRecommendations": [
     "dbaeumer.vscode-eslint",

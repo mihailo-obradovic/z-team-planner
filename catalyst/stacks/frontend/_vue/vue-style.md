@@ -33,7 +33,7 @@ Always `<script setup lang="ts">`. Use the **`@/` alias, never `~/`**.
 8. **Template refs and composable inputs** — `useTemplateRef` for DOM and component instances (better inference than a bare `ref`), plus any ref a composable below takes as an argument. If one needs data from a later section, move it down only as far as needed.
 9. **Built-in composables** — `useRoute`, `useRouter`, `useAttrs`, `useSlots`, `resolveComponent`. Keep related ones grouped.
 10. **External composables** — from packages (`@vueuse/core`, …), grouped by package.
-11. **Store usage** — reactive state via `storeToRefs()` first, then actions and getters. Prefer destructuring over a local wrapper property.
+11. **Store usage** — state _and getters_ via `storeToRefs()` first, then actions by plain destructuring. Prefer destructuring over a local wrapper property. Getters are computed refs: plain destructuring drops their reactivity, so they travel with state, not with actions. The split itself binds every file that touches a store — composable, plugin, or service, not only an SFC — and this section governs only where it sits in a script block.
 12. **Service destructuring** — the methods that make API calls.
 13. **Project composables** — from `@/composables`.
 14. **Component composables** — destructured from composables defined in this same file (see 21).
