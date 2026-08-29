@@ -140,6 +140,8 @@ By test: query keys, `enabled` gating and invalidation ordering; a 90-character 
 
 The first-login offer's import path was walked end to end when feature 004 landed: four local builds offered, two kept, two rows created and the outcome reported as one toast.
 
+Dirty tracking across the two worlds, in a browser on 2026-08-29 against the dev server, the Auth emulator and the Neon dev branch: opening an account build left **Save** absent, a story-setup edit raised it, and a successful **Save** cleared it again; re-selecting the build already open reloaded its stored document and discarded the local edit. Both are pinned by `build-manager.test.ts` and `build-manager-reopen.test.ts`, each confirmed failing on the pre-fix code.
+
 ## Agent Change Rules
 
 Before changing this feature, an agent must:
