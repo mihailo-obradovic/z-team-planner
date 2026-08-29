@@ -8,225 +8,6 @@ const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 const URL_PARAM = 'build';
 
-// * Local storage helper
-
-function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
-  const data = ref(defaultValue) as Ref<T>;
-
-  if (import.meta.client) {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored !== null) data.value = JSON.parse(stored);
-    } catch {
-      // * ignore corrupt data
-    }
-
-    watch(
-      data,
-      (val) => {
-        try {
-          localStorage.setItem(key, JSON.stringify(val));
-        } catch {
-          /* ignore quota errors */
-        }
-      },
-      { deep: true }
-    );
-  }
-
-  return data;
-}
-
-// * Serialization helpers
-
-function statsToArray(stats: HeroStats): number[] {
-  return STAT_NAMES.map((s) => stats[s]);
-}
-
-function arrayToStats(arr: number[]): HeroStats {
-  return Object.fromEntries(
-    STAT_NAMES.map((s, i) => [s, arr[i] ?? 0])
-  ) as HeroStats;
-}
-
-function isZeroStats(stats: HeroStats): boolean {
-  return STAT_NAMES.every((s) => stats[s] === 0);
-}
-
-// * Serialization
-
-function serializeCurrentState(
-  ep3Cut: Ref<HeroId>,
-  ep4Hire: Ref<HeroId>,
-  showEp8Recruits: Ref<boolean>,
-  heroLevelUps: Ref<Partial<Record<HeroId, HeroStats>>>,
-  heroBonusLevels: Ref<Partial<Record<HeroId, number>>>,
-  heroPowers: Ref<Partial<Record<HeroId, HeroPowerSelection>>>,
-  heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
-  heroFlights: Ref<Partial<Record<HeroId, boolean>>>
-): SerializedBuild {
-  const build: SerializedBuild = { v: 1 };
-
-  // * Episode setup (omit defaults)
-  if (ep3Cut.value !== DEFAULT_EP3_CUT) build.ec = ep3Cut.value;
-  if (ep4Hire.value !== DEFAULT_EP4_HIRE) build.eh = ep4Hire.value;
-  if (showEp8Recruits.value) build.e8 = 1;
-
-  // * Level-ups (only non-zero allocations)
-  const lu: Record<string, number[]> = {};
-
-  for (const [id, stats] of Object.entries(heroLevelUps.value)) {
-    if (stats && !isZeroStats(stats)) {
-      lu[id] = statsToArray(stats);
-    }
-  }
-
-  if (Object.keys(lu).length > 0) build.lu = lu;
-
-  // * Bonus levels (only non-zero)
-  const bl: Record<string, number> = {};
-
-  for (const [id, level] of Object.entries(heroBonusLevels.value)) {
-    if (level && level > 0) bl[id] = level;
-  }
-
-  if (Object.keys(bl).length > 0) build.bl = bl;
-
-  // * Power selections (only non-default)
-  const pw: Record<string, [number, number]> = {};
-
-  for (const [id, power] of Object.entries(heroPowers.value)) {
-    if (power && (power.startingRevealed || power.trainableSelected > 0)) {
-      pw[id] = [power.startingRevealed ? 1 : 0, power.trainableSelected];
-    }
-  }
-
-  if (Object.keys(pw).length > 0) build.pw = pw;
-
-  // * Special powers (only non-zero)
-  const sp: Record<string, number> = {};
-
-  for (const [id, state] of Object.entries(heroSpecialPowers.value)) {
-    if (state && state > 0) sp[id] = state;
-  }
-
-  if (Object.keys(sp).length > 0) build.sp = sp;
-
-  // * Flights (only true entries)
-  const fl: string[] = [];
-
-  for (const [id, flying] of Object.entries(heroFlights.value)) {
-    if (flying) fl.push(id);
-  }
-
-  if (fl.length > 0) build.fl = fl;
-
-  return build;
-}
-
-async function deserializeIntoState(
-  build: SerializedBuild,
-  ep3Cut: Ref<HeroId>,
-  ep4Hire: Ref<HeroId>,
-  showEp8Recruits: Ref<boolean>,
-  heroLevelUps: Ref<Partial<Record<HeroId, HeroStats>>>,
-  heroBonusLevels: Ref<Partial<Record<HeroId, number>>>,
-  heroPowers: Ref<Partial<Record<HeroId, HeroPowerSelection>>>,
-  heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
-  heroFlights: Ref<Partial<Record<HeroId, boolean>>>
-) {
-  // * Set episode choices first — watchers in sub-composables reset dependent state for cut/non-hired heroes during the next tick
-  ep3Cut.value = build.ec ?? DEFAULT_EP3_CUT;
-  ep4Hire.value = build.eh ?? DEFAULT_EP4_HIRE;
-  showEp8Recruits.value = build.e8 === 1;
-
-  // * Wait for watchers to flush before overwriting dependent state
-  await nextTick();
-
-  // * Level-ups
-  const lu: Partial<Record<HeroId, HeroStats>> = {};
-
-  if (build.lu) {
-    for (const [id, arr] of Object.entries(build.lu)) {
-      lu[id as HeroId] = arrayToStats(arr);
-    }
-  }
-
-  heroLevelUps.value = lu;
-
-  // * Bonus levels
-  const bl: Partial<Record<HeroId, number>> = {};
-
-  if (build.bl) {
-    for (const [id, level] of Object.entries(build.bl)) {
-      bl[id as HeroId] = level;
-    }
-  }
-
-  heroBonusLevels.value = bl;
-
-  // * Powers
-  const pw: Partial<Record<HeroId, HeroPowerSelection>> = {};
-
-  if (build.pw) {
-    for (const [id, [revealed, selected]] of Object.entries(build.pw)) {
-      pw[id as HeroId] = {
-        startingRevealed: revealed === 1,
-        trainableSelected: selected as 0 | 1 | 2
-      };
-    }
-  }
-
-  heroPowers.value = pw;
-
-  // * Special powers
-  const sp: Partial<Record<HeroId, number>> = {};
-
-  if (build.sp) {
-    for (const [id, state] of Object.entries(build.sp)) {
-      sp[id as HeroId] = state;
-    }
-  }
-
-  heroSpecialPowers.value = sp;
-
-  // * Flights
-  const fl: Partial<Record<HeroId, boolean>> = {};
-
-  if (build.fl) {
-    for (const id of build.fl) {
-      fl[id as HeroId] = true;
-    }
-  }
-
-  heroFlights.value = fl;
-}
-
-// * URL encoding / decoding
-
-function encodeBuildToUrl(build: SerializedBuild): string {
-  const json = JSON.stringify(build);
-
-  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
-  try {
-    const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    const json = atob(padded);
-
-    const parsed = JSON.parse(json);
-
-    if (parsed.v !== 1) return null;
-
-    return parsed as SerializedBuild;
-  } catch {
-    return null;
-  }
-}
-
-// * Composable
-
 export function useBuildPersistence() {
   // * Access all mutable state via useState (same refs as sub-composables)
   const ep3Cut = useState<HeroId>('ep3Cut');
@@ -610,4 +391,219 @@ export function useBuildPersistence() {
     initialize,
     setupBeforeUnload
   };
+}
+
+// * Local storage helper
+
+function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
+  const data = ref(defaultValue) as Ref<T>;
+
+  if (import.meta.client) {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored !== null) data.value = JSON.parse(stored);
+    } catch {
+      // * ignore corrupt data
+    }
+
+    watch(
+      data,
+      (val) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch {
+          /* ignore quota errors */
+        }
+      },
+      { deep: true }
+    );
+  }
+
+  return data;
+}
+
+// * Serialization
+
+function serializeCurrentState(
+  ep3Cut: Ref<HeroId>,
+  ep4Hire: Ref<HeroId>,
+  showEp8Recruits: Ref<boolean>,
+  heroLevelUps: Ref<Partial<Record<HeroId, HeroStats>>>,
+  heroBonusLevels: Ref<Partial<Record<HeroId, number>>>,
+  heroPowers: Ref<Partial<Record<HeroId, HeroPowerSelection>>>,
+  heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
+  heroFlights: Ref<Partial<Record<HeroId, boolean>>>
+): SerializedBuild {
+  const build: SerializedBuild = { v: 1 };
+
+  // * Episode setup (omit defaults)
+  if (ep3Cut.value !== DEFAULT_EP3_CUT) build.ec = ep3Cut.value;
+  if (ep4Hire.value !== DEFAULT_EP4_HIRE) build.eh = ep4Hire.value;
+  if (showEp8Recruits.value) build.e8 = 1;
+
+  // * Level-ups (only non-zero allocations)
+  const lu: Record<string, number[]> = {};
+
+  for (const [id, stats] of Object.entries(heroLevelUps.value)) {
+    if (stats && !isZeroStats(stats)) {
+      lu[id] = statsToArray(stats);
+    }
+  }
+
+  if (Object.keys(lu).length > 0) build.lu = lu;
+
+  // * Bonus levels (only non-zero)
+  const bl: Record<string, number> = {};
+
+  for (const [id, level] of Object.entries(heroBonusLevels.value)) {
+    if (level && level > 0) bl[id] = level;
+  }
+
+  if (Object.keys(bl).length > 0) build.bl = bl;
+
+  // * Power selections (only non-default)
+  const pw: Record<string, [number, number]> = {};
+
+  for (const [id, power] of Object.entries(heroPowers.value)) {
+    if (power && (power.startingRevealed || power.trainableSelected > 0)) {
+      pw[id] = [power.startingRevealed ? 1 : 0, power.trainableSelected];
+    }
+  }
+
+  if (Object.keys(pw).length > 0) build.pw = pw;
+
+  // * Special powers (only non-zero)
+  const sp: Record<string, number> = {};
+
+  for (const [id, state] of Object.entries(heroSpecialPowers.value)) {
+    if (state && state > 0) sp[id] = state;
+  }
+
+  if (Object.keys(sp).length > 0) build.sp = sp;
+
+  // * Flights (only true entries)
+  const fl: string[] = [];
+
+  for (const [id, flying] of Object.entries(heroFlights.value)) {
+    if (flying) fl.push(id);
+  }
+
+  if (fl.length > 0) build.fl = fl;
+
+  return build;
+}
+
+function statsToArray(stats: HeroStats): number[] {
+  return STAT_NAMES.map((s) => stats[s]);
+}
+
+function isZeroStats(stats: HeroStats): boolean {
+  return STAT_NAMES.every((s) => stats[s] === 0);
+}
+
+async function deserializeIntoState(
+  build: SerializedBuild,
+  ep3Cut: Ref<HeroId>,
+  ep4Hire: Ref<HeroId>,
+  showEp8Recruits: Ref<boolean>,
+  heroLevelUps: Ref<Partial<Record<HeroId, HeroStats>>>,
+  heroBonusLevels: Ref<Partial<Record<HeroId, number>>>,
+  heroPowers: Ref<Partial<Record<HeroId, HeroPowerSelection>>>,
+  heroSpecialPowers: Ref<Partial<Record<HeroId, number>>>,
+  heroFlights: Ref<Partial<Record<HeroId, boolean>>>
+) {
+  // * Set episode choices first — watchers in sub-composables reset dependent state for cut/non-hired heroes during the next tick
+  ep3Cut.value = build.ec ?? DEFAULT_EP3_CUT;
+  ep4Hire.value = build.eh ?? DEFAULT_EP4_HIRE;
+  showEp8Recruits.value = build.e8 === 1;
+
+  // * Wait for watchers to flush before overwriting dependent state
+  await nextTick();
+
+  // * Level-ups
+  const lu: Partial<Record<HeroId, HeroStats>> = {};
+
+  if (build.lu) {
+    for (const [id, arr] of Object.entries(build.lu)) {
+      lu[id as HeroId] = arrayToStats(arr);
+    }
+  }
+
+  heroLevelUps.value = lu;
+
+  // * Bonus levels
+  const bl: Partial<Record<HeroId, number>> = {};
+
+  if (build.bl) {
+    for (const [id, level] of Object.entries(build.bl)) {
+      bl[id as HeroId] = level;
+    }
+  }
+
+  heroBonusLevels.value = bl;
+
+  // * Powers
+  const pw: Partial<Record<HeroId, HeroPowerSelection>> = {};
+
+  if (build.pw) {
+    for (const [id, [revealed, selected]] of Object.entries(build.pw)) {
+      pw[id as HeroId] = {
+        startingRevealed: revealed === 1,
+        trainableSelected: selected as 0 | 1 | 2
+      };
+    }
+  }
+
+  heroPowers.value = pw;
+
+  // * Special powers
+  const sp: Partial<Record<HeroId, number>> = {};
+
+  if (build.sp) {
+    for (const [id, state] of Object.entries(build.sp)) {
+      sp[id as HeroId] = state;
+    }
+  }
+
+  heroSpecialPowers.value = sp;
+
+  // * Flights
+  const fl: Partial<Record<HeroId, boolean>> = {};
+
+  if (build.fl) {
+    for (const id of build.fl) {
+      fl[id as HeroId] = true;
+    }
+  }
+
+  heroFlights.value = fl;
+}
+
+function arrayToStats(arr: number[]): HeroStats {
+  return Object.fromEntries(
+    STAT_NAMES.map((s, i) => [s, arr[i] ?? 0])
+  ) as HeroStats;
+}
+
+// * URL encoding / decoding
+
+function encodeBuildToUrl(build: SerializedBuild): string {
+  const json = JSON.stringify(build);
+
+  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
+  try {
+    const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(padded);
+
+    const parsed = JSON.parse(json);
+
+    if (parsed.v !== 1) return null;
+
+    return parsed as SerializedBuild;
+  } catch {
+    return null;
+  }
 }

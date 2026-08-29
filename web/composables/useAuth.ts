@@ -13,12 +13,6 @@ const SILENT_CODES = [
   'auth/cancelled-popup-request'
 ];
 
-function errorCode(error: unknown): string {
-  return typeof error === 'object' && error !== null
-    ? ((error as { code?: string }).code ?? '')
-    : '';
-}
-
 // * Signing in and out.
 // * Neither function touches the auth store: `onAuthStateChanged` in the Firebase plugin is the single source of auth truth, and it fires for both (feature 004). Writing the store here as well would give the app two answers to "who is signed in" that can disagree.
 export function useAuth() {
@@ -62,4 +56,10 @@ export function useAuth() {
   }
 
   return { signIn, signOut: signOutOfAccount };
+}
+
+function errorCode(error: unknown): string {
+  return typeof error === 'object' && error !== null
+    ? ((error as { code?: string }).code ?? '')
+    : '';
 }

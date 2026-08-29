@@ -25,10 +25,16 @@ _bearer = HTTPBearer(auto_error=False)
 _CHALLENGE = {"WWW-Authenticate": "Bearer"}
 
 
-def _unauthenticated(message: str) -> AppError:
-    return AppError(
-        ErrorCode.UNAUTHENTICATED, message, status_code=401, headers=_CHALLENGE
-    )
+def get_current_user(
+    session: DbSession,
+    bearer: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> CurrentUser:
+    """The caller, upserted into `users` on the way through."""
+    # * HTTPBearer yields None for anything that is not `Bearer <token>` — any other scheme, a bare scheme, a header with no scheme — so this one check covers every malformed header. Schemes are case-insensitive and it treats them so (RFC 7235).
+    if bearer is None:
+        raise _unauthenticated("Missing bearer token.")
+
+    return resolve_current_user(session, verify_token(bearer.credentials))
 
 
 def verify_token(token: str) -> TokenClaims:
@@ -65,16 +71,10 @@ def verify_token(token: str) -> TokenClaims:
     )
 
 
-def get_current_user(
-    session: DbSession,
-    bearer: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
-) -> CurrentUser:
-    """The caller, upserted into `users` on the way through."""
-    # * HTTPBearer yields None for anything that is not `Bearer <token>` — any other scheme, a bare scheme, a header with no scheme — so this one check covers every malformed header. Schemes are case-insensitive and it treats them so (RFC 7235).
-    if bearer is None:
-        raise _unauthenticated("Missing bearer token.")
-
-    return resolve_current_user(session, verify_token(bearer.credentials))
+def _unauthenticated(message: str) -> AppError:
+    return AppError(
+        ErrorCode.UNAUTHENTICATED, message, status_code=401, headers=_CHALLENGE
+    )
 
 
 # * The one spelling for "this route needs a signed-in caller".
