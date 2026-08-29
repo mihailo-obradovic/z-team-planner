@@ -598,11 +598,10 @@ function decodeBuildFromUrl(encoded: string): SerializedBuild | null {
     const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(padded);
 
-    const parsed = JSON.parse(json);
+    const parsed: unknown = JSON.parse(json);
 
-    if (parsed.v !== 1) return null;
-
-    return parsed as SerializedBuild;
+    // * Same gate the API path uses. This one is the stricter need of the two: nothing validated a `?build=` payload before it reached the planner.
+    return isSerializedBuild(parsed) ? parsed : null;
   } catch {
     return null;
   }

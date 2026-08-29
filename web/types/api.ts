@@ -13,11 +13,8 @@ export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 // * The stored build document.
 // * Deliberately `z.custom` rather than a modelled schema: `SerializedBuild` is feature 001's hand-written, protected format, and the server has already validated this payload against the same rules. Re-describing it here would create a second definition to keep in step.
 export const SerializedBuildSchema = z.custom<SerializedBuild>(
-  (value) =>
-    typeof value === 'object' &&
-    value !== null &&
-    (value as { v?: unknown }).v === 1,
-  { message: 'Unsupported build format version' }
+  isSerializedBuild,
+  { message: 'Unrecognised build document' }
 );
 
 // * Timestamps are UTC ISO-8601 with `Z` (feature 005); kept as strings — nothing formats them here, and parsing to Date would make the ETag comparison lossy.
