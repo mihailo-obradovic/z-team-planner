@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import type { SerializedBuild } from '@/types/build';
 
-// * One field-level failure from a 422. Feature 005 sends `details` on 422 only.
 export const ErrorDetailSchema = z.object({
   path: z.string(),
   message: z.string()
@@ -10,14 +9,11 @@ export const ErrorDetailSchema = z.object({
 
 export type ErrorDetail = z.infer<typeof ErrorDetailSchema>;
 
-// * The stored build document.
-// * Deliberately `z.custom` rather than a modelled schema: `SerializedBuild` is feature 001's hand-written, protected format, and the server has already validated this payload against the same rules. Re-describing it here would create a second definition to keep in step.
 export const SerializedBuildSchema = z.custom<SerializedBuild>(
   isSerializedBuild,
   { message: 'Unrecognised build document' }
 );
 
-// * Timestamps are UTC ISO-8601 with `Z` (feature 005); kept as strings — nothing formats them here, and parsing to Date would make the ETag comparison lossy.
 export const CloudBuildSummarySchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -37,7 +33,6 @@ export const SharedBuildSchema = z.object({
   updated_at: z.string()
 });
 
-// * `total` is kept though nothing renders it yet: it is the only value that can say "18 of 20" without counting an array, and adding it back later would be a second contract change.
 export const CloudBuildListSchema = z.object({
   items: z.array(CloudBuildSummarySchema),
   total: z.number()

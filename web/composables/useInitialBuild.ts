@@ -1,5 +1,3 @@
-// * Which build the planner opens with, decided once at startup.
-// * The only place that reads the `?build=` parameter: a share link wins over whatever was open locally, and anything that will not decode falls back to the active local build rather than leaving the planner on defaults while the selector names a build (feature 001).
 export function useInitialBuild() {
   const state = usePlannerState();
   const { enterSharedMode } = useBuildMode();

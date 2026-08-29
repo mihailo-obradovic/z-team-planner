@@ -131,9 +131,6 @@ function handleToggle(id: string, checked: boolean) {
     : selected.value.filter((selectedId) => selectedId !== id);
 }
 
-// ! Deliberately does not spend the offer. It is spent when the dialog closes, and a failed
-// ! import leaves it open — so an offline moment or a 500 costs the player the import, not the
-// ! one chance this browser gets to make it (feature 004).
 function handleKeep() {
   importBuilds({
     builds: candidates.value
@@ -159,9 +156,6 @@ watch(isSignedIn, (signedIn, wasSignedIn) => {
   isOpen.value = true;
 });
 
-// ! The only place the offer is spent, so "answered once per browser" survives every route the
-// ! dialog can close by — the scrim, Escape, Not now, and a successful import, which closes
-// ! itself. An import that failed has not closed anything, so the offer is still there.
 watch(isOpen, (open) => {
   if (!open) {
     markOfferSeen();

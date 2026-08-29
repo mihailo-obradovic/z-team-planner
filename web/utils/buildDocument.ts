@@ -4,9 +4,6 @@ import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { PlannerState } from '@/composables/usePlannerState';
 import type { SerializedBuild } from '@/types/build';
 
-// * The build document format — feature 001's protected area, and the only place it is written or read.
-// * Every value that still equals its default is omitted, which is what keeps a share URL short: an untouched planner serialises to `{ v: 1 }`.
-
 export function serializeBuild(state: PlannerState): SerializedBuild {
   const build: SerializedBuild = { v: 1 };
 

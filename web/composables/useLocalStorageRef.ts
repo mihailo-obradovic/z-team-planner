@@ -1,8 +1,5 @@
 import type { Ref } from 'vue';
 
-// * A ref that reads itself from localStorage on the client and writes itself back on every change.
-// * On the server it holds the default — which is why every component rendering this state sits inside `ClientOnly` (`web/CLAUDE.md`).
-// ! Identity comes from `useState`, not from a fresh `ref`: two callers of the same key must be the same ref, or both would write the same localStorage entry from diverging values. The sync is installed once per key for the same reason.
 export function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
   const data = useState<T>(key, () => defaultValue);
 

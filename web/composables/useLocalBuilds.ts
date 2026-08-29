@@ -3,8 +3,6 @@ import type { LocalBuild } from '@/types/build';
 const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 
-// * The local builds — named build documents saved in this browser (`catalyst/context/glossary.md`).
-// * Holds the orchestration a save needs as well as the storage, so a component calls one function instead of sequencing three composables and getting the order wrong.
 export function useLocalBuilds() {
   const state = usePlannerState();
   const { leaveSharedMode } = useBuildMode();
@@ -21,7 +19,6 @@ export function useLocalBuilds() {
     () => findBuild(activeBuildId.value)?.name ?? 'Untitled'
   );
 
-  // * Every path that leaves the user on a build of their own ends the same way: out of shared mode, share parameter dropped, dirty snapshot re-baselined.
   function settleOnOwnBuild() {
     leaveSharedMode();
     clearUrlParam();
@@ -40,7 +37,6 @@ export function useLocalBuilds() {
     return findBuild(activeBuildId.value);
   }
 
-  // * Overwrite the active build, or create the first one if there is none.
   function saveLocalBuild(name?: string) {
     const existing = getActiveBuild();
 
@@ -85,7 +81,6 @@ export function useLocalBuilds() {
     settleOnOwnBuild();
   }
 
-  // * Leave a shared build and return to whatever the user had open.
   async function backToMyBuild() {
     const active = getActiveBuild();
 
