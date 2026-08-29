@@ -10,11 +10,8 @@ import {
   type UpdateBuildPayload
 } from '@/types/api';
 
-export async function fetchBuilds(page = 1, pageSize = 20): Promise<BuildList> {
-  return parseResponse(
-    BuildListSchema,
-    await fetcher('/builds', { query: { page, page_size: pageSize } })
-  );
+export async function fetchBuilds(): Promise<BuildList> {
+  return parseResponse(BuildListSchema, await fetcher('/builds'));
 }
 
 export async function fetchBuild(id: string): Promise<Build> {

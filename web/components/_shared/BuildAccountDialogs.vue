@@ -70,7 +70,7 @@ const { serializeCurrentBuild } = useHeroPlanner();
 const { activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
 
-const { data: accountBuilds } = useFetchBuilds(ref(1));
+const { data: accountBuilds } = useFetchBuilds();
 
 const {
   mutate: createBuild,

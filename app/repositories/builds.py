@@ -31,18 +31,14 @@ def names_for_owner(session: Session, owner_id: UUID) -> set[str]:
     )
 
 
-def list_for_owner(
-    session: Session, owner_id: UUID, *, offset: int, limit: int
-) -> list[Build]:
-    """One page, newest-updated first (feature 005, Business Rules)."""
+def list_for_owner(session: Session, owner_id: UUID) -> list[Build]:
+    """Every build the owner has, newest-updated first (feature 005, Business Rules)."""
     return list(
         session.execute(
             select(Build)
             .where(Build.owner_id == owner_id)
-            # * id as a tiebreaker: two builds can share a timestamp only if they were inserted in one statement, but an unstable sort would still page badly.
+            # * id as a tiebreaker: two builds can share a timestamp only if they were inserted in one statement, and an unstable order would reshuffle the list between reads.
             .order_by(Build.updated_at.desc(), Build.id)
-            .offset(offset)
-            .limit(limit)
         )
         .scalars()
         .all()

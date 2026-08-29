@@ -38,36 +38,18 @@ describe('builds service', () => {
     fetcherMock.mockReset();
   });
 
-  it('sends pagination as query params and parses the list', async () => {
+  it('asks for the whole list and parses it', async () => {
     fetcherMock.mockResolvedValue({
       items: [{ ...BUILD, data: undefined }],
-      total: 7,
-      page: 2,
-      page_size: 5
+      total: 7
     });
 
-    const result = await fetchBuilds(2, 5);
+    const result = await fetchBuilds();
 
-    expect(fetcherMock).toHaveBeenCalledWith('/builds', {
-      query: { page: 2, page_size: 5 }
-    });
+    // * No query at all: the per-account cap is the bound, so there is nothing to page (feature 005).
+    expect(fetcherMock).toHaveBeenCalledWith('/builds');
     expect(result.total).toBe(7);
     expect(result.items[0]?.name).toBe('Main');
-  });
-
-  it('defaults to page 1, page size 20', async () => {
-    fetcherMock.mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 1,
-      page_size: 20
-    });
-
-    await fetchBuilds();
-
-    expect(fetcherMock.mock.calls[0]?.[1]).toEqual({
-      query: { page: 1, page_size: 20 }
-    });
   });
 
   it('parses a single build', async () => {

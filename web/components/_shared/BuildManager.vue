@@ -150,9 +150,8 @@ const isMenuOpen = computed({
 });
 
 // * Disabled until signed in, so a signed-out load makes no request (feature 008).
-const { data: accountBuilds, isPending: accountBuildsPending } = useFetchBuilds(
-  ref(1)
-);
+const { data: accountBuilds, isPending: accountBuildsPending } =
+  useFetchBuilds();
 
 // * Reads the build the user picked; the planner is filled from it in the watcher below.
 const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);

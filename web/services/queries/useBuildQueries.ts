@@ -39,14 +39,13 @@ function newIdempotencyKey(): string {
 }
 
 export function useFetchBuilds(
-  page: Ref<number>,
   options: Omit<AppQueryOptions<BuildList>, 'key' | 'query'> = {}
 ) {
   const { isSignedIn } = storeToRefs(useAuthStore());
 
   return useAppQuery<BuildList>({
-    key: () => [...buildsQueryKeys.fetchBuilds, page.value],
-    query: () => fetchBuilds(page.value),
+    key: () => [...buildsQueryKeys.fetchBuilds],
+    query: () => fetchBuilds(),
     // * Never fires while the store is `unknown` or `anonymous`: a signed-out load makes no request at all (feature 008, Examples).
     enabled: () => isSignedIn.value,
     ...options

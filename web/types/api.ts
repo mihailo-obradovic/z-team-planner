@@ -37,11 +37,10 @@ export const PublicBuildSchema = z.object({
   updated_at: z.string()
 });
 
+// * `total` is kept though nothing renders it yet: it is the only value that can say "18 of 20" without counting an array, and adding it back later would be a second contract change.
 export const BuildListSchema = z.object({
   items: z.array(BuildSummarySchema),
-  total: z.number(),
-  page: z.number(),
-  page_size: z.number()
+  total: z.number()
 });
 
 export const ImportResultSchema = z.object({

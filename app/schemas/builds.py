@@ -100,8 +100,6 @@ class PublicBuildOut(_FromRow):
 class BuildListOut(BaseModel):
     items: list[BuildSummaryOut]
     total: int
-    page: int
-    page_size: int
 
 
 class CreateBuildIn(BaseModel):
