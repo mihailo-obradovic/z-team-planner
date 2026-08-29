@@ -38,7 +38,9 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     const ids = new Set<HeroId>(EP8_ALWAYS_RECRUITED);
 
     for (const id of EP4_HIRE_OPTIONS) {
-      if (id !== ep4Hire.value) ids.add(id as HeroId);
+      if (id !== ep4Hire.value) {
+        ids.add(id as HeroId);
+      }
     }
 
     return ids;

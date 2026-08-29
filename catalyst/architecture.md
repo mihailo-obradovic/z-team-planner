@@ -220,17 +220,17 @@ Packages this project runs that the adopted stack modules' Approved Libraries do
 
 `psycopg` is not listed here — the persistence module's Backend Pairings table already names it as the `python-fastapi` client.
 
-| Package              | Group   | Layer    | Why it is needed                                                            | Approved by |
-| -------------------- | ------- | -------- | --------------------------------------------------------------------------- | ----------- |
-| `pinia`              | runtime | Frontend | The store library the Nuxt module's client-state rules are written against. | feature 006 |
-| `@pinia/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
-| `@pinia/colada`      | runtime | Frontend | Server-state cache; the only home for API responses.                        | feature 006 |
-| `@pinia/colada-nuxt` | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
-| `zod`                | runtime | Frontend | Responses are parsed at the service boundary, never asserted.               | feature 006 |
-| `firebase`           | runtime | Frontend | The web SDK that issues the ID token every request carries.                 | feature 006 |
-| `@regle/core`        | runtime | Frontend | Form validation whose rules mirror the server's.                            | feature 006 |
-| `@regle/rules`       | runtime | Frontend | The rule set for the above.                                                 | feature 006 |
-| `@regle/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                             | feature 006 |
+| Package              | Group   | Layer    | Why it is needed                                                                                                                                                                      | Approved by      |
+| -------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `pinia`              | runtime | Frontend | The store library the Nuxt module's client-state rules are written against.                                                                                                           | feature 006      |
+| `@pinia/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                                                                                                                                       | feature 006      |
+| `@pinia/colada`      | runtime | Frontend | Server-state cache; the only home for API responses.                                                                                                                                  | feature 006      |
+| `@pinia/colada-nuxt` | runtime | Frontend | Nuxt integration for the above.                                                                                                                                                       | feature 006      |
+| `zod`                | runtime | Frontend | Responses are parsed at the service boundary, never asserted.                                                                                                                         | feature 006      |
+| `firebase`           | runtime | Frontend | The web SDK that issues the ID token every request carries.                                                                                                                           | feature 006      |
+| `@regle/core`        | runtime | Frontend | Form validation whose rules mirror the server's.                                                                                                                                      | feature 006      |
+| `@regle/rules`       | runtime | Frontend | The rule set for the above.                                                                                                                                                           | feature 006      |
+| `@regle/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                                                                                                                                       | feature 006      |
 | `temporal-polyfill`  | runtime | Frontend | `Date` is banned outright (`catalyst/conventions/code-style.md`), and `Temporal` is not Baseline yet; the ponyfill is what the one timestamp-formatting boundary runs on until it is. | user, 2026-08-30 |
 
 `@vueuse/core` was considered and deliberately not added (feature 006).

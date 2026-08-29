@@ -44,12 +44,16 @@ export function useHeroFlightTraining(
           // * Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
           const powerState = powerTraining.getPowerState(id);
           const hasPower = powerState.trainableSelected === 1;
-          if (capability.inverted ? !hasPower : hasPower) result.add(id);
+          if (capability.inverted ? !hasPower : hasPower) {
+            result.add(id);
+          }
           break;
         }
 
         case 'trainable':
-          if (heroFlights.value[id]) result.add(id);
+          if (heroFlights.value[id]) {
+            result.add(id);
+          }
           break;
       }
     }
@@ -61,7 +65,9 @@ export function useHeroFlightTraining(
     const capability =
       HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
     // * Only trainable heroes can toggle flight
-    if (!capability || capability.type !== 'trainable') return;
+    if (!capability || capability.type !== 'trainable') {
+      return;
+    }
 
     // * Check training limit
     if (

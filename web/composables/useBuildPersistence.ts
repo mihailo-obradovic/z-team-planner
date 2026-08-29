@@ -51,7 +51,9 @@ export function useBuildPersistence() {
   }
 
   const hasUnsavedChanges = computed(() => {
-    if (isViewingSharedBuild.value) return false;
+    if (isViewingSharedBuild.value) {
+      return false;
+    }
 
     return takeSnapshot() !== savedSnapshot.value;
   });
@@ -61,7 +63,9 @@ export function useBuildPersistence() {
   }
 
   function getActiveBuild(): SavedBuild | undefined {
-    if (!activeBuildId.value) return undefined;
+    if (!activeBuildId.value) {
+      return undefined;
+    }
 
     return savedBuilds.value.find(
       (b: SavedBuild) => b.id === activeBuildId.value
@@ -98,7 +102,9 @@ export function useBuildPersistence() {
     if (existing) {
       existing.data = data;
       existing.savedAt = Date.now();
-      if (name !== undefined) existing.name = name;
+      if (name !== undefined) {
+        existing.name = name;
+      }
     } else {
       const build: SavedBuild = {
         id: generateId(),
@@ -144,7 +150,9 @@ export function useBuildPersistence() {
 
   async function loadBuild(id: string) {
     const build = savedBuilds.value.find((b: SavedBuild) => b.id === id);
-    if (!build) return;
+    if (!build) {
+      return;
+    }
 
     activeBuildId.value = id;
     isViewingSharedBuild.value = false;
@@ -167,7 +175,9 @@ export function useBuildPersistence() {
 
   function deleteBuild(id: string) {
     const index = savedBuilds.value.findIndex((b: SavedBuild) => b.id === id);
-    if (index === -1) return;
+    if (index === -1) {
+      return;
+    }
 
     savedBuilds.value.splice(index, 1);
 
@@ -178,7 +188,9 @@ export function useBuildPersistence() {
 
   function renameBuild(id: string, name: string) {
     const build = savedBuilds.value.find((b: SavedBuild) => b.id === id);
-    if (build) build.name = name;
+    if (build) {
+      build.name = name;
+    }
   }
 
   function clearUrlParam() {
@@ -274,7 +286,9 @@ export function useBuildPersistence() {
   }
 
   async function initialize() {
-    if (import.meta.server) return;
+    if (import.meta.server) {
+      return;
+    }
 
     const route = useRoute();
     const buildParam = route.query[URL_PARAM] as string | undefined;
@@ -300,7 +314,9 @@ export function useBuildPersistence() {
     }
 
     if (!isViewingSharedBuild.value) {
-      if (buildParam) clearUrlParam();
+      if (buildParam) {
+        clearUrlParam();
+      }
 
       const active = getActiveBuild();
 
@@ -323,7 +339,9 @@ export function useBuildPersistence() {
   }
 
   function setupBeforeUnload() {
-    if (import.meta.server) return;
+    if (import.meta.server) {
+      return;
+    }
 
     window.addEventListener('beforeunload', (e) => {
       if (hasUnsavedChanges.value) {
@@ -376,7 +394,9 @@ function useLocalStorageRef<T>(key: string, defaultValue: T): Ref<T> {
   if (import.meta.client) {
     try {
       const stored = localStorage.getItem(key);
-      if (stored !== null) data.value = JSON.parse(stored);
+      if (stored !== null) {
+        data.value = JSON.parse(stored);
+      }
     } catch {
       // * ignore corrupt data
     }
@@ -412,9 +432,15 @@ function serializeCurrentState(
   const build: SerializedBuild = { v: 1 };
 
   // * Episode setup (omit defaults)
-  if (ep3Cut.value !== DEFAULT_EP3_CUT) build.ec = ep3Cut.value;
-  if (ep4Hire.value !== DEFAULT_EP4_HIRE) build.eh = ep4Hire.value;
-  if (showEp8Recruits.value) build.e8 = 1;
+  if (ep3Cut.value !== DEFAULT_EP3_CUT) {
+    build.ec = ep3Cut.value;
+  }
+  if (ep4Hire.value !== DEFAULT_EP4_HIRE) {
+    build.eh = ep4Hire.value;
+  }
+  if (showEp8Recruits.value) {
+    build.e8 = 1;
+  }
 
   // * Level-ups (only non-zero allocations)
   const lu: Record<string, number[]> = {};
@@ -425,16 +451,22 @@ function serializeCurrentState(
     }
   }
 
-  if (Object.keys(lu).length > 0) build.lu = lu;
+  if (Object.keys(lu).length > 0) {
+    build.lu = lu;
+  }
 
   // * Bonus levels (only non-zero)
   const bl: Record<string, number> = {};
 
   for (const [id, level] of Object.entries(heroBonusLevels.value)) {
-    if (level && level > 0) bl[id] = level;
+    if (level && level > 0) {
+      bl[id] = level;
+    }
   }
 
-  if (Object.keys(bl).length > 0) build.bl = bl;
+  if (Object.keys(bl).length > 0) {
+    build.bl = bl;
+  }
 
   // * Power selections (only non-default)
   const pw: Record<string, [number, number]> = {};
@@ -445,25 +477,35 @@ function serializeCurrentState(
     }
   }
 
-  if (Object.keys(pw).length > 0) build.pw = pw;
+  if (Object.keys(pw).length > 0) {
+    build.pw = pw;
+  }
 
   // * Special powers (only non-zero)
   const sp: Record<string, number> = {};
 
   for (const [id, state] of Object.entries(heroSpecialPowers.value)) {
-    if (state && state > 0) sp[id] = state;
+    if (state && state > 0) {
+      sp[id] = state;
+    }
   }
 
-  if (Object.keys(sp).length > 0) build.sp = sp;
+  if (Object.keys(sp).length > 0) {
+    build.sp = sp;
+  }
 
   // * Flights (only true entries)
   const fl: string[] = [];
 
   for (const [id, flying] of Object.entries(heroFlights.value)) {
-    if (flying) fl.push(id);
+    if (flying) {
+      fl.push(id);
+    }
   }
 
-  if (fl.length > 0) build.fl = fl;
+  if (fl.length > 0) {
+    build.fl = fl;
+  }
 
   return build;
 }

@@ -52,7 +52,9 @@ export function useHeroPowerTraining(
 
   function toggleStartingPower(id: HeroId) {
     const powerSet = HERO_POWERS[id];
-    if (!powerSet || !powerSet[0].name) return;
+    if (!powerSet || !powerSet[0].name) {
+      return;
+    }
 
     if (!heroPowers.value[id]) {
       heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
@@ -71,18 +73,26 @@ export function useHeroPowerTraining(
 
   function toggleTrainablePower(id: HeroId, index: 1 | 2) {
     const powerSet = HERO_POWERS[id];
-    if (!powerSet) return;
+    if (!powerSet) {
+      return;
+    }
 
-    if (!powerSet[index].name) return; // * Empty power slot (e.g., Blonde Blazer)
+    if (!powerSet[index].name) {
+      return;
+    } // * Empty power slot (e.g., Blonde Blazer)
 
     if (!heroPowers.value[id]) {
       heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
     }
     const powers = heroPowers.value[id]!;
 
-    if (!powers.startingRevealed) return;
+    if (!powers.startingRevealed) {
+      return;
+    }
     // * Arriving in episode 8 means there was never any training to do: whoever joins then keeps only their starting power. Level-ups are a separate question — an episode 8 Waterboy still levels up, which is why FIXED_LEVEL_HEROES is not consulted here.
-    if (episodeSetup.untrainableIds.value.has(id)) return;
+    if (episodeSetup.untrainableIds.value.has(id)) {
+      return;
+    }
 
     if (powers.trainableSelected === index) {
       // * Deselect: also reset any active special powers
@@ -108,7 +118,9 @@ export function useHeroPowerTraining(
     if (id === 'flambae') {
       // * Supernova requires trainable-2 power to be trained
       const power = getPowerState(id);
-      if (power.trainableSelected !== 2) return;
+      if (power.trainableSelected !== 2) {
+        return;
+      }
       // * Toggle between 0 (off) and 1 (on)
       heroSpecialPowers.value[id] = heroSpecialPowers.value[id] ? 0 : 1;
     } else if (id === 'coupe') {
@@ -122,7 +134,9 @@ export function useHeroPowerTraining(
     const mechanics =
       SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS];
 
-    if (!mechanics) return 0;
+    if (!mechanics) {
+      return 0;
+    }
 
     const specialState = getSpecialPowerState(id);
 
@@ -133,7 +147,9 @@ export function useHeroPowerTraining(
         mechanics.affectedStats.includes(stat)
       ) {
         const hero = heroes.value?.find((h) => h.id === id);
-        if (!hero) return 0;
+        if (!hero) {
+          return 0;
+        }
 
         const normalBonus = levelUp.getStatAllocations(id)[stat];
 
@@ -147,8 +163,12 @@ export function useHeroPowerTraining(
       const isUpgraded = getPowerState(id).trainableSelected === 2; // À la Seconde
       const bonus = isUpgraded ? mechanics.upgradeBonus : mechanics.baseBonus;
 
-      if (specialState === 1 && stat === 'combat') return bonus;
-      if (specialState === 2 && stat === 'mobility') return bonus;
+      if (specialState === 1 && stat === 'combat') {
+        return bonus;
+      }
+      if (specialState === 2 && stat === 'mobility') {
+        return bonus;
+      }
     }
 
     return 0;

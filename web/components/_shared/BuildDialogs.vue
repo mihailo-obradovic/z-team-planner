@@ -155,7 +155,9 @@ function closeDelete() {
 }
 
 function confirmDelete() {
-  if (!activeBuildId.value) return;
+  if (!activeBuildId.value) {
+    return;
+  }
 
   const name = activeBuildName.value;
 
@@ -175,10 +177,14 @@ function closeRename() {
 }
 
 function confirmRename() {
-  if (!activeBuildId.value) return;
+  if (!activeBuildId.value) {
+    return;
+  }
 
   const name = renameBuildName.value.trim();
-  if (!name) return;
+  if (!name) {
+    return;
+  }
 
   renameBuild(activeBuildId.value, name);
   renameOpen.value = false;
