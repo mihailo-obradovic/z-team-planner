@@ -129,7 +129,7 @@ const {
 
 const { isViewingSharedBuild, loadAccountBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
-const { hasUnsavedChanges } = useUnsavedChanges();
+const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
 const {
   buildMenuTier,
@@ -164,7 +164,10 @@ const displayName = computed(
 );
 
 const { mutate: patchBuild } = useUpdateBuild({
-  onSuccess: (updated) => {
+  // * Baselined against the document that was sent, so an edit made while the request was in
+  // * flight is still reported as unsaved.
+  onSuccess: (updated, { payload }) => {
+    updateSavedSnapshot(payload.data);
     toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
   }
 });
@@ -316,9 +319,14 @@ async function copyAccountBuildLink(id: string): Promise<boolean> {
   }
 }
 
+// * Opening a cloud build re-baselines dirty tracking: the planner holds that document now, so
+// * Save and the unload guard describe it rather than the local build that was open before.
+// * The baseline is taken from the planner after deserialising, never from `build.data` — see
+// * the note on `updateSavedSnapshot`.
 watch(openedAccountBuild, async (build) => {
   if (build) {
     await loadAccountBuild(build.data);
+    updateSavedSnapshot();
   }
 });
 </script>

@@ -42,13 +42,16 @@ const plannerState = usePlannerState();
 
 const { setActiveAccountBuildId } = useAuthStore();
 
+const { updateSavedSnapshot } = useUnsavedChanges();
+
 const savedElsewhereAt = computed(() =>
   formatTimestamp(conflictBuild.value?.updated_at)
 );
 
 const { mutate: createBuild } = useCreateBuild({
-  onSuccess: (created) => {
+  onSuccess: (created, { data }) => {
     setActiveAccountBuildId(created.id);
+    updateSavedSnapshot(data);
     toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
   }
 });
@@ -60,6 +63,7 @@ async function handleReloadTheirs() {
 
   await loadAccountBuild(conflictBuild.value.data);
   setActiveAccountBuildId(conflictBuild.value.id);
+  updateSavedSnapshot();
   conflictOpen.value = false;
 }
 
