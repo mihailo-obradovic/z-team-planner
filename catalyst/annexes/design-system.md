@@ -111,6 +111,8 @@ The mockups' panel anatomy is one treatment used everywhere, so it lives once as
 
 `panel` is the card, dialog, dropdown and toast surface; `plate` is the titled header band on top of one.
 
+**`panel` carries no background, and a hand-rolled element must add `bg-default`.** The omission is deliberate: Nuxt UI's own surfaces — dialog, dropdown, toast — already paint `--ui-bg`, and a background in the utility would double-declare it there. A plain `<div class="panel">` has no such surface, so it comes out transparent over the dark ground and its ink text is unreadable. Guarded by `test/unit/panel-surface.test.ts`, which fails on any `panel` in the app without `bg-default` beside it.
+
 ### Scrollbars
 
 The app scrolls on two grounds, so there are two scrollbars and no third: the dark page ground (`main`, a tabs panel) and paper (a dialog or slideover body, a menu). Both use the standard properties only — `scrollbar-width: thin` plus `scrollbar-color`, no `::-webkit-scrollbar`. The consequence is accepted rather than worked around: Chromium rounds a `thin` thumb and the standard property cannot square it, so this is the one place `--ui-radius: 0` does not hold, and there is no hover state.

@@ -15,10 +15,11 @@
 
   <div v-else-if="build" class="flex flex-col gap-4 p-4">
     <div
-      class="flex flex-col items-start justify-between gap-3 p-4 panel sm:flex-row sm:items-center"
+      class="flex flex-col items-start justify-between gap-3 bg-default p-4 panel sm:flex-row sm:items-center"
     >
       <div class="flex flex-col gap-1">
-        <span class="font-heading text-label text-secondary-300 uppercase">
+        <!-- * `text-muted` (ink-soft), not the `secondary-300` this once carried: that pair is 7.68:1 on the ground and 1.78:1 on paper, and this band is paper (annex §14.1). -->
+        <span class="font-heading text-label text-muted uppercase">
           Shared build
         </span>
 
