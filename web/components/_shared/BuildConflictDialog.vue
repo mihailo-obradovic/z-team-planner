@@ -37,7 +37,8 @@ const toast = useToast();
 
 const { conflictOpen, conflictBuild } = useBuildDialogs();
 
-const { loadAccountBuild, serializeCurrentBuild } = useHeroPlanner();
+const { loadAccountBuild } = useBuildMode();
+const plannerState = usePlannerState();
 
 const { setActiveAccountBuildId } = useAuthStore();
 
@@ -74,7 +75,7 @@ function handleSaveMineAsNew() {
 
   createBuild({
     name: conflictBuild.value.name,
-    data: serializeCurrentBuild()
+    data: serializeBuild(plannerState)
   });
 
   conflictOpen.value = false;

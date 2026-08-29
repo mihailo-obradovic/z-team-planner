@@ -34,21 +34,27 @@ function seedActiveBuild() {
 
 async function initializedPlanner() {
   let planner!: ReturnType<typeof useHeroPlanner>;
+  let mode!: ReturnType<typeof useBuildMode>;
+  let initial!: ReturnType<typeof useInitialBuild>;
 
   await mountSuspended(
     defineComponent({
       setup() {
         planner = useHeroPlanner();
+        mode = useBuildMode();
+        initial = useInitialBuild();
+
         return () => h('div');
       }
     })
   );
 
-  await planner.initialize();
-  return planner;
+  await initial.loadInitialBuild();
+
+  return { ...planner, isViewingSharedBuild: mode.isViewingSharedBuild };
 }
 
-describe('useBuildPersistence initialize', () => {
+describe('useInitialBuild', () => {
   it('falls back to the active build when the build param is undecodable', async () => {
     seedActiveBuild();
     routeQuery.build = '%%%garbage%%%';

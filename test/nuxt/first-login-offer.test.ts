@@ -22,9 +22,9 @@ vi.mock('@/services/builds.api', () => ({
 
 mockNuxtImport('useRoute', () => () => ({ path: '/', params: {}, query: {} }));
 
-// * The planner exposes `localBuilds` as a readonly computed, so the local builds are supplied here rather than written through it. The component reads nothing else from the planner.
+// * `useLocalBuilds` exposes `localBuilds` as a readonly computed, so the local builds are supplied here rather than written through it. The component reads nothing else from the planner.
 const localBuilds = ref<LocalBuild[]>([]);
-mockNuxtImport('useHeroPlanner', () => () => ({ localBuilds }));
+mockNuxtImport('useLocalBuilds', () => () => ({ localBuilds }));
 
 // * The test environment's localStorage is a bare object without methods (happy-dom via @nuxt/test-utils); the same Map-backed stand-in build-persistence.test.ts installs.
 const storage = new Map<string, string>();

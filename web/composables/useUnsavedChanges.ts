@@ -1,12 +1,8 @@
-import type { PlannerState } from '@/composables/usePlannerState';
-
 // * Whether the planner holds changes the user would lose.
 // * Dirtiness is defined by what a save would write, not by which refs were touched: the comparison is against the serialised document, so an allocation raised and lowered again reads as clean.
-export function useUnsavedChanges(state: PlannerState) {
-  const isViewingSharedBuild = useState<boolean>(
-    'isViewingSharedBuild',
-    () => false
-  );
+export function useUnsavedChanges() {
+  const state = usePlannerState();
+  const { isViewingSharedBuild } = useBuildMode();
   const savedSnapshot = useState<string>('savedSnapshot', () => '');
 
   const hasUnsavedChanges = computed(() => {

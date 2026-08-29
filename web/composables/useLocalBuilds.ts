@@ -1,12 +1,16 @@
 import type { LocalBuild } from '@/types/build';
-import type { PlannerState } from '@/composables/usePlannerState';
 
 const STORAGE_KEY_BUILDS = 'z-team-builds';
 const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 
 // * The local builds — named build documents saved in this browser (`catalyst/context/glossary.md`).
-// * Storage only. Leaving shared-build mode, clearing the URL parameter and re-baselining the dirty snapshot belong to the callers that orchestrate a save, not here.
-export function useLocalBuilds(state: PlannerState) {
+// * Holds the orchestration a save needs as well as the storage, so a component calls one function instead of sequencing three composables and getting the order wrong.
+export function useLocalBuilds() {
+  const state = usePlannerState();
+  const { leaveSharedMode } = useBuildMode();
+  const { clearUrlParam } = useBuildSharing();
+  const { updateSavedSnapshot } = useUnsavedChanges();
+
   const localBuilds = useLocalStorageRef<LocalBuild[]>(STORAGE_KEY_BUILDS, []);
   const activeBuildId = useLocalStorageRef<string | null>(
     STORAGE_KEY_ACTIVE,
@@ -16,6 +20,13 @@ export function useLocalBuilds(state: PlannerState) {
   const activeBuildName = computed(
     () => findBuild(activeBuildId.value)?.name ?? 'Untitled'
   );
+
+  // * Every path that leaves the user on a build of their own ends the same way: out of shared mode, share parameter dropped, dirty snapshot re-baselined.
+  function settleOnOwnBuild() {
+    leaveSharedMode();
+    clearUrlParam();
+    updateSavedSnapshot();
+  }
 
   function findBuild(id: string | null): LocalBuild | undefined {
     if (!id) {
@@ -30,24 +41,25 @@ export function useLocalBuilds(state: PlannerState) {
   }
 
   // * Overwrite the active build, or create the first one if there is none.
-  function saveActiveBuild(name?: string) {
-    const data = serializeBuild(state);
+  function saveLocalBuild(name?: string) {
     const existing = getActiveBuild();
 
     if (!existing) {
-      appendBuild(name ?? `Build ${localBuilds.value.length + 1}`);
+      saveAsNewLocalBuild(name ?? `Build ${localBuilds.value.length + 1}`);
 
       return;
     }
 
-    existing.data = data;
+    existing.data = serializeBuild(state);
 
     if (name !== undefined) {
       existing.name = name;
     }
+
+    settleOnOwnBuild();
   }
 
-  function appendBuild(name: string) {
+  function saveAsNewLocalBuild(name: string) {
     const build: LocalBuild = {
       id: crypto.randomUUID(),
       name,
@@ -56,9 +68,35 @@ export function useLocalBuilds(state: PlannerState) {
 
     localBuilds.value.push(build);
     activeBuildId.value = build.id;
+
+    settleOnOwnBuild();
   }
 
-  function removeBuild(id: string) {
+  async function loadLocalBuild(id: string) {
+    const build = findBuild(id);
+
+    if (!build) {
+      return;
+    }
+
+    activeBuildId.value = id;
+
+    await deserializeBuild(build.data, state);
+    settleOnOwnBuild();
+  }
+
+  // * Leave a shared build and return to whatever the user had open.
+  async function backToMyBuild() {
+    const active = getActiveBuild();
+
+    if (active) {
+      await deserializeBuild(active.data, state);
+    }
+
+    settleOnOwnBuild();
+  }
+
+  function deleteLocalBuild(id: string) {
     const index = localBuilds.value.findIndex((build) => build.id === id);
 
     if (index === -1) {
@@ -72,7 +110,7 @@ export function useLocalBuilds(state: PlannerState) {
     }
   }
 
-  function renameBuild(id: string, name: string) {
+  function renameLocalBuild(id: string, name: string) {
     const build = findBuild(id);
 
     if (build) {
@@ -81,14 +119,15 @@ export function useLocalBuilds(state: PlannerState) {
   }
 
   return {
-    localBuilds,
-    activeBuildId,
+    localBuilds: computed(() => localBuilds.value),
+    activeBuildId: computed(() => activeBuildId.value),
     activeBuildName,
-    findBuild,
     getActiveBuild,
-    saveActiveBuild,
-    appendBuild,
-    removeBuild,
-    renameBuild
+    saveLocalBuild,
+    saveAsNewLocalBuild,
+    loadLocalBuild,
+    backToMyBuild,
+    deleteLocalBuild,
+    renameLocalBuild
   };
 }

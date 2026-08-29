@@ -65,7 +65,7 @@ const toast = useToast();
 const { accountSaveOpen, accountSaveName, accountDeleteOpen } =
   useBuildDialogs();
 
-const { serializeCurrentBuild } = useHeroPlanner();
+const plannerState = usePlannerState();
 
 const { activeAccountBuildId } = storeToRefs(useAuthStore());
 const { setActiveAccountBuildId } = useAuthStore();
@@ -126,7 +126,7 @@ async function handleSave() {
 
   createBuild({
     name: accountSaveName.value.trim(),
-    data: serializeCurrentBuild()
+    data: serializeBuild(plannerState)
   });
 }
 
