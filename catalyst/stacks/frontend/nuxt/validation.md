@@ -85,11 +85,11 @@ A validation failure the form could have caught belongs on the field that caused
 
    ```ts
    const { mutate, error } = useUpdateUser({
-     errorHandling: { hideValidationToast: true }
+     errorHandling: { suppressToasts: 'validation' }
    });
    ```
 
-   Non-422 errors still toast centrally (`error-handling.md`). `hideValidationToast` is narrower than `hideToast` on purpose: a 500 during a form submit must still be visible.
+   Non-422 errors still toast centrally (`error-handling.md`). `'validation'` is narrower than `'all'` on purpose: a 500 during a form submit must still be visible.
 
 2. `useValidationErrors(error)` derives field-keyed messages from the mutation's error ref — a `computed` producing `Record<string, string[]>`.
 

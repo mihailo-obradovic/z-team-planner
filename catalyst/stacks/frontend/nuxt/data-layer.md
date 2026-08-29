@@ -136,6 +136,6 @@ When a query's params aren't available yet (route not resolved, parent query sti
 ## Component rules
 
 - Import query composables explicitly from `@/services/queries/…` and consume their state: `data`, `error`, and `isLoading` / `asyncStatus` for spinners and disabled buttons. **Never add a manual `ref()` loading flag.**
-- **No try-catch around queries and mutations.** Errors are handled centrally. Opt out of the toast per call with `errorHandling: { hideToast: true }`.
+- **No try-catch around queries and mutations.** Errors are handled centrally. Opt out of the toast per call with `errorHandling: { suppressToasts: 'all' }`.
 - Success toasts, navigation, and closing dialogs go in the page-level `onSuccess` passed to the composable.
 - Trigger mutations with `mutate` (fire-and-forget) rather than `mutateAsync`, unless the result is needed inline.

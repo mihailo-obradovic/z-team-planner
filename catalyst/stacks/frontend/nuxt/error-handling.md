@@ -58,9 +58,12 @@ Every failed request lands here. It decides navigation and messaging in one plac
 | **422**       | Surface every field message rather than the API's "(and N more errors)" summary |
 | anything else | One toast carrying the API's message                                            |
 
-**Opt-outs** are per call, passed through the query composable's `errorHandling` option:
+**Opt-outs** are per call, passed through the query composable's `errorHandling` option, whose one key is `suppressToasts`:
 
-- `hideValidationToast` — 422s only; the form shows them inline (`validation.md`). Every other status still toasts.
+- `'validation'` — 422s only; the form shows them inline (`validation.md`). Every other status still toasts.
+- `'all'` — every toast for that call; the caller renders the failure itself.
+
+One key with named values rather than a boolean per status: two independent flags make `{ hideToast: true, hideValidationToast: false }` type-check while meaning nothing, and the legal states are three, not four.
 
 ## Deduplicating handled errors
 
