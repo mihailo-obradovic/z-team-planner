@@ -261,7 +261,9 @@ const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || untrainableIds.value.has(props.heroId)) return [];
+  if (!powers.value || untrainableIds.value.has(props.heroId)) {
+    return [];
+  }
   return powers.value.slice(1).filter((p) => p.name !== '');
 });
 
@@ -289,19 +291,24 @@ const flightShown = computed(() => {
   const capability =
     HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-  if (capability?.type !== 'conditional-power') return true;
+  if (capability?.type !== 'conditional-power') {
+    return true;
+  }
 
   return flightActive.value;
 });
 
 const flightLocked = computed(() => {
-  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman')
+  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman') {
     return true;
+  }
   return !flightActive.value && flightsFull.value;
 });
 
 const flightVisuallyActive = computed(() => {
-  if (props.heroId !== 'sonar') return flightActive.value;
+  if (props.heroId !== 'sonar') {
+    return flightActive.value;
+  }
   return flightActive.value && monsterForm.value;
 });
 
@@ -327,7 +334,9 @@ const canLevelUp = computed(() => !(props.heroId in FIXED_LEVEL_HEROES));
 const heroLevel = computed(() => {
   const fixedLevel =
     FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
-  if (fixedLevel !== undefined) return fixedLevel;
+  if (fixedLevel !== undefined) {
+    return fixedLevel;
+  }
   // * A bonus level raises the per-hero cap; it does not itself raise the level. Counting it here made the level jump the moment the bonus was granted, before the extra point was spent — and disagreed with the detail dialog.
   return 1 + getLevelUpPointsUsedValue.value;
 });
@@ -367,8 +376,12 @@ const coupeTooltip = computed(() => {
 });
 
 const coupeIcon = computed(() => {
-  if (specialPowerState.value === 1) return 'i-lucide-sword';
-  if (specialPowerState.value === 2) return 'i-lucide-footprints';
+  if (specialPowerState.value === 1) {
+    return 'i-lucide-sword';
+  }
+  if (specialPowerState.value === 2) {
+    return 'i-lucide-footprints';
+  }
   return 'i-lucide-sparkles';
 });
 

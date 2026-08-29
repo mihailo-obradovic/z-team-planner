@@ -98,7 +98,9 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
     const id = raw as HeroId;
 
     // * A hero with no card has no controls — the cut hero, and recruits while episode 8 is off.
-    if (!visible.has(id)) continue;
+    if (!visible.has(id)) {
+      continue;
+    }
 
     // * Bonus levels before stats: they raise the cap statUp checks against.
     for (let i = 0; i < (document.bl?.[id] ?? 0); i++) {
@@ -115,7 +117,9 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
 
     const [revealed, trained] = document.pw?.[id] ?? [0, 0];
 
-    if (revealed === 1) planner.toggleStartingPower(id);
+    if (revealed === 1) {
+      planner.toggleStartingPower(id);
+    }
     if (trained === 1 || trained === 2) {
       planner.toggleTrainablePower(id, trained);
     }
@@ -129,7 +133,9 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
   for (const raw of document.fl ?? []) {
     const id = raw as HeroId;
 
-    if (visible.has(id)) planner.toggleFlight(id);
+    if (visible.has(id)) {
+      planner.toggleFlight(id);
+    }
   }
 
   return planner.serializeCurrentBuild();

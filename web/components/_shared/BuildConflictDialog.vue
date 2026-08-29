@@ -42,11 +42,9 @@ const { loadAccountBuild, serializeCurrentBuild } = useHeroPlanner();
 const { setActiveAccountBuildId } = useAuthStore();
 
 // * Formatted, not the raw ISO string. Safe from a hydration mismatch because this dialog only ever renders after a failed save, which is client-side by definition.
-const savedElsewhereAt = computed(() => {
-  const timestamp = conflictBuild.value?.updated_at;
-
-  return timestamp ? new Date(timestamp).toLocaleString() : '';
-});
+const savedElsewhereAt = computed(() =>
+  formatTimestamp(conflictBuild.value?.updated_at)
+);
 
 const { mutate: createBuild } = useCreateBuild({
   onSuccess: (created) => {

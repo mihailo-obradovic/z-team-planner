@@ -369,25 +369,35 @@ const {
 } = useHeroPlanner();
 
 const hero = computed(() => {
-  if (!props.heroId) return null;
+  if (!props.heroId) {
+    return null;
+  }
   return heroes.value?.find((h) => h.id === props.heroId) ?? null;
 });
 
 const heroLevel = computed(() => {
-  if (!props.heroId) return 0;
+  if (!props.heroId) {
+    return 0;
+  }
   const fixedLevel =
     FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
-  if (fixedLevel !== undefined) return fixedLevel;
+  if (fixedLevel !== undefined) {
+    return fixedLevel;
+  }
   return 1 + getLevelUpPointsUsed(props.heroId);
 });
 
 const canLevelUp = computed(() => {
-  if (!props.heroId) return false;
+  if (!props.heroId) {
+    return false;
+  }
   return !(props.heroId in FIXED_LEVEL_HEROES);
 });
 
 const portraitSrc = computed(() => {
-  if (!props.heroId) return '';
+  if (!props.heroId) {
+    return '';
+  }
   if (props.heroId === 'sonar') {
     return monsterForm.value
       ? '/images/portraits/sonar-monster.webp'
@@ -397,39 +407,51 @@ const portraitSrc = computed(() => {
 });
 
 const powers = computed(() => {
-  if (!props.heroId) return null;
+  if (!props.heroId) {
+    return null;
+  }
   return HERO_POWERS[props.heroId];
 });
 
 const powerState = computed(() => {
-  if (!props.heroId) return null;
+  if (!props.heroId) {
+    return null;
+  }
   return getPowerState(props.heroId);
 });
 
 const displayPowers = computed(() => {
-  if (!powers.value) return [];
+  if (!powers.value) {
+    return [];
+  }
   return powers.value.filter((p) => p.name !== '');
 });
 
 const statBonuses = computed(() => {
-  if (!props.heroId)
+  if (!props.heroId) {
     return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
+  }
   return getStatAllocations(props.heroId);
 });
 
 const specialPowerBonusStats = computed(() => {
-  if (!props.heroId)
+  if (!props.heroId) {
     return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
+  }
   return getSpecialPowerBonusStats(props.heroId);
 });
 
 const getLevelUpPointsUsedValue = computed(() => {
-  if (!props.heroId) return 0;
+  if (!props.heroId) {
+    return 0;
+  }
   return getLevelUpPointsUsed(props.heroId);
 });
 
 const pointsRemaining = computed(() => {
-  if (!props.heroId) return 0;
+  if (!props.heroId) {
+    return 0;
+  }
   return (
     MAX_LEVEL_UPS +
     getBonusLevel(props.heroId) -
@@ -438,14 +460,18 @@ const pointsRemaining = computed(() => {
 });
 
 const bonusLevel = computed(() => {
-  if (!props.heroId) return 0;
+  if (!props.heroId) {
+    return 0;
+  }
   return getBonusLevel(props.heroId);
 });
 
 const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
 
 const flightInfo = computed(() => {
-  if (!props.heroId) return null;
+  if (!props.heroId) {
+    return null;
+  }
   return HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT] ?? null;
 });
 
@@ -457,39 +483,52 @@ const flightShown = computed(() => {
   const capability =
     HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-  if (capability?.type !== 'conditional-power') return true;
+  if (capability?.type !== 'conditional-power') {
+    return true;
+  }
 
   return flightActive.value;
 });
 
 const flightLocked = computed(() => {
-  if (!props.heroId) return true;
-  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman')
+  if (!props.heroId) {
     return true;
+  }
+  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman') {
+    return true;
+  }
   return (
     !flightActive.value && flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
   );
 });
 
 const specialPowerStateValue = computed(() => {
-  if (!props.heroId) return 0;
+  if (!props.heroId) {
+    return 0;
+  }
   return getSpecialPowerState(props.heroId);
 });
 
 const hasPowers = computed(() => {
-  if (!powerState.value) return false;
+  if (!powerState.value) {
+    return false;
+  }
   return (
     powerState.value.startingRevealed || powerState.value.trainableSelected > 0
   );
 });
 
 const specialAbility = computed(() => {
-  if (!props.heroId) return null;
+  if (!props.heroId) {
+    return null;
+  }
   const mechanics =
     SPECIAL_POWER_MECHANICS[
       props.heroId as keyof typeof SPECIAL_POWER_MECHANICS
     ];
-  if (!mechanics) return null;
+  if (!mechanics) {
+    return null;
+  }
 
   const state = specialPowerStateValue.value;
 
@@ -611,7 +650,9 @@ function resolvedStat(stat: StatName): StatName {
 }
 
 function computedStat(stat: StatName): number {
-  if (!hero.value || !props.heroId) return 0;
+  if (!hero.value || !props.heroId) {
+    return 0;
+  }
   const resolved = resolvedStat(stat);
   return (
     hero.value.startingStats[resolved] +
@@ -621,18 +662,28 @@ function computedStat(stat: StatName): number {
 }
 
 function isPowerActive(power: HeroPowerDefinition): boolean {
-  if (!powerState.value) return false;
-  if (power.slot === 'starting') return powerState.value.startingRevealed;
-  if (power.slot === 'trainable-1')
+  if (!powerState.value) {
+    return false;
+  }
+  if (power.slot === 'starting') {
+    return powerState.value.startingRevealed;
+  }
+  if (power.slot === 'trainable-1') {
     return powerState.value.trainableSelected === 1;
-  if (power.slot === 'trainable-2')
+  }
+  if (power.slot === 'trainable-2') {
     return powerState.value.trainableSelected === 2;
+  }
   return false;
 }
 
 function isPowerDisabled(power: HeroPowerDefinition): boolean {
-  if (!props.heroId || !powerState.value) return true;
-  if (power.slot === 'starting') return false;
+  if (!props.heroId || !powerState.value) {
+    return true;
+  }
+  if (power.slot === 'starting') {
+    return false;
+  }
   if (power.slot === 'trainable-1') {
     return (
       !powerState.value.startingRevealed ||
@@ -651,7 +702,9 @@ function isPowerDisabled(power: HeroPowerDefinition): boolean {
 }
 
 function handlePowerClick(power: HeroPowerDefinition) {
-  if (!props.heroId || isPowerDisabled(power)) return;
+  if (!props.heroId || isPowerDisabled(power)) {
+    return;
+  }
   if (power.slot === 'starting') {
     toggleStartingPower(props.heroId);
     return;

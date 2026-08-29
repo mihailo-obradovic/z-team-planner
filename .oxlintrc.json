@@ -11,5 +11,8 @@
   ],
   "categories": {
     "correctness": "error"
+  },
+  "rules": {
+    "curly": ["error", "all"]
   }
 }

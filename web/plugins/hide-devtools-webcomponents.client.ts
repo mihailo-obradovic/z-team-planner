@@ -3,7 +3,9 @@ export default defineNuxtPlugin({
   name: 'hide-devtools-webcomponents',
   enforce: 'pre',
   setup() {
-    if (!import.meta.dev) return;
+    if (!import.meta.dev) {
+      return;
+    }
 
     const originalDefine = customElements.define.bind(customElements);
 
