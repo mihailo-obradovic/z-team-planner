@@ -1,10 +1,3 @@
-import type { Ref } from 'vue';
-
-import {
-  handleApiError,
-  type ErrorHandlingOptions
-} from '@/utils/handleApiError';
-
 // * Watches a query or mutation's error ref and routes it through the central policy.
 // * Shared by `useAppQuery` and `useAppMutation` so there is exactly one place where an API failure becomes a toast, a dialog, or a 404 page.
 export function useApiErrorWatcher(

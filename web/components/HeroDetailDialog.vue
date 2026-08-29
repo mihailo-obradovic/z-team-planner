@@ -307,6 +307,7 @@ import {
   HERO_FLIGHT_CAPABILITY,
   SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
+
 import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
 

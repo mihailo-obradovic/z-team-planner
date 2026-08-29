@@ -1,7 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@pinia/colada';
 
-import type { ErrorHandlingOptions } from '@/utils/handleApiError';
-
 export type AppMutationOptions<
   TData,
   TVars,

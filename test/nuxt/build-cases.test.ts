@@ -4,6 +4,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, nextTick } from 'vue';
 
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
+
 import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
 import type { SerializedBuild } from '@/types/build';
 

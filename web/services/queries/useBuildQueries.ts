@@ -1,5 +1,4 @@
 import { useQueryCache } from '@pinia/colada';
-import type { Ref } from 'vue';
 
 import { chainOnSettled } from '@/services/queries/chainOnSettled';
 import {
@@ -10,6 +9,7 @@ import {
   importBuilds,
   updateBuild
 } from '@/services/builds.api';
+
 import type {
   Build,
   BuildList,
@@ -18,8 +18,6 @@ import type {
   ImportReport,
   UpdateBuildPayload
 } from '@/types/api';
-import type { AppMutationOptions } from '@/composables/useAppMutation';
-import type { AppQueryOptions } from '@/composables/useAppQuery';
 
 export const buildsQueryKeys = {
   fetchBuilds: ['builds', 'fetch'],

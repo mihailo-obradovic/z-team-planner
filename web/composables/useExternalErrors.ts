@@ -1,5 +1,3 @@
-import type { Ref } from 'vue';
-
 // * Mirror derived validation errors into a ref Regle owns.
 // * A copy rather than the source itself: Regle clears a field's entry as the user edits it, and it must not write back into state derived from the mutation's error.
 export function useExternalErrors(source: Ref<Record<string, string[]>>) {

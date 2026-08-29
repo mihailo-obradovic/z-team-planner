@@ -174,6 +174,7 @@ import {
   HERO_FLIGHT,
   HERO_FLIGHT_CAPABILITY
 } from '@/types/hero';
+
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
 
 const POWER_ICONS = [

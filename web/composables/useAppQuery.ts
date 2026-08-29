@@ -1,7 +1,5 @@
 import { type UseQueryOptions, useQuery } from '@pinia/colada';
 
-import type { ErrorHandlingOptions } from '@/utils/handleApiError';
-
 export type AppQueryOptions<TData, TError = Error> = UseQueryOptions<
   TData,
   TError

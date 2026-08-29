@@ -7,6 +7,7 @@ import {
   BASE_SYNERGY_PAIRS,
   CONDITIONAL_SYNERGY_PAIRS
 } from '@/types/hero';
+
 import type { Hero, HeroId } from '@/types/hero';
 
 // * Composable for managing episode choices and hero visibility. Handles episode 3 cut, episode 4 hire, and episode 8 recruits.

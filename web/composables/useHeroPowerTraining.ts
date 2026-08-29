@@ -6,6 +6,7 @@ import {
   SPECIAL_POWER_MECHANICS,
   STAT_NAMES
 } from '@/types/hero';
+
 import type {
   Hero,
   HeroId,
@@ -13,8 +14,6 @@ import type {
   HeroStats,
   StatName
 } from '@/types/hero';
-import type { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
-import type { useHeroLevelUp } from './useHeroLevelUp';
 
 const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((s) => [s, 0])

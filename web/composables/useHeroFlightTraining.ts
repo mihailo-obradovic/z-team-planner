@@ -4,9 +4,8 @@ import {
   HERO_FLIGHT_CAPABILITY,
   MAX_FLIGHT_TRAININGS
 } from '@/types/hero';
+
 import type { HeroId } from '@/types/hero';
-import type { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
-import type { useHeroPowerTraining } from './useHeroPowerTraining';
 
 // * Composable for managing flight training. Handles flight state, training limits, and conditional flight logic.
 export function useHeroFlightTraining(

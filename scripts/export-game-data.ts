@@ -20,6 +20,7 @@ import {
   SPECIAL_POWER_MECHANICS,
   STAT_NAMES
 } from '../web/types/hero.ts';
+
 import type { HeroId } from '../web/types/hero.ts';
 
 /**

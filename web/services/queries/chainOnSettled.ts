@@ -1,5 +1,3 @@
-import type { AppMutationOptions } from '@/composables/useAppMutation';
-
 type OnSettled<TData, TVars, TError> = NonNullable<
   AppMutationOptions<TData, TVars, TError>['onSettled']
 >;

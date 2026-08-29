@@ -1,5 +1,3 @@
-import type { Ref } from 'vue';
-
 import type { ErrorDetail } from '@/types/api';
 
 type ValidationErrorBody = {

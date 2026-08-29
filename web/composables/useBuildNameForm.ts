@@ -1,5 +1,4 @@
 import { maxLength, required, withMessage } from '@regle/rules';
-import type { Ref } from 'vue';
 
 export const BUILD_NAME_MAX_LENGTH = 80;
 

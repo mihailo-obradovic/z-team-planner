@@ -7,8 +7,8 @@ import {
   MAX_BONUS_LEVEL_PER_HERO,
   STAT_NAMES
 } from '@/types/hero';
+
 import type { Hero, HeroId, HeroStats, StatName } from '@/types/hero';
-import type { useHeroEpisodeSetup } from './useHeroEpisodeSetup';
 
 const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((s) => [s, 0])
