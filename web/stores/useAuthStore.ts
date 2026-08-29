@@ -1,3 +1,5 @@
+import { skipHydrate } from 'pinia';
+
 import type { AuthStatus, AuthUser } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -30,10 +32,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    status: readonly(status),
-    user: readonly(user),
-    activeAccountBuildId: readonly(activeAccountBuildId),
-    isSignInUnavailable: readonly(isSignInUnavailable),
+    status: skipHydrate(readonly(status)),
+    user: skipHydrate(readonly(user)),
+    activeAccountBuildId: skipHydrate(readonly(activeAccountBuildId)),
+    isSignInUnavailable: skipHydrate(readonly(isSignInUnavailable)),
     isSignedIn,
     isResolved,
     setUser,
