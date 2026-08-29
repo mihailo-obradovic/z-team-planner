@@ -93,7 +93,6 @@
 
 <script setup lang="ts">
 import {
-  useCreateBuild,
   useFetchBuild,
   useFetchBuilds,
   useUpdateBuild
@@ -164,16 +163,9 @@ const displayName = computed(
   () => activeAccountBuild.value?.name ?? activeBuildName.value
 );
 
-const { mutate: patchBuild, isLoading: isPatching } = useUpdateBuild({
+const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated) => {
     toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
-  }
-});
-
-const { mutate: postBuild } = useCreateBuild({
-  onSuccess: (created) => {
-    setActiveAccountBuildId(created.id);
-    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
   }
 });
 
