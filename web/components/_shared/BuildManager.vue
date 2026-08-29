@@ -68,10 +68,9 @@
             trailing-icon="i-lucide-chevron-down"
             :block="block"
             :class="block ? undefined : 'max-w-40'"
+            :label="displayName"
             :ui="{ label: 'truncate' }"
-          >
-            {{ displayName }}
-          </u-button>
+          />
         </u-dropdown-menu>
       </template>
     </div>
