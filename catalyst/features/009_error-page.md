@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -16,18 +16,18 @@ This feature gives the app its own fatal-error page: one screen, in the project'
 
 ## Inputs
 
-| Input               | Type                | Source                                                                | Constraints                                                                |
-| ------------------- | ------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `error.statusCode`  | number \| undefined | Nuxt, from `createError` / an unhandled error / an unmatched route     | absent or non-numeric is possible and must render                          |
-| `error.statusMessage` | string \| undefined | the `createError` call that raised it (feature 006's `showNotFoundPage`) | the caller's own wording; may be absent                                    |
-| _(none else)_       | —                   | —                                                                     | the page reads no store, no localStorage, no route param, and makes no request |
+| Input                | Type                | Source                                                                   | Constraints                                                                     |
+| -------------------- | ------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `error.statusCode`   | number \| undefined | Nuxt, from `createError` / an unhandled error / an unmatched route       | absent or non-numeric is possible and must render                               |
+| `error.data.heading` | string \| undefined | the `createError` call that raised it (feature 006's `showNotFoundPage`) | the caller's opted-in wording; absent for anything the app did not raise itself |
+| _(none else)_        | —                   | —                                                                        | the page reads no store, no localStorage, no route param, and makes no request  |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type   | Description                                                                             |
-| -------------------- | ------ | --------------------------------------------------------------------------------------- |
-| the rendered page    | screen | status code, a heading, one supporting line, one action                                 |
-| "Back to the planner" | action | `clearError({ redirect: '/' })` — clears the error state and returns to the planner      |
+| Output / Side Effect  | Type   | Description                                                                         |
+| --------------------- | ------ | ----------------------------------------------------------------------------------- |
+| the rendered page     | screen | status code, a heading, one supporting line, one action                             |
+| "Back to the planner" | action | `clearError({ redirect: '/' })` — clears the error state and returns to the planner |
 
 No durable side effects: nothing is written, cleared, or reported.
 
@@ -37,7 +37,7 @@ In scope:
 
 - One `error.vue` covering **every** fatal error, not only the share-link `404`.
 - Two wordings, chosen by status: `404`, and everything else.
-- The caller's `statusMessage` as the heading when it supplied one, so `/b/<deleted id>` still reads "Build not found" while an unknown route reads "Page not found".
+- The heading the raising caller opted into, so `/b/<deleted id>` reads "Build not found" while an unknown route reads this page's own "Page not found".
 - One action back to the planner.
 
 Non-goals:
@@ -50,9 +50,10 @@ Non-goals:
 ## User / System Behavior
 
 - When a fatal error is raised, the app renders this page in place of the route, and the URL is left alone — so a dead share link still reads as the link the user clicked, and a reload retries it.
-- When the status is `404`, the page shows `404`, the caller's `statusMessage` (or "Page not found" when there is none), and a line saying the page or build is not there.
+- When the status is `404`, the page shows `404`, the caller's opted-in heading (or "Page not found" when there is none), and a line saying the page or build is not there.
 - When the status is anything else, the page shows the status code (or nothing when there is none), "Something went wrong", and a line inviting a retry.
-- The heading is always the caller's wording where one exists; the supporting line is always the page's own, never a second copy of the heading.
+- The heading is always the caller's opted-in wording where one exists; the supporting line is always the page's own, never a second copy of the heading.
+- **`statusMessage` is never displayed.** Nuxt writes it itself for an unmatched route, as `Page not found: <path>` — rendering it would reflect an arbitrary requested path into the page's own heading.
 - The action returns to `/`, which is the planner, and the user's local builds are untouched by the trip.
 
 ## Roles And Access
@@ -61,14 +62,14 @@ Not role-specific. The page renders identically signed in and signed out, and re
 
 ## Examples
 
-| Input                                                       | Expected Output                                                                        | Notes                                       |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `/b/<deleted id>` → feature 006's `showNotFoundPage()`       | `404`, heading "Build not found", the not-there line, one action                        | statusMessage supplied by the caller        |
-| `/nonsense` (no such route)                                  | `404`, heading "Page not found", the not-there line                                     | Nuxt supplies no statusMessage              |
-| `createError({ statusCode: 500 })`                           | `500`, heading "Something went wrong", the retry line                                   |                                             |
-| an error with no `statusCode`                                | no code shown, heading "Something went wrong", the retry line                           | must not render "undefined"                 |
-| click "Back to the planner"                                  | `/` renders the planner; local builds and the active build are as they were             | `clearError` with a redirect                |
-| a `404` on `/b/{id}` reached directly                        | the address bar still shows `/b/{id}`                                                   | `fatal: true` renders, never navigates      |
+| Input                                                  | Expected Output                                                                        | Notes                                  |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------- | -------------------------------------- |
+| `/b/<deleted id>` → feature 006's `showNotFoundPage()` | `404`, heading "Build not found", the not-there line, one action                       | heading opted into via `data`          |
+| `/nonsense` (no such route)                            | `404`, heading "Page not found", the not-there line, and no `/nonsense` anywhere on it | Nuxt's `statusMessage` is ignored      |
+| `createError({ statusCode: 500 })`                     | `500`, heading "Something went wrong", the retry line                                  |                                        |
+| an error with no `statusCode`                          | no code shown, heading "Something went wrong", the retry line                          | must not render "undefined"            |
+| click "Back to the planner"                            | `/` renders the planner; local builds and the active build are as they were            | `clearError` with a redirect           |
+| a `404` on `/b/{id}` reached directly                  | the address bar still shows `/b/{id}`                                                  | `fatal: true` renders, never navigates |
 
 ## Business Rules
 
@@ -79,16 +80,16 @@ Not role-specific. The page renders identically signed in and signed out, and re
 ## Edge Cases
 
 - **No `statusCode`** — the code slot renders nothing rather than "undefined", and the generic wording applies.
-- **`statusMessage` absent on a 404** — falls back to "Page not found"; the page never renders an empty heading.
+- **No opted-in heading on a 404** — falls back to "Page not found"; the page never renders an empty heading.
 - **A 404 raised on `/b/**`**, which is `ssr: false` — the page renders client-side; it holds no server-only state, so this costs nothing.
 - **An error raised on the prerendered `/`** — the page must render without the app shell having mounted, which is why it depends on nothing the shell provides.
-- **`statusMessage` carrying a server-supplied string** — rendered as text, never as markup.
+- **A heading carrying a server-supplied string** — rendered as text, never as markup, and only ever one the app itself opted into.
 
 ## Invariants
 
 - The page renders with no localStorage, no auth state, and no network access.
 - It mounts nothing from `components/_shared/` that reads client-only state, so it needs no `ClientOnly` wrapper and cannot desynchronise hydration.
-- The URL is never rewritten by rendering the page.
+- The URL is never rewritten by rendering the page, and never rendered _into_ it.
 - Exactly one action, and it goes to `/`.
 
 ## Error Handling
@@ -112,11 +113,15 @@ _None._
 
 ## Tests
 
-- `test/nuxt/error-page.test.ts`: renders the caller's `statusMessage` as the heading on a `404`; falls back to "Page not found" when it is absent; renders the generic wording for a `500`; renders no code and the generic wording when `statusCode` is absent; the heading and the supporting line are never the same string; the action calls `clearError` with a redirect to `/`.
+- `test/nuxt/error-page.test.ts`: renders the caller's opted-in heading on a `404`; falls back to "Page not found" when there is none; ignores `statusMessage` so an unmatched route's path cannot reach the heading; renders the generic wording for a `500`; renders no code and the generic wording when `statusCode` is absent; the heading and the supporting line are never the same string; the action calls `clearError` with a redirect to `/`.
 
 ## Verification
 
-_Empty while this document is a draft._
+`vitest --run`: 144 passing, six of them `test/nuxt/error-page.test.ts` — the opted-in heading, both fallbacks, the ignored `statusMessage`, the no-status case, heading-never-equals-supporting-line, and `clearError({ redirect: '/' })`. oxlint, `nuxt typecheck` and oxfmt clean.
+
+In a browser on 2026-08-29 against a **production build** (served on :3001) and the real API: `/b/<unknown id>` gave `404` / "Build not found" with the URL still on the share link; `/nonsense` gave `404` / "Page not found" with `/nonsense` nowhere on the page; the card measured 588px against the annex's 65ch; **Back to the planner** landed on `/` with the planner mounted.
+
+Three defects only the walk could catch: `panel` carries no background (the paper surface is `bg-default`, without which the ink heading sat unreadable on the dark ground); the `title` role's uppercase is a separate class, not part of the token; and Nuxt sets `statusMessage` itself on an unmatched route as `Page not found: <path>`, which is why the heading travels in `data`. Remaining risk: the `500` and no-status branches are proven by test only — nothing in the app raises them today.
 
 ## Agent Change Rules
 

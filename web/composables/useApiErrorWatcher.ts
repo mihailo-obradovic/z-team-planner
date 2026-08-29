@@ -37,11 +37,13 @@ export function useApiErrorWatcher(
         resetUser,
         showToast,
         // * `createError` with fatal renders the error page rather than navigating away, so the URL keeps pointing at the share link that failed.
+        // * The heading travels in `data`, which is where the error page reads it from (feature 009) — `statusMessage` is Nuxt's own for unmatched routes.
         showNotFoundPage: () =>
           showError(
             createError({
               statusCode: 404,
               statusMessage: 'Build not found',
+              data: { heading: 'Build not found' },
               fatal: true
             })
           ),
