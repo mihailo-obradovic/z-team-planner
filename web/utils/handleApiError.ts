@@ -28,21 +28,6 @@ const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
 // * A WeakSet, so an entry disappears with the error object itself — a plain Set would pin every error the app has ever handled for the lifetime of the page.
 const handledErrors = new WeakSet<object>();
 
-function asStatusError(error: unknown): StatusError | null {
-  return typeof error === 'object' && error !== null
-    ? (error as StatusError)
-    : null;
-}
-
-// * Most specific first: what the API said, then the transport-level line, then a generic fallback.
-export function extractMessage(error: unknown): string {
-  const candidate = asStatusError(error);
-
-  return (
-    candidate?.data?.error?.message || candidate?.message || GENERIC_MESSAGE
-  );
-}
-
 // * Statuses come from feature 006's central policy. Two never toast: `412` opens the conflict dialog, and `422` renders inline on the field that failed.
 export function handleApiError(
   error: unknown,
@@ -102,4 +87,19 @@ export function handleApiError(
   }
 
   toast(extractMessage(error));
+}
+
+// * Most specific first: what the API said, then the transport-level line, then a generic fallback.
+export function extractMessage(error: unknown): string {
+  const candidate = asStatusError(error);
+
+  return (
+    candidate?.data?.error?.message || candidate?.message || GENERIC_MESSAGE
+  );
+}
+
+function asStatusError(error: unknown): StatusError | null {
+  return typeof error === 'object' && error !== null
+    ? (error as StatusError)
+    : null;
 }

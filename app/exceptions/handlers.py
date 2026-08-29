@@ -34,6 +34,48 @@ _STATUS_TO_CODE: dict[int, ErrorCode] = {
 }
 
 
+def register_exception_handlers(app: FastAPI) -> None:
+    """Wire every failure path onto the one envelope."""
+
+    @app.exception_handler(AppError)
+    async def _app_error(_: Request, exc: AppError) -> JSONResponse:
+        return _respond(
+            exc.status_code, exc.code, exc.message, exc.details, exc.headers
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_error(
+        _: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        details = [
+            ErrorDetail(path=location_to_path(error["loc"]), message=error["msg"])
+            for error in exc.errors()
+        ]
+        # * details is populated on 422 only — every other status omits the key entirely.
+        return _respond(422, ErrorCode.VALIDATION_FAILED, "Validation failed.", details)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+        code = _STATUS_TO_CODE.get(exc.status_code, ErrorCode.INTERNAL_ERROR)
+        return _respond(exc.status_code, code, str(exc.detail))
+
+    @app.exception_handler(OperationalError)
+    async def _database_unavailable(_: Request, exc: OperationalError) -> JSONResponse:
+        # ! Retryable, and a client must be able to tell that without parsing a message. A suspended Neon compute that will not wake looks exactly like this, and it is not the caller's fault (feature 005, Error Handling).
+        logger.warning("Database unavailable: %s", type(exc).__name__, exc_info=True)
+        return _respond(
+            503,
+            ErrorCode.SERVICE_UNAVAILABLE,
+            "The service is temporarily unavailable. Please try again.",
+        )
+
+    @app.exception_handler(Exception)
+    async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
+        logger.exception("Unhandled exception: %s", type(exc).__name__)
+        # * No detail leaves the process: the request id in the header is how a report is correlated to the traceback in the log (feature 005, Error Handling).
+        return _respond(500, ErrorCode.INTERNAL_ERROR, "An unexpected error occurred.")
+
+
 def _respond(
     status_code: int,
     code: ErrorCode,
@@ -75,45 +117,3 @@ def location_to_path(location: tuple[int | str, ...]) -> str:
         else:
             rendered = part if not rendered else f"{rendered}.{part}"
     return rendered
-
-
-def register_exception_handlers(app: FastAPI) -> None:
-    """Wire every failure path onto the one envelope."""
-
-    @app.exception_handler(AppError)
-    async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return _respond(
-            exc.status_code, exc.code, exc.message, exc.details, exc.headers
-        )
-
-    @app.exception_handler(RequestValidationError)
-    async def _validation_error(
-        _: Request, exc: RequestValidationError
-    ) -> JSONResponse:
-        details = [
-            ErrorDetail(path=location_to_path(error["loc"]), message=error["msg"])
-            for error in exc.errors()
-        ]
-        # * details is populated on 422 only — every other status omits the key entirely.
-        return _respond(422, ErrorCode.VALIDATION_FAILED, "Validation failed.", details)
-
-    @app.exception_handler(StarletteHTTPException)
-    async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        code = _STATUS_TO_CODE.get(exc.status_code, ErrorCode.INTERNAL_ERROR)
-        return _respond(exc.status_code, code, str(exc.detail))
-
-    @app.exception_handler(OperationalError)
-    async def _database_unavailable(_: Request, exc: OperationalError) -> JSONResponse:
-        # ! Retryable, and a client must be able to tell that without parsing a message. A suspended Neon compute that will not wake looks exactly like this, and it is not the caller's fault (feature 005, Error Handling).
-        logger.warning("Database unavailable: %s", type(exc).__name__, exc_info=True)
-        return _respond(
-            503,
-            ErrorCode.SERVICE_UNAVAILABLE,
-            "The service is temporarily unavailable. Please try again.",
-        )
-
-    @app.exception_handler(Exception)
-    async def _unhandled(_: Request, exc: Exception) -> JSONResponse:
-        logger.exception("Unhandled exception: %s", type(exc).__name__)
-        # * No detail leaves the process: the request id in the header is how a report is correlated to the traceback in the log (feature 005, Error Handling).
-        return _respond(500, ErrorCode.INTERNAL_ERROR, "An unexpected error occurred.")
