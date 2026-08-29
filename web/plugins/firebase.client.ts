@@ -6,8 +6,12 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 
+import { clearUserScopedCache } from '@/services/queries/clearUserScopedCache';
+
+import type { Pinia } from 'pinia';
+
 // ! Client-only by filename. The Firebase SDK is a browser SDK, and the server must never hold a user's token — feature 006: the server never calls the API and nothing is forwarded.
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin((nuxtApp) => {
   const { setUser, resetUser, markSignInUnavailable } = useAuthStore();
   const { firebase } = useRuntimeConfig().public;
 
@@ -45,6 +49,11 @@ export default defineNuxtPlugin(() => {
       (user) => {
         if (!user) {
           resetUser();
+          // * The store flip only disables the queries; their data survives it. Dropping it here
+          // * is what makes sign-out mean the previous account leaves no trace on this browser.
+          // * Cast because `$pinia` reaches this file as `unknown`; the subscription fires long
+          // * after setup, so the instance has to be handed over rather than inferred.
+          clearUserScopedCache(nuxtApp.$pinia as Pinia);
 
           return;
         }
