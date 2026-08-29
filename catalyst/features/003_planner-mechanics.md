@@ -53,7 +53,7 @@ Non-goals:
 
 **Budget readout.** The three shared budgets render twice: in the top bar as a **readout** (value and label, no controls, hidden below `md`), and in the drawer's Training budget section as the **management** surface — a row per budget with its own reset, shown only while that budget has something to reset.
 
-**Reset all trainings.** One unconfirmed action in the drawer's footer clears all three shared budgets, equivalent to each budget's own reset in turn; everything it clears is re-allocable by clicking. Per-hero level-up allocations, powers and special powers stay — those are the per-hero reset's business.
+**Reset all trainings.** One unconfirmed action in the drawer's footer clears all three shared budgets, equivalent to each budget's own reset in turn; everything it clears is re-allocable by clicking. Per-hero powers, special powers and allocations stay — the per-hero reset's business — except that a returned bonus level takes its point back.
 
 **Episode setup.** Default: Sonar cut, Waterboy hired, episode-8 recruits hidden. The cut hero leaves the roster; the non-hired episode-4 option and Blonde Blazer appear only with "episode 8 recruits" shown. Changing a choice wipes the affected heroes' allocations, powers and flight (watchers on the choice).
 
@@ -93,6 +93,7 @@ Not role-specific.
 | change ep3 cut sonar → coupe                     | Coupé's state wiped, Sonar's kept; column updates  |
 | change ep4 hire waterboy → phenomaman            | Waterboy's state wiped                             |
 | `Reset all trainings` at 2/7 · 0/2 · 2/4         | all three read 0; per-hero allocations unchanged   |
+| reset bonus levels, a hero at 10 of 9+1 spent    | bonus reads 0; hero drops to 9, tallest stat −1    |
 | open Story Setup, reload the page                | drawer closed, episode choices preserved           |
 | show episode-8 recruits at one column wide       | recruits under their heading, pairs stay grouped   |
 
@@ -104,6 +105,7 @@ Not role-specific.
 - The card's power strip holds at most **four** chips — `sonar form? + starting + upgrades(≤2) + special?` — and a fifth breaks every card's alignment (annex §13, Card body). Adding a `SPECIAL_POWER_MECHANICS` entry for Sonar, or a second form toggle, must first move something out of the strip, the way flight was moved.
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat.
 - `Reset all trainings` is exactly the union of the three per-budget resets; a fourth shared budget must be added there too, or it silently under-resets.
+- Returning a bonus level unspends it: a hero over `MAX_LEVEL_UPS + bonus` is trimmed back at once, tallest stat first, ties by `STAT_NAMES` — the API rejects an over-cap save.
 - A per-budget reset is offered only while that budget is non-zero.
 - Overview lays heroes out as synergy-pair columns (base pairs + the one conditional pair for the current choices), each pair marked between its two cards and spaced closer than to the next pair — the marker carries the pairing once the grid stacks to one column. Episode-8 recruits render in their own row beneath, under an `Episode 8 recruits` heading.
 
@@ -144,7 +146,8 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 
 ## Tests
 
-- Honest gap: no automated tests. Wanted first: unit tests for the budget guards (level-up cap with/without bonus, shared pools, power-training gating and free switching) via the composables with seeded state. Until then the live browser walk covers the card controls.
+- `test/nuxt/bonus-level-reset.test.ts`: a cleared bonus leaves no hero over budget.
+- Honest gap: otherwise no automated tests. Wanted first: unit tests for the budget guards (level-up cap with/without bonus, shared pools, power-training gating and free switching) via the composables with seeded state. Until then the live browser walk covers the card controls.
 
 ## Verification
 

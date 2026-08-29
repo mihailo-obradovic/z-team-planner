@@ -115,8 +115,37 @@ export function useHeroLevelUp(
     heroBonusLevels.value[id] = currentBonus + 1;
   }
 
+  // ! A bonus level is a point to spend, so returning it has to unspend it: leaving the allocation behind puts the hero over the cap and the API rejects the whole build on save.
+  function trimToLevelUpCap(id: HeroId) {
+    const allocations = heroLevelUps.value[id];
+
+    if (!allocations) {
+      return;
+    }
+
+    let excess = getLevelUpPointsUsed(id) - (MAX_LEVEL_UPS + getBonusLevel(id));
+
+    while (excess > 0) {
+      // * Take from the tallest stat, ties going to the first in STAT_NAMES, so the same reset always trims the same way.
+      let tallest: StatName = STAT_NAMES[0];
+
+      for (const stat of STAT_NAMES) {
+        if (allocations[stat] > allocations[tallest]) {
+          tallest = stat;
+        }
+      }
+
+      allocations[tallest]--;
+      excess--;
+    }
+  }
+
   function resetAllBonusLevels() {
     heroBonusLevels.value = {};
+
+    for (const id of Object.keys(heroLevelUps.value) as HeroId[]) {
+      trimToLevelUpCap(id);
+    }
   }
 
   function resetHeroLevelUp(id: HeroId) {
