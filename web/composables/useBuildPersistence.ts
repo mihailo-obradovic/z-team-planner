@@ -57,7 +57,7 @@ export function useBuildPersistence() {
   });
 
   function generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return crypto.randomUUID();
   }
 
   function getActiveBuild(): SavedBuild | undefined {
