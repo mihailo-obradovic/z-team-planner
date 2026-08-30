@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     firebase_project_id: str
     # * The service-account JSON firebase-admin authenticates with. Optional only when the emulator is in use, which the guard below already confines to development.
     firebase_service_account_file: Path | None = None
+    # * The same credential carried as environment contents, for a host with no filesystem to keep a key file on (decision 007). pydantic-settings parses the JSON itself, so a malformed value stops the process here rather than at the first signed-in request.
+    firebase_service_account_json: dict[str, Any] | None = None
 
     # * Read by firebase-admin itself, straight from os.environ — which is why init_firebase exports it back out after this class has read it from `.env`. The two guards below are the only other code that looks at it.
     firebase_auth_emulator_host: str | None = None
@@ -69,18 +71,33 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _needs_credentials_unless_emulated(self) -> Settings:
-        # * Without either, every request would fail at token verification instead of at startup — the same fail-fast reasoning as the database URLs (decision 005).
-        if self.firebase_service_account_file is None:
-            if not self.firebase_auth_emulator_host:
-                msg = (
-                    "FIREBASE_SERVICE_ACCOUNT_FILE is required unless "
-                    "FIREBASE_AUTH_EMULATOR_HOST is set."
-                )
-                raise ValueError(msg)
-        elif not self.firebase_service_account_file.is_file():
+        # ! Two spellings of one credential is two ways to disagree about which key is live. Refuse both rather than silently prefer one.
+        if self.firebase_service_account_file and self.firebase_service_account_json:
+            msg = (
+                "FIREBASE_SERVICE_ACCOUNT_FILE and FIREBASE_SERVICE_ACCOUNT_JSON are "
+                "mutually exclusive — set exactly one."
+            )
+            raise ValueError(msg)
+
+        if (
+            self.firebase_service_account_file is not None
+            and not self.firebase_service_account_file.is_file()
+        ):
             msg = (
                 "FIREBASE_SERVICE_ACCOUNT_FILE does not exist: "
                 f"{self.firebase_service_account_file}"
+            )
+            raise ValueError(msg)
+
+        # * Without any of the three, every request would fail at token verification instead of at startup — the same fail-fast reasoning as the database URLs (decision 005).
+        if (
+            self.firebase_service_account_file is None
+            and self.firebase_service_account_json is None
+            and not self.firebase_auth_emulator_host
+        ):
+            msg = (
+                "FIREBASE_SERVICE_ACCOUNT_FILE or FIREBASE_SERVICE_ACCOUNT_JSON is "
+                "required unless FIREBASE_AUTH_EMULATOR_HOST is set."
             )
             raise ValueError(msg)
         return self

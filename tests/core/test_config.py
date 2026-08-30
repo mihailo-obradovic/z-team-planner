@@ -54,3 +54,37 @@ def test_emulator_host_is_allowed_in_development(
 
 def test_settings_are_cached(base_env: dict[str, str]) -> None:
     assert get_settings() is get_settings()
+
+
+def test_service_account_json_replaces_the_file(
+    base_env: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # * Decision 007: a deployed host carries the key as environment contents, not a path.
+    monkeypatch.delenv("FIREBASE_SERVICE_ACCOUNT_FILE")
+    monkeypatch.setenv(
+        "FIREBASE_SERVICE_ACCOUNT_JSON",
+        '{"type": "service_account", "project_id": "z-team-planner"}',
+    )
+    settings = Settings()  # pyright: ignore[reportCallIssue]
+    assert settings.firebase_service_account_file is None
+    assert settings.firebase_service_account_json == {
+        "type": "service_account",
+        "project_id": "z-team-planner",
+    }
+
+
+def test_both_credential_spellings_refuse_to_start(
+    base_env: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # ! Two spellings of one credential is two ways to disagree about which key is live.
+    monkeypatch.setenv("FIREBASE_SERVICE_ACCOUNT_JSON", '{"type": "service_account"}')
+    with pytest.raises(ValidationError, match="mutually exclusive"):
+        Settings()  # pyright: ignore[reportCallIssue]
+
+
+def test_no_credential_at_all_refuses_to_start(
+    base_env: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("FIREBASE_SERVICE_ACCOUNT_FILE")
+    with pytest.raises(ValidationError, match="required unless"):
+        Settings()  # pyright: ignore[reportCallIssue]

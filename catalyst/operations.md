@@ -2,7 +2,37 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: the API and its Neon database are built and running locally (`decisions/005_bootstrap_api.md`); the nightly backup workflow is not, and nothing is deployed anywhere. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+Status note: the API and its Neon database are built and running locally (`decisions/005_bootstrap_api.md`); the nightly backup workflow is not, and nothing is deployed yet. Decision 007 chose the hosting and staged it — neither Vercel project exists until someone creates it. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+
+## Vercel hosting
+
+Two projects from this one repository, both with the repository root as their Root Directory: **`z-team-planner`** (Nuxt preset) and **`z-team-planner-api`** (FastAPI preset, region `fra1`, install command `uv sync --locked`). Production branch is `master`; preview deployments are off. Decision 007 holds the why and the staging — the API project is not created until its gate passes.
+
+### Operate
+
+```bash
+vercel link                                 # bind this checkout to one project (once per project)
+vercel --prod                               # deploy the linked project to production
+vercel promote <deployment-url>             # make an earlier deployment production again
+vercel env ls production                    # what the next build will read
+vercel logs <deployment-url>                # runtime logs for one deployment
+```
+
+A push to `master` deploys whichever projects exist. Everything else is dashboard work: creating a project, its region, and its environment variables.
+
+### Recovery
+
+Rolling back is `vercel promote` against an earlier deployment (Instant Rollback in the dashboard) — it reassigns the production domain immediately, with no rebuild. There is nothing here to restore: the frontend is a build artifact and the API holds no data of its own. Data recovery is the Neon section's drill.
+
+### Quirks
+
+- **A `NUXT_PUBLIC_*` change needs a redeploy, not an environment edit.** `/` is prerendered, so those values are baked into the payload at build time. Editing the variable in the dashboard changes nothing until the next build.
+- An **empty `NUXT_PUBLIC_API_BASE_URL` is a valid deployment**, not a broken one: it means no API is behind this frontend and sign-in is unavailable (feature 006). The missing Firebase variables still fail the build, loudly, in `build:before`.
+- **`vercel.json` is read from a project's Root Directory.** Both projects are rooted at the repository root, so any such file would be read by both — and a `functions` glob that matches no files hard-fails the build it does not belong to. Python configuration lives in `pyproject.toml` instead, where the Nuxt project cannot see it.
+- **Preview deployments are off via the Ignored Build Step**, `[ "$VERCEL_ENV" != "production" ]`, in Settings → Git. The documented switch is `vercel.json`'s `git.deploymentEnabled`, which this project cannot use for the reason above — and its per-branch form would need every future branch listed. Exit 0 means skip, so previews are skipped and production still builds.
+- **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`.
+- **Alembic never runs on Vercel.** Migrations are manual, from a workstation, against the direct endpoint — the Neon section's commands.
+- Vercel's **Neon marketplace integration is not used**: it injects a single `DATABASE_URL`, and this project needs the pooled and direct endpoints separately. Both variables are set by hand.
 
 ## API service
 
@@ -33,7 +63,7 @@ The API is stateless — recovery is "start it again". The data drill is the Neo
 - `/healthz` deliberately does not touch the database. Pointing a liveness probe at `/readyz` would restart the process every time Neon suspends.
 - There is **no module-level `app`** — uvicorn needs `app.main:create_app --factory`. `uvicorn app.main:app` fails with an attribute error.
 - `/metrics` is absent (404) unless `METRICS_ENABLED=true`, and must never be publicly routable. Single-process only: under `--workers N` each worker keeps its own registry and the numbers silently under-report.
-- The `/shared/*` rate limit is **in process**: 60 a minute per caller, counted per worker, and keyed on the socket peer — which behind a proxy is the proxy. Two workers therefore allow 120, and it protects nothing once something sits in front of it. It is feature 007's stopgap and comes out when the hosting effort names a real edge.
+- The `/shared/*` rate limit is **inert in production**: it is an in-process token bucket, 60 a minute per caller, and every serverless instance holds its own — so the ceiling is 60 × however many instances Vercel happens to be running, and it keys on the socket peer, which behind a proxy is the proxy. Decision 007 named the edge and found there is none to be had on this plan, so `/shared/*` is effectively unprotected; the code stays as feature 007's stopgap. The danger is not the missing ceiling on a hobby app with unguessable ids — it is reading this code and believing the ceiling works.
 - `uvicorn --reload` is development only.
 - `FIREBASE_AUTH_EMULATOR_HOST` set while `APP_ENV` is not `development` stops the process at startup. That is the guard working, not a bug.
 

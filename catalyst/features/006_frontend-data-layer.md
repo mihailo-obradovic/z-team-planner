@@ -16,7 +16,7 @@ The Nuxt app has never talked to an API: hero data comes from a static Nitro rou
 
 | Input                      | Type                  | Source                      | Constraints                                                               |
 | -------------------------- | --------------------- | --------------------------- | ------------------------------------------------------------------------- |
-| `NUXT_PUBLIC_API_BASE_URL` | public runtime config | build/deploy environment    | required; no default in code                                              |
+| `NUXT_PUBLIC_API_BASE_URL` | public runtime config | build/deploy environment    | optional; empty means no API is deployed and sign-in is unavailable       |
 | `NUXT_PUBLIC_FIREBASE_*`   | public runtime config | Firebase web app config     | `apiKey`, `authDomain`, `projectId`, `appId` — public values, not secrets |
 | Firebase auth state        | `onAuthStateChanged`  | `firebase.client.ts` plugin | drives the store; `getIdToken()` per request                              |
 | API responses              | JSON                  | feature 005's contract      | parsed with Zod at the service boundary, never asserted                   |
@@ -70,7 +70,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 | a response missing a schema-required field | generic toast; Zod issue logged for developers          | schema failure, not user error            |
 | a query's key changes                      | previous data stays visible until the new data lands    | no empty flash                            |
 | `useAppQuery` called outside a component   | no-op rather than a thrown error                        |                                           |
-| `NUXT_PUBLIC_API_BASE_URL` unset at build  | build fails                                             | no default in code                        |
+| `NUXT_PUBLIC_API_BASE_URL` empty at build  | sign-in disabled, Firebase never initialised            | frontend-only deployment (decision 007)   |
 
 ## Business Rules
 

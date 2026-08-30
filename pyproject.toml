@@ -31,6 +31,11 @@ dev = [
 # * Versions are pinned by uv.lock alone (stacks/_lang/python/toolchain.md); a second set of
 # * constraints here is exactly the drift that document warns about.
 
+# * Vercel's FastAPI runtime looks for a module-level `app`; app/main.py exports a factory
+# * on purpose, so the entrypoint is the shim written for exactly this (decision 007).
+[tool.vercel]
+entrypoint = "app/asgi.py"
+
 [tool.ruff]
 # * catalyst/ is the vendored Catalyst bundle — decision 004 verified its documents and tools
 # * byte-identical to Catalyst v1.8.1 (cmp). Linting or formatting validate.py here would break
