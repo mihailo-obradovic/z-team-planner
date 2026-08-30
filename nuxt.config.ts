@@ -80,8 +80,8 @@ export default defineNuxtConfig({
         return;
       }
 
+      // * NUXT_PUBLIC_API_BASE_URL is deliberately absent: an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007).
       const missing = [
-        'NUXT_PUBLIC_API_BASE_URL',
         'NUXT_PUBLIC_FIREBASE_API_KEY',
         'NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
         'NUXT_PUBLIC_FIREBASE_PROJECT_ID',
