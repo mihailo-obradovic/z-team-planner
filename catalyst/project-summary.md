@@ -36,7 +36,7 @@ One line per record: type, status, title, link.
 | 005 | bootstrap   | Implemented | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic       | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                       |
 | 006 | refactor    | Implemented | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md) |
 | 007 | infra       | Implemented | Host on Vercel — two projects, one repository                                   | [007_infra_hosting-vercel](decisions/007_infra_hosting-vercel.md)                         |
-| 008 | refactor    | Accepted    | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                 |
+| 008 | refactor    | Implemented | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                 |
 
 ## Domain Decision Index
 
