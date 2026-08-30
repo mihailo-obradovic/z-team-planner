@@ -6,7 +6,9 @@ export default {
     // * Default: 'rounded-md font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75'
     base: [
       'rounded-md font-heading font-bold uppercase tracking-label inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:opacity-40',
-      'transition-colors'
+      'transition-colors',
+      // * Added: a button never benefits from double-tap zoom, and without this a second fast tap on a stepper is consumed by the browser as the zoom gesture instead of a second click. Pinch zoom and the viewport meta are untouched.
+      'touch-manipulation'
     ],
     label: 'truncate',
     leadingIcon: 'shrink-0',

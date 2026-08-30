@@ -7,7 +7,7 @@
     <button
       v-if="tier === 'bare'"
       type="button"
-      class="size-11 items-center justify-center text-neutral-100"
+      class="size-11 touch-manipulation items-center justify-center text-neutral-100"
       :class="visibilityClass"
       :aria-label="accountName"
     >
@@ -31,7 +31,7 @@
   <button
     v-else-if="tier === 'bare'"
     type="button"
-    class="size-11 items-center justify-center text-neutral-100"
+    class="size-11 touch-manipulation items-center justify-center text-neutral-100"
     :class="[visibilityClass, { invisible: !isResolved }]"
     :disabled="isSignInUnavailable"
     :aria-hidden="isResolved ? undefined : 'true'"

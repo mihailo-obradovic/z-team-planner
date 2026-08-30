@@ -43,7 +43,7 @@
         <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is right on the amber and gold solids and unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
         <button
           type="button"
-          class="flex size-11 items-center justify-center text-neutral-100 md:hidden"
+          class="flex size-11 touch-manipulation items-center justify-center text-neutral-100 md:hidden"
           aria-label="Story setup"
           @click="openStorySetup"
         >
