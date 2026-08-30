@@ -63,7 +63,7 @@ Non-goals:
 
 **Powers.** The starting power must be revealed before a trainable can be selected; switching to the other trainable is free; selecting where none was consumes one of the team-wide `MAX_POWER_TRAININGS` (7). Un-revealing the starting power clears the trainable and any special power. Episode-8 recruits cannot train (Blonde Blazer has no trainable powers at all).
 
-**Special powers** (display-only stat effects): Flambae's Supernova (requires trainable-2 selected) raises Combat and Mobility to 10; Coupé's En Pointe cycles off → +Combat → +Mobility, +1 normally, +3 with À la Seconde. Sonar's card offers a monster-form toggle that swaps Combat↔Intellect and Vigor↔Charisma in the display only — never stored, never serialized.
+**Special powers.** The display-only stat effects a trained power grants — Supernova, En Pointe, Spread Thin, Sonar's form swap — are [feature 012](012_special-powers.md). This document owns the training that gates them and the resets that clear them.
 
 **Flight.** Flight School is its own training track; its toggle sits in the card's header row, not in the power strip (Hero Power Training only). Coupe/Flambae/Sonar toggle flight from a shared pool of `MAX_FLIGHT_TRAININGS` (2). Phenomaman flies unless Heavily Medicated (trainable-1) is selected — then the plane glyph is absent, not shown off, because the power removes the ability. Blonde Blazer always flies; neither consumes the pool. Episode-8 recruits have no training left, so a flier among them flies permanently.
 
@@ -77,33 +77,24 @@ Not role-specific.
 
 | Input                                            | Expected Output                                    |
 | ------------------------------------------------ | -------------------------------------------------- |
-| allocate 9 points to a hero, click +             | no-op (budget exhausted)                           |
+| any over-budget action — 10th point, 5th bonus   | silent no-op, control disabled (see Business Rules)|
+| level, stat past 10, 8th training, 3rd flight    |                                                    |
 | +1 bonus level, then allocate a 10th point       | accepted                                           |
 | +1 bonus level, allocate nothing                 | level unchanged; a 10th point is now allocatable   |
-| 4 bonus levels on one hero, + on another         | no-op (shared pool of 4 is empty)                  |
-| stat at 10 (starting + allocated), click +       | no-op (`MAX_STAT_VALUE`)                           |
-| select trainable on an unrevealed hero           | no-op (reveal gates training)                      |
-| 7 heroes trained, select an 8th hero's trainable | no-op (`MAX_POWER_TRAININGS`)                      |
 | switch a trained hero's trainable 1 → 2          | accepted, budget unchanged                         |
 | un-reveal a trained hero's starting power        | trainable and special power cleared too            |
-| toggle Supernova without trainable-2             | no-op                                              |
-| Supernova on Flambae (4 combat, +2 allocated)    | Combat shows 10 (+4 special bonus, never past 10)  |
-| train flight on coupe and flambae, then sonar    | sonar's toggle no-ops (`MAX_FLIGHT_TRAININGS` = 2) |
 | select Heavily Medicated on Phenomaman           | leaves the flying set, plane glyph disappears      |
 | change ep3 cut sonar → coupe                     | Coupé's state wiped, Sonar's kept; column updates  |
-| change ep4 hire waterboy → phenomaman            | Waterboy's state wiped                             |
 | `Reset all trainings` at 2/7 · 0/2 · 2/4         | all three read 0; per-hero allocations unchanged   |
 | reset bonus levels, a hero at 10 of 9+1 spent    | bonus reads 0; hero drops to 9, tallest stat −1    |
-| open Story Setup, reload the page                | drawer closed, episode choices preserved           |
 | show episode-8 recruits at one column wide       | recruits under their heading, pairs stay grouped   |
 
 ## Business Rules
 
 - All budget checks are guard clauses: an over-budget action silently does nothing (buttons also disable in the UI, but state guards are authoritative).
 - Budgets: 9 level-up points/hero (+bonus), 4 bonus levels shared and per-hero, 7 power trainings shared, 2 flight trainings shared, stat cap 10.
+- Effective displayed stat = `startingStats + allocations + specialPowerBonus` (feature 012); the card's power strip holds at most **four** chips and a fifth breaks every card's alignment (annex §13).
 - Displayed level is `1 + points spent` — never `+ bonus levels`, or the level jumps ahead of the allocation that earned it and the card disagrees with the dialog.
-- The card's power strip holds at most **four** chips — `sonar form? + starting + upgrades(≤2) + special?` — and a fifth breaks every card's alignment (annex §13, Card body). Adding a `SPECIAL_POWER_MECHANICS` entry for Sonar, or a second form toggle, must first move something out of the strip, the way flight was moved.
-- Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat.
 - `Reset all trainings` is exactly the union of the three per-budget resets; a fourth shared budget must be added there too, or it silently under-resets.
 - Returning a bonus level unspends it: a hero over `MAX_LEVEL_UPS + bonus` is trimmed back at once, tallest stat first, ties by `STAT_NAMES` — the API rejects an over-cap save.
 - A per-budget reset is offered only while that budget is non-zero.
@@ -113,7 +104,6 @@ Not role-specific.
 
 - `useHeroPlanner` is a per-app singleton (cached on `nuxtApp`); a second instance would register the watchers twice and double every reset.
 - Deserialization (feature 001) sets episode choices first and waits a tick so these watchers do not wipe the restored hero state.
-- Coupé's En Pointe applies +1 even untrained, +3 only with À la Seconde.
 
 ## Invariants
 
@@ -136,6 +126,7 @@ Not role-specific.
 
 - Feature 002 (hero data): every constant and dataset these rules run on.
 - Feature 001 (build persistence): serializes exactly this state.
+- Feature 012 (special powers): the stat effects the powers trained here grant.
 
 ## Open Questions
 

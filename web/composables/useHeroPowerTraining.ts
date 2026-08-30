@@ -24,7 +24,7 @@ const DEFAULT_POWER_STATE: HeroPowerSelection = {
   trainableSelected: 0
 };
 
-// * Composable for managing power training and special power mechanics. Handles power selections, training limits, and special powers for Flambae and Coupe.
+// * Composable for managing power training and special power mechanics. Handles power selections, training limits, and the special powers of feature 012.
 export function useHeroPowerTraining(
   heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
@@ -114,31 +114,30 @@ export function useHeroPowerTraining(
     return heroSpecialPowers.value[id] ?? 0;
   }
 
+  // * One cycle for every special power: `0 .. max`, wrapping back to off. Supernova's max is 1, so it reads as a plain on/off; En Pointe's 2 is off/combat/mobility; Spread Thin's 3 is off/1/2/3 slots.
   function toggleSpecialPower(id: HeroId) {
-    if (id === 'flambae') {
-      // * Supernova requires trainable-2 power to be trained
-      const power = getPowerState(id);
-      if (power.trainableSelected !== 2) {
-        return;
-      }
-      // * Toggle between 0 (off) and 1 (on)
-      heroSpecialPowers.value[id] = heroSpecialPowers.value[id] ? 0 : 1;
-    } else if (id === 'coupe') {
-      // * Cycle through 0 (off), 1 (+combat), 2 (+mobility)
-      const current = heroSpecialPowers.value[id] ?? 0;
-      heroSpecialPowers.value[id] = (current + 1) % 3;
+    const mechanics = specialPowerMechanics(id);
+
+    if (!mechanics || !hasRequiredPower(id, mechanics)) {
+      return;
     }
+
+    const current = heroSpecialPowers.value[id] ?? 0;
+    heroSpecialPowers.value[id] = (current + 1) % (mechanics.max + 1);
   }
 
-  function getSpecialPowerBonus(id: HeroId, stat: StatName): number {
-    const mechanics =
-      SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS];
+  function getSpecialPowerBonus(
+    id: HeroId,
+    stat: StatName,
+    state?: number
+  ): number {
+    const mechanics = specialPowerMechanics(id);
 
     if (!mechanics) {
       return 0;
     }
 
-    const specialState = getSpecialPowerState(id);
+    const specialState = state ?? getSpecialPowerState(id);
 
     if (mechanics.type === 'supernova' && specialState === 1) {
       // * Flambae's Supernova: set combat and mobility to 10
@@ -169,9 +168,61 @@ export function useHeroPowerTraining(
       if (specialState === 2 && stat === 'mobility') {
         return bonus;
       }
+    } else if (mechanics.type === 'spread-thin' && specialState > 0) {
+      // * Golem's Spread Thin: the slot count picks a percentage tier which is floored once against the whole stat — not a per-slot increment applied repeatedly, which would pay differently on any stat that is not a multiple of 4 (feature 012).
+      const hero = heroes.value?.find((h) => h.id === id);
+
+      if (!hero) {
+        return 0;
+      }
+
+      const base =
+        hero.startingStats[stat] + levelUp.getStatAllocations(id)[stat];
+
+      return Math.min(
+        Math.floor(base * mechanics.percentPerSlot * specialState),
+        MAX_STAT_VALUE - base
+      );
     }
 
     return 0;
+  }
+
+  // * The pair total in the detail dialog is a two-hero call, so the partner fills a slot Golem would otherwise have expanded into: one fewer than his own card shows (feature 012).
+  function getPairSpecialPowerBonusStats(id: HeroId): HeroStats {
+    const mechanics = specialPowerMechanics(id);
+
+    if (mechanics?.type !== 'spread-thin') {
+      return getSpecialPowerBonusStats(id);
+    }
+
+    const slots = Math.min(getSpecialPowerState(id), mechanics.max - 1);
+
+    return Object.fromEntries(
+      STAT_NAMES.map((s) => [s, getSpecialPowerBonus(id, s, slots)])
+    ) as HeroStats;
+  }
+
+  function specialPowerMechanics(id: HeroId) {
+    return SPECIAL_POWER_MECHANICS[
+      id as keyof typeof SPECIAL_POWER_MECHANICS
+    ] as
+      | (typeof SPECIAL_POWER_MECHANICS)[keyof typeof SPECIAL_POWER_MECHANICS]
+      | undefined;
+  }
+
+  function hasRequiredPower(
+    id: HeroId,
+    mechanics: NonNullable<ReturnType<typeof specialPowerMechanics>>
+  ): boolean {
+    if (!('requiredPower' in mechanics)) {
+      return true;
+    }
+
+    return (
+      getPowerState(id).trainableSelected ===
+      Number(mechanics.requiredPower.slice(-1))
+    );
   }
 
   // * Memoized special power bonuses for all heroes to prevent unnecessary re-renders
@@ -222,6 +273,7 @@ export function useHeroPowerTraining(
     getSpecialPowerState,
     toggleSpecialPower,
     getSpecialPowerBonusStats,
+    getPairSpecialPowerBonusStats,
 
     resetAllPowerTrainings,
     resetHeroPowers
