@@ -1,294 +1,395 @@
 <template>
-  <UModal :open="!!heroId" fullscreen @update:open="$emit('close')">
+  <u-modal :open="!!heroId" fullscreen @update:open="emit('close')">
+    <!-- * The thumbnail rides in the toolbar so the hero is named even below `lg`, where the large portrait is not drawn. -->
     <template #title>
-      <div class="flex items-center gap-2">
+      <span class="flex items-center gap-2">
         <NuxtImg
           :src="portraitSrc"
           :alt="hero?.name ?? ''"
-          class="size-8 border-2 border-accented object-cover md:hidden"
+          class="size-6 shrink-0 object-cover object-top"
         />
-
-        <span class="font-semibold text-highlighted">{{ hero?.name }}</span>
-      </div>
+        {{ hero?.name }}
+      </span>
     </template>
 
     <template #body>
-      <div v-if="hero" class="mx-auto flex h-full max-w-7xl flex-col gap-8">
-        <div class="flex flex-col gap-6 md:flex-row">
-          <div class="hidden md:order-1 md:block md:w-1/4 md:shrink-0">
-            <NuxtImg
-              :src="portraitSrc"
-              :alt="hero.name"
-              class="aspect-square w-full border-2 border-accented bg-accented object-cover"
-            />
-          </div>
-
-          <div
-            class="flex flex-col justify-between gap-4 bg-default p-4 panel md:order-2 md:min-h-0 md:w-1/2 md:overflow-auto"
-          >
-            <div class="flex items-center justify-between">
-              <span class="text-lg text-muted">Lv. {{ heroLevel }}</span>
-
-              <div v-if="canLevelUp" class="flex items-center gap-2">
-                <IconButton
-                  v-if="
-                    getLevelUpPointsUsedValue > 0 ||
-                    hasPowers ||
-                    flightActive ||
-                    bonusLevel > 0
-                  "
-                  icon="i-lucide-rotate-ccw"
-                  size="sm"
-                  color="neutral"
-                  @click="resetHero(heroId!)"
-                />
-
-                <IconButton
-                  v-if="bonusLevel === 0 && !bonusFull"
-                  icon="i-lucide-circle-plus"
-                  size="sm"
-                  color="neutral"
-                  @click="addBonusLevel(heroId!)"
-                />
-
-                <IconButton
-                  v-else-if="bonusLevel > 0"
-                  size="sm"
-                  color="primary"
-                  :disabled="bonusLevel >= 4 || bonusFull"
-                  @click="addBonusLevel(heroId!)"
-                >
-                  <span class="text-sm font-semibold">+{{ bonusLevel }}</span>
-                </IconButton>
-              </div>
-            </div>
-
-            <ul class="flex flex-1 flex-col justify-center gap-3">
-              <li
-                v-for="stat in STAT_NAMES"
-                :key="stat"
-                class="flex items-center gap-4"
-              >
-                <u-icon :name="STAT_ICONS[stat]" class="size-6 shrink-0" />
-
-                <span
-                  class="w-28 font-heading text-lg tracking-label text-toned uppercase"
-                >
-                  {{ stat }}
-                </span>
-
-                <div class="ml-auto flex items-center gap-2">
-                  <template v-if="canLevelUp">
-                    <IconButton
-                      icon="i-lucide-minus"
-                      size="sm"
-                      color="neutral"
-                      :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                      @click="statDown(heroId!, resolvedStat(stat))"
-                    />
-                  </template>
-
-                  <span
-                    class="w-10 text-center text-3xl font-bold tabular-nums"
-                  >
-                    {{ computedStat(stat) }}
-                  </span>
-
-                  <span
-                    v-if="specialPowerBonusStats[resolvedStat(stat)] !== 0"
-                    class="text-sm font-medium text-primary tabular-nums"
-                  >
-                    ({{
-                      specialPowerBonusStats[resolvedStat(stat)] > 0 ? '+' : ''
-                    }}{{ specialPowerBonusStats[resolvedStat(stat)] }})
-                  </span>
-
-                  <template v-if="canLevelUp">
-                    <IconButton
-                      icon="i-lucide-plus"
-                      size="sm"
-                      color="neutral"
-                      :disabled="
-                        pointsRemaining <= 0 ||
-                        hero.startingStats[resolvedStat(stat)] +
-                          statBonuses[resolvedStat(stat)] >=
-                          MAX_STAT_VALUE
-                      "
-                      @click="statUp(heroId!, resolvedStat(stat))"
-                    />
-                  </template>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div
-            class="order-first flex items-center justify-center bg-default p-0 panel md:order-3 md:min-h-0 md:w-1/3 md:shrink-0 md:overflow-hidden"
-          >
-            <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
-          </div>
-        </div>
-
-        <div class="flex flex-1 flex-col gap-8">
-          <div
-            class="grid gap-8"
+      <div v-if="hero" class="flex h-full min-h-0 gap-4">
+        <!-- * Roster rail: square portraits, every one bordered, so the open hero differs by colour rather than by gaining an outline and nudging its neighbours. -->
+        <nav
+          class="hidden w-24 shrink-0 flex-col gap-2 overflow-y-auto lg:flex"
+          aria-label="Roster"
+        >
+          <button
+            v-for="rosterHero in rosterOrder"
+            :key="rosterHero.id"
+            type="button"
+            class="aspect-square shrink-0 border-2"
             :class="
-              specialAbility || heroId === 'sonar'
-                ? 'grid-cols-2'
-                : 'grid-cols-1'
+              rosterHero.id === heroId
+                ? 'border-primary'
+                : 'border-default opacity-70 hover:opacity-100'
             "
+            :aria-current="rosterHero.id === heroId ? 'true' : undefined"
+            :aria-label="rosterHero.name"
+            @click="emit('select', rosterHero.id)"
           >
-            <div class="flex flex-col gap-4">
-              <h3 class="font-heading text-title uppercase">Powers</h3>
+            <NuxtImg
+              :src="`/images/portraits/${rosterHero.id}.webp`"
+              :alt="rosterHero.name"
+              class="size-full object-cover object-top"
+            />
+          </button>
+        </nav>
 
-              <div
-                v-for="(power, i) in displayPowers"
-                :key="i"
-                class="border-2 p-3 transition-colors"
-                :class="[
-                  isPowerActive(power)
-                    ? 'border-accented bg-elevated'
-                    : 'border-default hover:border-accented/50',
-                  isPowerDisabled(power)
-                    ? 'cursor-not-allowed opacity-50'
-                    : 'cursor-pointer'
-                ]"
-                @click="handlePowerClick(power)"
-              >
-                <div class="flex items-center gap-2">
-                  <UIcon :name="POWER_ICONS[i]" class="size-4" />
+        <div class="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto">
+          <!-- * Below `lg` the rail becomes a ribbon: the same shortcut, in the one direction a phone has room for. -->
+          <nav
+            class="flex shrink-0 gap-2 overflow-x-auto lg:hidden"
+            aria-label="Roster"
+          >
+            <button
+              v-for="rosterHero in rosterOrder"
+              :key="rosterHero.id"
+              type="button"
+              class="size-14 shrink-0 border-2"
+              :class="
+                rosterHero.id === heroId
+                  ? 'border-primary'
+                  : 'border-default opacity-70'
+              "
+              :aria-current="rosterHero.id === heroId ? 'true' : undefined"
+              :aria-label="rosterHero.name"
+              @click="emit('select', rosterHero.id)"
+            >
+              <NuxtImg
+                :src="`/images/portraits/${rosterHero.id}.webp`"
+                :alt="rosterHero.name"
+                class="size-full object-cover object-top"
+              />
+            </button>
+          </nav>
 
-                  <span class="font-medium">{{ power.name }}</span>
-
-                  <UBadge
-                    v-if="isPowerActive(power)"
-                    :label="power.slot === 'starting' ? 'Revealed' : 'Trained'"
-                    size="xs"
-                    variant="subtle"
-                  />
-                </div>
-
-                <p class="mt-1 text-sm text-muted">{{ power.description }}</p>
-              </div>
-
-              <!-- * Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
-              <div
-                v-if="flightInfo && flightShown"
-                class="border-2 p-3 transition-colors"
-                :class="[
-                  flightActive
-                    ? 'border-accented bg-elevated'
-                    : 'border-default hover:border-accented/50',
-                  flightLocked
-                    ? 'cursor-not-allowed opacity-50'
-                    : 'cursor-pointer'
-                ]"
-                @click="!flightLocked && toggleFlight(heroId!)"
-              >
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-lucide-plane" class="size-4" />
-
-                  <span class="font-medium">{{ flightInfo.name }}</span>
-
-                  <UBadge
-                    v-if="flightActive"
-                    label="Active"
-                    size="xs"
-                    variant="subtle"
-                  />
-                </div>
-
-                <p class="mt-1 text-sm text-muted">
-                  {{ flightInfo.description }}
-                </p>
-              </div>
+          <!-- ! The first two rows are fixed heights on purpose: a fixed-level hero has no steppers and may have no partner, and letting the rows size to content made the whole dialog resize when switching to one. -->
+          <div
+            class="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
+          >
+            <!-- * Stretched, not square: the two columns beside this one span both rows, and letting the portrait and the radar fill their own rows is what leaves all three ending on the same line. -->
+            <div
+              class="hidden min-h-0 border-2 border-accented bg-default p-2 lg:block"
+            >
+              <NuxtImg
+                :src="portraitSrc"
+                :alt="hero.name"
+                class="size-full object-cover object-top"
+              />
             </div>
 
             <div
-              v-if="specialAbility || heroId === 'sonar'"
-              class="flex flex-col gap-4"
+              class="flex flex-col gap-3 border-2 border-accented bg-default p-3 lg:row-span-2 lg:min-h-0 lg:overflow-y-auto"
             >
-              <h3 class="font-heading text-title uppercase">Abilities</h3>
-
               <div
-                v-if="heroId === 'sonar'"
-                class="cursor-pointer border-2 p-3 transition-colors"
-                :class="
-                  monsterForm
-                    ? 'border-accented bg-elevated'
-                    : 'border-default hover:border-accented/50'
-                "
-                @click="handleToggleForm"
+                class="flex items-center gap-4 border-b-2 border-default pb-3"
               >
-                <div class="flex items-center gap-2">
-                  <UIcon
-                    :name="monsterForm ? 'i-lucide-zap' : 'i-lucide-user'"
-                    class="size-4"
+                <span class="font-heading tracking-label text-toned uppercase">
+                  Level
+                  <span class="text-lg font-bold text-highlighted">
+                    {{ heroLevel }}
+                  </span>
+                </span>
+
+                <span class="font-heading tracking-label text-toned uppercase">
+                  Bonus
+                  <span class="text-lg font-bold text-highlighted">
+                    {{ bonusLevel }}
+                  </span>
+                </span>
+
+                <div class="ml-auto flex items-center gap-2">
+                  <IconButton
+                    icon="i-lucide-plus"
+                    color="neutral"
+                    size="sm"
+                    :disabled="bonusFull || !canLevelUp"
+                    label="Add a bonus level"
+                    @click="addBonusLevel(heroId!)"
                   />
 
-                  <span class="font-medium">
-                    {{ monsterForm ? 'Mega Bat Form' : 'Hybrid Form' }}
+                  <IconButton
+                    icon="i-lucide-rotate-ccw"
+                    color="neutral"
+                    size="sm"
+                    :disabled="!canLevelUp"
+                    label="Reset this hero"
+                    @click="resetHero(heroId!)"
+                  />
+                </div>
+              </div>
+
+              <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
+              <ul class="flex flex-col gap-1 px-3">
+                <li
+                  v-for="stat in STAT_NAMES"
+                  :key="stat"
+                  class="flex items-center justify-between"
+                >
+                  <span
+                    class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
+                  >
+                    <u-icon :name="STAT_ICONS[stat]" class="size-5 shrink-0" />
+                    {{ stat }}
                   </span>
 
-                  <UBadge
-                    v-if="monsterForm"
-                    label="Active"
-                    size="xs"
-                    variant="subtle"
-                  />
+                  <div class="ml-2 flex items-center gap-1">
+                    <div class="flex w-7 items-center justify-center">
+                      <IconButton
+                        v-if="canLevelUp"
+                        icon="i-lucide-minus"
+                        color="neutral"
+                        size="sm"
+                        :disabled="statBonuses[resolvedStat(stat)] <= 0"
+                        :label="`Remove a ${stat} point`"
+                        @click="statDown(heroId!, resolvedStat(stat))"
+                      />
+                    </div>
+
+                    <span class="w-7 text-center text-xl font-bold">
+                      {{ computedStat(stat) }}
+                    </span>
+
+                    <div class="flex w-7 items-center justify-center">
+                      <IconButton
+                        v-if="canLevelUp"
+                        icon="i-lucide-plus"
+                        color="neutral"
+                        size="sm"
+                        :disabled="isStatCapped(stat)"
+                        :label="`Add a ${stat} point`"
+                        @click="statUp(heroId!, resolvedStat(stat))"
+                      />
+                    </div>
+                  </div>
+                </li>
+              </ul>
+
+              <template v-if="synergyPartner">
+                <button
+                  type="button"
+                  class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
+                  @click="emit('select', synergyPartner.id)"
+                >
+                  <u-icon name="i-lucide-link" class="size-4 shrink-0" />
+                  Synergy partner: {{ synergyPartner.name }}
+                </button>
+
+                <div class="flex flex-col gap-1 bg-muted p-3">
+                  <p class="font-heading tracking-label text-toned uppercase">
+                    Pair total
+                  </p>
+
+                  <p class="text-sm text-muted">
+                    {{ hero.name }} and {{ synergyPartner.name }} combined,
+                    including every bonus either of them has applied.
+                  </p>
                 </div>
 
-                <p class="mt-1 text-sm text-muted">
-                  {{
-                    monsterForm
-                      ? 'Combat/Intellect and Vigor/Charisma swapped'
-                      : 'Default form — no stat swaps'
-                  }}
-                </p>
-              </div>
+                <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
+                <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
+                  <li
+                    v-for="entry in combinedStats"
+                    :key="entry.stat"
+                    class="flex items-center justify-between"
+                  >
+                    <span
+                      class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
+                    >
+                      <u-icon
+                        :name="STAT_ICONS[entry.stat]"
+                        class="size-5 shrink-0"
+                      />
+                      {{ entry.stat }}
+                    </span>
 
-              <div
-                v-if="specialAbility"
-                class="border-2 p-3 transition-colors"
-                :class="[
-                  specialAbility.active
-                    ? 'border-accented bg-elevated'
-                    : 'border-default hover:border-accented/50',
-                  specialAbility.disabled
-                    ? 'cursor-not-allowed opacity-50'
-                    : 'cursor-pointer'
-                ]"
-                @click="!specialAbility.disabled && toggleSpecialPower(heroId!)"
-              >
-                <div class="flex items-center gap-2">
-                  <UIcon :name="specialAbility.icon" class="size-4" />
+                    <div class="ml-2 flex items-center gap-1">
+                      <div class="w-7" />
 
-                  <span class="font-medium">{{ specialAbility.name }}</span>
+                      <span class="w-7 text-center text-xl font-bold">
+                        {{ entry.value }}
+                      </span>
 
-                  <UBadge
-                    v-if="specialAbility.active"
-                    label="Active"
-                    size="xs"
-                    variant="subtle"
-                  />
-                </div>
-
-                <p class="mt-1 text-sm text-muted">
-                  {{ specialAbility.description }}
-                </p>
-              </div>
+                      <div class="w-7" />
+                    </div>
+                  </li>
+                </ul>
+              </template>
             </div>
-          </div>
 
-          <div class="flex flex-col gap-2">
-            <h3 class="font-heading text-title uppercase">Notes</h3>
+            <div
+              class="order-first aspect-square border-2 border-accented bg-default lg:order-none lg:aspect-auto lg:min-h-0"
+            >
+              <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
+            </div>
 
-            <div class="flex-1 bg-default p-4 panel" />
+            <!-- * Powers apart from effects: the first is what a training is spent on, the second is what the hero already has or gains. Mixing them made a trained power read as the same kind of thing as a passive. -->
+            <div
+              class="flex flex-col gap-4 border-2 border-accented bg-default p-4 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto"
+            >
+              <section class="flex flex-col gap-2">
+                <h3 class="font-heading tracking-label text-toned uppercase">
+                  Powers
+                </h3>
+
+                <div
+                  v-for="(power, index) in displayPowers"
+                  :key="power.name"
+                  class="border-2 p-3 transition-colors"
+                  :class="[
+                    isPowerActive(power)
+                      ? 'border-accented bg-elevated'
+                      : 'border-default hover:border-accented/50',
+                    isPowerDisabled(power)
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  ]"
+                  @click="handlePowerClick(power)"
+                >
+                  <div class="flex items-center gap-2">
+                    <u-icon
+                      :name="POWER_ICONS[index]!"
+                      class="size-4 shrink-0"
+                    />
+
+                    <span class="font-medium">{{ power.name }}</span>
+
+                    <u-badge
+                      v-if="isPowerActive(power)"
+                      :label="
+                        power.slot === 'starting' ? 'Revealed' : 'Trained'
+                      "
+                      size="xs"
+                      variant="subtle"
+                    />
+                  </div>
+
+                  <p class="mt-1 text-sm text-muted">{{ power.description }}</p>
+                </div>
+              </section>
+
+              <section v-if="hasEffects" class="flex flex-col gap-2">
+                <h3 class="font-heading tracking-label text-toned uppercase">
+                  Effects
+                </h3>
+
+                <!-- ! Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
+                <div
+                  v-if="flightInfo && flightShown"
+                  class="border-2 p-3 transition-colors"
+                  :class="[
+                    flightActive
+                      ? 'border-accented bg-elevated'
+                      : 'border-default hover:border-accented/50',
+                    flightLocked
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  ]"
+                  @click="handleToggleFlight"
+                >
+                  <div class="flex items-center gap-2">
+                    <u-icon name="i-lucide-plane" class="size-4 shrink-0" />
+
+                    <span class="font-medium">{{ flightInfo.name }}</span>
+
+                    <u-badge
+                      v-if="flightActive"
+                      label="Trained"
+                      size="xs"
+                      variant="subtle"
+                    />
+                  </div>
+
+                  <p class="mt-1 text-sm text-muted">
+                    {{ flightInfo.description }}
+                  </p>
+                </div>
+
+                <div
+                  v-if="heroId === 'sonar'"
+                  class="cursor-pointer border-2 p-3 transition-colors"
+                  :class="
+                    monsterForm
+                      ? 'border-accented bg-elevated'
+                      : 'border-default hover:border-accented/50'
+                  "
+                  @click="handleToggleForm"
+                >
+                  <div class="flex items-center gap-2">
+                    <u-icon name="i-lucide-shuffle" class="size-4 shrink-0" />
+
+                    <span class="font-medium">Monster form</span>
+                  </div>
+
+                  <p class="mt-1 text-sm text-muted">
+                    View only — swaps which stats are shown. Nothing is spent
+                    and nothing is saved.
+                  </p>
+                </div>
+
+                <div
+                  v-if="specialAbility"
+                  class="border-2 p-3 transition-colors"
+                  :class="[
+                    specialAbility.active
+                      ? 'border-accented bg-elevated'
+                      : 'border-default hover:border-accented/50',
+                    specialAbility.disabled
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  ]"
+                  @click="handleToggleSpecialPower"
+                >
+                  <div class="flex items-center gap-2">
+                    <u-icon
+                      :name="specialAbility.icon"
+                      class="size-4 shrink-0"
+                    />
+
+                    <span class="font-medium">{{ specialAbility.name }}</span>
+
+                    <u-badge
+                      v-if="specialAbility.active"
+                      label="Active"
+                      size="xs"
+                      variant="subtle"
+                    />
+                  </div>
+
+                  <p class="mt-1 text-sm text-muted">
+                    {{ specialAbility.description }}
+                  </p>
+                </div>
+              </section>
+            </div>
+
+            <!-- * Reserved and not editable: the copy is authored in the repository, and persisting player-written notes would bump the serialized build format (feature 001). -->
+            <div
+              class="flex flex-col border-2 border-accented bg-default lg:col-span-3 lg:min-h-0"
+            >
+              <div class="flex plate shrink-0 items-center px-4">
+                <span class="font-heading tracking-label text-toned uppercase">
+                  Notes
+                </span>
+              </div>
+
+              <p
+                class="p-3 text-sm text-dimmed lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+              >
+                Reserved for notes on this hero.
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </template>
-  </UModal>
+  </u-modal>
 </template>
 
 <script setup lang="ts">
@@ -333,14 +434,19 @@ const props = defineProps<{
   heroId: HeroId | null;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   close: [];
+  select: [heroId: HeroId];
 }>();
 
 const monsterForm = ref(false);
 
 const {
   heroes,
+  visibleHeroes,
+  synergyPairColumns,
+  ep8Recruits,
+  showEp8Recruits,
   getStatAllocations,
   getLevelUpPointsUsed,
   statUp,
@@ -360,6 +466,34 @@ const {
   flightTrainingsUsed,
   resetHero
 } = useHeroPlanner();
+
+// * The roster in the order the overview grid draws it — each synergy column top then bottom, then the episode 8 recruits when shown. The rail is a shortcut to those same cards, so it has to agree with them.
+const rosterOrder = computed(() => {
+  const paired = synergyPairColumns.value.flatMap((column) => [
+    column.top,
+    column.bottom
+  ]);
+
+  return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
+});
+
+const synergyPartner = computed(() => {
+  if (!props.heroId) {
+    return null;
+  }
+
+  for (const column of synergyPairColumns.value) {
+    if (column.top.id === props.heroId) {
+      return column.bottom;
+    }
+
+    if (column.bottom.id === props.heroId) {
+      return column.top;
+    }
+  }
+
+  return null;
+});
 
 const hero = computed(() => {
   if (!props.heroId) {
@@ -646,5 +780,61 @@ function handlePowerClick(power: HeroPowerDefinition) {
   if (power.slot === 'trainable-2') {
     toggleTrainablePower(props.heroId, 2);
   }
+}
+// * The pair's combined effective stats — this hero plus the partner, each already carrying allocations and any special-power bonus. Read-only: the dialog edits one hero.
+const combinedStats = computed(() =>
+  STAT_NAMES.map((stat) => {
+    const partner = synergyPartner.value;
+
+    const partnerHero = partner
+      ? (heroes.value?.find((h) => h.id === partner.id) ?? null)
+      : null;
+
+    const partnerValue = partnerHero
+      ? partnerHero.startingStats[stat] +
+        getStatAllocations(partnerHero.id)[stat] +
+        getSpecialPowerBonusStats(partnerHero.id)[stat]
+      : 0;
+
+    return { stat, value: computedStat(stat) + partnerValue };
+  })
+);
+
+const hasEffects = computed(
+  () =>
+    (flightInfo.value && flightShown.value) ||
+    props.heroId === 'sonar' ||
+    !!specialAbility.value
+);
+
+// * The cap reads the raw allocation, not the displayed value: a special-power bonus can push what is shown past 10 without closing the stepper. Same rule as the hero card.
+function isStatCapped(stat: StatName): boolean {
+  if (!hero.value) {
+    return true;
+  }
+
+  const resolved = resolvedStat(stat);
+
+  return (
+    pointsRemaining.value <= 0 ||
+    hero.value.startingStats[resolved] + statBonuses.value[resolved] >=
+      MAX_STAT_VALUE
+  );
+}
+
+function handleToggleFlight() {
+  if (!props.heroId || flightLocked.value) {
+    return;
+  }
+
+  toggleFlight(props.heroId);
+}
+
+function handleToggleSpecialPower() {
+  if (!props.heroId || specialAbility.value?.disabled) {
+    return;
+  }
+
+  toggleSpecialPower(props.heroId);
 }
 </script>

@@ -76,7 +76,11 @@
     </template>
   </UTabs>
 
-  <HeroDetailDialog :hero-id="selectedHeroId" @close="handleCloseDetail" />
+  <HeroDetailDialog
+    :hero-id="selectedHeroId"
+    @close="handleCloseDetail"
+    @select="handleViewDetail"
+  />
 </template>
 
 <script setup lang="ts">
