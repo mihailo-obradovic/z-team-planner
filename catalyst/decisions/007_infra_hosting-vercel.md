@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -60,4 +60,6 @@ A purchased domain is a stated future, not decided here: apex `A 76.76.21.21` an
 
 ## Verification
 
-Not yet implemented. On approval, each step verified before commit: oxfmt, oxlint, vue-tsc, vitest and pytest green; a production `nuxt build` passing the `build:before` guard; `validate.py` reporting 0 errors; and stage 1 proven by the live browser walk against the deployed URL, with sign-in confirmed unavailable rather than merely untested.
+Five steps on `decision/007-hosting-vercel`, each verified before commit: 183 frontend and 121 API tests green, oxfmt, oxlint, vue-tsc, ruff and pyright clean, `validate.py` 0 errors, and a production build passing the `build:before` guard with `NUXT_PUBLIC_API_BASE_URL` empty.
+
+**Stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026), and the first deploy was broken: it rendered but hydrated nothing, because local build output reached the deployment and its stale `index.html` asked for chunk hashes the remote build had never emitted. `.vercelignore` was the fix; `operations.md` carries the trap and the way to recognise it. Verified on the live site afterwards: `apiBaseUrl` empty in the served payload, the referenced entry chunk 200, three `/_vercel/image` sizes 200 as webp, and the sign-in control shipping `aria-hidden="true"` with `tabindex="-1"` — unavailable, not merely untested.

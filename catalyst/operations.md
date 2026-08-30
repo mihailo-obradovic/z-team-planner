@@ -2,7 +2,7 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: the API and its Neon database are built and running locally (`decisions/005_bootstrap_api.md`); the nightly backup workflow is not, and nothing is deployed yet. Decision 007 chose the hosting and staged it — neither Vercel project exists until someone creates it. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`); the nightly backup workflow is still not built, and stage 2 stays shut until it is. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
 
 ## Vercel hosting
 
@@ -26,6 +26,8 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
 
 ### Quirks
 
+- **`.vercelignore` is load-bearing, not tidiness.** The CLI uploads the working tree and does not honour `.gitignore` reliably. A local `.output` made production serve a stale `index.html` asking for chunk hashes the remote build had never produced — the page rendered, hydrated nothing, and no click worked. A local `.env` then baked `http://localhost:8000` into the payload and re-enabled sign-in. Both were the same leak. Vercel's project settings are the only source of production configuration.
+- **Diagnosing a page that renders but does nothing:** compare the entry chunk the served HTML asks for against one the build log says it emitted. If the HTML's chunk 404s and the log's chunk 200s, the HTML is stale — not the assets.
 - **A `NUXT_PUBLIC_*` change needs a redeploy, not an environment edit.** `/` is prerendered, so those values are baked into the payload at build time. Editing the variable in the dashboard changes nothing until the next build.
 - An **empty `NUXT_PUBLIC_API_BASE_URL` is a valid deployment**, not a broken one: it means no API is behind this frontend and sign-in is unavailable (feature 006). The missing Firebase variables still fail the build, loudly, in `build:before`.
 - **`vercel.json` is read from a project's Root Directory.** Both projects are rooted at the repository root, so any such file would be read by both — and a `functions` glob that matches no files hard-fails the build it does not belong to. Python configuration lives in `pyproject.toml` instead, where the Nuxt project cannot see it.
