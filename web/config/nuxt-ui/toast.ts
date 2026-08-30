@@ -2,9 +2,10 @@ import type { ToastConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
-    // * Changes: a toast is a panel (annex §6).
+    // * Changes: a toast is a panel (annex §6). `border-s-4!` widens the panel's start edge into a colour bar, coloured per variant below — before it, the only thing telling an error from a success was the progress bar, 4px tall and gone the moment the toast finishes.
+    // ! The `!` is load-bearing, for the reason the annex gives for `rounded-none!` (§5): `panel` sets `border: 2px solid` as plain CSS, so an unimportant `border-s-4` loses to it and the bar silently stays 2px ink. Measured: without the `!` every colour resolved to `2px rgb(36, 31, 20)`.
     // * Default: 'relative group overflow-hidden bg-default shadow-lg rounded-lg ring ring-default p-4 flex gap-2.5 focus:outline-none'
-    root: 'relative group overflow-hidden panel bg-default shadow-none ring-0 rounded-lg p-4 flex gap-2.5 focus:outline-none',
+    root: 'relative group overflow-hidden panel bg-default shadow-none ring-0 rounded-lg border-s-4! p-4 flex gap-2.5 focus:outline-none',
     wrapper: 'w-0 flex-1 flex flex-col',
     // * Changes: the annex's label role, as on every other titled surface.
     // * Default: 'text-sm font-medium text-highlighted'
@@ -21,30 +22,37 @@ export default {
   variants: {
     color: {
       primary: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-primary! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary',
         icon: 'text-primary'
       },
       secondary: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-secondary! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary',
         icon: 'text-secondary'
       },
       success: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-success! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success',
         icon: 'text-success'
       },
       info: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-info',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-info! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-info',
         icon: 'text-info'
       },
       warning: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warning',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-warning! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warning',
         icon: 'text-warning'
       },
       error: {
-        root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-error',
+        // * Changes: colours the start edge `root` widens. `!` for the same reason as there.
+        root: 'border-s-error! focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-error',
         icon: 'text-error'
       },
       neutral: {
+        // * Neutral keeps the panel's own ink edge — `--ui-bg-inverted` is gold here (main.css), so `border-s-inverted` would read as a warning.
         root: 'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-inverted',
         icon: 'text-highlighted'
       }
