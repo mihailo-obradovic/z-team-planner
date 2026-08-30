@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Iterator
+from pathlib import Path
 
 import firebase_admin
 import pytest
@@ -62,6 +63,23 @@ def test_the_emulator_gets_a_credential_that_authenticates_nothing(
 def test_a_service_account_key_is_used_when_there_is_one(
     monkeypatch: pytest.MonkeyPatch, base_env: dict[str, str], no_default_app: None
 ) -> None:
+    app = init_firebase(get_settings())
+
+    assert isinstance(app.credential, credentials.Certificate)
+
+
+def test_the_key_can_arrive_as_environment_contents(
+    monkeypatch: pytest.MonkeyPatch,
+    base_env: dict[str, str],
+    service_account_file: Path,
+    no_default_app: None,
+) -> None:
+    # * Decision 007: a deployed host has no filesystem to keep a key file on, so the same credential arrives as JSON contents.
+    monkeypatch.delenv("FIREBASE_SERVICE_ACCOUNT_FILE")
+    monkeypatch.setenv(
+        "FIREBASE_SERVICE_ACCOUNT_JSON", service_account_file.read_text()
+    )
+
     app = init_firebase(get_settings())
 
     assert isinstance(app.credential, credentials.Certificate)

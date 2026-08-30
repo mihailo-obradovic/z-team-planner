@@ -43,8 +43,13 @@ def init_firebase(settings: Settings) -> firebase_admin.App:
     except ValueError:
         pass
 
-    if settings.firebase_service_account_file:
+    if settings.firebase_service_account_json:
+        # * A managed host hands the key over as environment contents; config.py has already refused the case where both spellings are set.
         credential: credentials.Base = credentials.Certificate(
+            settings.firebase_service_account_json
+        )
+    elif settings.firebase_service_account_file:
+        credential = credentials.Certificate(
             str(settings.firebase_service_account_file)
         )
     else:
