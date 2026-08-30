@@ -35,3 +35,4 @@ coverage/
 __pycache__/
 .claude/settings.local.json
 # catalyst:end
+.vercel

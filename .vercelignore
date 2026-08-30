@@ -1,0 +1,32 @@
+# * What must never travel to a Vercel build. The CLI uploads the working tree and does
+# * not honour .gitignore reliably: a local .output made production serve a stale
+# * index.html pointing at chunk hashes the remote build had never produced, and a local
+# * .env baked http://localhost:8000 into the deployed payload, re-enabling a sign-in that
+# * leads nowhere (decision 007, stage 1).
+# !
+# ! Both Vercel projects are rooted at the repository root, so this file serves both.
+# ! That is fine here — build artefacts and local secrets are wrong for either of them —
+# ! unlike vercel.json, which 007 rules out for exactly the same shared-root reason.
+
+# Local environment: Vercel's own project settings are the only source of truth.
+.env
+.env.*
+
+# Build outputs — the remote build makes its own.
+.output
+.nuxt
+.nitro
+.data
+.cache
+dist
+
+# Local tooling and test artefacts.
+coverage
+.venv
+.ruff_cache
+.pytest_cache
+__pycache__
+node_modules
+
+# Agent documentation: never part of any build.
+catalyst
