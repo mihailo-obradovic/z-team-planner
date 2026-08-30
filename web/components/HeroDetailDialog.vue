@@ -123,11 +123,9 @@
           </div>
 
           <div
-            class="radar-chart order-first flex items-center justify-center bg-default p-1 panel md:order-3 md:min-h-0 md:w-1/4 md:shrink-0 md:overflow-hidden"
+            class="order-first flex items-center justify-center bg-default p-0 panel md:order-3 md:min-h-0 md:w-1/3 md:shrink-0 md:overflow-hidden"
           >
-            <ClientOnly>
-              <VueUiRadar :dataset="radarDataset" :config="radarConfig" />
-            </ClientOnly>
+            <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
           </div>
         </div>
 
@@ -308,12 +306,7 @@ import {
   SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
 
-import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
-
-const VueUiRadar = defineAsyncComponent(() =>
-  import('vue-data-ui').then((m) => m.VueUiRadar)
-);
 
 const POWER_ICONS = [
   'i-lucide-zap',
@@ -565,78 +558,15 @@ const specialAbility = computed(() => {
   return null;
 });
 
-// * vue-data-ui wants literal colours — a var() reference is not valid in the SVG attributes it writes — so the chart's palette is read off the design tokens once the component is mounted. The chart is already ClientOnly, so getComputedStyle is safe here, and the fallbacks are the token values themselves so a failed read degrades to the right colours rather than to vue-data-ui's defaults.
-const radarColors = ref({
-  accent: '#df8a20',
-  grid: '#8a7c5e',
-  text: '#241f14'
-});
-
-const radarDataset = computed((): VueUiRadarDataset => ({
-  categories: [{ name: hero.value?.name ?? '' }],
-  series: RADAR_STAT_ORDER.map((stat) => ({
-    name: stat.charAt(0).toUpperCase() + stat.slice(1),
-    values: [computedStat(stat)],
-    target: 10
+// * The radar takes the same effective value the stat row shows, so the two can never disagree. Axis order is Combat first, which the component puts at the apex, then clockwise — that lands Intellect opposite Vigor and Charisma opposite Mobility.
+const radarAxes = computed(() =>
+  RADAR_STAT_ORDER.map((stat) => ({
+    key: stat,
+    label: stat,
+    icon: STAT_ICONS[stat],
+    value: computedStat(stat)
   }))
-}));
-
-const radarConfig = computed((): VueUiRadarConfig => ({
-  responsive: true,
-  useCssAnimation: true,
-  customPalette: [radarColors.value.accent],
-  style: {
-    fontFamily: 'inherit',
-    chart: {
-      backgroundColor: 'transparent',
-      color: radarColors.value.accent,
-      layout: {
-        grid: {
-          show: true,
-          stroke: radarColors.value.grid,
-          strokeWidth: 0.5,
-          graduations: 10
-        },
-        outerPolygon: {
-          stroke: radarColors.value.grid,
-          strokeWidth: 2
-        },
-        dataPolygon: {
-          strokeWidth: 2,
-          opacity: 50, // * 50% transparency (0–100 range)
-          useGradient: false
-        },
-        plots: {
-          show: true,
-          radius: 3
-        },
-        labels: {
-          dataLabels: {
-            show: true,
-            fontSize: 14,
-            // * Ink, not the series colour: amber-deep on paper is 3.1:1 and fails AA as small text (annex §14).
-            color: radarColors.value.text
-          }
-        }
-      },
-      legend: {
-        show: false
-      },
-      title: {
-        text: ''
-      },
-      tooltip: {
-        show: false
-      }
-    }
-  },
-  userOptions: {
-    show: false
-  },
-  table: {
-    show: false
-  }
-}));
+);
 
 function handleToggleForm() {
   monsterForm.value = !monsterForm.value;
@@ -717,35 +647,4 @@ function handlePowerClick(power: HeroPowerDefinition) {
     toggleTrainablePower(props.heroId, 2);
   }
 }
-
-onMounted(() => {
-  const root = getComputedStyle(document.documentElement);
-  const read = (name: string, fallback: string) =>
-    root.getPropertyValue(name).trim() || fallback;
-
-  radarColors.value = {
-    accent: read('--ui-primary', radarColors.value.accent),
-    grid: read('--ui-border', radarColors.value.grid),
-    text: read('--ui-text', radarColors.value.text)
-  };
-});
 </script>
-
-<style scoped>
-.radar-chart :deep(svg) {
-  transform: rotate(-90deg) scale(0.5);
-  transform-origin: center;
-}
-
-@media (min-width: 768px) {
-  .radar-chart :deep(svg) {
-    transform: rotate(-90deg);
-  }
-}
-
-.radar-chart :deep(svg text) {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: rotate(90deg);
-}
-</style>

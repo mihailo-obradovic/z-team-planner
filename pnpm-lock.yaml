@@ -53,9 +53,6 @@ importers:
       temporal-polyfill:
         specifier: ^1.0.4
         version: 1.0.4
-      vue-data-ui:
-        specifier: ^3.15.2
-        version: 3.15.2(vue@3.5.27(typescript@5.9.3))
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -5802,15 +5799,6 @@ packages:
 
   vue-component-type-helpers@3.2.4:
     resolution: {integrity: sha512-05lR16HeZDcDpB23ku5b5f1fBOoHqFnMiKRr2CiEvbG5Ux4Yi0McmQBOET0dR0nxDXosxyVqv67q6CzS3AK8rw==}
-
-  vue-data-ui@3.15.2:
-    resolution: {integrity: sha512-GC0QOZ37l038KkhDGmb2Wa4U8WZhp4yGiq4QU/l7f2pHQ7RZVfyqbIU8GVGyKDdfEBhAm1TMj4aqtkDJil36sg==}
-    peerDependencies:
-      jspdf: '>=3.0.1'
-      vue: '>=3.3.0'
-    peerDependenciesMeta:
-      jspdf:
-        optional: true
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -12221,10 +12209,6 @@ snapshots:
   vue-component-type-helpers@2.2.12: {}
 
   vue-component-type-helpers@3.2.4: {}
-
-  vue-data-ui@3.15.2(vue@3.5.27(typescript@5.9.3)):
-    dependencies:
-      vue: 3.5.27(typescript@5.9.3)
 
   vue-demi@0.14.10(vue@3.5.27(typescript@5.9.3)):
     dependencies:

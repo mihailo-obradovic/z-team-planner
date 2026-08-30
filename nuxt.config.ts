@@ -34,7 +34,7 @@ export default defineNuxtConfig({
     enabled: true
   },
 
-  css: ['~/assets/css/main.css', 'vue-data-ui/style.css'],
+  css: ['~/assets/css/main.css'],
 
   ui: {
     colorMode: false
