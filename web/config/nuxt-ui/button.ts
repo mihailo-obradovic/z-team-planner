@@ -348,8 +348,10 @@ export default {
     {
       color: 'neutral',
       variant: 'ghost',
+      // * Changes: the hover fill is translucent, so it darkens whatever is behind it instead of painting over it. Upstream's opaque `bg-elevated` is paper-300 — exactly the bottom stop of the `plate` gradient (main.css), so hovering the dialog close button stamped a flat square that was darker than the band at its top and invisible at its bottom. `accented/75` is the tint neutral/soft and neutral/subtle already hover with, and over paper-100 it resolves to the same weight the opaque token had, so only the gradient case changes.
+      // * Default: 'text-default hover:bg-elevated active:bg-elevated focus:outline-none focus-visible:bg-elevated hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent'
       class:
-        'text-default hover:bg-elevated active:bg-elevated focus:outline-none focus-visible:bg-elevated hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent'
+        'text-default hover:bg-accented/75 active:bg-accented/75 focus:outline-none focus-visible:bg-accented/75 hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent'
     },
     {
       color: 'neutral',
