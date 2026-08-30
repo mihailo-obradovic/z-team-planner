@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -131,6 +131,14 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 - A live browser walk for the layout rules — column alignment, the geometry holding across heroes, and 320px.
 
 ## Verification
+
+By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. 189 tests across 24 files pass.
+
+In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9 with the other four unchanged; zero `panel` classes inside the dialog. Switching Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — which is the fixed-level case that used to make it jump.
+
+At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, the order reads radar, stats, synergy, powers, notes, and there is no page-level horizontal overflow.
+
+Not covered: a `prefers-reduced-motion` machine, and the notes area holds placeholder copy until the maintainer writes it.
 
 ## Agent Change Rules
 

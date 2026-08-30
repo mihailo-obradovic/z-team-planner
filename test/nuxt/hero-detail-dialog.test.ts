@@ -1,0 +1,158 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { mountSuspended } from '@nuxt/test-utils/runtime';
+import { defineComponent, h, nextTick } from 'vue';
+
+import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
+
+import type { HeroId } from '@/types/hero';
+
+// * Coverage for catalyst/features/011_hero-detail-dialog.md. The rules under test are the ones the dialog itself owns — the roster's order, switching without closing, the pair totals, and the fixed-level hero — not feature 003's budgets, which have their own tests.
+
+async function planner() {
+  let instance!: ReturnType<typeof useHeroPlanner>;
+
+  await mountSuspended(
+    defineComponent({
+      setup() {
+        instance = useHeroPlanner();
+
+        return () => h('div');
+      }
+    })
+  );
+
+  return instance;
+}
+
+// ! The dialog teleports to the body, and a teleport is not removed by unmounting alone — without clearing it between cases every assertion also sees the previous test's dialog.
+let open: Awaited<ReturnType<typeof mountSuspended>> | null = null;
+
+afterEach(() => {
+  open?.unmount();
+  open = null;
+  document.body.innerHTML = '';
+});
+
+async function openDialog(heroId: HeroId) {
+  open = await mountSuspended(HeroDetailDialog, { props: { heroId } });
+
+  return open;
+}
+
+function dialogText() {
+  return document.body.textContent?.replace(/\s+/g, ' ') ?? '';
+}
+
+function rosterNames() {
+  const rail = document.querySelector('nav[aria-label="Roster"]');
+
+  return [...(rail?.querySelectorAll('img') ?? [])].map((img) => img.alt);
+}
+
+describe('hero detail dialog', () => {
+  it('lists the roster the way the overview grid draws it', async () => {
+    const p = await planner();
+    await openDialog('golem');
+    await nextTick();
+
+    const expected = p.synergyPairColumns.value.flatMap((column) => [
+      column.top.name,
+      column.bottom.name
+    ]);
+
+    expect(rosterNames()).toEqual(expected);
+  });
+
+  it('marks the open hero in the roster and no one else', async () => {
+    await openDialog('golem');
+    await nextTick();
+
+    const rail = document.querySelector('nav[aria-label="Roster"]');
+    const marked = [...(rail?.querySelectorAll('[aria-current="true"]') ?? [])];
+
+    expect(marked).toHaveLength(1);
+    expect(marked[0]?.getAttribute('aria-label')).toBe('Golem');
+  });
+
+  it('asks its caller to switch hero rather than closing', async () => {
+    const dialog = await openDialog('golem');
+    await nextTick();
+
+    const partner = [...document.querySelectorAll('button')].find((button) =>
+      /synergy partner/i.test(button.textContent ?? '')
+    );
+
+    partner?.click();
+    await nextTick();
+
+    expect(dialog.emitted('select')).toBeTruthy();
+    expect(dialog.emitted('close')).toBeFalsy();
+  });
+
+  it('shows the pair total as both heroes combined', async () => {
+    const p = await planner();
+
+    p.statUp('golem', 'combat');
+
+    const dialog = await openDialog('golem');
+    await nextTick();
+
+    const partner = p.synergyPairColumns.value
+      .flatMap((column) => [column, column])
+      .map((column) =>
+        column.top.id === 'golem'
+          ? column.bottom
+          : column.bottom.id === 'golem'
+            ? column.top
+            : null
+      )
+      .find(Boolean);
+
+    expect(partner).toBeTruthy();
+
+    const golem = p.heroes.value.find((hero) => hero.id === 'golem')!;
+    const other = p.heroes.value.find((hero) => hero.id === partner!.id)!;
+
+    const combined =
+      golem.startingStats.combat +
+      p.getStatAllocations('golem').combat +
+      p.getSpecialPowerBonusStats('golem').combat +
+      other.startingStats.combat +
+      p.getStatAllocations(other.id).combat +
+      p.getSpecialPowerBonusStats(other.id).combat;
+
+    expect(dialogText()).toContain('Pair total');
+    expect(dialogText()).toContain(String(combined));
+    expect(dialog.emitted('close')).toBeFalsy();
+  });
+
+  it('offers no partner control for a hero without one', async () => {
+    const p = await planner();
+
+    // ! Blonde Blazer only exists on the roster once the recruits are shown, and she has no synergy pair — the case the control has to disappear for.
+    p.showEp8Recruits.value = true;
+    await nextTick();
+
+    await openDialog('blonde-blazer');
+    await nextTick();
+
+    expect(dialogText()).not.toContain('Synergy partner');
+    expect(dialogText()).not.toContain('Pair total');
+  });
+
+  it('renders no steppers for a fixed-level hero', async () => {
+    const p = await planner();
+
+    p.showEp8Recruits.value = true;
+    await nextTick();
+
+    await openDialog('blonde-blazer');
+    await nextTick();
+
+    const steppers = [...document.querySelectorAll('button')].filter((button) =>
+      /(Add|Remove) a \w+ point/.test(button.getAttribute('aria-label') ?? '')
+    );
+
+    expect(steppers).toHaveLength(0);
+  });
+});
