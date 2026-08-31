@@ -61,62 +61,7 @@
           @click="$emit('viewDetail')"
         />
 
-        <div v-if="powers" class="flex h-6 items-center justify-center gap-1">
-          <TooltipButton
-            v-if="heroId === 'sonar'"
-            :text="sonarFormTooltip"
-            :icon="sonarFormIcon"
-            :color="monsterForm ? 'primary' : 'neutral'"
-            :active="monsterForm"
-            @click="toggleMonsterForm"
-          />
-
-          <TooltipButton
-            :text="`${powers[0]!.name}: ${powers[0]!.description}`"
-            :icon="POWER_ICONS[0]"
-            :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-            :active="powerStates.startingRevealed"
-            @click="toggleStartingPower(heroId)"
-          />
-
-          <TooltipButton
-            v-for="(power, i) in upgradePowers"
-            :key="i"
-            :text="`${power.name}: ${power.description}`"
-            :icon="POWER_ICONS[i + 1]!"
-            :color="trainablePowerColor(i)"
-            :active="trainablePowerActive(i)"
-            :disabled="isTrainableDisabled(i)"
-            @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
-          />
-
-          <TooltipButton
-            v-if="showFlambaeSupernova"
-            text="Supernova: Set Combat and Mobility to 10"
-            icon="i-lucide-flame"
-            :color="specialPowerState ? 'primary' : 'neutral'"
-            :active="specialPowerState > 0"
-            @click="toggleSpecialPower(heroId)"
-          />
-
-          <TooltipButton
-            v-if="showCoupeEnPointe"
-            :text="coupeTooltip"
-            :icon="coupeIcon"
-            :color="specialPowerState ? 'primary' : 'neutral'"
-            :active="specialPowerState > 0"
-            @click="toggleSpecialPower(heroId)"
-          />
-
-          <TooltipButton
-            v-if="showGolemSpreadThin"
-            :text="golemTooltip"
-            icon="i-lucide-expand"
-            :color="specialPowerState ? 'primary' : 'neutral'"
-            :active="specialPowerState > 0"
-            @click="toggleSpecialPower(heroId)"
-          />
-        </div>
+        <HeroPowerChips :hero-id="heroId" />
       </div>
 
       <div class="flex flex-1 flex-col">
@@ -173,26 +118,20 @@
 </template>
 
 <script setup lang="ts">
+import HeroPowerChips from '@/components/HeroPowerChips.vue';
+
 import {
   STAT_NAMES,
   FIXED_LEVEL_HEROES,
   MAX_LEVEL_UPS,
   MAX_STAT_VALUE,
-  MAX_POWER_TRAININGS,
   MAX_FLIGHT_TRAININGS,
   MAX_BONUS_POINTS,
-  HERO_POWERS,
   HERO_FLIGHT,
   HERO_FLIGHT_CAPABILITY
 } from '@/types/hero';
 
-import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
-
-const POWER_ICONS = [
-  'i-lucide-zap',
-  'i-lucide-shield',
-  'i-lucide-swords'
-] as const;
+import type { HeroId, StatName } from '@/types/hero';
 
 const props = defineProps<{
   heroId: HeroId;
@@ -212,15 +151,8 @@ const {
   addBonusLevel,
   bonusLevelsUsed,
   getPowerState,
-  toggleStartingPower,
-  toggleTrainablePower,
-  trainingsUsed,
-  untrainableIds,
-  getSpecialPowerState,
-  toggleSpecialPower,
   getSpecialPowerBonusStats,
   monsterForm,
-  toggleMonsterForm,
   resolveDisplayStat,
   flyingHeroIds,
   toggleFlight,
@@ -245,47 +177,15 @@ const pointsRemaining = computed(
     getLevelUpPointsUsed(props.heroId)
 );
 
-const powerStates = computed(() => getPowerState(props.heroId));
-
-const specialPowerState = computed(() => getSpecialPowerState(props.heroId));
-
 const flightActive = computed(() => flyingHeroIds.value.has(props.heroId));
 
 const bonusLevel = computed(() => getBonusLevel(props.heroId));
-
-const trainingsFull = computed(
-  () => trainingsUsed.value >= MAX_POWER_TRAININGS
-);
 
 const flightsFull = computed(
   () => flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
 );
 
 const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
-
-const powers = computed(() => HERO_POWERS[props.heroId]);
-
-const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || untrainableIds.value.has(props.heroId)) {
-    return [];
-  }
-  return powers.value.slice(1).filter((p) => p.name !== '');
-});
-
-function trainablePowerColor(i: number) {
-  return trainablePowerActive(i) ? 'primary' : 'neutral';
-}
-
-function trainablePowerActive(i: number) {
-  return powerStates.value.trainableSelected === i + 1;
-}
-
-function isTrainableDisabled(i: number) {
-  return (
-    !powerStates.value.startingRevealed ||
-    (powerStates.value.trainableSelected !== i + 1 && trainingsFull.value)
-  );
-}
 
 const flightInfo = computed(
   () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
@@ -351,66 +251,9 @@ const getLevelUpPointsUsedValue = computed(() =>
 );
 
 const hasPowers = computed(() => {
-  return (
-    powerStates.value.startingRevealed ||
-    powerStates.value.trainableSelected > 0
-  );
-});
+  const powerState = getPowerState(props.heroId);
 
-const showFlambaeSupernova = computed(() => {
-  return (
-    props.heroId === 'flambae' && powerStates.value.trainableSelected === 2
-  );
-});
-
-const showCoupeEnPointe = computed(() => {
-  return props.heroId === 'coupe' && powerStates.value.startingRevealed;
-});
-
-const coupeTooltip = computed(() => {
-  const isUpgraded = powerStates.value.trainableSelected === 2;
-  const bonus = isUpgraded ? '+3' : '+1';
-
-  if (specialPowerState.value === 1) {
-    return `En Pointe: ${bonus} Combat (active)`;
-  }
-  if (specialPowerState.value === 2) {
-    return `En Pointe: ${bonus} Mobility (active)`;
-  }
-  return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
-});
-
-const showGolemSpreadThin = computed(() => {
-  return props.heroId === 'golem' && powerStates.value.trainableSelected === 1;
-});
-
-// * Labelled by slot count rather than percentage: slots are what the player picks at the dispatch screen, the percentage is only the mechanism.
-const golemTooltip = computed(() => {
-  const slots = specialPowerState.value;
-
-  if (slots === 0) {
-    return 'Spread Thin: Click to fill 1–3 empty slots';
-  }
-
-  return `Spread Thin: +${slots} slot${slots > 1 ? 's' : ''} (+${slots * 25}%)`;
-});
-
-const coupeIcon = computed(() => {
-  if (specialPowerState.value === 1) {
-    return 'i-lucide-sword';
-  }
-  if (specialPowerState.value === 2) {
-    return 'i-lucide-footprints';
-  }
-  return 'i-lucide-sparkles';
-});
-
-const sonarFormIcon = computed(() => {
-  return monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user';
-});
-
-const sonarFormTooltip = computed(() => {
-  return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
+  return powerState.startingRevealed || powerState.trainableSelected > 0;
 });
 
 function resolvedStat(stat: StatName): StatName {
