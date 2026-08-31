@@ -97,7 +97,7 @@
             </div>
 
             <div
-              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2"
+              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2 @max-[28.5rem]:gap-x-2"
               :class="
                 columnView === 'req'
                   ? '@max-[28.5rem]:grid-cols-[1fr_auto]'
@@ -127,14 +127,17 @@
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The wordmark is the Conditions view's to spend, not the tier's: one
-                     stepper leaves the label room at every width this app supports, two do
-                     not, so Requirements keeps its wordmarks all the way down and
-                     Conditions runs on icons for as long as the toggle exists. -->
+                <!-- * The label goes down a type step with the row rather than out of it:
+                     the wordmark has to survive an iPhone SE, and only below 20rem — past
+                     every width worth designing for, but still short of the 320 the app
+                     is held to for reflow — does the icon carry the stat alone. -->
                 <span
-                  class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase"
+                  class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase @max-[28.5rem]:gap-1 @max-[28.5rem]:text-sm"
                 >
-                  <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
+                  <u-icon
+                    :name="STAT_ICONS[stat]"
+                    class="size-4 shrink-0 @max-[28.5rem]:size-3.5"
+                  />
                   <span :class="wordmarkClass">{{ stat }}</span>
                 </span>
 
@@ -206,7 +209,9 @@ const conditionColumnClass = computed(() =>
   columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
 );
 
+// * Only the Conditions view ever runs out of room for it, and only below 20rem — under
+// * every screen worth designing for, but the app is still held to 320 for reflow.
 const wordmarkClass = computed(() =>
-  columnView.value === 'conditions' ? '@max-[28.5rem]:hidden' : ''
+  columnView.value === 'conditions' ? '@max-[20rem]:hidden' : ''
 );
 </script>

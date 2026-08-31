@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-1">
+  <div class="flex items-center gap-1 @max-[28.5rem]:gap-0.5">
     <IconButton
       icon="i-lucide-minus"
       :label="`Decrease ${label}`"
@@ -7,8 +7,13 @@
       @click="step(-1)"
     />
 
-    <!-- * A fixed slot, like the stat rows everywhere else: the value growing a digit (or becoming the unset dash) shifts nothing. -->
-    <span class="w-7 text-center font-heading text-lg font-bold">
+    <!-- * A fixed slot, like the stat rows everywhere else: the value growing a digit (or
+         becoming the unset dash) shifts nothing. It narrows in the tier where the row is
+         tight (feature 016) — the buttons beside it cannot, being on the 24px touch floor
+         (annex §14.2), so the slot and the gaps are what give. -->
+    <span
+      class="w-7 text-center font-heading text-lg font-bold @max-[28.5rem]:w-6"
+    >
       {{ value ?? '—' }}
     </span>
 
