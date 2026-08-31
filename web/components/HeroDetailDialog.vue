@@ -15,8 +15,9 @@
     <template #body>
       <div v-if="hero" class="flex h-full min-h-0 gap-4">
         <!-- * Roster rail: square portraits, every one bordered, so the open hero differs by colour rather than by gaining an outline and nudging its neighbours. -->
-        <nav
-          class="hidden w-24 shrink-0 flex-col gap-2 overflow-y-auto lg:flex"
+        <ScrollRegion
+          as="nav"
+          class="hidden w-24 shrink-0 flex-col gap-2 lg:flex"
           aria-label="Roster"
         >
           <button
@@ -39,12 +40,14 @@
               class="size-full object-cover object-top"
             />
           </button>
-        </nav>
+        </ScrollRegion>
 
-        <div class="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto">
+        <ScrollRegion class="flex min-w-0 flex-1 flex-col gap-4">
           <!-- * Below `lg` the rail becomes a ribbon: the same shortcut, in the one direction a phone has room for. -->
-          <nav
-            class="flex shrink-0 gap-2 overflow-x-auto lg:hidden"
+          <ScrollRegion
+            as="nav"
+            axis="horizontal"
+            class="flex shrink-0 gap-2 lg:hidden"
             aria-label="Roster"
           >
             <button
@@ -67,7 +70,7 @@
                 class="size-full object-cover object-top"
               />
             </button>
-          </nav>
+          </ScrollRegion>
 
           <!-- ! The first two rows are fixed heights on purpose: a fixed-level hero has no steppers and may have no partner, and letting the rows size to content made the whole dialog resize when switching to one. -->
           <!-- ! The base `grid-cols-[minmax(0,1fr)]` is the fix for the iOS sideways scroll, not a restatement of the default: with no columns declared, the single column below `lg` is an implicit `auto` track, and an `auto` track is floored by the largest min-content among its items. `minmax(0,1fr)` removes that floor; the `min-w-0` on each item below removes the matching floor on the items themselves. -->
@@ -191,7 +194,8 @@
                     {{ hero.name }} and {{ synergyPartner.name }} combined, with
                     every bonus applied.<template v-if="pairFillsASlot">
                       The pair fills a slot, so Spread Thin counts one
-                      fewer.</template>
+                      fewer.</template
+                    >
                   </p>
                 </div>
 
@@ -401,7 +405,7 @@
               </p>
             </div>
           </div>
-        </div>
+        </ScrollRegion>
       </div>
     </template>
   </u-modal>

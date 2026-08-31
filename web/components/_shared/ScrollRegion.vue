@@ -1,11 +1,12 @@
 <template>
-  <div
+  <component
+    :is="as"
     ref="region"
-    :class="[OVERFLOW_CLASS[axis], edgeClasses]"
+    :class="['border transition-colors', OVERFLOW_CLASS[axis], edgeClasses]"
     @scroll.passive="measure"
   >
     <slot />
-  </div>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -23,14 +24,31 @@ const OVERFLOW_CLASS: Record<ScrollAxis, string> = {
   both: 'overflow-auto'
 };
 
-// * 1px at the divider tier (annex §5). `border-default` measures 3.13:1 on paper, clearing the 3:1 floor
-// * that applies because this rule carries information — it is the only sign that content is off-screen.
-const EDGE_CLASS: Record<keyof HiddenEdges, string> = {
-  top: 'border-t border-default',
-  bottom: 'border-b border-default',
-  left: 'border-l border-default',
-  right: 'border-r border-default'
-};
+// * 1px at the divider tier (annex §5). `--ui-border` measures 3.13:1 on paper, clearing the 3:1 floor that
+// * applies because this rule carries information — it is the only sign that content is off-screen.
+// ! Every edge is always drawn and only its colour changes. Toggling the border itself would resize the
+// ! content box by 1px each time an edge is reached, jittering the content and feeding that 1px straight
+// ! back into the measurement it came from. Naming both states also keeps the pair one directional utility,
+// ! so which of them paints is not left to the order Tailwind happens to emit them in.
+const EDGE_CLASS: Record<keyof HiddenEdges, { hidden: string; clear: string }> =
+  {
+    top: {
+      hidden: 'border-t-[var(--ui-border)]',
+      clear: 'border-t-transparent'
+    },
+    bottom: {
+      hidden: 'border-b-[var(--ui-border)]',
+      clear: 'border-b-transparent'
+    },
+    left: {
+      hidden: 'border-l-[var(--ui-border)]',
+      clear: 'border-l-transparent'
+    },
+    right: {
+      hidden: 'border-r-[var(--ui-border)]',
+      clear: 'border-r-transparent'
+    }
+  };
 
 const NO_EDGES: HiddenEdges = {
   top: false,
@@ -39,16 +57,23 @@ const NO_EDGES: HiddenEdges = {
   right: false
 };
 
-const { axis = 'vertical' } = defineProps<{ axis?: ScrollAxis }>();
+// * `as` keeps the region's own semantics: two of the hero dialog's scroll areas are `nav` landmarks, and a
+// * component that could only render a div would trade an aria landmark for a border.
+const { as = 'div', axis = 'vertical' } = defineProps<{
+  as?: string;
+  axis?: ScrollAxis;
+}>();
 
 const region = useTemplateRef<HTMLElement>('region');
 
 const edges = ref<HiddenEdges>({ ...NO_EDGES });
 
 const edgeClasses = computed(() =>
-  Object.entries(edges.value)
-    .filter(([, hidden]) => hidden)
-    .map(([edge]) => EDGE_CLASS[edge as keyof HiddenEdges])
+  Object.entries(edges.value).map(([edge, isHidden]) => {
+    const states = EDGE_CLASS[edge as keyof HiddenEdges];
+
+    return isHidden ? states.hidden : states.clear;
+  })
 );
 
 function measure() {

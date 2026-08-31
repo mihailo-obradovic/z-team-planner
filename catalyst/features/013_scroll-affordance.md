@@ -19,6 +19,7 @@ This implements Catalyst 1.11.0's `stacks/frontend/_common/scroll-affordance.md`
 | Input           | Type                                   | Source                     | Constraints                                                 |
 | --------------- | -------------------------------------- | -------------------------- | ----------------------------------------------------------- |
 | `axis`          | `'vertical' \| 'horizontal' \| 'both'` | the consuming component    | defaults to `'vertical'`; a named union, never a boolean    |
+| `as`            | tag name                               | the consuming component    | defaults to `'div'`; keeps a region's own semantics (`nav`) |
 | default slot    | markup                                 | the consuming component    | the scrolled content; the component supplies the scroll box |
 | element size    | `ResizeObserver`                       | the region and its content | both observed — slot growth need not resize the container   |
 | scroll position | passive `scroll` event                 | the region's own element   | per-edge state changes on every scroll                      |
@@ -79,6 +80,7 @@ For a vertical region 300px tall whose content is 900px:
 - Edge comparisons carry a **1px tolerance**. Fractional device pixel ratios round `scrollTop`, `clientHeight` and `scrollHeight` independently, so an exact comparison leaves the trailing border stuck on at the end of a scroll — visible on a phone, never on the machine it was written on.
 - A `ScrollRegion` never also carries a structural border. Where a bordered surface must scroll, the surface stays a static shell and the region sits inside it with the padding.
 - `axis` is a named string union. A two-state input is never a boolean (`code-style`).
+- **Reaching an edge never moves content.** Every edge is drawn at all times and only its colour changes, fading at the baseline duration (annex §11 — a colour fade needs no reduced-motion guard). Toggling the border itself would resize the content box by 1px whenever an edge was reached, and feed that pixel straight back into the measurement that drew it.
 - Borders are drawn on pointer and touch alike. The desktop redundancy against a visible scrollbar is accepted; gating on `(pointer: fine)` would make the touch path the untested one, and iOS is not reproducible on this machine.
 
 ## Edge Cases
