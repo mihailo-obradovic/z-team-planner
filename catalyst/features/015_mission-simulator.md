@@ -101,7 +101,7 @@ Not role-specific. (Cloud saves require the API schema to accept the new keys; n
 ## Business Rules
 
 - The serialized-format change is **additive on v1**: new optional keys only, old documents load unchanged, unknown keys stay tolerated client-side. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) learn the keys in the same change; the 8KB document cap holds.
-- Threshold checks (fail and 2×XP) compare the **clamped team total** of their single stat, at-or-above.
+- Threshold checks (fail and 2×XP) compare the **clamped team total** of their stat, at-or-above. With several thresholds set on one template, *any* met `FAIL ≥` fails the mission, while the 2×XP light needs *every* set threshold met.
 - Derived slot effects are local to the simulator's totals and math panel; `heroSpecialPowers` state is never read for En Pointe/Spread Thin here and never written.
 - The illusion contributes stats only — it is nobody for power, synergy-pair, or roster purposes.
 - Synergy pairs remain purely derived from episode setup; the switch selects a level, never a pair.

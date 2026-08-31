@@ -10,6 +10,9 @@ import {
   MISSION_TEMPLATE_COUNT
 } from '@/types/mission';
 
+import { RADAR_STAT_ORDER } from '@/utils/statIcons';
+import { radarCoverage } from '@/utils/radarCoverage';
+
 import type { HeroId, HeroStats, StatName, SynergyLevel } from '@/types/hero';
 import type { MissionSlot } from '@/types/mission';
 import type { useHeroEpisodeSetup } from '@/composables/useHeroEpisodeSetup';
@@ -158,6 +161,90 @@ export function useMissionSimulator(
         ])
       ) as HeroStats
   );
+
+  const missionActiveTemplateData = computed(
+    () => missionTemplates.value?.[missionActiveTemplate.value] ?? null
+  );
+
+  // * The estimate, with every step it is built from — the math panel renders these rows.
+  // * Coverage and synergy make the single-attempt chance (capped at 100%), reattempt
+  // * powers retry it, and a tripped fail threshold overrides everything to 0%.
+  const missionSuccess = computed(() => {
+    const template = missionActiveTemplateData.value;
+    const totals = missionTeamTotals.value;
+    const coverage = template
+      ? radarCoverage(
+          RADAR_STAT_ORDER.map((stat) => totals[stat]),
+          RADAR_STAT_ORDER.map((stat) => template.req[stat])
+        )
+      : 0;
+    const synergyBonus = missionTeamHasPair.value
+      ? missionSynergyLevel.value * 0.05
+      : 0;
+    const singleAttempt = Math.min(1, coverage + synergyBonus);
+    const reattempters = missionReattempters.value;
+    const failedStat = missionFailedStat.value;
+    const estimate =
+      failedStat !== null
+        ? 0
+        : 1 - (1 - singleAttempt) ** (1 + reattempters.length);
+
+    return { coverage, synergyBonus, reattempters, failedStat, estimate };
+  });
+
+  // * Pirouette is Coupé's first trainable, Talk Shit Sonar's second — and Talk Shit works
+  // * only in Hybrid form, which is the shared monster toggle being off (feature 012).
+  const missionReattempters = computed<HeroId[]>(() => {
+    const reattempters: HeroId[] = [];
+
+    if (
+      missionHeroIds.value.has('coupe') &&
+      powerTraining.getPowerState('coupe').trainableSelected === 1
+    ) {
+      reattempters.push('coupe');
+    }
+
+    if (
+      missionHeroIds.value.has('sonar') &&
+      powerTraining.getPowerState('sonar').trainableSelected === 2 &&
+      !powerTraining.monsterForm.value
+    ) {
+      reattempters.push('sonar');
+    }
+
+    return reattempters;
+  });
+
+  // * The first FAIL ≥ stat whose clamped team total meets its threshold — at-or-above.
+  const missionFailedStat = computed<StatName | null>(() => {
+    const fail = missionActiveTemplateData.value?.fail ?? {};
+
+    return (
+      STAT_NAMES.find((stat) => {
+        const threshold = fail[stat];
+
+        return (
+          threshold !== undefined &&
+          missionTeamTotals.value[stat] >= threshold
+        );
+      }) ?? null
+    );
+  });
+
+  // * The 2×XP light: null while the active template carries no thresholds, otherwise
+  // * whether every set threshold is met. Independent of the success estimate (feature 015).
+  const missionXpFulfilled = computed<boolean | null>(() => {
+    const xp = missionActiveTemplateData.value?.xp ?? {};
+    const thresholds = Object.entries(xp) as [StatName, number][];
+
+    if (thresholds.length === 0) {
+      return null;
+    }
+
+    return thresholds.every(
+      ([stat, threshold]) => missionTeamTotals.value[stat] >= threshold
+    );
+  });
 
   const missionDerivedEffects = computed<MissionDerivedEffect[]>(() => {
     const effects: MissionDerivedEffect[] = [];
@@ -342,6 +429,9 @@ export function useMissionSimulator(
     missionTeamTotals,
     missionDerivedEffects,
     missionIllusionRatio,
+    missionActiveTemplateData,
+    missionSuccess,
+    missionXpFulfilled,
     fillMissionSlot,
     removeMissionSlot,
     moveMissionSlot,
