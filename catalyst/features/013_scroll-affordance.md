@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Approved
 
 ## Task Weight
 
@@ -118,7 +118,7 @@ _None._
 
 ## Tests
 
-- `web/utils/_tests/scrollEdges.spec.ts`: no overflow → no edges; at the top → trailing edge only; mid-scroll → both; at the end → leading edge only; within 1px of the end → still treated as the end; horizontal axis mirrors vertical; a non-scrollable axis reports no edges.
+- `test/unit/scrollEdges.test.ts`: no overflow → no edges; at the top → trailing edge only; mid-scroll → both; at the end → leading edge only; within 1px of the end → still treated as the end; horizontal axis mirrors vertical; a non-scrollable axis reports no edges.
 - No component test asserts the borders. In jsdom `scrollHeight` and `clientHeight` are both `0`, so the region never reports overflow and such a test would pass while proving nothing — the rule's own guidance. The wiring is verified on the live walk.
 
 ## Verification
