@@ -43,7 +43,7 @@ In scope:
 
 Non-goals:
 
-- Responsive/mobile layout (follow-up adjustments).
+- Responsive layout below the desktop tier — feature 016.
 - Adding, deleting, naming, or re-typing templates; changing the 4-slot call size.
 - Waterboy's Eager (Super) Sponge, Invisigal's Wolf Pack, Squeeze In (never fires at 4 slots), and every streak/injury/heal/rest/time power — only the powers this document names are modelled.
 - Rendering the simulator on the shared-build page `/b/{id}` (it has no tabs).

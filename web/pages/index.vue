@@ -82,18 +82,35 @@
     </template>
 
     <template #mission-simulator>
-      <!-- * Desktop-first (feature 015): templates, requirements and math in a top row,
-           the team spanning beneath — wrapping into a centered stack when narrow, never a
-           horizontal page scroll. -->
-      <div class="flex tab-fade flex-col items-center gap-4 p-4">
-        <!-- * `items-stretch` levels the three panels to the tallest (feature 015). -->
-        <div class="flex flex-wrap items-stretch justify-center gap-4">
+      <!-- * The responsive ladder (feature 015), written down in one place: container
+           queries on this wrapper, so the rules survive any future page chrome. What they
+           measure is this element's *content* box, which `p-4` sits outside of — so every
+           threshold is 32px below the viewport width it corresponds to. 78rem (≈1280px
+           viewport) splits the top row; 49rem (≈816px) takes everything to a single
+           column. The two thresholds below that — 35rem for the team, 28.5rem for the
+           templates and the requirements check — live in those components. -->
+      <div class="@container tab-fade p-4">
+        <!-- * A grid, not a wrapping flex row: the team has to take a row of its own at
+             every width while staying its own natural width above 78rem, and only grid
+             separates those two — `col-span-full` breaks the row, `justify-self` decides
+             whether it fills it. Below 78rem it fills, matching the first row, which now
+             fills too; the whole stack is capped at the width the three panels occupy
+             above the threshold so nothing jumps across it. The math panel's `order-1` is
+             the ladder's only reordering: it slides past the team to the third row. -->
+        <div
+          class="grid grid-cols-[auto_auto_auto] justify-center gap-4 @max-[78rem]:mx-auto @max-[78rem]:max-w-[74.5rem] @max-[78rem]:grid-cols-2 @max-[49rem]:grid-cols-1"
+        >
           <MissionTemplatesPanel />
           <MissionRequirementsPanel />
-          <MissionMathPanel />
-        </div>
+          <MissionMathPanel
+            class="@max-[78rem]:order-1 @max-[78rem]:col-span-full"
+          />
 
-        <MissionTeamPanel @viewDetail="handleViewDetail" />
+          <MissionTeamPanel
+            class="col-span-full justify-self-center @max-[78rem]:justify-self-stretch"
+            @viewDetail="handleViewDetail"
+          />
+        </div>
       </div>
     </template>
   </UTabs>

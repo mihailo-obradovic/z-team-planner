@@ -1,5 +1,5 @@
 <template>
-  <section class="w-fit bg-default panel">
+  <section class="bg-default panel">
     <div class="flex plate items-center px-3">
       <h2 class="font-heading text-title uppercase">The math</h2>
     </div>
