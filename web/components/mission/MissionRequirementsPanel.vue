@@ -5,7 +5,11 @@
     </div>
 
     <div class="flex flex-col items-center gap-4 p-3">
-      <div class="w-72 border-2 border-accented bg-default">
+      <!-- * The frame is the panel's design width exactly, so it is the first thing to run
+           out of room: `max-w-full` lets it give up width rather than bleed over the
+           panel's padding and border (feature 016). Not tied to a threshold — it is a
+           no-op at every width where the panel can still hold 288px. -->
+      <div class="w-72 max-w-full border-2 border-accented bg-default">
         <div class="mx-auto aspect-square w-full">
           <StatRadar
             :axes="radarAxes"

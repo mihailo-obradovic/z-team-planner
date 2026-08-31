@@ -51,7 +51,7 @@ Container queries on the tab's own wrapper drive everything — not viewport bre
 
 **35rem (≈592px) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — always visible on a scrim, since this is the tier with no hover. The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
 
-**28.5rem (≈488px) — the templates and requirements panels.** Templates drops its stat wordmarks to icons and shows one condition column set at a time behind a `REQ` / `CONDITIONS` toggle. The requirements panel's radar frame turns fluid under its existing cap, and its legend keeps two columns on a tighter gap.
+**28.5rem (≈488px) — the templates and requirements panels.** Templates drops its stat wordmarks to icons and shows one condition column set at a time behind a `REQ` / `Conditions` toggle. The requirements panel is untouched at this threshold: its legend measures 221px in two columns and still fits. Its radar frame instead carries `max-w-full` at every width — the frame is the panel's design width exactly, so it is the first thing to run out of room, and it gives up width rather than bleed over the panel's padding. That happens below ~348px, not at a threshold.
 
 Tier changes are not animated. Feature 015's height, radar and value animations are unaffected by them.
 
@@ -67,7 +67,8 @@ Not role-specific.
 | 1279px viewport | templates + requirements row, team row, math row split in two | the first subtraction |
 | 816 → 815px viewport | two columns become one | the 49rem crossing |
 | 600px viewport | single column; team slots narrowed but still four across | fluid slots, classic anatomy |
-| 480px viewport | templates on icons behind the toggle; radar frame fluid | the narrowest tier |
+| 480px viewport | templates on icons behind the toggle | the narrowest tier |
+| 320px viewport | the radar frame shrinks under its 288px cap | the only width where it does |
 | 320px viewport | no horizontal scrolling, nothing wider than the viewport | the reflow floor |
 | toggle set to `CONDITIONS`, then the tab widens past 28.5rem | both column sets shown, no toggle | its position is kept for a return |
 
@@ -83,6 +84,7 @@ Not role-specific.
 - The team's threshold (35rem) deliberately does not coincide with the others' (28.5rem). Four slots carrying the classic control row need a 552px viewport at best — its three controls are already on the touch floor — so a shared 28.5rem threshold would leave a band where the four slots wrap out of their single row.
 - Below 35rem the overlay controls sit on a ~52px portrait: on the touch floor, not above it, the same trade the hero card already makes.
 - The templates panel is the widest panel (454px measured), so it is the one that forces the 28.5rem tier; the others reach it with room to spare.
+- The requirements panel's legend and outcome band (221px and 250px) fit inside 320px unaided, so the 28.5rem threshold changes nothing there.
 
 ## Invariants
 
@@ -100,7 +102,7 @@ Not applicable — layout only, no failure modes of its own.
 - `web/components/mission/MissionMathPanel.vue`: the two-column split.
 - `web/components/mission/MissionTeamPanel.vue`: fluid slots and the overlay anatomy.
 - `web/components/mission/MissionTemplatesPanel.vue`: icon labels and the condition-column toggle.
-- `web/components/mission/MissionRequirementsPanel.vue`: the fluid radar frame and the legend gap.
+- `web/components/mission/MissionRequirementsPanel.vue`: the radar frame's `max-w-full`.
 - `catalyst/annexes/design-system.md` §14.3 (the ladder and its measurements) and §14.2 (the overlay controls' touch-target trade).
 
 ## Dependencies
