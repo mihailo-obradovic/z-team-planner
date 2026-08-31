@@ -225,14 +225,9 @@ const flightColor = computed(() =>
       : 'neutral'
 );
 
-const portraitSrc = computed(() => {
-  if (props.heroId === 'sonar') {
-    return monsterForm.value
-      ? '/images/portraits/sonar-monster.webp'
-      : '/images/portraits/sonar-hybrid.webp';
-  }
-  return `/images/portraits/${props.heroId}.webp`;
-});
+const portraitSrc = computed(() =>
+  heroPortraitSrc(props.heroId, monsterForm.value)
+);
 
 const canLevelUp = computed(() => !(props.heroId in FIXED_LEVEL_HEROES));
 

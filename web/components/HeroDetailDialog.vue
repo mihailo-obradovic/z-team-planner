@@ -434,14 +434,6 @@ const POWER_ICONS = [
   'i-lucide-swords'
 ] as const;
 
-const RADAR_STAT_ORDER: StatName[] = [
-  'combat',
-  'vigor',
-  'mobility',
-  'charisma',
-  'intellect'
-];
-
 const props = defineProps<{
   heroId: HeroId | null;
 }>();
@@ -535,17 +527,9 @@ const canLevelUp = computed(() => {
   return !(props.heroId in FIXED_LEVEL_HEROES);
 });
 
-const portraitSrc = computed(() => {
-  if (!props.heroId) {
-    return '';
-  }
-  if (props.heroId === 'sonar') {
-    return monsterForm.value
-      ? '/images/portraits/sonar-monster.webp'
-      : '/images/portraits/sonar-hybrid.webp';
-  }
-  return `/images/portraits/${props.heroId}.webp`;
-});
+const portraitSrc = computed(() =>
+  props.heroId ? heroPortraitSrc(props.heroId, monsterForm.value) : ''
+);
 
 const powers = computed(() => {
   if (!props.heroId) {

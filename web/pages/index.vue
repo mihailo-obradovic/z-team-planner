@@ -4,6 +4,7 @@
     default-value="overview"
     class="flex h-full w-full flex-col"
     variant="link"
+    :unmount-on-hide="false"
     :ui="{
       root: 'gap-0',
       list: 'shrink-0',
@@ -68,7 +69,15 @@
     </template>
 
     <template #synergy-pairs>
-      <div class="p-4" />
+      <div class="flex flex-wrap justify-center gap-4 p-4">
+        <SynergyPairCard
+          v-for="pair in synergyPairColumns"
+          :key="pair.topId"
+          :top="pair.top"
+          :bottom="pair.bottom"
+          @viewDetail="handleViewDetail"
+        />
+      </div>
     </template>
 
     <template #mission-simulator>
@@ -85,6 +94,7 @@
 
 <script setup lang="ts">
 import HeroCard from '@/components/HeroCard.vue';
+import SynergyPairCard from '@/components/SynergyPairCard.vue';
 import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
 import type { HeroId } from '@/types/hero';
