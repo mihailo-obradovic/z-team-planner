@@ -137,7 +137,12 @@ By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the
 
 In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9 with the other four unchanged; zero `panel` classes inside the dialog. Switching Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — which is the fixed-level case that used to make it jump.
 
-At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, the order reads radar, stats, synergy, powers, notes, and there is no page-level horizontal overflow.
+At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes.
+
+Horizontal overflow is verified per engine, because the first pass at this checked Chromium only and shipped two defects it cannot show. The document itself never scrolls — `main.css` pins `html, body, #__nuxt` to `overflow: hidden` — so `documentElement.scrollWidth` proves nothing here; the check is a scan for any element whose `scrollWidth` exceeds its `clientWidth`. The one permitted result is the roster ribbon, which scrolls sideways by design.
+
+- **WebKit (iOS Safari and every iOS browser, Brave included), 393×852.** The dialog's scrolling column must not scroll sideways. WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic size where Chromium gives 0, and that column is `overflow-y-auto`, which forces the x-axis to `auto` as well — so any item that floors the grid track turns it into a horizontal scroller. The base `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what holds this; removing any of them reopens it.
+- **Every engine, 320px.** The hero card's portrait column shrinks rather than holding 27rem. At the fixed size the card's row needs 316px of a 260px panel, and the overview grid scrolls sideways.
 
 Not covered: a `prefers-reduced-motion` machine, and the notes area holds placeholder copy until the maintainer writes it.
 

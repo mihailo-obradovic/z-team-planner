@@ -50,12 +50,14 @@
       </div>
     </div>
 
-    <div class="flex justify-between gap-3 p-3">
-      <div class="flex w-27 shrink-0 flex-col gap-2">
+    <!-- ! The tighter base gap is what leaves the shrunk portrait column wide enough for the power chips beneath it: at 320px the column lands on 80px and the chips need 78px. At `gap-3` it lands on 76px and they overflow. -->
+    <div class="flex justify-between gap-2 p-3 sm:gap-3">
+      <!-- ! Shrinkable, not fixed: at 27rem the portrait column plus the stat rows need 316px of a 260px row below ~328px viewport, and the portrait is the only part that degrades gracefully — the stat steppers are tap targets and must not shrink at the narrowest width. Nothing moves at 360px and up. -->
+      <div class="flex w-27 min-w-0 shrink flex-col gap-2">
         <NuxtImg
           :src="portraitSrc"
           :alt="hero.name"
-          class="aspect-square size-27 cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
+          class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
           @click="$emit('viewDetail')"
         />
 
