@@ -200,6 +200,11 @@ describe('mission templates and settings', () => {
   });
 
   it('owns the threshold columns: 2×XP on #2 only, fail on #3 only, null unsets', () => {
+    // * Deterministic start: the rolled thresholds could land on the stats asserted below.
+    state.missionTemplates.value = state.missionTemplates.value!.map(
+      (entry) => ({ ...entry, xp: {}, fail: {} })
+    );
+
     planner.setMissionThreshold(1, 'xp', 'combat', 7);
     planner.setMissionThreshold(2, 'fail', 'mobility', 8);
     planner.setMissionThreshold(0, 'xp', 'combat', 7);
@@ -245,5 +250,128 @@ describe('mission templates and settings', () => {
     planner.removeMissionSlot(0);
 
     expect(planner.missionTeamHasPair.value).toBe(false);
+  });
+});
+
+describe('derived slot effects and team totals', () => {
+  beforeEach(() => {
+    state.heroPowers.value = {};
+    state.heroSpecialPowers.value = {};
+    state.heroLevelUps.value = {};
+  });
+
+  function totals() {
+    return planner.missionTeamTotals.value;
+  }
+
+  it('gives Coupé +1 Combat in slot 1 and +1 Mobility in slot 2, nothing beyond', () => {
+    planner.fillMissionSlot(0, 'coupe');
+
+    expect(totals().combat).toBe(5);
+
+    planner.removeMissionSlot(0);
+    planner.fillMissionSlot(1, 'coupe');
+
+    expect(totals().combat).toBe(4);
+    expect(totals().mobility).toBe(4);
+
+    planner.removeMissionSlot(1);
+    planner.fillMissionSlot(2, 'coupe');
+
+    expect(totals().combat).toBe(4);
+    expect(totals().mobility).toBe(3);
+  });
+
+  it('pays Coupé +3 once À la Seconde is trained, whatever her manual chip says', () => {
+    planner.toggleStartingPower('coupe');
+    planner.toggleTrainablePower('coupe', 2);
+    planner.fillMissionSlot(0, 'coupe');
+
+    expect(totals().combat).toBe(7);
+
+    // * The manual En Pointe chip points at mobility — the simulator ignores it.
+    planner.toggleSpecialPower('coupe');
+    planner.toggleSpecialPower('coupe');
+
+    expect(totals().combat).toBe(7);
+    expect(totals().mobility).toBe(3);
+  });
+
+  it('derives Spread Thin from real empty slots and ignores the manual chip', () => {
+    planner.fillMissionSlot(0, 'golem');
+
+    // * Untrained: no expansion, whatever the emptiness.
+    expect(totals().vigor).toBe(4);
+
+    planner.toggleStartingPower('golem');
+    planner.toggleTrainablePower('golem', 1);
+
+    // * Alone: three empty slots, +75% floored per stat — 3/1/4/2/2 → 5/1/7/3/3.
+    expect(totals().combat).toBe(5);
+    expect(totals().intellect).toBe(1);
+    expect(totals().vigor).toBe(7);
+
+    planner.fillMissionSlot(1, 'coupe');
+
+    // * Two empty slots now: floor(4 × 0.5) = +2 for Golem, plus Coupé's vigor 1.
+    expect(totals().vigor).toBe(7);
+
+    planner.fillMissionSlot(2, 'malevola');
+    planner.fillMissionSlot(3, 'punch-up');
+
+    // * Full call: nothing to expand into.
+    expect(totals().vigor).toBe(4 + 2 + 4);
+  });
+
+  it('halves the illusion floored, mirrors its source, and counts it as occupancy', () => {
+    planner.toggleStartingPower('golem');
+    planner.toggleTrainablePower('golem', 1);
+    planner.fillMissionSlot(0, 'golem');
+    planner.fillMissionSlot(1, 'prism');
+
+    expect(slots()).toEqual(['golem', 'prism', 'illusion', null]);
+
+    // * One empty slot left (the illusion occupies one): Golem 3/1/4/2/2 → +25% → 3/1/5/2/2.
+    // * The illusion mirrors that at half, floored: 1/0/2/1/1. Prism adds 4/2/1/4/1.
+    expect(totals().combat).toBe(3 + 4 + 1);
+    expect(totals().vigor).toBe(5 + 1 + 2);
+    expect(totals().intellect).toBe(1 + 2 + 0);
+
+    // * Perfect Copy: the illusion mirrors in full — and the team total clamps at 10.
+    planner.toggleStartingPower('prism');
+    planner.toggleTrainablePower('prism', 1);
+
+    expect(totals().vigor).toBe(10);
+  });
+
+  it('clamps each team total at the stat maximum', async () => {
+    state.showEp8Recruits.value = true;
+    await nextTick();
+
+    planner.fillMissionSlot(0, 'blonde-blazer');
+    planner.fillMissionSlot(1, 'phenomaman');
+
+    // * Combat 8 + 7 caps at 10.
+    expect(totals().combat).toBe(10);
+  });
+
+  it('lists the derived effects for the math panel', () => {
+    planner.fillMissionSlot(0, 'coupe');
+    planner.fillMissionSlot(1, 'prism');
+
+    expect(planner.missionDerivedEffects.value).toEqual([
+      { type: 'en-pointe', stat: 'combat', bonus: 1 },
+      { type: 'illusion', source: 'coupe', ratio: 0.5 }
+    ]);
+
+    // * Spread Thin lists only while there is real emptiness to expand into.
+    state.missionSlots.value = [null, null, null, null];
+    planner.toggleStartingPower('golem');
+    planner.toggleTrainablePower('golem', 1);
+    planner.fillMissionSlot(0, 'golem');
+
+    expect(planner.missionDerivedEffects.value).toEqual([
+      { type: 'spread-thin', emptySlots: 3 }
+    ]);
   });
 });
