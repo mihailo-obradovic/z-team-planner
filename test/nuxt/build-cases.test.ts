@@ -184,13 +184,14 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
     }
   });
 
-  // * An empty slot where Prism's placement spawned an illusion is a removal the user made;
-  // * an "illusion" entry the placements did not spawn is one no action can conjure.
-  document.mh?.forEach((entry, index) => {
-    if (entry === null) {
+  // * An empty slot where a placement spawned an occupant is a removal the user made — and
+  // * Golem's copies dissolve right-to-left, so the pass runs from the last slot down. A
+  // * marker the placements did not spawn is one no action can conjure.
+  for (let index = (document.mh?.length ?? 0) - 1; index >= 0; index--) {
+    if (document.mh?.[index] === null) {
       planner.removeMissionSlot(index);
     }
-  });
+  }
 
   await nextTick();
 

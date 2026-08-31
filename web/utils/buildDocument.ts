@@ -4,7 +4,11 @@ import {
   HEROES,
   STAT_NAMES
 } from '@/types/hero';
-import { ILLUSION_SLOT, MISSION_SLOT_COUNT } from '@/types/mission';
+import {
+  GOLEM_COPY_SLOT,
+  ILLUSION_SLOT,
+  MISSION_SLOT_COUNT
+} from '@/types/mission';
 import { rollMissionTemplates } from '@/utils/missionTemplates';
 
 import type {
@@ -95,25 +99,19 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   // * Rolled templates are never a default, so `mt` is present on every build the tab has
   // * touched; only a state that never rolled (server render) omits it.
   if (state.missionTemplates.value) {
-    build.mt = state.missionTemplates.value.map((template, index) => {
+    build.mt = state.missionTemplates.value.map((template) => {
       const entry: SerializedMissionTemplate = {
         r: statsToArray(template.req)
       };
+      const x = thresholdsToArray(template.xp);
+      const f = thresholdsToArray(template.fail);
 
-      if (index === 1) {
-        const x = thresholdsToArray(template.xp);
-
-        if (x) {
-          entry.x = x;
-        }
+      if (x) {
+        entry.x = x;
       }
 
-      if (index === 2) {
-        const f = thresholdsToArray(template.fail);
-
-        if (f) {
-          entry.f = f;
-        }
+      if (f) {
+        entry.f = f;
       }
 
       return entry;
@@ -236,30 +234,24 @@ function thresholdsToArray(
   return values.some((value) => value > 0) ? values : undefined;
 }
 
+// * A column carries at most one threshold; a document claiming more keeps the first.
 function arrayToThresholds(values: number[] | undefined): Partial<HeroStats> {
-  const thresholds: Partial<HeroStats> = {};
-
   for (const [index, stat] of STAT_NAMES.entries()) {
     const value = values?.[index];
 
     if (value && value > 0) {
-      thresholds[stat] = value;
+      return { [stat]: value };
     }
   }
 
-  return thresholds;
+  return {};
 }
 
-// * Which template may carry which threshold column is fixed — a column on the wrong
-// * template is dropped, exactly as the server refuses to store it.
-function readTemplate(
-  entry: SerializedMissionTemplate,
-  index: number
-): MissionTemplate {
+function readTemplate(entry: SerializedMissionTemplate): MissionTemplate {
   return {
     req: arrayToStats(entry.r),
-    xp: index === 1 ? arrayToThresholds(entry.x) : {},
-    fail: index === 2 ? arrayToThresholds(entry.f) : {}
+    xp: arrayToThresholds(entry.x),
+    fail: arrayToThresholds(entry.f)
   };
 }
 
@@ -274,7 +266,7 @@ function readSlots(entries: (string | null)[] | undefined): MissionSlot[] {
   return Array.from({ length: MISSION_SLOT_COUNT }, (_, index) => {
     const entry = entries?.[index] ?? null;
 
-    if (entry === ILLUSION_SLOT) {
+    if (entry === ILLUSION_SLOT || entry === GOLEM_COPY_SLOT) {
       return entry;
     }
 

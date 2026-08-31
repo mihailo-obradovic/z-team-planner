@@ -11,7 +11,7 @@ import type { HeroId } from '@/types/hero';
 // * - sp = special power states per hero
 // * - fl = flight-trained hero IDs
 // * - mt = mission templates, always all 3 once rolled: r = REQs in STAT_NAMES order;
-// *        x (template #2 only) / f (template #3 only) = per-stat thresholds, 0 = unset
+// *        x (2×XP) / f (fail) = per-stat thresholds on any template, 0 = unset
 // * - mh = mission team slots, all 4 in order: hero id, "illusion", or null
 // * - ml = mission synergy level (1–3)
 // * - ma = active mission template index (1–2)

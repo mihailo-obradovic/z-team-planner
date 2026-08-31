@@ -28,6 +28,7 @@ _MISSION_TEMPLATES = 3
 _MISSION_SLOTS = 4
 _MAX_SYNERGY_LEVEL = 3
 _ILLUSION = "illusion"
+_GOLEM_COPY = "copy"
 
 
 def document_bytes(raw: Any) -> int:
@@ -131,7 +132,11 @@ def _identity(document: BuildDocument, game: GameData) -> list[ErrorDetail]:
             )
 
     for index, entry in enumerate(document.mh):
-        if entry is not None and entry != _ILLUSION and entry not in game.heroes:
+        if (
+            entry is not None
+            and entry not in (_ILLUSION, _GOLEM_COPY)
+            and entry not in game.heroes
+        ):
             details.append(
                 ErrorDetail(path=f"data.mh[{index}]", message="Unknown hero.")
             )
@@ -215,25 +220,20 @@ def _mission_ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail
                 _stat_values(f"data.mt[{index}].r", template.r, game)
             )
 
-            # * Which template carries which threshold column is fixed: 2×XP on #2, fail on #3.
-            for column, value_list, owner in (
-                ("x", template.x, 1),
-                ("f", template.f, 2),
-            ):
+            # * Both condition columns may appear on any template, each holding at most
+            # * one threshold (feature 015).
+            for column, value_list in (("x", template.x), ("f", template.f)):
                 if not value_list:
                     continue
 
                 path = f"data.mt[{index}].{column}"
 
-                if index != owner:
+                details.extend(_stat_values(path, value_list, game))
+
+                if sum(1 for value in value_list if value > 0) > 1:
                     details.append(
-                        ErrorDetail(
-                            path=path,
-                            message=f"Only template #{owner + 1} carries this column.",
-                        )
+                        ErrorDetail(path=path, message="At most one threshold.")
                     )
-                else:
-                    details.extend(_stat_values(path, value_list, game))
 
     if document.mh and len(document.mh) != _MISSION_SLOTS:
         details.append(
@@ -243,7 +243,7 @@ def _mission_ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail
     seen: set[str] = set()
 
     for index, entry in enumerate(document.mh):
-        if entry is None or entry == _ILLUSION:
+        if entry is None or entry in (_ILLUSION, _GOLEM_COPY):
             continue
 
         if entry in seen:

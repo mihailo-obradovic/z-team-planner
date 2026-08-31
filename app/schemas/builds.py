@@ -21,10 +21,10 @@ BuildName = Annotated[
 
 
 class MissionTemplateDoc(BaseModel):
-    """One `mt` entry (feature 015): REQs plus at most one threshold column.
+    """One `mt` entry (feature 015): REQs plus the two optional condition columns.
 
-    `r` is stats in STAT_NAMES order; `x`/`f` are per-stat thresholds with 0 meaning unset.
-    Which template may carry which column is a range rule (services/validation.py), not shape.
+    `r` is stats in STAT_NAMES order; `x`/`f` are per-stat thresholds with 0 meaning unset,
+    both allowed on any template.
     """
 
     model_config = ConfigDict(extra="forbid", strict=True)

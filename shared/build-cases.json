@@ -371,32 +371,17 @@
       "paths": ["data.mt[0].r.combat"]
     },
     {
-      "name": "2xXP thresholds on the wrong template",
+      "name": "conditions on any template",
       "tier": "ranges",
       "data": {
         "v": 1,
         "mt": [
-          { "r": [3, 4, 5, 6, 7], "x": [0, 0, 7, 0, 0] },
+          { "r": [3, 4, 5, 6, 7], "x": [0, 0, 7, 0, 0], "f": [9, 0, 0, 0, 0] },
           { "r": [3, 4, 5, 6, 7] },
-          { "r": [3, 4, 5, 6, 7] }
+          { "r": [3, 4, 5, 6, 7], "x": [0, 6, 0, 0, 0] }
         ]
       },
-      "valid": false,
-      "paths": ["data.mt[0].x"]
-    },
-    {
-      "name": "fail thresholds on the wrong template",
-      "tier": "ranges",
-      "data": {
-        "v": 1,
-        "mt": [
-          { "r": [3, 4, 5, 6, 7] },
-          { "r": [3, 4, 5, 6, 7], "f": [0, 0, 7, 0, 0] },
-          { "r": [3, 4, 5, 6, 7] }
-        ]
-      },
-      "valid": false,
-      "paths": ["data.mt[1].f"]
+      "valid": true
     },
     {
       "name": "mission team with a fifth slot",
@@ -432,6 +417,30 @@
       "data": { "v": 1, "mh": [null, "mecha-man", null, null] },
       "valid": false,
       "paths": ["data.mh[1]"]
+    },
+    {
+      "name": "golem copies on the team",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "pw": { "golem": [1, 1] },
+        "mh": ["coupe", "golem", "copy", null]
+      },
+      "valid": true
+    },
+    {
+      "name": "two thresholds in one column",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [
+          { "r": [3, 4, 5, 6, 7], "x": [7, 0, 7, 0, 0] },
+          { "r": [3, 4, 5, 6, 7] },
+          { "r": [3, 4, 5, 6, 7] }
+        ]
+      },
+      "valid": false,
+      "paths": ["data.mt[0].x"]
     },
     {
       "name": "the cut hero on the mission team",

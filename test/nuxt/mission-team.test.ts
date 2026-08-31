@@ -108,7 +108,7 @@ describe('mission slots', () => {
 });
 
 describe('the illusion', () => {
-  it('appears to Prism\'s right when she lands with a hero to her left', () => {
+  it("appears to Prism's right when she lands with a hero to her left", () => {
     planner.fillMissionSlot(0, 'golem');
     planner.fillMissionSlot(1, 'prism');
 
@@ -199,29 +199,28 @@ describe('mission templates and settings', () => {
     expect(template.req.charisma).toBeGreaterThanOrEqual(3);
   });
 
-  it('owns the threshold columns: 2×XP on #2 only, fail on #3 only, null unsets', () => {
+  it('sets both condition columns on any template, in range, null unsets', () => {
     // * Deterministic start: the rolled thresholds could land on the stats asserted below.
     state.missionTemplates.value = state.missionTemplates.value!.map(
       (entry) => ({ ...entry, xp: {}, fail: {} })
     );
 
-    planner.setMissionThreshold(1, 'xp', 'combat', 7);
-    planner.setMissionThreshold(2, 'fail', 'mobility', 8);
     planner.setMissionThreshold(0, 'xp', 'combat', 7);
-    planner.setMissionThreshold(1, 'fail', 'combat', 7);
+    planner.setMissionThreshold(0, 'fail', 'vigor', 9);
+    planner.setMissionThreshold(2, 'xp', 'mobility', 6);
     planner.setMissionThreshold(2, 'fail', 'vigor', 11);
+    planner.setMissionThreshold(3, 'fail', 'combat', 5);
 
     const templates = state.missionTemplates.value!;
 
-    expect(templates[1]!.xp.combat).toBe(7);
-    expect(templates[2]!.fail.mobility).toBe(8);
-    expect(templates[0]!.xp).toEqual({});
-    expect(templates[1]!.fail).toEqual({});
+    expect(templates[0]!.xp.combat).toBe(7);
+    expect(templates[0]!.fail.vigor).toBe(9);
+    expect(templates[2]!.xp.mobility).toBe(6);
     expect(templates[2]!.fail.vigor).toBeUndefined();
 
-    planner.setMissionThreshold(1, 'xp', 'combat', null);
+    planner.setMissionThreshold(0, 'xp', 'combat', null);
 
-    expect(state.missionTemplates.value![1]!.xp.combat).toBeUndefined();
+    expect(state.missionTemplates.value![0]!.xp.combat).toBeUndefined();
   });
 
   it('clamps the synergy level and active template to their ranges', () => {
@@ -297,51 +296,70 @@ describe('derived slot effects and team totals', () => {
     expect(totals().mobility).toBe(3);
   });
 
-  it('derives Spread Thin from real empty slots and ignores the manual chip', () => {
+  it('spawns copies to his right when trained, each paying +25%', async () => {
     planner.fillMissionSlot(0, 'golem');
 
-    // * Untrained: no expansion, whatever the emptiness.
+    // * Untrained: no copies, no expansion.
+    expect(slots()).toEqual(['golem', null, null, null]);
     expect(totals().vigor).toBe(4);
 
+    // * Training alone spawns nothing — placement is the event.
     planner.toggleStartingPower('golem');
     planner.toggleTrainablePower('golem', 1);
 
-    // * Alone: three empty slots, +75% floored per stat — 3/1/4/2/2 → 5/1/7/3/3.
+    expect(slots()).toEqual(['golem', null, null, null]);
+
+    planner.removeMissionSlot(0);
+    planner.fillMissionSlot(0, 'golem');
+
+    // * Placed trained: copies fill every free slot to his right — +75%: 3/1/4/2/2 → 5/1/7/3/3.
+    expect(slots()).toEqual(['golem', 'copy', 'copy', 'copy']);
     expect(totals().combat).toBe(5);
     expect(totals().intellect).toBe(1);
     expect(totals().vigor).toBe(7);
 
-    planner.fillMissionSlot(1, 'coupe');
+    // * Copies dissolve right-to-left only: the inner X is a no-op, the outer works.
+    planner.removeMissionSlot(1);
+    await nextTick();
 
-    // * Two empty slots now: floor(4 × 0.5) = +2 for Golem, plus Coupé's vigor 1.
-    expect(totals().vigor).toBe(7);
+    expect(slots()).toEqual(['golem', 'copy', 'copy', 'copy']);
 
-    planner.fillMissionSlot(2, 'malevola');
-    planner.fillMissionSlot(3, 'punch-up');
+    planner.removeMissionSlot(3);
+    planner.removeMissionSlot(2);
+    await nextTick();
 
-    // * Full call: nothing to expand into.
-    expect(totals().vigor).toBe(4 + 2 + 4);
+    // * One copy left: floor(4 × 0.25) = +1 vigor.
+    expect(slots()).toEqual(['golem', 'copy', null, null]);
+    expect(totals().vigor).toBe(5);
+
+    // * Untraining dissolves what remains.
+    planner.toggleTrainablePower('golem', 1);
+    await nextTick();
+
+    expect(slots()).toEqual(['golem', null, null, null]);
+    expect(totals().vigor).toBe(4);
   });
 
-  it('halves the illusion floored, mirrors its source, and counts it as occupancy', () => {
-    planner.toggleStartingPower('golem');
-    planner.toggleTrainablePower('golem', 1);
+  it('halves the illusion floored and mirrors its source live', () => {
     planner.fillMissionSlot(0, 'golem');
     planner.fillMissionSlot(1, 'prism');
 
     expect(slots()).toEqual(['golem', 'prism', 'illusion', null]);
 
-    // * One empty slot left (the illusion occupies one): Golem 3/1/4/2/2 → +25% → 3/1/5/2/2.
-    // * The illusion mirrors that at half, floored: 1/0/2/1/1. Prism adds 4/2/1/4/1.
+    // * Golem 3/1/4/2/2; the illusion mirrors him at half, floored: 1/0/2/1/1.
+    // * Prism adds 4/2/1/4/1.
     expect(totals().combat).toBe(3 + 4 + 1);
-    expect(totals().vigor).toBe(5 + 1 + 2);
+    expect(totals().vigor).toBe(4 + 1 + 2); // golem + prism + illusion
     expect(totals().intellect).toBe(1 + 2 + 0);
 
-    // * Perfect Copy: the illusion mirrors in full — and the team total clamps at 10.
+    // * Perfect Copy: the illusion mirrors in full.
+    expect(planner.missionIllusionRatio.value).toBe(0.5);
+
     planner.toggleStartingPower('prism');
     planner.toggleTrainablePower('prism', 1);
 
-    expect(totals().vigor).toBe(10);
+    expect(planner.missionIllusionRatio.value).toBe(1);
+    expect(totals().vigor).toBe(4 + 1 + 4); // golem + prism + full illusion
   });
 
   it('clamps each team total at the stat maximum', async () => {
@@ -364,14 +382,14 @@ describe('derived slot effects and team totals', () => {
       { type: 'illusion', source: 'coupe', ratio: 0.5 }
     ]);
 
-    // * Spread Thin lists only while there is real emptiness to expand into.
+    // * Spread Thin lists by its standing copies.
     state.missionSlots.value = [null, null, null, null];
     planner.toggleStartingPower('golem');
     planner.toggleTrainablePower('golem', 1);
-    planner.fillMissionSlot(0, 'golem');
+    planner.fillMissionSlot(1, 'golem');
 
     expect(planner.missionDerivedEffects.value).toEqual([
-      { type: 'spread-thin', emptySlots: 3 }
+      { type: 'spread-thin', copies: 2 }
     ]);
   });
 });

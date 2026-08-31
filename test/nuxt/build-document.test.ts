@@ -257,7 +257,7 @@ describe('build document — url codec', () => {
 });
 
 describe('build document — mission simulator keys (feature 015)', () => {
-  it('rolls templates in range: REQs 3–8, one threshold column each in 6–9', async () => {
+  it('rolls templates: REQs 3–8, one XP threshold in 6–9, fail fixed at combat 8', async () => {
     const planner = await freshPlanner();
     const templates = planner.plannerState.missionTemplates.value!;
 
@@ -271,16 +271,15 @@ describe('build document — mission simulator keys (feature 015)', () => {
     }
 
     const xp = Object.values(templates[1]!.xp);
-    const fail = Object.values(templates[2]!.fail);
 
     expect(templates[0]!.xp).toEqual({});
     expect(templates[0]!.fail).toEqual({});
     expect(xp).toHaveLength(1);
-    expect(fail).toHaveLength(1);
     expect(xp[0]).toBeGreaterThanOrEqual(6);
     expect(xp[0]).toBeLessThanOrEqual(9);
-    expect(fail[0]).toBeGreaterThanOrEqual(6);
-    expect(fail[0]).toBeLessThanOrEqual(9);
+
+    // * The fail example is fixed: combat at 8, the common end-game trip wire.
+    expect(templates[2]!.fail).toEqual({ combat: 8 });
   });
 
   it('writes a threshold column as five values with 0 for unset', async () => {
@@ -373,18 +372,22 @@ describe('build document — mission simulator keys (feature 015)', () => {
     expect(planner.plannerState.missionActiveTemplate.value).toBe(2);
   });
 
-  it('drops a threshold column carried by the wrong template', async () => {
+  it('keeps condition columns on any template through a round trip', async () => {
     const planner = await freshPlanner();
-
-    await planner.loadSharedBuild({
+    const document = {
       v: 1,
       mt: [
-        { r: [5, 5, 5, 5, 5], x: [0, 7, 0, 0, 0] },
+        { r: [5, 5, 5, 5, 5], x: [0, 7, 0, 0, 0], f: [9, 0, 0, 0, 0] },
         { r: [5, 5, 5, 5, 5] },
-        { r: [5, 5, 5, 5, 5] }
+        { r: [5, 5, 5, 5, 5], x: [0, 0, 6, 0, 0] }
       ]
-    } as SerializedBuild);
+    } as SerializedBuild;
 
-    expect(planner.plannerState.missionTemplates.value![0]!.xp).toEqual({});
+    await planner.loadSharedBuild(document);
+
+    expect(planner.plannerState.missionTemplates.value![0]!.xp).toEqual({
+      intellect: 7
+    });
+    expect(planner.serializeCurrentBuild().mt).toEqual(document.mt);
   });
 });

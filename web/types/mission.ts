@@ -6,10 +6,18 @@ export const MISSION_TEMPLATE_COUNT = 3;
 // * Prism's stat-only occupant, as it appears in a team slot and in the serialized `mh` key.
 export const ILLUSION_SLOT = 'illusion';
 
-export type MissionSlot = HeroId | typeof ILLUSION_SLOT | null;
+// * Golem's expansion (feature 015): each copy occupies a slot to his right and pays him
+// * +25%; the copy itself contributes no stats.
+export const GOLEM_COPY_SLOT = 'copy';
 
-// * Threshold columns are per-stat and optional; which template may carry which is fixed:
-// * only template #2 (index 1) carries `xp`, only template #3 (index 2) carries `fail`.
+export type MissionSlot =
+  | HeroId
+  | typeof ILLUSION_SLOT
+  | typeof GOLEM_COPY_SLOT
+  | null;
+
+// * Condition columns are optional and single-valued: a template holds at most one 2×XP
+// * threshold and at most one fail threshold, each on one stat.
 export interface MissionTemplate {
   req: HeroStats;
   xp: Partial<HeroStats>;

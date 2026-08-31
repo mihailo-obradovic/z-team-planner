@@ -82,7 +82,19 @@
     </template>
 
     <template #mission-simulator>
-      <div class="p-4" />
+      <!-- * Desktop-first (feature 015): templates, requirements and math in a top row,
+           the team spanning beneath — wrapping into a centered stack when narrow, never a
+           horizontal page scroll. -->
+      <div class="flex flex-col items-center gap-4 p-4 md:gap-6 md:p-6">
+        <!-- * `items-stretch` levels the three panels to the tallest (feature 015). -->
+        <div class="flex flex-wrap items-stretch justify-center gap-4 md:gap-6">
+          <MissionTemplatesPanel />
+          <MissionRequirementsPanel />
+          <MissionMathPanel />
+        </div>
+
+        <MissionTeamPanel @viewDetail="handleViewDetail" />
+      </div>
     </template>
   </UTabs>
 
@@ -97,6 +109,10 @@
 import HeroCard from '@/components/HeroCard.vue';
 import SynergyPairCard from '@/components/SynergyPairCard.vue';
 import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
+import MissionTemplatesPanel from '@/components/mission/MissionTemplatesPanel.vue';
+import MissionRequirementsPanel from '@/components/mission/MissionRequirementsPanel.vue';
+import MissionMathPanel from '@/components/mission/MissionMathPanel.vue';
+import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 
 import type { HeroId } from '@/types/hero';
 import type { TabValue } from '@/composables/useActiveTab';

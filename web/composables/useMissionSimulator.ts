@@ -5,6 +5,7 @@ import {
   STAT_NAMES
 } from '@/types/hero';
 import {
+  GOLEM_COPY_SLOT,
   ILLUSION_SLOT,
   MISSION_SLOT_COUNT,
   MISSION_TEMPLATE_COUNT
@@ -23,7 +24,7 @@ import type { useHeroPowerTraining } from '@/composables/useHeroPowerTraining';
 // * explainable (feature 015).
 export type MissionDerivedEffect =
   | { type: 'en-pointe'; stat: StatName; bonus: number }
-  | { type: 'spread-thin'; emptySlots: number }
+  | { type: 'spread-thin'; copies: number }
   | { type: 'illusion'; source: HeroId; ratio: 0.5 | 1 };
 
 // * Feature 015 — the mission team and template state actions. Slots are positional: some
@@ -43,12 +44,7 @@ export function useMissionSimulator(
   const { visibleHeroes, synergyPairs } = episodeSetup;
 
   const missionHeroIds = computed<Set<HeroId>>(
-    () =>
-      new Set(
-        missionSlots.value.filter(
-          (slot): slot is HeroId => slot !== null && slot !== ILLUSION_SLOT
-        )
-      )
+    () => new Set(missionSlots.value.filter(isHeroSlot))
   );
 
   // * What the slot picker offers: the current roster, minus heroes already on the team.
@@ -64,9 +60,13 @@ export function useMissionSimulator(
     )
   );
 
-  const emptyMissionSlots = computed(
-    () => missionSlots.value.filter((slot) => slot === null).length
+  const missionCopyCount = computed(
+    () => missionSlots.value.filter((slot) => slot === GOLEM_COPY_SLOT).length
   );
+
+  function spreadThinTrained(): boolean {
+    return powerTraining.getPowerState('golem').trainableSelected === 1;
+  }
 
   // * En Pointe and Spread Thin are derived from the real team here — the manual what-if
   // * chips the other tabs show are ignored and never written. Everything else (Supernova,
@@ -85,20 +85,17 @@ export function useMissionSimulator(
     }
 
     if (heroId === 'golem') {
-      const trained =
-        powerTraining.getPowerState('golem').trainableSelected === 1;
+      // * The copies are the mechanism now: +25% per copy standing on the team.
       const factor =
-        SPECIAL_POWER_MECHANICS.golem.percentPerSlot * emptyMissionSlots.value;
+        SPECIAL_POWER_MECHANICS.golem.percentPerSlot * missionCopyCount.value;
       const allocations = levelUp.getStatAllocations('golem');
 
       return Object.fromEntries(
         STAT_NAMES.map((name) => [
           name,
-          trained
-            ? Math.floor(
-                (HERO_STARTING_STATS.golem[name] + allocations[name]) * factor
-              )
-            : 0
+          Math.floor(
+            (HERO_STARTING_STATS.golem[name] + allocations[name]) * factor
+          )
         ])
       ) as HeroStats;
     }
@@ -122,6 +119,11 @@ export function useMissionSimulator(
     );
 
     return missionSlots.value.map((slot, index) => {
+      // * A copy is Golem's own expansion — its value is already in his boosted row.
+      if (slot === GOLEM_COPY_SLOT) {
+        return null;
+      }
+
       if (slot !== ILLUSION_SLOT) {
         return heroStats[index] ?? null;
       }
@@ -224,8 +226,7 @@ export function useMissionSimulator(
         const threshold = fail[stat];
 
         return (
-          threshold !== undefined &&
-          missionTeamTotals.value[stat] >= threshold
+          threshold !== undefined && missionTeamTotals.value[stat] >= threshold
         );
       }) ?? null
     );
@@ -258,15 +259,8 @@ export function useMissionSimulator(
       effects.push({ type: 'en-pointe', stat, bonus: bonuses[stat] });
     }
 
-    if (
-      slots.includes('golem') &&
-      powerTraining.getPowerState('golem').trainableSelected === 1 &&
-      emptyMissionSlots.value > 0
-    ) {
-      effects.push({
-        type: 'spread-thin',
-        emptySlots: emptyMissionSlots.value
-      });
+    if (missionCopyCount.value > 0) {
+      effects.push({ type: 'spread-thin', copies: missionCopyCount.value });
     }
 
     const illusionSource =
@@ -290,6 +284,14 @@ export function useMissionSimulator(
       return;
     }
 
+    // * A copy dissolves right-to-left; overwriting an inner one would skip the order.
+    if (
+      missionSlots.value[index] === GOLEM_COPY_SLOT &&
+      !isRightmostCopy(missionSlots.value, index)
+    ) {
+      return;
+    }
+
     if (!visibleHeroes.value.some((hero) => hero.id === heroId)) {
       return;
     }
@@ -297,13 +299,21 @@ export function useMissionSimulator(
     const slots = [...missionSlots.value];
 
     slots[index] = heroId;
-    missionSlots.value = heroId === 'prism' ? withIllusion(slots, index) : slots;
+    missionSlots.value = withSpawns(slots, heroId, index, spreadThinTrained());
   }
 
-  // * Removal is the same for a hero and the illusion — and for the illusion it is sticky:
-  // * creation happens only on Prism's placement, so nothing recreates it here.
+  // * Removal is the same for a hero and the spawned occupants — and for those it is
+  // * sticky: creation happens only on their owner's placement, so nothing recreates them
+  // * here. Golem's copies dissolve right-to-left only.
   function removeMissionSlot(index: number) {
     if (!isSlotIndex(index) || missionSlots.value[index] === null) {
+      return;
+    }
+
+    if (
+      missionSlots.value[index] === GOLEM_COPY_SLOT &&
+      !isRightmostCopy(missionSlots.value, index)
+    ) {
       return;
     }
 
@@ -319,7 +329,7 @@ export function useMissionSimulator(
     if (
       !isSlotIndex(index) ||
       !isSlotIndex(target) ||
-      missionSlots.value[index] === null
+      !isHeroSlot(missionSlots.value[index] ?? null)
     ) {
       return;
     }
@@ -330,9 +340,8 @@ export function useMissionSimulator(
     slots[index] = slots[target]!;
     slots[target] = moved;
 
-    // * Moving Prism is placing her again — the passive partner of a swap is not placed.
-    missionSlots.value =
-      moved === 'prism' ? withIllusion(slots, target) : slots;
+    // * Moving a hero is placing them again — the passive partner of a swap is not placed.
+    missionSlots.value = withSpawns(slots, moved, target, spreadThinTrained());
   }
 
   function setMissionReq(template: number, stat: StatName, value: number) {
@@ -346,14 +355,14 @@ export function useMissionSimulator(
     }));
   }
 
-  // * Which template owns which column is fixed: 2×XP on #2, fail on #3. `null` unsets.
+  // * Both condition columns are configurable on any template. `null` unsets.
   function setMissionThreshold(
     template: number,
     kind: 'xp' | 'fail',
     stat: StatName,
     value: number | null
   ) {
-    if (template !== (kind === 'xp' ? 1 : 2)) {
+    if (!isTemplateIndex(template)) {
       return;
     }
 
@@ -361,17 +370,17 @@ export function useMissionSimulator(
       return;
     }
 
-    updateTemplate(template, (entry) => {
-      const column = { ...entry[kind] };
-
-      if (value === null) {
-        delete column[stat];
-      } else {
-        column[stat] = value;
-      }
-
-      return { ...entry, [kind]: column };
-    });
+    updateTemplate(template, (entry) => ({
+      ...entry,
+      // * At most one threshold per column: setting a stat's value replaces any other;
+      // * unsetting clears only a value that stat actually holds.
+      [kind]:
+        value === null
+          ? entry[kind][stat] === undefined
+            ? entry[kind]
+            : {}
+          : { [stat]: value }
+    }));
   }
 
   function setMissionSynergyLevel(level: SynergyLevel) {
@@ -406,9 +415,17 @@ export function useMissionSimulator(
   // * in its exact context — directly to Prism's right, with a hero to her left. This same
   // * watcher is what drops contextless entries after deserialization.
   watch(
-    [missionSlots, visibleHeroes],
+    [
+      missionSlots,
+      visibleHeroes,
+      () => powerTraining.getPowerState('golem').trainableSelected
+    ],
     () => {
-      const cleaned = sanitize(missionSlots.value, visibleHeroes.value);
+      const cleaned = sanitize(
+        missionSlots.value,
+        visibleHeroes.value,
+        spreadThinTrained()
+      );
 
       if (cleaned.some((slot, index) => slot !== missionSlots.value[index])) {
         missionSlots.value = cleaned;
@@ -424,6 +441,7 @@ export function useMissionSimulator(
     missionActiveTemplate,
     missionHeroIds,
     missionCandidates,
+    missionCopyCount,
     missionTeamHasPair,
     missionSlotStats,
     missionTeamTotals,
@@ -457,47 +475,81 @@ function isStatValue(value: number, min: number): boolean {
 }
 
 function isHeroSlot(slot: MissionSlot): slot is HeroId {
-  return slot !== null && slot !== ILLUSION_SLOT;
+  return slot !== null && slot !== ILLUSION_SLOT && slot !== GOLEM_COPY_SLOT;
 }
 
-// * Prism was just placed at `index`: the illusion of her left neighbor appears in the slot
-// * to her right when that slot is free — slot 1 has no left neighbor, slot 4 no right slot.
-function withIllusion(slots: MissionSlot[], index: number): MissionSlot[] {
-  const right = index + 1;
+// * Placement spawns (feature 015). Prism placed: the illusion of her left neighbor
+// * appears in the slot to her right when that slot is free. Golem placed with Spread Thin
+// * trained: a copy of him fills every free slot to his right.
+function withSpawns(
+  slots: MissionSlot[],
+  placed: HeroId,
+  index: number,
+  golemTrained: boolean
+): MissionSlot[] {
+  if (placed === 'prism') {
+    const right = index + 1;
 
-  if (
-    right < MISSION_SLOT_COUNT &&
-    slots[right] === null &&
-    isHeroSlot(slots[index - 1] ?? null)
-  ) {
-    const next = [...slots];
+    if (
+      right < MISSION_SLOT_COUNT &&
+      slots[right] === null &&
+      isHeroSlot(slots[index - 1] ?? null)
+    ) {
+      const next = [...slots];
 
-    next[right] = ILLUSION_SLOT;
+      next[right] = ILLUSION_SLOT;
 
-    return next;
+      return next;
+    }
+
+    return slots;
+  }
+
+  if (placed === 'golem' && golemTrained) {
+    return slots.map((slot, at) =>
+      at > index && slot === null ? GOLEM_COPY_SLOT : slot
+    );
   }
 
   return slots;
 }
 
+function isRightmostCopy(slots: MissionSlot[], index: number): boolean {
+  return slots.lastIndexOf(GOLEM_COPY_SLOT) === index;
+}
+
 function sanitize(
   slots: MissionSlot[],
-  visible: { id: HeroId }[]
+  visible: { id: HeroId }[],
+  golemTrained: boolean
 ): MissionSlot[] {
   const visibleIds = new Set(visible.map((hero) => hero.id));
   const heroesOnly = slots.map((slot) =>
     isHeroSlot(slot) && !visibleIds.has(slot) ? null : slot
   );
   const prism = heroesOnly.indexOf('prism');
+  const golem = heroesOnly.indexOf('golem');
 
-  return heroesOnly.map((slot, index) =>
-    slot === ILLUSION_SLOT &&
-    !(
-      prism > 0 &&
-      index === prism + 1 &&
-      isHeroSlot(heroesOnly[prism - 1] ?? null)
-    )
-      ? null
-      : slot
-  );
+  return heroesOnly.map((slot, index) => {
+    if (
+      slot === ILLUSION_SLOT &&
+      !(
+        prism > 0 &&
+        index === prism + 1 &&
+        isHeroSlot(heroesOnly[prism - 1] ?? null)
+      )
+    ) {
+      return null;
+    }
+
+    // * A copy stands only to Golem's right, and only while Spread Thin is trained.
+    if (
+      slot === GOLEM_COPY_SLOT &&
+      !(golemTrained && golem >= 0 && index > golem)
+    ) {
+      return null;
+    }
+
+    return slot;
+  });
 }
