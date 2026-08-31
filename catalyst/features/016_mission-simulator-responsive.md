@@ -57,9 +57,9 @@ The math panel does **not** revert here. Below 77rem it spans the whole tab whet
 
 **35rem (≈602px viewport) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — always visible on a scrim, since this is the tier with no hover. The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
 
-**28.5rem (≈498px viewport) — the templates panel.** It shows one condition column set at a time behind a `Requirements` / `Conditions` toggle. Showing one set is what buys the room, so the stat wordmarks stay: they survive the whole tier and go only at **21rem**, where the Conditions view's two steppers stop fitting beside them and the icon carries the stat alone. The Requirements view never needs that — its labels fit at every width measured, so the Conditions view sets the number.
+**28.5rem (≈498px viewport) — the templates panel.** It shows one condition column set at a time behind a `Requirements` / `Conditions` toggle. The stat wordmarks are the **Conditions view's** to spend, not the tier's. One stepper leaves the label room at every width this app supports, two do not — so the Requirements view keeps its wordmarks all the way down, and the Conditions view runs on icons for as long as the toggle exists. There is no separate threshold: the wordmark leaves the Conditions view exactly where the toggle arrives.
 
-Each stat row is `1fr` for the icon-and-wordmark cell and `auto` for the rest, so the label sits left and the steppers group right, the way they read at the widest tier. That `1fr` is also why the threshold is 21rem rather than the 19 an `auto` track needed: the label track stops at the wordmark's min-content, which the two stepper columns then have to fit beside. The requirements panel is likewise untouched at this threshold: its legend measures 221px in two columns and still fits. Its radar frame instead carries `max-w-full` at every width — the frame is the panel's design width exactly, so it is the first thing to run out of room, and it gives up width rather than bleed over the panel's padding. That happens below ~348px, not at a threshold.
+Each stat row is `1fr` for the icon-and-wordmark cell and `auto` for the rest, so the label sits left and the steppers group right, the way they read at the widest tier. The requirements panel is likewise untouched at this threshold: its legend measures 221px in two columns and still fits. Its radar frame instead carries `max-w-full` at every width — the frame is the panel's design width exactly, so it is the first thing to run out of room, and it gives up width rather than bleed over the panel's padding. That happens below ~348px, not at a threshold.
 
 Tier changes are not animated. Feature 015's height, radar and value animations are unaffected by them.
 
@@ -76,10 +76,11 @@ Not role-specific.
 | 900px container | templates floored at 454, requirements 430 | equal tracks give way to the floor |
 | 819px viewport | one column, every panel 777 | past the 49.5rem crossing |
 | 600px viewport | one column; team slots 128 square, controls on the portrait | past the 35rem crossing |
-| 490px viewport | templates behind the toggle, wordmarks intact; team slots 101 | the narrowest tier |
+| 490px viewport | Requirements view: wordmarks intact; team slots 101 | the narrowest tier |
+| 490px viewport, Conditions view | stat icons only, two steppers right | one stepper fits a label, two do not |
 | 768px viewport | the math panel in two columns, 333 each | its bound is its own, not the layout's |
 | 767px viewport | the math panel back to one column | the chosen stop, not the measured limit |
-| 320px viewport | four team slots 59 square in one row; radar frame 250; stat icons only | the reflow floor |
+| 320px viewport | four team slots 59 square in one row; radar frame 250; Requirements wordmarks still shown | the reflow floor |
 | 320px viewport | no horizontal scrolling, nothing wider than the viewport | the reflow floor |
 | toggle set to `CONDITIONS`, then the tab widens past 28.5rem | both column sets shown, no toggle | its position is kept for a return |
 
@@ -138,7 +139,7 @@ Measured in the browser on 2026-08-31, dev server, Chromium.
 
 **Real viewports, all six from the walk.** At 1280 / 1000 / 819 / 600 / 490 / 320: `scrollWidth === clientWidth` on both the tab container and the document, no element in the page wider than the viewport, and no element inside any panel past that panel's border box. Layout per tier: 1280 → two rows, 454 / 316 / 388 with the team 568 and centred (feature 015 untouched); 1000 → three rows, 471 / 471 with the math in two 449px columns; 819 → four rows at 777; 600 → four rows at 558, slots 128 square with the overlay controls; 490 → slots 101, the templates toggle shown; 320 → slots 59 square in **one** row, radar frame 250 under its 288 cap.
 
-**Container sweep, 483 widths × both toggle views.** Every queried width from 1240 down to 276 in 2px steps, in the Requirements view and the Conditions view: no panel overflow and no grid wider than its container at any of them. Checked at the boundaries: the math panel is two columns at a 726 container and one at 725; the templates wordmarks are present at 336 and gone at 334, with no label cell squeezed under its own text at any width.
+**Container sweep, 483 widths × both toggle views.** Every queried width from 1240 down to 276 in 2px steps, in the Requirements view and the Conditions view: no panel overflow and no grid wider than its container at any of them. Checked at the boundaries: the math panel is two columns at a 726 container and one at 725; the templates wordmarks are present at every width in the Requirements view and, in the Conditions view, present at 456 and gone at 455, with no label cell squeezed under its own text at any width.
 
 The observed viewport-to-container offset was 32px without the scrolling main's scrollbar and 42px with it, which is why 77rem carries margin over the 78rem that 1280 nominally maps to.
 

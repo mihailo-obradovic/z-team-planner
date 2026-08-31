@@ -127,16 +127,15 @@
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The wordmark survives the whole narrow tier — showing one column
-                     set is what buys the room — and goes only at 21rem, where the
-                     Conditions view's two steppers stop fitting beside it and the icon
-                     has to carry the stat alone. The Requirements view never needs this;
-                     it is the Conditions view that sets the number. -->
+                <!-- * The wordmark is the Conditions view's to spend, not the tier's: one
+                     stepper leaves the label room at every width this app supports, two do
+                     not, so Requirements keeps its wordmarks all the way down and
+                     Conditions runs on icons for as long as the toggle exists. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase"
                 >
                   <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
-                  <span class="@max-[21rem]:hidden">{{ stat }}</span>
+                  <span :class="wordmarkClass">{{ stat }}</span>
                 </span>
 
                 <MissionValueStepper
@@ -205,5 +204,9 @@ const reqColumnClass = computed(() =>
 );
 const conditionColumnClass = computed(() =>
   columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
+);
+
+const wordmarkClass = computed(() =>
+  columnView.value === 'conditions' ? '@max-[28.5rem]:hidden' : ''
 );
 </script>
