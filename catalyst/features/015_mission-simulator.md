@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -162,7 +162,7 @@ _None — resolved in the grilling session of 2026-08-31._
 
 ## Verification
 
-_Empty while draft._
+Walked in the browser by the user, who confirmed the Examples against the running app. The responsive layout is verified separately in feature 016.
 
 ## Agent Change Rules
 
