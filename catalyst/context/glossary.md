@@ -27,6 +27,14 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 
 **Allocation** — any budgeted spend on a hero: a stat level-up, a bonus level, a power training, a flight training. Budgets are per category, never pooled.
 
+## Synergy
+
+**Synergy pair** — a fixed two-hero pairing the game grants a bonus to. Pairs are always derived from episode setup (four base pairs, plus at most one conditional pair determined by the episode 3 cut and episode 4 hire); a user never creates, removes, or toggles a pair directly.
+
+**Effective stat** — a hero's displayed value for one stat: starting value plus allocations plus any special-power bonus, capped at the game's per-stat maximum. Named in code around `MAX_STAT_VALUE`.
+
+**Pair total** — the per-stat sum of both heroes' effective stats in a synergy pair. May exceed the per-stat maximum, because it describes two heroes; only single-hero scales (like a radar axis) cap it.
+
 ## Modes
 
 **Shared-build mode** — the planner is displaying a build document that did not come from the user's own saves, so it has nothing of theirs to lose and offers to save a copy rather than to save. Entered by opening a share link, left by saving a copy or returning to their own build.
