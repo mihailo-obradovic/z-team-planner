@@ -71,39 +71,74 @@
           :inert="index !== activeIndex"
         >
           <div class="min-h-0 overflow-hidden">
+            <!-- * Below 28.5rem the panel cannot carry both condition columns beside the
+                 REQs, so it shows one set at a time (feature 016). The toggle exists only
+                 at that width — nothing is hidden above it — and its position is view
+                 state: a component ref, never planner state, so it cannot reach a
+                 serialized build, a share link, or dirty tracking. -->
             <div
-              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2"
+              class="hidden gap-1 border-t border-muted px-3 pt-2 @max-[28.5rem]:flex"
+              role="group"
+              aria-label="Template columns"
+            >
+              <u-button
+                v-for="option in COLUMN_VIEWS"
+                :key="option.value"
+                size="xs"
+                variant="subtle"
+                color="secondary"
+                :active="columnView === option.value"
+                :aria-pressed="columnView === option.value"
+                @click="columnView = option.value"
+              >
+                {{ option.label }}
+              </u-button>
+            </div>
+
+            <div
+              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2 @max-[28.5rem]:justify-center"
+              :class="
+                columnView === 'req'
+                  ? '@max-[28.5rem]:grid-cols-[auto_auto]'
+                  : '@max-[28.5rem]:grid-cols-[auto_auto_auto]'
+              "
             >
               <span class="font-heading text-tag text-dimmed uppercase"
                 >Stat</span
               >
               <span
                 class="text-center font-heading text-tag text-dimmed uppercase"
+                :class="reqColumnClass"
               >
                 REQ
               </span>
               <span
                 class="text-center font-heading text-tag text-dimmed uppercase"
+                :class="conditionColumnClass"
               >
                 2×XP ≥
               </span>
               <span
                 class="text-center font-heading text-tag text-dimmed uppercase"
+                :class="conditionColumnClass"
               >
                 Fail ≥
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
+                <!-- * The wordmark is what the narrow tier spends: the icon carries the
+                     stat, and every stepper below still names it in full. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase"
                 >
                   <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
-                  {{ stat }}
+                  <span class="@max-[28.5rem]:hidden">{{ stat }}</span>
                 </span>
 
                 <MissionValueStepper
                   :value="template.req[stat]"
                   :label="`template ${index + 1} required ${stat}`"
+                  :class="reqColumnClass"
                   @change="setMissionReq(index, stat, $event ?? 0)"
                 />
 
@@ -111,6 +146,7 @@
                   :value="template.xp[stat] ?? null"
                   :label="`template ${index + 1} double XP threshold for ${stat}`"
                   unsettable
+                  :class="conditionColumnClass"
                   @change="setMissionThreshold(index, 'xp', stat, $event)"
                 />
 
@@ -118,6 +154,7 @@
                   :value="template.fail[stat] ?? null"
                   :label="`template ${index + 1} fail threshold for ${stat}`"
                   unsettable
+                  :class="conditionColumnClass"
                   @change="setMissionThreshold(index, 'fail', stat, $event)"
                 />
               </template>
@@ -147,4 +184,22 @@ const {
 
 const templates = computed(() => missionTemplates.value ?? []);
 const activeIndex = computed(() => missionActiveTemplate.value);
+
+// * Which column set the narrow tier shows (feature 016) — one per panel, not per template,
+// * so switching the active template keeps what you were reading. Deliberately a plain ref:
+// * planner state serializes, and the build document must never carry a layout choice.
+const COLUMN_VIEWS = [
+  { value: 'req', label: 'REQ' },
+  { value: 'conditions', label: 'Conditions' }
+] as const;
+
+const columnView = ref<(typeof COLUMN_VIEWS)[number]['value']>('req');
+
+// * Hiding is scoped to the narrow tier: above it both sets render and the toggle is gone.
+const reqColumnClass = computed(() =>
+  columnView.value === 'req' ? '' : '@max-[28.5rem]:hidden'
+);
+const conditionColumnClass = computed(() =>
+  columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
+);
 </script>
