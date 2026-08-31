@@ -50,5 +50,13 @@ export function useActiveTab() {
     window.history.replaceState({}, '', url.toString());
   }
 
-  return { activeTab, initTabFromUrl, setActiveTab };
+  // ! A writable computed, bound with `v-model`: with a one-way `:model-value` plus an
+  // ! update handler, the tabs component keeps its own copy of the selection and the two
+  // ! can drift — leaving two panels visible at once.
+  const activeTabModel = computed({
+    get: () => activeTab.value,
+    set: (value: TabValue) => setActiveTab(value)
+  });
+
+  return { activeTab, activeTabModel, initTabFromUrl, setActiveTab };
 }

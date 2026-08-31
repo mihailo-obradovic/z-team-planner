@@ -26,11 +26,9 @@
                 ><span class="text-muted">/{{ row.need }}</span>
               </span>
               <u-icon
-                :name="row.have >= row.need ? 'i-lucide-check' : 'i-lucide-x'"
+                :name="row.met ? 'i-lucide-check' : 'i-lucide-x'"
                 class="size-5 shrink-0"
-                :class="
-                  row.have >= row.need ? 'text-success-500' : 'text-error-600'
-                "
+                :class="row.met ? 'text-success-500' : 'text-error-600'"
               />
             </span>
           </li>
@@ -46,14 +44,22 @@
 
         <dl class="flex flex-col gap-1">
           <div class="flex h-8 items-center justify-between gap-6">
-            <dt class="font-heading text-base tracking-label text-toned uppercase">Radar coverage</dt>
+            <dt
+              class="font-heading text-base tracking-label text-toned uppercase"
+            >
+              Radar coverage
+            </dt>
             <dd class="font-heading text-xl font-bold">
               {{ coveragePercent }}%
             </dd>
           </div>
 
           <div class="flex h-8 items-center justify-between gap-6">
-            <dt class="font-heading text-base tracking-label text-toned uppercase">Synergy boost</dt>
+            <dt
+              class="font-heading text-base tracking-label text-toned uppercase"
+            >
+              Synergy level
+            </dt>
             <dd class="flex items-center gap-2">
               <!-- * The 4-position switch (feature 015): one global level, +5% each, inert
                    without a pair on the team. -->
@@ -93,14 +99,22 @@
           </div>
 
           <div class="flex h-8 items-center justify-between gap-6">
-            <dt class="font-heading text-base tracking-label text-toned uppercase">Reattempt</dt>
+            <dt
+              class="font-heading text-base tracking-label text-toned uppercase"
+            >
+              Reattempt
+            </dt>
             <dd class="font-heading text-lg text-toned">
               {{ reattemptNote }}
             </dd>
           </div>
 
           <div class="flex h-8 items-center justify-between gap-6">
-            <dt class="font-heading text-base tracking-label text-toned uppercase">Fail check</dt>
+            <dt
+              class="font-heading text-base tracking-label text-toned uppercase"
+            >
+              Fail check
+            </dt>
             <dd>
               <u-badge
                 v-if="hasFailThresholds"
@@ -117,7 +131,11 @@
           </div>
 
           <div class="flex h-8 items-center justify-between gap-6">
-            <dt class="font-heading text-base tracking-label text-toned uppercase">Double XP bonus</dt>
+            <dt
+              class="font-heading text-base tracking-label text-toned uppercase"
+            >
+              Double XP bonus
+            </dt>
             <dd>
               <u-badge
                 v-if="missionXpFulfilled !== null"
@@ -163,11 +181,27 @@ const {
 const success = computed(() => missionSuccess.value);
 const failed = computed(() => success.value.failedStat !== null);
 
+// * Every number in this panel tweens, the way the estimate does: the stat totals and
+// * requirements, the coverage and the synergy bonus all travel to their new value.
+const tweenTargets = computed(() => [
+  ...STAT_NAMES.map((stat) => missionTeamTotals.value[stat]),
+  ...STAT_NAMES.map((stat) => missionActiveTemplateData.value?.req[stat] ?? 0),
+  missionSuccess.value.coverage * 100,
+  missionSuccess.value.synergyBonus * 100
+]);
+
+const tweened = useTweenedValues(tweenTargets, 200);
+
 const totalRows = computed(() =>
-  STAT_NAMES.map((stat) => ({
+  STAT_NAMES.map((stat, index) => ({
     stat,
-    need: missionActiveTemplateData.value?.req[stat] ?? 0,
-    have: missionTeamTotals.value[stat]
+    need: Math.round(tweened.value[STAT_NAMES.length + index] ?? 0),
+    have: Math.round(tweened.value[index] ?? 0),
+    // * The check compares the settled values, not the travelling ones, so the icon does
+    // * not flicker mid-tween.
+    met:
+      missionTeamTotals.value[stat] >=
+      (missionActiveTemplateData.value?.req[stat] ?? 0)
   }))
 );
 
@@ -184,9 +218,9 @@ const reattemptNote = computed(() => {
 });
 
 const coveragePercent = computed(() =>
-  Math.round(success.value.coverage * 100)
+  Math.round(tweened.value[STAT_NAMES.length * 2] ?? 0)
 );
 const synergyPercent = computed(() =>
-  Math.round(success.value.synergyBonus * 100)
+  Math.round(tweened.value[STAT_NAMES.length * 2 + 1] ?? 0)
 );
 </script>

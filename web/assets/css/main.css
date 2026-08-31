@@ -207,6 +207,30 @@
     scrollbar-color: var(--scrollbar-paper);
 }
 
+/* * Feature 015: a tab fades its content in on a switch, at the slow duration.
+ * ! On the panel element itself this breaks the tabs: the panel keeps a running animation,
+ * ! and the presence logic that hides an inactive panel waits for that animation to end, so
+ * ! two panels stay visible at once. It belongs on the content inside the panel. */
+@utility tab-fade {
+    animation: tab-fade var(--duration-slow) ease-out;
+}
+
+/* * Past the baseline duration, so it short-circuits under reduced motion (annex §11). */
+@media (prefers-reduced-motion: reduce) {
+    .tab-fade {
+        animation: none;
+    }
+}
+
+@keyframes tab-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 @utility plate {
     height: var(--control-h-plate);
     background: linear-gradient(

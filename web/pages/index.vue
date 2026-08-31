@@ -18,7 +18,7 @@
     </template>
 
     <template #overview>
-      <div class="flex flex-col gap-4 p-4">
+      <div class="flex tab-fade flex-col gap-4 p-4">
         <div
           class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
         >
@@ -70,7 +70,7 @@
     </template>
 
     <template #synergy-pairs>
-      <div class="@container flex flex-wrap justify-center gap-4 p-4">
+      <div class="@container flex tab-fade flex-wrap justify-center gap-4 p-4">
         <SynergyPairCard
           v-for="pair in synergyPairColumns"
           :key="pair.topId"
@@ -85,9 +85,9 @@
       <!-- * Desktop-first (feature 015): templates, requirements and math in a top row,
            the team spanning beneath — wrapping into a centered stack when narrow, never a
            horizontal page scroll. -->
-      <div class="flex flex-col items-center gap-4 p-4 md:gap-6 md:p-6">
+      <div class="flex tab-fade flex-col items-center gap-4 p-4">
         <!-- * `items-stretch` levels the three panels to the tallest (feature 015). -->
-        <div class="flex flex-wrap items-stretch justify-center gap-4 md:gap-6">
+        <div class="flex flex-wrap items-stretch justify-center gap-4">
           <MissionTemplatesPanel />
           <MissionRequirementsPanel />
           <MissionMathPanel />
