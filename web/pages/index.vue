@@ -1,7 +1,7 @@
 <template>
   <UTabs
     :items="tabs"
-    default-value="overview"
+    :model-value="activeTab"
     class="flex h-full w-full flex-col"
     variant="link"
     :unmount-on-hide="false"
@@ -10,6 +10,7 @@
       list: 'shrink-0',
       content: 'min-h-0 flex-1 overflow-y-auto'
     }"
+    @update:model-value="setActiveTab($event as TabValue)"
   >
     <template #default="{ item }">
       <span class="sm:hidden">{{ item.shortLabel }}</span>
@@ -98,8 +99,13 @@ import SynergyPairCard from '@/components/SynergyPairCard.vue';
 import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
 import type { HeroId } from '@/types/hero';
+import type { TabValue } from '@/composables/useActiveTab';
 
 const selectedHeroId = ref<HeroId | null>(null);
+
+const { activeTab, initTabFromUrl, setActiveTab } = useActiveTab();
+
+onMounted(initTabFromUrl);
 
 const tabs = [
   {
