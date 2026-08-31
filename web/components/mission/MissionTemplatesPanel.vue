@@ -97,11 +97,11 @@
             </div>
 
             <div
-              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2 @max-[28.5rem]:justify-center"
+              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2"
               :class="
                 columnView === 'req'
-                  ? '@max-[28.5rem]:grid-cols-[auto_auto]'
-                  : '@max-[28.5rem]:grid-cols-[auto_auto_auto]'
+                  ? '@max-[28.5rem]:grid-cols-[1fr_auto]'
+                  : '@max-[28.5rem]:grid-cols-[1fr_auto_auto]'
               "
             >
               <span class="font-heading text-tag text-dimmed uppercase"
@@ -128,14 +128,15 @@
 
               <template v-for="stat in STAT_NAMES" :key="stat">
                 <!-- * The wordmark survives the whole narrow tier — showing one column
-                     set is what buys the room — and goes only at 19rem, where the
+                     set is what buys the room — and goes only at 21rem, where the
                      Conditions view's two steppers stop fitting beside it and the icon
-                     has to carry the stat alone. -->
+                     has to carry the stat alone. The Requirements view never needs this;
+                     it is the Conditions view that sets the number. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase"
                 >
                   <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
-                  <span class="@max-[19rem]:hidden">{{ stat }}</span>
+                  <span class="@max-[21rem]:hidden">{{ stat }}</span>
                 </span>
 
                 <MissionValueStepper
