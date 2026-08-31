@@ -40,3 +40,17 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 **Shared-build mode** — the planner is displaying a build document that did not come from the user's own saves, so it has nothing of theirs to lose and offers to save a copy rather than to save. Entered by opening a share link, left by saving a copy or returning to their own build.
 
 Viewing one's own **cloud build** is not shared-build mode, even though both arrive over the network.
+
+## Mission simulator
+
+**Mission template** — one of the simulator's three fixed, unnamed call definitions: five required stat values, plus at most one optional per-stat condition column (a 2×XP threshold on template #2, a fail threshold on template #3). Always a 4-slot call.
+
+**Mission team** — the up-to-four heroes placed into the simulator's slots. Distinct from the roster: it is a selection for one simulated call, not who exists.
+
+**Slot** — one of the four ordered positions in a mission team. Position matters: some powers pay differently by slot, and an empty slot is itself a quantity powers consume.
+
+**Illusion** — the stat-only occupant Prism's power places beside her: a copy of her left neighbor's stats in the slot to her right. It fills a slot but is nobody for power, synergy, or roster purposes.
+
+**Estimated success** — the simulator's percentage for the active mission template: radar coverage plus the synergy boost, adjusted by reattempt powers, zeroed by a tripped fail threshold.
+
+**Synergy level** — the 0–3 setting standing for how practiced a synergy pair is, worth +5% success per level. One global level, applied once; meaningful only while the mission team holds a synergy pair. Named in code around `SynergyLevel`.
