@@ -6,10 +6,16 @@
 
     <!-- * Feature 016: one column at the widest tier and at the narrowest, two in between —
          the stat rows left, the success calculation and the special conditions right. The
-         panel fills its row below 78rem, so `w-96` is the widest tier's width only; below
-         that the grid tracks decide. The two children are already the two columns. -->
+         panel fills its row below 77rem, so `w-96` is the widest tier's width only; below
+         that the grid tracks decide. The two children are already the two columns.
+         * The lower bound is the panel's own, not the layout's: below 77rem this panel
+         spans the whole tab whether the tab is one column or three, so two columns keep
+         working past the point the rest of the layout stacks — measured, down to a 510px
+         panel. The bound is set well above that, at a 768px viewport, which is 726 here:
+         the tab's queried box runs 42px under the viewport once the scrolling main has its
+         scrollbar. Written in px because it is a viewport decision, not a rem one. -->
     <div
-      class="grid w-96 gap-3 p-3 @max-[78rem]:w-auto @max-[78rem]:@min-[49rem]:grid-cols-2 @max-[78rem]:@min-[49rem]:items-start @max-[78rem]:@min-[49rem]:gap-x-8"
+      class="grid w-96 gap-3 p-3 @max-[77rem]:w-auto @max-[77rem]:@min-[726px]:grid-cols-2 @max-[77rem]:@min-[726px]:items-start @max-[77rem]:@min-[726px]:gap-x-8"
     >
       <div class="flex flex-col gap-1">
         <ul class="flex flex-col gap-1">

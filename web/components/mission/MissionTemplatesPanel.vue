@@ -72,10 +72,11 @@
         >
           <div class="min-h-0 overflow-hidden">
             <!-- * Below 28.5rem the panel cannot carry both condition columns beside the
-                 REQs, so it shows one set at a time (feature 016). The toggle exists only
-                 at that width — nothing is hidden above it — and its position is view
-                 state: a component ref, never planner state, so it cannot reach a
-                 serialized build, a share link, or dirty tracking. -->
+                 requirements, so it shows one set at a time (feature 016). Showing one set
+                 is what buys the room — the stat wordmarks stay. The toggle exists only at
+                 that width — nothing is hidden above it — and its position is view state:
+                 a component ref, never planner state, so it cannot reach a serialized
+                 build, a share link, or dirty tracking. -->
             <div
               class="hidden gap-1 border-t border-muted px-3 pt-2 @max-[28.5rem]:flex"
               role="group"
@@ -126,13 +127,15 @@
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The wordmark is what the narrow tier spends: the icon carries the
-                     stat, and every stepper below still names it in full. -->
+                <!-- * The wordmark survives the whole narrow tier — showing one column
+                     set is what buys the room — and goes only at 19rem, where the
+                     Conditions view's two steppers stop fitting beside it and the icon
+                     has to carry the stat alone. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase"
                 >
                   <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
-                  <span class="@max-[28.5rem]:hidden">{{ stat }}</span>
+                  <span class="@max-[19rem]:hidden">{{ stat }}</span>
                 </span>
 
                 <MissionValueStepper
@@ -189,7 +192,7 @@ const activeIndex = computed(() => missionActiveTemplate.value);
 // * so switching the active template keeps what you were reading. Deliberately a plain ref:
 // * planner state serializes, and the build document must never carry a layout choice.
 const COLUMN_VIEWS = [
-  { value: 'req', label: 'REQ' },
+  { value: 'req', label: 'Requirements' },
   { value: 'conditions', label: 'Conditions' }
 ] as const;
 

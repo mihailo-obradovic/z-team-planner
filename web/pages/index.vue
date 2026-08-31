@@ -84,30 +84,39 @@
     <template #mission-simulator>
       <!-- * The responsive ladder (feature 015), written down in one place: container
            queries on this wrapper, so the rules survive any future page chrome. What they
-           measure is this element's *content* box, which `p-4` sits outside of — so every
-           threshold is 32px below the viewport width it corresponds to. 78rem (≈1280px
-           viewport) splits the top row; 49rem (≈816px) takes everything to a single
-           column. The two thresholds below that — 35rem for the team, 28.5rem for the
-           templates and the requirements check — live in those components. -->
+           measure is this element's *content* box, which `p-4` sits outside of — and the
+           layout's scrolling main takes a further 10px for its scrollbar, so a threshold
+           fires 42px below the viewport width it names. 77rem is the first split, not 78:
+           at a 1280 viewport this box measures 1238, and 78rem would put the widest tier's
+           own width into the split tier. 49.5rem (≈834px viewport) then takes everything to
+           a single column — the point where the two tracks and their gap (454 + 316 + 16)
+           stop fitting, not a round number. The two thresholds below that — 35rem for the team, 28.5rem for
+           the templates and the requirements check — live in those components. -->
       <div class="@container tab-fade p-4">
         <!-- * A grid, not a wrapping flex row: the team has to take a row of its own at
-             every width while staying its own natural width above 78rem, and only grid
+             every width while staying its own natural width above 77rem, and only grid
              separates those two — `col-span-full` breaks the row, `justify-self` decides
              whether it fills it. Below 78rem it fills, matching the first row, which now
              fills too; the whole stack is capped at the width the three panels occupy
              above the threshold so nothing jumps across it. The math panel's `order-1` is
-             the ladder's only reordering: it slides past the team to the third row. -->
+             the ladder's only reordering: it slides past the team to the third row.
+             ! The first track's 454px floor is the templates panel's own width. Two equal
+             `1fr` tracks look right until the container drops under ~876, where half of it
+             stops holding the panel's four columns and the `Fail ≥` column spills out of
+             the card — silently, since it stays inside the tab. The floor keeps the tracks
+             equal while there is room and lets the requirements check give up width first
+             when there is not. -->
         <div
-          class="grid grid-cols-[auto_auto_auto] justify-center gap-4 @max-[78rem]:mx-auto @max-[78rem]:max-w-[74.5rem] @max-[78rem]:grid-cols-2 @max-[49rem]:grid-cols-1"
+          class="grid grid-cols-[auto_auto_auto] justify-center gap-4 @max-[77rem]:mx-auto @max-[77rem]:max-w-[74.5rem] @max-[77rem]:grid-cols-[minmax(454px,1fr)_1fr] @max-[49.5rem]:grid-cols-1"
         >
           <MissionTemplatesPanel />
           <MissionRequirementsPanel />
           <MissionMathPanel
-            class="@max-[78rem]:order-1 @max-[78rem]:col-span-full"
+            class="@max-[77rem]:order-1 @max-[77rem]:col-span-full"
           />
 
           <MissionTeamPanel
-            class="col-span-full justify-self-center @max-[78rem]:justify-self-stretch"
+            class="col-span-full justify-self-center @max-[77rem]:justify-self-stretch"
             @viewDetail="handleViewDetail"
           />
         </div>
