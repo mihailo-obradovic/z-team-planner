@@ -161,12 +161,20 @@ export function useHeroPowerTraining(
       // * Coupe's En Pointe: +1 or +3 combat/mobility based on slot
       const isUpgraded = getPowerState(id).trainableSelected === 2; // À la Seconde
       const bonus = isUpgraded ? mechanics.upgradeBonus : mechanics.baseBonus;
+      const boostedStat = specialState === 1 ? 'combat' : 'mobility';
 
-      if (specialState === 1 && stat === 'combat') {
-        return bonus;
-      }
-      if (specialState === 2 && stat === 'mobility') {
-        return bonus;
+      if (stat === boostedStat) {
+        const hero = heroes.value?.find((h) => h.id === id);
+
+        if (!hero) {
+          return 0;
+        }
+
+        // * Clamped like Spread Thin: an allocation can already sit at 10, and the effective stat never passes it (feature 012).
+        const base =
+          hero.startingStats[stat] + levelUp.getStatAllocations(id)[stat];
+
+        return Math.min(bonus, MAX_STAT_VALUE - base);
       }
     } else if (mechanics.type === 'spread-thin' && specialState > 0) {
       // * Golem's Spread Thin: the slot count picks a percentage tier which is floored once against the whole stat — not a per-slot increment applied repeatedly, which would pay differently on any stat that is not a multiple of 4 (feature 012).

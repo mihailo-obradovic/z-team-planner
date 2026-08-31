@@ -891,7 +891,7 @@ const hasEffects = computed(
     !!specialAbility.value
 );
 
-// * The cap reads the raw allocation, not the displayed value: a special-power bonus can push what is shown past 10 without closing the stepper. Same rule as the hero card.
+// * The cap reads the raw allocation, not the displayed value: a special-power bonus can lift what is shown to 10 while the allocation still has room. Same rule as the hero card.
 function isStatCapped(stat: StatName): boolean {
   if (!hero.value) {
     return true;

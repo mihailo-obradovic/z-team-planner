@@ -44,7 +44,7 @@ Non-goals:
 
 **Supernova** (Flambae, requires trainable-2). On/off. Raises Combat and Mobility to 10 by contributing whatever the gap is.
 
-**En Pointe** (Coupé, starting power, so ungated). Cycles off → +Combat → +Mobility. +1 normally, +3 once À la Seconde is trained.
+**En Pointe** (Coupé, starting power, so ungated). Cycles off → +Combat → +Mobility. +1 normally, +3 once À la Seconde is trained; the bonus shrinks where needed so the effective stat never passes 10.
 
 **Spread Thin** (Golem, requires trainable-1). Cycles off → 1 slot → 2 slots → 3 slots, standing for the empty call slots he expands into. Each step adds `floor((startingStats + allocations) × 0.25 × slots)` to **every** stat. The chip is labelled by slot count (`+2 slots`), with the percentage in its tooltip — slots are what the player is deciding at the dispatch screen; the percentage is the mechanism.
 
@@ -64,13 +64,14 @@ Not role-specific.
 | Spread Thin at 2 slots, Golem Combat 6        | Combat shows 9 (`floor(6 × 0.5)` = +3)             |
 | Spread Thin at 3 slots, Golem Intellect 1     | Intellect shows 1 (`floor(0.75)` = +0)             |
 | Spread Thin at 3 slots, Golem Vigor 9         | Vigor shows 10, not 15 (`MAX_STAT_VALUE`)          |
+| En Pointe +3 on Coupé at 9 combat             | Combat shows 10, not 12 (`MAX_STAT_VALUE`)         |
 | toggle a gated effect without its trainable   | no-op, chip disabled                               |
 | Spread Thin at 3 slots, Golem's pair total    | pair credits 2 slots only — the partner fills one  |
 | un-reveal a trained hero's starting power     | trainable and special power cleared together       |
 
 ## Business Rules
 
-- Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat. Special bonuses are computed, never written into `heroLevelUps`.
+- Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat, and never exceeds `MAX_STAT_VALUE`: every special bonus is clamped against what the stat already holds. Special bonuses are computed, never written into `heroLevelUps`.
 - Spread Thin's bonus is `floor((startingStats + allocations) × 0.25 × slots)` per stat, clamped to `MAX_STAT_VALUE`. The tier is picked by the slot count and floored **once** against the total — not a per-slot increment repeated, which pays differently on any stat that is not a multiple of 4.
 - Golem fills at most three slots (+75%): calls hold four and he occupies one. Squeeze In's fifth slot is Punch Up's alone and never empty, so the source's "up to 200%" is unreachable.
 - **Feature 011's pair total is a two-hero call**, so it re-derives Spread Thin at `min(slots, 2)` — the partner fills a slot Golem would have. His own rows keep all three; each figure is right for its label. The rule is about the pair being two heroes, not about Invisigal, and stays true if the conditional synergy pairs change.
@@ -113,6 +114,7 @@ Not role-specific.
 ## Tests
 
 - Wanted with this feature: the Spread Thin bonus at each slot count against a floor-sensitive stat (6 → 7/9/10) and one that never moves (1), the `MAX_STAT_VALUE` clamp, the trainable-1 gate, the pair total's `min(slots, 2)` re-derivation, and a `shared/build-cases.json` fixture carrying a Golem `sp`.
+- `test/nuxt/en-pointe.test.ts`: the base/upgraded bonus and the clamp (9 + 3 shows 10; a stat at 10 gains nothing).
 - Existing coverage of the other effects rides on `test/nuxt/hero-detail-dialog.test.ts` and the feature 003 walk.
 
 ## Verification
