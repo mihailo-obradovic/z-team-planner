@@ -70,12 +70,13 @@
           </nav>
 
           <!-- ! The first two rows are fixed heights on purpose: a fixed-level hero has no steppers and may have no partner, and letting the rows size to content made the whole dialog resize when switching to one. -->
+          <!-- ! The base `grid-cols-[minmax(0,1fr)]` is the fix for the iOS sideways scroll, not a restatement of the default: with no columns declared, the single column below `lg` is an implicit `auto` track, and an `auto` track is floored by the largest min-content among its items. `minmax(0,1fr)` removes that floor; the `min-w-0` on each item below removes the matching floor on the items themselves. -->
           <div
-            class="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
+            class="grid grid-cols-[minmax(0,1fr)] gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
           >
             <!-- * Stretched, not square: the two columns beside this one span both rows, and letting the portrait and the radar fill their own rows is what leaves all three ending on the same line. -->
             <div
-              class="hidden min-h-0 border-2 border-accented bg-default p-2 lg:block"
+              class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 lg:block"
             >
               <NuxtImg
                 :src="portraitSrc"
@@ -85,7 +86,7 @@
             </div>
 
             <div
-              class="flex flex-col gap-3 border-2 border-accented bg-default p-3 lg:row-span-2 lg:min-h-0 lg:overflow-y-auto"
+              class="flex min-w-0 flex-col gap-3 border-2 border-accented bg-default p-3 lg:row-span-2 lg:min-h-0 lg:overflow-y-auto"
             >
               <div
                 class="flex items-center gap-4 border-b-2 border-default pb-3"
@@ -226,14 +227,14 @@
             </div>
 
             <div
-              class="order-first aspect-square border-2 border-accented bg-default lg:order-none lg:aspect-auto lg:min-h-0"
+              class="order-first aspect-square min-w-0 border-2 border-accented bg-default lg:order-none lg:aspect-auto lg:min-h-0"
             >
               <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
             </div>
 
             <!-- * Powers apart from effects: the first is what a training is spent on, the second is what the hero already has or gains. Mixing them made a trained power read as the same kind of thing as a passive. -->
             <div
-              class="flex flex-col gap-4 border-2 border-accented bg-default p-4 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto"
+              class="flex min-w-0 flex-col gap-4 border-2 border-accented bg-default p-4 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto"
             >
               <section class="flex flex-col gap-2">
                 <h3 class="font-heading tracking-label text-toned uppercase">
@@ -373,7 +374,7 @@
 
             <!-- * Reserved and not editable: the copy is authored in the repository, and persisting player-written notes would bump the serialized build format (feature 001). -->
             <div
-              class="flex flex-col border-2 border-accented bg-default lg:col-span-3 lg:min-h-0"
+              class="flex min-w-0 flex-col border-2 border-accented bg-default lg:col-span-3 lg:min-h-0"
             >
               <div class="flex plate shrink-0 items-center px-4">
                 <span class="font-heading tracking-label text-toned uppercase">

@@ -1,8 +1,9 @@
 <template>
   <!-- * `role="img"` with a title and description: the chart is one graphic, and the numbers behind it are already real text in the stat rows beside it, so a second hidden table would only duplicate them (decision 008). -->
+  <!-- ! `block max-w-full` is load-bearing, not tidying: WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic 320px where Chromium gives 0, so without the cap the chart floors the width of whatever holds it and the dialog's mobile column scrolls sideways on iOS. -->
   <svg
     :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
-    class="h-full w-full"
+    class="block h-full w-full max-w-full"
     role="img"
     :aria-labelledby="`${uid}-title ${uid}-desc`"
     preserveAspectRatio="xMidYMid meet"
