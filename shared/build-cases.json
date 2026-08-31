@@ -312,6 +312,142 @@
       "data": { "v": 1, "ec": "coupe", "fl": ["coupe"] },
       "valid": false,
       "paths": ["data.fl[0]"]
+    },
+    {
+      "name": "mission simulator state",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [
+          { "r": [3, 4, 5, 6, 7] },
+          { "r": [8, 6, 6, 4, 5], "x": [0, 0, 0, 7, 0] },
+          { "r": [5, 5, 5, 5, 5], "f": [0, 0, 0, 8, 0] }
+        ],
+        "mh": ["golem", "prism", "illusion", "coupe"],
+        "ml": 2,
+        "ma": 1
+      },
+      "valid": true
+    },
+    {
+      "name": "mission template with an unknown key",
+      "tier": "structure",
+      "data": {
+        "v": 1,
+        "mt": [
+          { "r": [3, 4, 5, 6, 7], "q": 1 },
+          { "r": [3, 4, 5, 6, 7] },
+          { "r": [3, 4, 5, 6, 7] }
+        ]
+      },
+      "valid": false,
+      "paths": ["data.mt[0].q"]
+    },
+    {
+      "name": "mission templates incomplete",
+      "tier": "ranges",
+      "data": { "v": 1, "mt": [{ "r": [3, 4, 5, 6, 7] }, { "r": [3, 4, 5, 6, 7] }] },
+      "valid": false,
+      "paths": ["data.mt"]
+    },
+    {
+      "name": "mission template REQ list too short",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [{ "r": [3, 4, 5, 6] }, { "r": [3, 4, 5, 6, 7] }, { "r": [3, 4, 5, 6, 7] }]
+      },
+      "valid": false,
+      "paths": ["data.mt[0].r"]
+    },
+    {
+      "name": "mission template REQ past the stat maximum",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [{ "r": [11, 4, 5, 6, 7] }, { "r": [3, 4, 5, 6, 7] }, { "r": [3, 4, 5, 6, 7] }]
+      },
+      "valid": false,
+      "paths": ["data.mt[0].r.combat"]
+    },
+    {
+      "name": "conditions on any template",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [
+          { "r": [3, 4, 5, 6, 7], "x": [0, 0, 7, 0, 0], "f": [9, 0, 0, 0, 0] },
+          { "r": [3, 4, 5, 6, 7] },
+          { "r": [3, 4, 5, 6, 7], "x": [0, 6, 0, 0, 0] }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "name": "mission team with a fifth slot",
+      "tier": "ranges",
+      "data": { "v": 1, "mh": ["golem", null, null, null, null] },
+      "valid": false,
+      "paths": ["data.mh"]
+    },
+    {
+      "name": "mission team lists a hero twice",
+      "tier": "ranges",
+      "data": { "v": 1, "mh": ["golem", null, "golem", null] },
+      "valid": false,
+      "paths": ["data.mh[2]"]
+    },
+    {
+      "name": "mission synergy level past 3",
+      "tier": "ranges",
+      "data": { "v": 1, "ml": 4 },
+      "valid": false,
+      "paths": ["data.ml"]
+    },
+    {
+      "name": "active mission template out of range",
+      "tier": "ranges",
+      "data": { "v": 1, "ma": 3 },
+      "valid": false,
+      "paths": ["data.ma"]
+    },
+    {
+      "name": "mission team with an unknown hero",
+      "tier": "identity",
+      "data": { "v": 1, "mh": [null, "mecha-man", null, null] },
+      "valid": false,
+      "paths": ["data.mh[1]"]
+    },
+    {
+      "name": "golem copies on the team",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "pw": { "golem": [1, 1] },
+        "mh": ["coupe", "golem", "copy", null]
+      },
+      "valid": true
+    },
+    {
+      "name": "two thresholds in one column",
+      "tier": "ranges",
+      "data": {
+        "v": 1,
+        "mt": [
+          { "r": [3, 4, 5, 6, 7], "x": [7, 0, 7, 0, 0] },
+          { "r": [3, 4, 5, 6, 7] },
+          { "r": [3, 4, 5, 6, 7] }
+        ]
+      },
+      "valid": false,
+      "paths": ["data.mt[0].x"]
+    },
+    {
+      "name": "the cut hero on the mission team",
+      "tier": "episode",
+      "data": { "v": 1, "mh": ["sonar", null, null, null] },
+      "valid": false,
+      "paths": ["data.mh[0]"]
     }
   ]
 }

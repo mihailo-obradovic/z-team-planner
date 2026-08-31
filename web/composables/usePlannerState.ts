@@ -1,6 +1,13 @@
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE } from '@/types/hero';
+import { MISSION_SLOT_COUNT } from '@/types/mission';
 
-import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
+import type {
+  HeroId,
+  HeroPowerSelection,
+  HeroStats,
+  SynergyLevel
+} from '@/types/hero';
+import type { MissionSlot, MissionTemplates } from '@/types/mission';
 
 export type PlannerState = ReturnType<typeof usePlannerState>;
 
@@ -28,6 +35,16 @@ export function usePlannerState() {
     heroFlights: useState<Partial<Record<HeroId, boolean>>>(
       'heroFlights',
       () => ({})
-    )
+    ),
+    // * Feature 015 — the mission simulator's share of the build document.
+    missionTemplates: useState<MissionTemplates>(
+      'missionTemplates',
+      () => null
+    ),
+    missionSlots: useState<MissionSlot[]>('missionSlots', () =>
+      Array.from({ length: MISSION_SLOT_COUNT }, () => null)
+    ),
+    missionSynergyLevel: useState<SynergyLevel>('missionSynergyLevel', () => 0),
+    missionActiveTemplate: useState<number>('missionActiveTemplate', () => 0)
   };
 }

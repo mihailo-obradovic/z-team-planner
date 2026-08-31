@@ -22,6 +22,14 @@ MAX_DOCUMENT_BYTES = 8192
 # * The keys that hold per-hero state, in the order a client reads them.
 _HERO_KEYS = ("lu", "bl", "pw", "sp")
 
+# * Feature 015: the mission simulator's fixed shape — three templates, four team slots,
+# * synergy levels 0–3, and the marker a Prism illusion occupies a slot with.
+_MISSION_TEMPLATES = 3
+_MISSION_SLOTS = 4
+_MAX_SYNERGY_LEVEL = 3
+_ILLUSION = "illusion"
+_GOLEM_COPY = "copy"
+
 
 def document_bytes(raw: Any) -> int:
     """The document's size in bytes, compactly encoded.
@@ -123,6 +131,16 @@ def _identity(document: BuildDocument, game: GameData) -> list[ErrorDetail]:
                 ErrorDetail(path=f"data.fl[{index}]", message="Unknown hero.")
             )
 
+    for index, entry in enumerate(document.mh):
+        if (
+            entry is not None
+            and entry not in (_ILLUSION, _GOLEM_COPY)
+            and entry not in game.heroes
+        ):
+            details.append(
+                ErrorDetail(path=f"data.mh[{index}]", message="Unknown hero.")
+            )
+
     return details
 
 
@@ -180,7 +198,95 @@ def _ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail]:
 
         seen.add(hero)
 
+    details.extend(_mission_ranges(document, game))
+
     return details
+
+
+def _mission_ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail]:
+    """Feature 015: template shapes, team-slot shape, and the two small settings."""
+    details: list[ErrorDetail] = []
+
+    if document.mt and len(document.mt) != _MISSION_TEMPLATES:
+        details.append(
+            ErrorDetail(
+                path="data.mt",
+                message=f"Expected all {_MISSION_TEMPLATES} templates.",
+            )
+        )
+    else:
+        for index, template in enumerate(document.mt):
+            details.extend(
+                _stat_values(f"data.mt[{index}].r", template.r, game)
+            )
+
+            # * Both condition columns may appear on any template, each holding at most
+            # * one threshold (feature 015).
+            for column, value_list in (("x", template.x), ("f", template.f)):
+                if not value_list:
+                    continue
+
+                path = f"data.mt[{index}].{column}"
+
+                details.extend(_stat_values(path, value_list, game))
+
+                if sum(1 for value in value_list if value > 0) > 1:
+                    details.append(
+                        ErrorDetail(path=path, message="At most one threshold.")
+                    )
+
+    if document.mh and len(document.mh) != _MISSION_SLOTS:
+        details.append(
+            ErrorDetail(path="data.mh", message=f"Expected {_MISSION_SLOTS} slots.")
+        )
+
+    seen: set[str] = set()
+
+    for index, entry in enumerate(document.mh):
+        if entry is None or entry in (_ILLUSION, _GOLEM_COPY):
+            continue
+
+        if entry in seen:
+            details.append(
+                ErrorDetail(path=f"data.mh[{index}]", message="Listed twice.")
+            )
+
+        seen.add(entry)
+
+    if not 0 <= document.ml <= _MAX_SYNERGY_LEVEL:
+        details.append(
+            ErrorDetail(
+                path="data.ml", message=f"Must be 0 to {_MAX_SYNERGY_LEVEL}."
+            )
+        )
+
+    if not 0 <= document.ma <= _MISSION_TEMPLATES - 1:
+        details.append(
+            ErrorDetail(
+                path="data.ma", message=f"Must be 0 to {_MISSION_TEMPLATES - 1}."
+            )
+        )
+
+    return details
+
+
+def _stat_values(path: str, values: list[int], game: GameData) -> list[ErrorDetail]:
+    """A per-stat value list: STAT_NAMES order, every value 0 to the stat maximum."""
+    if len(values) != len(game.stat_names):
+        return [
+            ErrorDetail(
+                path=path,
+                message=f"Expected {len(game.stat_names)} stats, in STAT_NAMES order.",
+            )
+        ]
+
+    return [
+        ErrorDetail(
+            path=f"{path}.{stat}", message=f"Must be 0 to {game.max_stat_value}."
+        )
+        for stat, value in zip(game.stat_names, values, strict=True)
+        if not 0 <= value <= game.max_stat_value
+    ]
 
 
 def _power_range(hero: str, pair: list[int], game: GameData) -> list[ErrorDetail]:
@@ -270,6 +376,16 @@ def _episode(document: BuildDocument, game: GameData) -> list[ErrorDetail]:
             )
         elif hero in recruits:
             details.append(ErrorDetail(path=path, message="A recruit cannot train."))
+
+    # * Feature 015: the cut hero has no card anywhere, the mission team included. Recruits
+    # * may be on the team — the e8 flag only governs display, exactly as with allocations.
+    for index, entry in enumerate(document.mh):
+        if entry == cut:
+            details.append(
+                ErrorDetail(
+                    path=f"data.mh[{index}]", message="The cut hero holds no state."
+                )
+            )
 
     return details
 

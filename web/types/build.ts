@@ -10,6 +10,17 @@ import type { HeroId } from '@/types/hero';
 // * - pw = power selections per hero [startingRevealed, trainableSelected]
 // * - sp = special power states per hero
 // * - fl = flight-trained hero IDs
+// * - mt = mission templates, always all 3 once rolled: r = REQs in STAT_NAMES order;
+// *        x (2×XP) / f (fail) = per-stat thresholds on any template, 0 = unset
+// * - mh = mission team slots, all 4 in order: hero id, "illusion", or null
+// * - ml = mission synergy level (1–3)
+// * - ma = active mission template index (1–2)
+export interface SerializedMissionTemplate {
+  r: number[];
+  x?: number[];
+  f?: number[];
+}
+
 export interface SerializedBuild {
   v: 1;
   ec?: HeroId;
@@ -20,6 +31,10 @@ export interface SerializedBuild {
   pw?: Record<string, [number, number]>;
   sp?: Record<string, number>;
   fl?: string[];
+  mt?: SerializedMissionTemplate[];
+  mh?: (string | null)[];
+  ml?: number;
+  ma?: number;
 }
 
 export interface LocalBuild {

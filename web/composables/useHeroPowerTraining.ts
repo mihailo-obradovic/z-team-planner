@@ -352,6 +352,10 @@ export function useHeroPowerTraining(
     getEffectiveStats,
     getPairEffectiveStats,
     getPairCombinedStats,
+    // * The same computation with a caller-supplied bonus set — the mission simulator
+    // * (feature 015) derives En Pointe and Spread Thin from real slot context and must not
+    // * re-implement the clamp or Sonar's form resolution.
+    getEffectiveStatsWithBonuses: effectiveStats,
 
     monsterForm,
     toggleMonsterForm,

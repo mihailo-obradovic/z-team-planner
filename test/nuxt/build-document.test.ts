@@ -2,8 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
+import { STAT_NAMES } from '@/types/hero';
+
+import type { HeroStats } from '@/types/hero';
 import type { SerializedBuild } from '@/types/build';
 import type { PlannerState } from '@/composables/usePlannerState';
+
+const FLAT_REQS = Object.fromEntries(
+  STAT_NAMES.map((stat) => [stat, 5])
+) as HeroStats;
 
 // * Characterisation coverage for the build document format — the protected area feature 001 owns.
 // * Written against the planner's public surface rather than the serialiser, because the serialiser is module-private and takes eight refs. That is the point: these assertions describe the format, not the code that produces it, so decision 006's split has to leave every one of them passing.
@@ -63,6 +70,7 @@ async function freshPlanner() {
 
   return {
     ...planner,
+    plannerState: state,
     serializeCurrentBuild: () => serializeBuild(state),
     loadSharedBuild: mode.loadSharedBuild,
     getShareUrl: sharing.getShareUrl
@@ -76,11 +84,22 @@ function decodeShareParam(url: string): SerializedBuild {
   return JSON.parse(atob(padded));
 }
 
+// * Feature 015: a client state always carries rolled mission templates — random values,
+// * so the shape is matched, not the numbers. #2 rolls one 2×XP column, #3 one fail column.
+const ROLLED_TEMPLATES = [
+  { r: expect.any(Array) },
+  { r: expect.any(Array), x: expect.any(Array) },
+  { r: expect.any(Array), f: expect.any(Array) }
+];
+
 describe('build document — what the format omits', () => {
   it('serialises an untouched planner to the version alone', async () => {
     const planner = await freshPlanner();
 
-    expect(planner.serializeCurrentBuild()).toEqual({ v: 1 });
+    expect(planner.serializeCurrentBuild()).toEqual({
+      v: 1,
+      mt: ROLLED_TEMPLATES
+    });
   });
 
   it('omits an episode choice that is still the default', async () => {
@@ -88,7 +107,10 @@ describe('build document — what the format omits', () => {
 
     planner.ep4Hire.value = 'waterboy';
 
-    expect(planner.serializeCurrentBuild()).toEqual({ v: 1 });
+    expect(planner.serializeCurrentBuild()).toEqual({
+      v: 1,
+      mt: ROLLED_TEMPLATES
+    });
   });
 
   it('writes an episode choice that differs from the default', async () => {
@@ -96,7 +118,11 @@ describe('build document — what the format omits', () => {
 
     planner.ep3Cut.value = 'coupe';
 
-    expect(planner.serializeCurrentBuild()).toEqual({ v: 1, ec: 'coupe' });
+    expect(planner.serializeCurrentBuild()).toEqual({
+      v: 1,
+      ec: 'coupe',
+      mt: ROLLED_TEMPLATES
+    });
   });
 
   it('writes the episode 8 flag only when it is on', async () => {
@@ -194,7 +220,11 @@ describe('build document — round trip', () => {
 
     // * Feature 001's contract is backward compatibility, so an unknown key is read past rather than rejected — but it is not carried forward either.
     expect(planner.ep3Cut.value).toBe('coupe');
-    expect(planner.serializeCurrentBuild()).toEqual({ v: 1, ec: 'coupe' });
+    expect(planner.serializeCurrentBuild()).toEqual({
+      v: 1,
+      ec: 'coupe',
+      mt: ROLLED_TEMPLATES
+    });
   });
 });
 
@@ -223,5 +253,141 @@ describe('build document — url codec', () => {
 
     // * A `+`, `/` or `=` here would survive URL.searchParams but break any consumer that does not re-encode.
     expect(encoded).not.toMatch(/[+/=]/);
+  });
+});
+
+describe('build document — mission simulator keys (feature 015)', () => {
+  it('rolls templates: REQs 3–8, one XP threshold in 6–9, fail fixed at combat 8', async () => {
+    const planner = await freshPlanner();
+    const templates = planner.plannerState.missionTemplates.value!;
+
+    expect(templates).toHaveLength(3);
+
+    for (const template of templates) {
+      for (const stat of STAT_NAMES) {
+        expect(template.req[stat]).toBeGreaterThanOrEqual(3);
+        expect(template.req[stat]).toBeLessThanOrEqual(8);
+      }
+    }
+
+    const xp = Object.values(templates[1]!.xp);
+
+    expect(templates[0]!.xp).toEqual({});
+    expect(templates[0]!.fail).toEqual({});
+    expect(xp).toHaveLength(1);
+    expect(xp[0]).toBeGreaterThanOrEqual(6);
+    expect(xp[0]).toBeLessThanOrEqual(9);
+
+    // * The fail example is fixed: combat at 8, the common end-game trip wire.
+    expect(templates[2]!.fail).toEqual({ combat: 8 });
+  });
+
+  it('writes a threshold column as five values with 0 for unset', async () => {
+    const planner = await freshPlanner();
+
+    planner.plannerState.missionTemplates.value = [
+      { req: FLAT_REQS, xp: {}, fail: {} },
+      { req: FLAT_REQS, xp: { charisma: 7 }, fail: {} },
+      { req: FLAT_REQS, xp: {}, fail: { combat: 8 } }
+    ];
+
+    expect(planner.serializeCurrentBuild().mt).toEqual([
+      { r: [5, 5, 5, 5, 5] },
+      { r: [5, 5, 5, 5, 5], x: [0, 0, 0, 7, 0] },
+      { r: [5, 5, 5, 5, 5], f: [8, 0, 0, 0, 0] }
+    ]);
+  });
+
+  it('omits team, synergy level and active template at their defaults', async () => {
+    const planner = await freshPlanner();
+    const document = planner.serializeCurrentBuild();
+
+    expect(document.mh).toBeUndefined();
+    expect(document.ml).toBeUndefined();
+    expect(document.ma).toBeUndefined();
+  });
+
+  it('writes the team slots verbatim, illusion marker and empties included', async () => {
+    const planner = await freshPlanner();
+
+    planner.plannerState.missionSlots.value = [
+      'golem',
+      'illusion',
+      null,
+      'coupe'
+    ];
+    planner.plannerState.missionSynergyLevel.value = 2;
+    planner.plannerState.missionActiveTemplate.value = 1;
+
+    const document = planner.serializeCurrentBuild();
+
+    expect(document.mh).toEqual(['golem', 'illusion', null, 'coupe']);
+    expect(document.ml).toBe(2);
+    expect(document.ma).toBe(1);
+  });
+
+  it('round-trips the mission keys exactly', async () => {
+    const planner = await freshPlanner();
+
+    planner.plannerState.missionSlots.value = ['prism', null, 'golem', null];
+    planner.plannerState.missionSynergyLevel.value = 3;
+
+    const before = planner.serializeCurrentBuild();
+
+    await planner.loadSharedBuild(before);
+
+    expect(planner.serializeCurrentBuild()).toEqual(before);
+  });
+
+  it('rolls fresh templates for a document from before the simulator', async () => {
+    const planner = await freshPlanner();
+
+    await planner.loadSharedBuild({ v: 1 });
+
+    expect(planner.serializeCurrentBuild()).toEqual({
+      v: 1,
+      mt: ROLLED_TEMPLATES
+    });
+  });
+
+  it('sanitises loaded slots: unknown ids and duplicates empty out, ranges clamp', async () => {
+    const planner = await freshPlanner();
+
+    await planner.loadSharedBuild({
+      v: 1,
+      mh: ['golem', 'batman', 'golem', 'illusion'],
+      ml: 9,
+      ma: 9
+    } as SerializedBuild);
+
+    // * The unknown id and the duplicate empty out in deserialization; the contextless
+    // * illusion marker is dropped by the team composable's sanitize watcher.
+    expect(planner.plannerState.missionSlots.value).toEqual([
+      'golem',
+      null,
+      null,
+      null
+    ]);
+    expect(planner.plannerState.missionSynergyLevel.value).toBe(3);
+    expect(planner.plannerState.missionActiveTemplate.value).toBe(2);
+  });
+
+  it('keeps condition columns on any template through a round trip', async () => {
+    const planner = await freshPlanner();
+    const document = {
+      v: 1,
+      mt: [
+        { r: [5, 5, 5, 5, 5], x: [0, 7, 0, 0, 0], f: [9, 0, 0, 0, 0] },
+        { r: [5, 5, 5, 5, 5] },
+        { r: [5, 5, 5, 5, 5], x: [0, 0, 6, 0, 0] }
+      ]
+    } as SerializedBuild;
+
+    await planner.loadSharedBuild(document);
+
+    expect(planner.plannerState.missionTemplates.value![0]!.xp).toEqual({
+      intellect: 7
+    });
+    expect(planner.serializeCurrentBuild().mt).toEqual(document.mt);
   });
 });

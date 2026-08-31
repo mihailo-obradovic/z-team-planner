@@ -24,6 +24,11 @@ function createHeroPlanner() {
   const levelUp = useHeroLevelUp(heroes, episodeSetup);
   const powerTraining = useHeroPowerTraining(heroes, episodeSetup, levelUp);
   const flightTraining = useHeroFlightTraining(episodeSetup, powerTraining);
+  const missionSimulator = useMissionSimulator(
+    episodeSetup,
+    levelUp,
+    powerTraining
+  );
 
   function resetHero(id: HeroId) {
     if (id in FIXED_LEVEL_HEROES) {
@@ -47,6 +52,7 @@ function createHeroPlanner() {
     ...levelUp,
     ...powerTraining,
     ...flightTraining,
+    ...missionSimulator,
     resetHero,
     resetAllTrainings
   };

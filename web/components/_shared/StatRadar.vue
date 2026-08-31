@@ -32,6 +32,18 @@
       stroke-width="1"
     />
 
+    <!-- * Feature 015: the mission simulator's required shape, under the team's — ink and dashed, so the two series differ by pattern as well as colour. -->
+    <polygon
+      v-if="referencePoints"
+      :points="referencePoints"
+      fill="var(--ui-text)"
+      fill-opacity="0.08"
+      stroke="var(--ui-text)"
+      stroke-width="2"
+      stroke-dasharray="6 4"
+      stroke-linejoin="round"
+    />
+
     <polygon
       :points="dataPoints"
       fill="var(--ui-primary)"
@@ -49,6 +61,44 @@
       r="3"
       fill="var(--ui-primary)"
     />
+
+    <!-- * Feature 015: per-axis threshold markers. A fail threshold is an error disc, a 2×XP threshold a gold disc with its multiplier; both sit at their value on the stat's axis, tween with it, and carry a hover tooltip. -->
+    <g
+      v-for="marker in thresholdMarkers"
+      :key="`marker-${marker.kind}-${marker.index}`"
+    >
+      <title>{{ marker.tooltip }}</title>
+
+      <circle
+        :cx="marker.x"
+        :cy="marker.y"
+        :r="marker.kind === 'fail' ? 12 : 16"
+        :fill="marker.kind === 'fail' ? 'var(--ui-error)' : 'var(--ui-warning)'"
+        stroke="var(--ui-text)"
+        stroke-width="1.5"
+      />
+
+      <path
+        v-if="marker.kind === 'fail'"
+        :d="`M ${marker.x - 5} ${marker.y - 5} l 10 10 M ${marker.x + 5} ${marker.y - 5} l -10 10`"
+        stroke="var(--ui-color-neutral-100)"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+
+      <text
+        v-else
+        :x="marker.x"
+        :y="marker.y"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-size="16"
+        font-weight="700"
+        fill="var(--ui-text)"
+      >
+        2×
+      </text>
+    </g>
 
     <!-- * Icons alone, no words: the stat rows beside the chart already name every axis, so repeating the names here only shrank the polygon to make room for them. Each glyph sits in a solid ink disc, as on the mockup's axis markers — a bare icon floating against the grid read as debris. Nothing here is rotated. -->
     <!-- ! The glyph is cream, not `text-inverted`: this project remaps `--ui-text-inverted` to ink for the amber and gold solids, so on an ink disc it would be invisible. `text-neutral-100` is the same call app.vue makes for the chrome glyphs. -->
@@ -91,8 +141,20 @@ const props = withDefaults(
     title: string;
     max?: number;
     durationMs?: number;
+    // * A second series in axis order (feature 015's required shape), tweened like the data.
+    reference?: number[];
+    // * Per-axis thresholds in axis order, 0 or absent = none (feature 015): `failAt`
+    // * marks where the mission auto-fails, `xpAt` where the 2×XP bonus lands.
+    failAt?: number[];
+    xpAt?: number[];
   }>(),
-  { max: 10, durationMs: 200 }
+  {
+    max: 10,
+    durationMs: 200,
+    reference: undefined,
+    failAt: undefined,
+    xpAt: undefined
+  }
 );
 
 // * Square, and the polygon fills nearly all of it. Dropping the word labels is what bought the room: the box only has to clear a disc at each vertex now, not a word hanging off one.
@@ -173,6 +235,75 @@ const dataVertices = computed(() =>
 const dataPoints = computed(() =>
   dataVertices.value.map((point) => `${point.x},${point.y}`).join(' ')
 );
+
+// * The reference tweens exactly like the data series, so switching mission templates (or
+// * stepping a REQ) animates the required shape rather than snapping it.
+const referenceTargets = computed(() => props.reference ?? []);
+
+const displayedReference = useTweenedValues(referenceTargets, props.durationMs);
+
+const referencePoints = computed(() => {
+  if (!props.reference) {
+    return null;
+  }
+
+  return displayedReference.value
+    .map((value, index) => {
+      const point = vertex(
+        index,
+        (RADIUS * Math.min(value, MAX.value)) / MAX.value
+      );
+
+      return `${point.x},${point.y}`;
+    })
+    .join(' ');
+});
+
+const displayedFailAt = useTweenedValues(
+  computed(() => props.failAt ?? []),
+  props.durationMs
+);
+
+const displayedXpAt = useTweenedValues(
+  computed(() => props.xpAt ?? []),
+  props.durationMs
+);
+
+// * A marker renders only while its target is set; its position follows the tween, so an
+// * edited threshold slides along its axis.
+const thresholdMarkers = computed(() => {
+  const markers: {
+    kind: 'fail' | 'xp';
+    index: number;
+    x: number;
+    y: number;
+    tooltip: string;
+  }[] = [];
+
+  for (const [kind, targets, displayed] of [
+    ['fail', props.failAt, displayedFailAt.value],
+    ['xp', props.xpAt, displayedXpAt.value]
+  ] as const) {
+    targets?.forEach((target, index) => {
+      if (target > 0) {
+        const value = displayed[index] ?? target;
+        const point = vertex(
+          index,
+          (RADIUS * Math.min(value, MAX.value)) / MAX.value
+        );
+        const axis = props.axes[index];
+        const tooltip =
+          kind === 'fail'
+            ? `Fails when team ${axis?.label} reaches ${target}`
+            : `Double XP when team ${axis?.label} reaches ${target}`;
+
+        markers.push({ kind, index, x: point.x, y: point.y, tooltip });
+      }
+    });
+  }
+
+  return markers;
+});
 
 function labelAnchor(index: number) {
   return vertex(index, RADIUS + ICON_OFFSET);
