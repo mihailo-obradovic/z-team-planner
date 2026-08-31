@@ -361,11 +361,13 @@ describe('build document — mission simulator keys (feature 015)', () => {
       ma: 9
     } as SerializedBuild);
 
+    // * The unknown id and the duplicate empty out in deserialization; the contextless
+    // * illusion marker is dropped by the team composable's sanitize watcher.
     expect(planner.plannerState.missionSlots.value).toEqual([
       'golem',
       null,
       null,
-      'illusion'
+      null
     ]);
     expect(planner.plannerState.missionSynergyLevel.value).toBe(3);
     expect(planner.plannerState.missionActiveTemplate.value).toBe(2);

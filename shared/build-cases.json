@@ -315,7 +315,7 @@
     },
     {
       "name": "mission simulator state",
-      "tier": "structure",
+      "tier": "ranges",
       "data": {
         "v": 1,
         "mt": [
@@ -323,7 +323,7 @@
           { "r": [8, 6, 6, 4, 5], "x": [0, 0, 0, 7, 0] },
           { "r": [5, 5, 5, 5, 5], "f": [0, 0, 0, 8, 0] }
         ],
-        "mh": ["golem", "illusion", null, "coupe"],
+        "mh": ["golem", "prism", "illusion", "coupe"],
         "ml": 2,
         "ma": 1
       },

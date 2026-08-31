@@ -5,7 +5,12 @@ import { defineComponent, h, nextTick } from 'vue';
 
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 
-import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
+import type {
+  HeroId,
+  HeroPowerSelection,
+  HeroStats,
+  SynergyLevel
+} from '@/types/hero';
 import type { SerializedBuild } from '@/types/build';
 
 // * The other half of shared/build-cases.json: tests/services/test_validation.py holds the server to these verdicts, and this file holds the planner to them. A document the server rejects must be one the planner's guards cannot produce, or a user could build something their account refuses to save.
@@ -140,6 +145,57 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
       planner.toggleFlight(id);
     }
   }
+
+  // * Mission state (feature 015). The roll is setup — a document only ever carries `mt`
+  // * because a client rolled it — and the guarded setters are the behavior under test.
+  plannerState.missionTemplates.value = document.mt
+    ? rollMissionTemplates()
+    : null;
+  plannerState.missionSlots.value = [null, null, null, null];
+  plannerState.missionSynergyLevel.value = 0;
+  plannerState.missionActiveTemplate.value = 0;
+  await nextTick();
+
+  document.mt?.forEach((entry, template) => {
+    STAT_NAMES.forEach((stat, index) => {
+      planner.setMissionReq(template, stat, entry.r[index] ?? 0);
+    });
+
+    for (const [kind, values] of [
+      ['xp', entry.x],
+      ['fail', entry.f]
+    ] as const) {
+      STAT_NAMES.forEach((stat, index) => {
+        const value = values?.[index] ?? 0;
+
+        planner.setMissionThreshold(
+          template,
+          kind,
+          stat,
+          value > 0 ? value : null
+        );
+      });
+    }
+  });
+
+  document.mh?.forEach((entry, index) => {
+    if (entry !== null && entry !== 'illusion') {
+      planner.fillMissionSlot(index, entry as HeroId);
+    }
+  });
+
+  // * An empty slot where Prism's placement spawned an illusion is a removal the user made;
+  // * an "illusion" entry the placements did not spawn is one no action can conjure.
+  document.mh?.forEach((entry, index) => {
+    if (entry === null) {
+      planner.removeMissionSlot(index);
+    }
+  });
+
+  await nextTick();
+
+  planner.setMissionSynergyLevel((document.ml ?? 0) as SynergyLevel);
+  planner.setMissionActiveTemplate(document.ma ?? 0);
 
   return serializeBuild(plannerState);
 }

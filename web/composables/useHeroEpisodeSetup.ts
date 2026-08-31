@@ -129,6 +129,9 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     // * The heroes that have a card, and so the only ones any control can reach. Derived here already for `ep8Recruits` and `synergyPairColumns`; exposed so feature 005's agreement test can ask the app which heroes are drivable instead of keeping its own copy of the rule.
     visibleHeroes,
 
+    // * The derived pairs as id tuples — the mission simulator's synergy gate (feature 015)
+    // * asks about ids, not cards, so the raw pairs are exposed beside the resolved columns.
+    synergyPairs,
     synergyPairColumns
   };
 }
