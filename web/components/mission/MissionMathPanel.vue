@@ -4,7 +4,13 @@
       <h2 class="font-heading text-title uppercase">The math</h2>
     </div>
 
-    <div class="flex w-96 flex-col gap-3 p-3">
+    <!-- * Feature 016: one column at the widest tier and at the narrowest, two in between —
+         the stat rows left, the success calculation and the special conditions right. The
+         panel fills its row below 78rem, so `w-96` is the widest tier's width only; below
+         that the grid tracks decide. The two children are already the two columns. -->
+    <div
+      class="grid w-96 gap-3 p-3 @max-[78rem]:w-auto @max-[78rem]:@min-[49rem]:grid-cols-2 @max-[78rem]:@min-[49rem]:items-start @max-[78rem]:@min-[49rem]:gap-x-8"
+    >
       <div class="flex flex-col gap-1">
         <ul class="flex flex-col gap-1">
           <li
