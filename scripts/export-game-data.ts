@@ -84,16 +84,20 @@ export function buildGameData(): GameData {
     default_ep4_hire: DEFAULT_EP4_HIRE,
     fixed_level_heroes: Object.keys(FIXED_LEVEL_HEROES) as HeroId[],
     flight_school_heroes: FLIGHT_SCHOOL_HEROES,
-    special_powers: {
-      // * Supernova is a single on/off state and needs its upgrade power trained; En Pointe cycles off / +combat / +mobility and needs nothing.
-      flambae: {
-        max: 1,
-        requires_trainable: Number(
-          SPECIAL_POWER_MECHANICS.flambae.requiredPower.slice(-1)
-        )
-      },
-      coupe: { max: 2 }
-    },
+    // * Derived, never restated: a hand-copied `max` that drifts from the constant lets the client offer a step the API rejects on save.
+    special_powers: Object.fromEntries(
+      Object.entries(SPECIAL_POWER_MECHANICS).map(([id, mechanics]) => [
+        id,
+        {
+          max: mechanics.max,
+          ...('requiredPower' in mechanics
+            ? {
+                requires_trainable: Number(mechanics.requiredPower.slice(-1))
+              }
+            : {})
+        }
+      ])
+    ),
     heroes
   };
 }

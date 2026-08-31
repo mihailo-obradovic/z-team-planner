@@ -24,7 +24,7 @@
           "flambae": [1, 2],
           "phenomaman": [1, 1]
         },
-        "sp": { "flambae": 1 },
+        "sp": { "flambae": 1, "golem": 3 },
         "fl": ["flambae", "sonar"]
       }
     },
@@ -122,9 +122,9 @@
     {
       "name": "sp for a hero that has no special power",
       "tier": "ranges",
-      "data": { "v": 1, "sp": { "golem": 1 } },
+      "data": { "v": 1, "sp": { "prism": 1 } },
       "valid": false,
-      "paths": ["data.sp.golem"]
+      "paths": ["data.sp.prism"]
     },
     {
       "name": "supernova without its upgrade power trained",
@@ -139,6 +139,20 @@
       "data": { "v": 1, "sp": { "coupe": 3 } },
       "valid": false,
       "paths": ["data.sp.coupe"]
+    },
+    {
+      "name": "spread thin past its slot count",
+      "tier": "ranges",
+      "data": { "v": 1, "pw": { "golem": [1, 1] }, "sp": { "golem": 4 } },
+      "valid": false,
+      "paths": ["data.sp.golem"]
+    },
+    {
+      "name": "spread thin without Spread Thin trained",
+      "tier": "ranges",
+      "data": { "v": 1, "pw": { "golem": [1, 2] }, "sp": { "golem": 1 } },
+      "valid": false,
+      "paths": ["data.sp.golem"]
     },
     {
       "name": "flight for a hero that is not Flight School",

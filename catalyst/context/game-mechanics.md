@@ -114,6 +114,7 @@ Golem:
 
 - Diamond in the Rough (starting): When Golem is in a call with 2+ slots, certain ones may grant +2 to a stat and -1 to others when he's assigned.
 - Spread Thin: Golem expands to fill each empty slots, increasing his stats by 25% per slots up to 200% when beneficial.
+  - The wording is loose and the planner's reading of it is an interpretation, not a measurement. Calls hold four slots and Golem occupies one, so he fills at most three — **+75%, and the stated 200% is unreachable**. (Punch Up's Squeeze In makes a fifth slot, but it is his alone and never empty.) The bonus is read as `floor(effective stat × 0.25 × slots)`: the tier is picked by the slot count and floored once against the total, so a stat of 2 gains 0 / 1 / 1 across the three slots. Sources disagree on the rounding — one second-hand summary claims it rounds up — and none of them is the game. Worth one in-game check.
 - Found Himself: Once per shift, all of Golem stats can be reset within the hero Database, allowing for redistribution of points.
 
 Invisigal:

@@ -353,19 +353,28 @@ export const HERO_POWERS = {
   ]
 } as const satisfies Partial<Record<HeroId, HeroPowerSet>>;
 
-// * Special power mechanics for heroes with toggle-able stat bonuses. Currently only Flambae (Supernova) and Coupe (En Pointe/À la Seconde) have special powers.
+// * Special power mechanics for heroes with toggle-able stat bonuses — the single source feature 012 is built on. `max` is the highest state the toggle cycles to (it cycles `0..max`), and `requiredPower`, where present, is the trainable slot that must be selected for the toggle to do anything. The game-data export derives the API validator's `special_powers` block from both, so a value stated here is never restated there.
 export const SPECIAL_POWER_MECHANICS = {
   flambae: {
     type: 'supernova' as const,
+    max: 1,
     requiredPower: 'trainable-2' as const,
     affectedStats: ['combat', 'mobility'] as const
   },
   coupe: {
     type: 'en-pointe' as const,
+    max: 2,
     basePower: 'starting' as const,
     upgradePower: 'trainable-2' as const,
     baseBonus: 1,
     upgradeBonus: 3
+  },
+  golem: {
+    type: 'spread-thin' as const,
+    // * One state per empty slot he can expand into: calls hold four slots and Golem occupies one.
+    max: 3,
+    requiredPower: 'trainable-1' as const,
+    percentPerSlot: 0.25
   }
 } as const satisfies Partial<Record<HeroId, any>>;
 

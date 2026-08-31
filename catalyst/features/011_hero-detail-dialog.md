@@ -87,6 +87,7 @@ Not role-specific.
 - Every value the dialog shows for a hero equals what that hero's card shows. The dialog reads feature 003's state and never recomputes a rule.
 - Stat rows use the hero card's treatment, scaled up. The special-power bonus is folded into the number, with no separate breakdown — the card's choice, kept so the two agree.
 - **Pair totals are the sum of both heroes' effective stats**, each already carrying allocations and special-power bonuses, and are read-only.
+- One exception, owned by [feature 012](012_special-powers.md): the pair total is a **two-hero call**, so Golem's Spread Thin is re-derived here at `min(slots, 2)` — his partner fills the slot he would have expanded into. The pair row can therefore credit Golem less than his own stat rows show, and the block says so in its copy.
 - Powers are grouped apart from flight, Sonar's form toggle and special abilities: the first is what a training is spent on, the second is what the hero already has or gains.
 - **The dialog's geometry does not depend on which hero is open.** A fixed-level hero has no steppers and may have no partner; switching to one must not resize or reflow anything.
 - Surfaces inside the dialog separate with a border, never the panel drop shadow — that shadow is for panels over the dark ground (annex §6).

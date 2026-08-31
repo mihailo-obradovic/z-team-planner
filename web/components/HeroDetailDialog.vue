@@ -187,8 +187,10 @@
                   </p>
 
                   <p class="text-sm text-muted">
-                    {{ hero.name }} and {{ synergyPartner.name }} combined,
-                    including every bonus either of them has applied.
+                    {{ hero.name }} and {{ synergyPartner.name }} combined, with
+                    every bonus applied.<template v-if="pairFillsASlot">
+                      The pair fills a slot, so Spread Thin counts one
+                      fewer.</template>
                   </p>
                 </div>
 
@@ -461,6 +463,7 @@ const {
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
+  getPairSpecialPowerBonusStats,
   flyingHeroIds,
   toggleFlight,
   flightTrainingsUsed,
@@ -689,6 +692,22 @@ const specialAbility = computed(() => {
     };
   }
 
+  if (mechanics.type === 'spread-thin') {
+    const hasRequiredPower = powerState.value?.trainableSelected === 1;
+    const slots = state === 1 ? '1 slot' : `${state} slots`;
+
+    return {
+      name: 'Spread Thin',
+      description:
+        state > 0
+          ? `Expanded into ${slots} — every stat up ${state * 25}%.`
+          : 'Expands into each empty slot, raising every stat 25% per slot.',
+      icon: 'i-lucide-expand',
+      active: state > 0,
+      disabled: !hasRequiredPower
+    };
+  }
+
   return null;
 });
 
@@ -793,12 +812,39 @@ const combinedStats = computed(() =>
     const partnerValue = partnerHero
       ? partnerHero.startingStats[stat] +
         getStatAllocations(partnerHero.id)[stat] +
-        getSpecialPowerBonusStats(partnerHero.id)[stat]
+        getPairSpecialPowerBonusStats(partnerHero.id)[stat]
       : 0;
 
-    return { stat, value: computedStat(stat) + partnerValue };
+    return { stat, value: pairStat(stat) + partnerValue };
   })
 );
+
+// * The note only earns its line where a slot-filling power is actually in play — feature 012's deduction is invisible on every other pair.
+const pairFillsASlot = computed(() => {
+  const ids = [props.heroId, synergyPartner.value?.id];
+
+  return ids.some(
+    (id) =>
+      id &&
+      SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS]
+        ?.type === 'spread-thin'
+  );
+});
+
+// * This hero's side of the pair total. Same shape as `computedStat`, with the two-hero call's slot deduction applied on top.
+function pairStat(stat: StatName): number {
+  if (!hero.value || !props.heroId) {
+    return 0;
+  }
+
+  const resolved = resolvedStat(stat);
+
+  return (
+    hero.value.startingStats[resolved] +
+    statBonuses.value[resolved] +
+    getPairSpecialPowerBonusStats(props.heroId)[resolved]
+  );
+}
 
 const hasEffects = computed(
   () =>

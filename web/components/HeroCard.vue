@@ -105,6 +105,15 @@
             :active="specialPowerState > 0"
             @click="toggleSpecialPower(heroId)"
           />
+
+          <TooltipButton
+            v-if="showGolemSpreadThin"
+            :text="golemTooltip"
+            icon="i-lucide-expand"
+            :color="specialPowerState ? 'primary' : 'neutral'"
+            :active="specialPowerState > 0"
+            @click="toggleSpecialPower(heroId)"
+          />
         </div>
       </div>
 
@@ -373,6 +382,21 @@ const coupeTooltip = computed(() => {
     return `En Pointe: ${bonus} Mobility (active)`;
   }
   return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
+});
+
+const showGolemSpreadThin = computed(() => {
+  return props.heroId === 'golem' && powerStates.value.trainableSelected === 1;
+});
+
+// * Labelled by slot count rather than percentage: slots are what the player picks at the dispatch screen, the percentage is only the mechanism.
+const golemTooltip = computed(() => {
+  const slots = specialPowerState.value;
+
+  if (slots === 0) {
+    return 'Spread Thin: Click to fill 1–3 empty slots';
+  }
+
+  return `Spread Thin: +${slots} slot${slots > 1 ? 's' : ''} (+${slots * 25}%)`;
 });
 
 const coupeIcon = computed(() => {

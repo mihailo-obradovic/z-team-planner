@@ -41,6 +41,10 @@
     },
     "coupe": {
       "max": 2
+    },
+    "golem": {
+      "max": 3,
+      "requires_trainable": 1
     }
   },
   "heroes": {
