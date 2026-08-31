@@ -1,5 +1,6 @@
 <template>
-  <div class="flex w-56 shrink-0 flex-col gap-2">
+  <!-- * w-27 is the chip box's own 108px (annex §13): below lg the portrait shrinks to exactly what four chips need. -->
+  <div class="flex w-27 shrink-0 flex-col gap-2 lg:w-56">
     <NuxtImg
       :src="portraitSrc"
       :alt="hero.name"

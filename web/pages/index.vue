@@ -69,7 +69,7 @@
     </template>
 
     <template #synergy-pairs>
-      <div class="flex flex-wrap justify-center gap-4 p-4">
+      <div class="@container flex flex-wrap justify-center gap-4 p-4">
         <SynergyPairCard
           v-for="pair in synergyPairColumns"
           :key="pair.topId"
