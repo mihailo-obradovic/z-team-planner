@@ -20,6 +20,20 @@ BuildName = Annotated[
 ]
 
 
+class MissionTemplateDoc(BaseModel):
+    """One `mt` entry (feature 015): REQs plus at most one threshold column.
+
+    `r` is stats in STAT_NAMES order; `x`/`f` are per-stat thresholds with 0 meaning unset.
+    Which template may carry which column is a range rule (services/validation.py), not shape.
+    """
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    r: list[int]
+    x: list[int] = Field(default_factory=list)
+    f: list[int] = Field(default_factory=list)
+
+
 class BuildDocument(BaseModel):
     """Validation tier (i), structure: the keys of `SerializedBuild` v1, and nothing else.
 
@@ -41,6 +55,11 @@ class BuildDocument(BaseModel):
     pw: dict[str, list[int]] = Field(default_factory=dict)
     sp: dict[str, int] = Field(default_factory=dict)
     fl: list[str] = Field(default_factory=list)
+    mt: list[MissionTemplateDoc] = Field(default_factory=list)
+    # * A slot holds a hero id, the "illusion" marker, or null for empty.
+    mh: list[str | None] = Field(default_factory=list)
+    ml: int = 0
+    ma: int = 0
 
     def trained_slot(self, hero: str) -> int:
         """Which trainable power the hero holds, or 0 — safe on a malformed pair."""

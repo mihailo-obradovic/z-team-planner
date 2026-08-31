@@ -1,8 +1,21 @@
-import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
+import {
+  DEFAULT_EP3_CUT,
+  DEFAULT_EP4_HIRE,
+  HEROES,
+  STAT_NAMES
+} from '@/types/hero';
+import { ILLUSION_SLOT, MISSION_SLOT_COUNT } from '@/types/mission';
+import { rollMissionTemplates } from '@/utils/missionTemplates';
 
-import type { HeroId, HeroPowerSelection, HeroStats } from '@/types/hero';
+import type {
+  HeroId,
+  HeroPowerSelection,
+  HeroStats,
+  SynergyLevel
+} from '@/types/hero';
+import type { MissionSlot, MissionTemplate } from '@/types/mission';
 import type { PlannerState } from '@/composables/usePlannerState';
-import type { SerializedBuild } from '@/types/build';
+import type { SerializedBuild, SerializedMissionTemplate } from '@/types/build';
 
 export function serializeBuild(state: PlannerState): SerializedBuild {
   const build: SerializedBuild = { v: 1 };
@@ -79,6 +92,46 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
     build.fl = fl;
   }
 
+  // * Rolled templates are never a default, so `mt` is present on every build the tab has
+  // * touched; only a state that never rolled (server render) omits it.
+  if (state.missionTemplates.value) {
+    build.mt = state.missionTemplates.value.map((template, index) => {
+      const entry: SerializedMissionTemplate = {
+        r: statsToArray(template.req)
+      };
+
+      if (index === 1) {
+        const x = thresholdsToArray(template.xp);
+
+        if (x) {
+          entry.x = x;
+        }
+      }
+
+      if (index === 2) {
+        const f = thresholdsToArray(template.fail);
+
+        if (f) {
+          entry.f = f;
+        }
+      }
+
+      return entry;
+    });
+  }
+
+  if (state.missionSlots.value.some((slot) => slot !== null)) {
+    build.mh = [...state.missionSlots.value];
+  }
+
+  if (state.missionSynergyLevel.value > 0) {
+    build.ml = state.missionSynergyLevel.value;
+  }
+
+  if (state.missionActiveTemplate.value > 0) {
+    build.ma = state.missionActiveTemplate.value;
+  }
+
   return build;
 }
 
@@ -145,6 +198,18 @@ export async function deserializeBuild(
   }
 
   state.heroFlights.value = fl;
+
+  // * An old document without `mt` gets a fresh roll (feature 015) — on the client only, so a
+  // * server render cannot bake one roll into the prerendered payload.
+  state.missionTemplates.value = build.mt
+    ? build.mt.map(readTemplate)
+    : import.meta.client
+      ? rollMissionTemplates()
+      : null;
+
+  state.missionSlots.value = readSlots(build.mh);
+  state.missionSynergyLevel.value = readRange(build.ml, 3) as SynergyLevel;
+  state.missionActiveTemplate.value = readRange(build.ma, 2);
 }
 
 function statsToArray(stats: HeroStats): number[] {
@@ -160,4 +225,71 @@ function arrayToStats(values: number[]): HeroStats {
   return Object.fromEntries(
     STAT_NAMES.map((stat, index) => [stat, values[index] ?? 0])
   ) as HeroStats;
+}
+
+// * A threshold column serializes as 5 values with 0 for unset — omitted entirely when empty.
+function thresholdsToArray(
+  thresholds: Partial<HeroStats>
+): number[] | undefined {
+  const values = STAT_NAMES.map((stat) => thresholds[stat] ?? 0);
+
+  return values.some((value) => value > 0) ? values : undefined;
+}
+
+function arrayToThresholds(values: number[] | undefined): Partial<HeroStats> {
+  const thresholds: Partial<HeroStats> = {};
+
+  for (const [index, stat] of STAT_NAMES.entries()) {
+    const value = values?.[index];
+
+    if (value && value > 0) {
+      thresholds[stat] = value;
+    }
+  }
+
+  return thresholds;
+}
+
+// * Which template may carry which threshold column is fixed — a column on the wrong
+// * template is dropped, exactly as the server refuses to store it.
+function readTemplate(
+  entry: SerializedMissionTemplate,
+  index: number
+): MissionTemplate {
+  return {
+    req: arrayToStats(entry.r),
+    xp: index === 1 ? arrayToThresholds(entry.x) : {},
+    fail: index === 2 ? arrayToThresholds(entry.f) : {}
+  };
+}
+
+const HERO_IDS = new Set<string>(HEROES.map((hero) => hero.id));
+
+// * Pad or truncate to the four slots; an entry that is neither a hero nor the illusion
+// * marker empties its slot. A duplicated hero keeps its first slot only. Contextual cleanup
+// * (a hidden hero, an illusion without Prism beside it) is the team composable's job.
+function readSlots(entries: (string | null)[] | undefined): MissionSlot[] {
+  const seen = new Set<string>();
+
+  return Array.from({ length: MISSION_SLOT_COUNT }, (_, index) => {
+    const entry = entries?.[index] ?? null;
+
+    if (entry === ILLUSION_SLOT) {
+      return entry;
+    }
+
+    if (entry === null || !HERO_IDS.has(entry) || seen.has(entry)) {
+      return null;
+    }
+
+    seen.add(entry);
+
+    return entry as HeroId;
+  });
+}
+
+function readRange(value: number | undefined, max: number): number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0
+    ? Math.min(value, max)
+    : 0;
 }

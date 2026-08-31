@@ -115,6 +115,8 @@ Not role-specific. (Cloud saves require the API schema to accept the new keys; n
 - Arrows on slot 1/4 have one direction only; moving Prism or her source recomputes the illusion per its lifecycle.
 - Clearing a threshold (unset) removes that stat's check; a template may end with none.
 - Required area zero with team present is still 100%; both zero is 100%.
+- Loading a document saved before the simulator rolls fresh templates and so immediately counts as having unsaved changes — truthfully: saving would write the rolled keys. It happens once per old build.
+- The template roll happens client-side only: `/` is prerendered, and a roll in shared state during prerender would bake one "random" set into the payload for every visitor.
 
 ## Invariants
 

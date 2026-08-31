@@ -17,7 +17,11 @@ export function isSerializedBuild(value: unknown): value is SerializedBuild {
     isAbsentOr(value.bl, isPlainObject) &&
     isAbsentOr(value.pw, isPlainObject) &&
     isAbsentOr(value.sp, isPlainObject) &&
-    isAbsentOr(value.fl, Array.isArray)
+    isAbsentOr(value.fl, Array.isArray) &&
+    isAbsentOr(value.mt, Array.isArray) &&
+    isAbsentOr(value.mh, Array.isArray) &&
+    isAbsentOr(value.ml, isNumber) &&
+    isAbsentOr(value.ma, isNumber)
   );
 }
 
@@ -34,4 +38,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 function isString(value: unknown): boolean {
   return typeof value === 'string';
+}
+
+function isNumber(value: unknown): boolean {
+  return typeof value === 'number';
 }
