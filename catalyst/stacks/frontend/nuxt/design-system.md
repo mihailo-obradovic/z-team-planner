@@ -142,6 +142,8 @@ Radii derive from a single `--radius` token (`<0.5–0.75rem>`); the derived ste
 
 Separation is a border or a shadow, not both. Focus is a `:focus-visible` ring drawn from `--color-ring` at `<2px>` with `<2px offset>` — `outline: none` is only ever allowed alongside a replacement ring (§14). On the headless choice this is load-bearing: no library supplies a focus style, so a control without the ring is a keyboard dead spot.
 
+**Scroll edges.** A region that scrolls carries a 1px rule on each edge where content is currently hidden — the rule, its per-edge arithmetic and its contrast floor are in `../_common/scroll-affordance.md`. In Vue this is one component owning the scrolling: `useResizeObserver` over **both** the container and its content, plus a passive `scroll` listener, toggling classes through a reactive ref. Vue's reactivity confines the update to that component, so no scheduling wrapper is needed — but a scrolling element must not also carry a structural border, which usually means a bordered surface becomes a static shell with the scroll region and its padding inside it.
+
 ---
 
 ## 6. Elevation
