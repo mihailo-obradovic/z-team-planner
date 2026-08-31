@@ -470,8 +470,8 @@ const {
   trainingsUsed,
   getSpecialPowerState,
   toggleSpecialPower,
-  getSpecialPowerBonusStats,
-  getPairSpecialPowerBonusStats,
+  getEffectiveStats,
+  getPairCombinedStats,
   monsterForm,
   toggleMonsterForm,
   resolveDisplayStat,
@@ -573,13 +573,6 @@ const statBonuses = computed(() => {
     return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
   }
   return getStatAllocations(props.heroId);
-});
-
-const specialPowerBonusStats = computed(() => {
-  if (!props.heroId) {
-    return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
-  }
-  return getSpecialPowerBonusStats(props.heroId);
 });
 
 const getLevelUpPointsUsedValue = computed(() => {
@@ -758,15 +751,7 @@ function resolvedStat(stat: StatName): StatName {
 }
 
 function computedStat(stat: StatName): number {
-  if (!hero.value || !props.heroId) {
-    return 0;
-  }
-  const resolved = resolvedStat(stat);
-  return (
-    hero.value.startingStats[resolved] +
-    statBonuses.value[resolved] +
-    specialPowerBonusStats.value[resolved]
-  );
+  return props.heroId ? getEffectiveStats(props.heroId)[stat] : 0;
 }
 
 function isPowerActive(power: HeroPowerDefinition): boolean {
@@ -825,24 +810,18 @@ function handlePowerClick(power: HeroPowerDefinition) {
     toggleTrainablePower(props.heroId, 2);
   }
 }
-// * The pair's combined effective stats — this hero plus the partner, each already carrying allocations and any special-power bonus. Read-only: the dialog edits one hero.
-const combinedStats = computed(() =>
-  STAT_NAMES.map((stat) => {
-    const partner = synergyPartner.value;
+// * The pair's combined effective stats — the planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014). Read-only: the dialog edits one hero.
+const combinedStats = computed(() => {
+  const partner = synergyPartner.value;
 
-    const partnerHero = partner
-      ? (heroes.value?.find((h) => h.id === partner.id) ?? null)
-      : null;
+  if (!props.heroId || !partner) {
+    return [];
+  }
 
-    const partnerValue = partnerHero
-      ? partnerHero.startingStats[stat] +
-        getStatAllocations(partnerHero.id)[stat] +
-        getPairSpecialPowerBonusStats(partnerHero.id)[stat]
-      : 0;
+  const totals = getPairCombinedStats(props.heroId, partner.id);
 
-    return { stat, value: pairStat(stat) + partnerValue };
-  })
-);
+  return STAT_NAMES.map((stat) => ({ stat, value: totals[stat] }));
+});
 
 // * The note only earns its line where a slot-filling power is actually in play — feature 012's deduction is invisible on every other pair.
 const pairFillsASlot = computed(() => {
@@ -855,21 +834,6 @@ const pairFillsASlot = computed(() => {
         ?.type === 'spread-thin'
   );
 });
-
-// * This hero's side of the pair total. Same shape as `computedStat`, with the two-hero call's slot deduction applied on top.
-function pairStat(stat: StatName): number {
-  if (!hero.value || !props.heroId) {
-    return 0;
-  }
-
-  const resolved = resolvedStat(stat);
-
-  return (
-    hero.value.startingStats[resolved] +
-    statBonuses.value[resolved] +
-    getPairSpecialPowerBonusStats(props.heroId)[resolved]
-  );
-}
 
 const hasEffects = computed(
   () =>

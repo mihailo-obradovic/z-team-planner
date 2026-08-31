@@ -272,6 +272,52 @@ export function useHeroPowerTraining(
     return allSpecialPowerBonuses.value[id] ?? ZERO_STATS;
   }
 
+  // * A hero's displayed value per stat — the one every surface renders: form-resolved, then clamped so it never passes MAX_STAT_VALUE (feature 012).
+  function getEffectiveStats(id: HeroId): HeroStats {
+    return effectiveStats(id, getSpecialPowerBonusStats(id));
+  }
+
+  // * The hero's side of a pair total: the same shape with the two-hero call's slot deduction applied (feature 012).
+  function getPairEffectiveStats(id: HeroId): HeroStats {
+    return effectiveStats(id, getPairSpecialPowerBonusStats(id));
+  }
+
+  // * A synergy pair's per-stat total: both heroes' effective stats, each clamped, then summed — the sum itself may exceed MAX_STAT_VALUE (feature 014). The one computation behind the dialog's pair block and the synergy tab.
+  function getPairCombinedStats(id1: HeroId, id2: HeroId): HeroStats {
+    const first = getPairEffectiveStats(id1);
+    const second = getPairEffectiveStats(id2);
+
+    return Object.fromEntries(
+      STAT_NAMES.map((stat) => [stat, first[stat] + second[stat]])
+    ) as HeroStats;
+  }
+
+  function effectiveStats(id: HeroId, bonuses: HeroStats): HeroStats {
+    const hero = heroes.value?.find((h) => h.id === id);
+
+    if (!hero) {
+      return ZERO_STATS;
+    }
+
+    const allocations = levelUp.getStatAllocations(id);
+
+    return Object.fromEntries(
+      STAT_NAMES.map((stat) => {
+        const resolved = resolveDisplayStat(id, stat);
+
+        return [
+          stat,
+          Math.min(
+            hero.startingStats[resolved] +
+              allocations[resolved] +
+              bonuses[resolved],
+            MAX_STAT_VALUE
+          )
+        ];
+      })
+    ) as HeroStats;
+  }
+
   function resetAllPowerTrainings() {
     heroPowers.value = {};
     heroSpecialPowers.value = {};
@@ -303,6 +349,9 @@ export function useHeroPowerTraining(
     toggleSpecialPower,
     getSpecialPowerBonusStats,
     getPairSpecialPowerBonusStats,
+    getEffectiveStats,
+    getPairEffectiveStats,
+    getPairCombinedStats,
 
     monsterForm,
     toggleMonsterForm,
