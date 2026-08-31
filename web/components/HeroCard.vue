@@ -68,7 +68,7 @@
             :icon="sonarFormIcon"
             :color="monsterForm ? 'primary' : 'neutral'"
             :active="monsterForm"
-            @click="handleToggleForm"
+            @click="toggleMonsterForm"
           />
 
           <TooltipButton
@@ -194,13 +194,6 @@ const POWER_ICONS = [
   'i-lucide-swords'
 ] as const;
 
-const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
-  combat: 'intellect',
-  intellect: 'combat',
-  vigor: 'charisma',
-  charisma: 'vigor'
-};
-
 const props = defineProps<{
   heroId: HeroId;
 }>();
@@ -208,8 +201,6 @@ const props = defineProps<{
 defineEmits<{
   viewDetail: [];
 }>();
-
-const monsterForm = ref(false);
 
 const {
   heroes,
@@ -228,6 +219,9 @@ const {
   getSpecialPowerState,
   toggleSpecialPower,
   getSpecialPowerBonusStats,
+  monsterForm,
+  toggleMonsterForm,
+  resolveDisplayStat,
   flyingHeroIds,
   toggleFlight,
   flightTrainingsUsed,
@@ -419,14 +413,7 @@ const sonarFormTooltip = computed(() => {
   return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
 });
 
-function handleToggleForm() {
-  monsterForm.value = !monsterForm.value;
-}
-
 function resolvedStat(stat: StatName): StatName {
-  if (props.heroId === 'sonar' && monsterForm.value) {
-    return MONSTER_FORM_SWAPS[stat] ?? stat;
-  }
-  return stat;
+  return resolveDisplayStat(props.heroId, stat);
 }
 </script>

@@ -24,6 +24,13 @@ const DEFAULT_POWER_STATE: HeroPowerSelection = {
   trainableSelected: 0
 };
 
+const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
+  combat: 'intellect',
+  intellect: 'combat',
+  vigor: 'charisma',
+  charisma: 'vigor'
+};
+
 // * Composable for managing power training and special power mechanics. Handles power selections, training limits, and the special powers of feature 012.
 export function useHeroPowerTraining(
   heroes: Ref<Hero[] | null | undefined>,
@@ -39,6 +46,20 @@ export function useHeroPowerTraining(
     'heroSpecialPowers',
     () => ({})
   );
+
+  // * Sonar's form is display-only shared state: one form everywhere it renders, never serialized into a build (features 012/014).
+  const monsterForm = useState('monsterForm', () => false);
+
+  function toggleMonsterForm() {
+    monsterForm.value = !monsterForm.value;
+  }
+
+  function resolveDisplayStat(id: HeroId, stat: StatName): StatName {
+    if (id === 'sonar' && monsterForm.value) {
+      return MONSTER_FORM_SWAPS[stat] ?? stat;
+    }
+    return stat;
+  }
 
   function getPowerState(id: HeroId): HeroPowerSelection {
     return heroPowers.value[id] ?? DEFAULT_POWER_STATE;
@@ -282,6 +303,10 @@ export function useHeroPowerTraining(
     toggleSpecialPower,
     getSpecialPowerBonusStats,
     getPairSpecialPowerBonusStats,
+
+    monsterForm,
+    toggleMonsterForm,
+    resolveDisplayStat,
 
     resetAllPowerTrainings,
     resetHeroPowers

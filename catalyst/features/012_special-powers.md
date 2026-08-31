@@ -17,7 +17,7 @@ The display-only stat effects a hero's power grants once it is trained — Flamb
 | Input               | Type     | Source                                | Constraints                                                          |
 | ------------------- | -------- | ------------------------------------- | -------------------------------------------------------------------- |
 | special power toggle | UI event | the card's special chip, or the dialog | gated on the required trainable power; cycles, never wraps past `max` |
-| sonar form toggle   | UI event | Sonar's card                          | display only — never stored, never serialized                        |
+| sonar form toggle   | UI event | any surface rendering Sonar            | one shared display state — never serialized                          |
 
 ## Outputs And Side Effects
 
@@ -48,7 +48,7 @@ Non-goals:
 
 **Spread Thin** (Golem, requires trainable-1). Cycles off → 1 slot → 2 slots → 3 slots, standing for the empty call slots he expands into. Each step adds `floor((startingStats + allocations) × 0.25 × slots)` to **every** stat. The chip is labelled by slot count (`+2 slots`), with the percentage in its tooltip — slots are what the player is deciding at the dispatch screen; the percentage is the mechanism.
 
-**Sonar's form.** A monster-form toggle that swaps Combat↔Intellect and Vigor↔Charisma in the display only. It has no `SPECIAL_POWER_MECHANICS` entry and no serialized state.
+**Sonar's form.** A monster-form toggle that swaps Combat↔Intellect and Vigor↔Charisma in the display only. The state is shared: one form across every surface that renders him (card, dialog, synergy tab — feature 014), toggled from any of them. It has no `SPECIAL_POWER_MECHANICS` entry and no serialized state.
 
 **Clearing.** Un-revealing the starting power, training the other trainable, the per-hero reset, and `Reset all trainings` each clear the hero's special state.
 

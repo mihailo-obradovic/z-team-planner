@@ -326,7 +326,7 @@
                       ? 'border-accented bg-elevated'
                       : 'border-default hover:border-accented/50'
                   "
-                  @click="handleToggleForm"
+                  @click="toggleMonsterForm"
                 >
                   <div class="flex items-center gap-2">
                     <u-icon name="i-lucide-shuffle" class="size-4 shrink-0" />
@@ -434,13 +434,6 @@ const POWER_ICONS = [
   'i-lucide-swords'
 ] as const;
 
-const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
-  combat: 'intellect',
-  intellect: 'combat',
-  vigor: 'charisma',
-  charisma: 'vigor'
-};
-
 const RADAR_STAT_ORDER: StatName[] = [
   'combat',
   'vigor',
@@ -457,8 +450,6 @@ const emit = defineEmits<{
   close: [];
   select: [heroId: HeroId];
 }>();
-
-const monsterForm = ref(false);
 
 const {
   heroes,
@@ -481,6 +472,9 @@ const {
   toggleSpecialPower,
   getSpecialPowerBonusStats,
   getPairSpecialPowerBonusStats,
+  monsterForm,
+  toggleMonsterForm,
+  resolveDisplayStat,
   flyingHeroIds,
   toggleFlight,
   flightTrainingsUsed,
@@ -759,15 +753,8 @@ const radarAxes = computed(() =>
   }))
 );
 
-function handleToggleForm() {
-  monsterForm.value = !monsterForm.value;
-}
-
 function resolvedStat(stat: StatName): StatName {
-  if (props.heroId === 'sonar' && monsterForm.value) {
-    return MONSTER_FORM_SWAPS[stat] ?? stat;
-  }
-  return stat;
+  return props.heroId ? resolveDisplayStat(props.heroId, stat) : stat;
 }
 
 function computedStat(stat: StatName): number {
