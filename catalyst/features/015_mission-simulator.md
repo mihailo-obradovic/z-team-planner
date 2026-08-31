@@ -10,7 +10,7 @@ Hard
 
 ## Purpose
 
-Fill the planner's empty "Mission simulator" tab (the last feature 003 placeholder): the player composes a team of up to four heroes, tunes three editable mission templates, and reads an estimated success chance computed the way the game scores calls — radar coverage plus synergy — with every slot-dependent power derived from the actual team instead of the manual what-if chips. Desktop layout first; responsive adjustments are follow-up work.
+Fill the planner's empty "Mission simulator" tab (the last feature 003 placeholder): the player composes a team of up to four heroes, tunes three editable mission templates, and reads an estimated success chance computed the way the game scores calls — radar coverage plus synergy — with every slot-dependent power derived from the actual team instead of the manual what-if chips. The desktop layout is this document's; the reflow below it is feature 016's.
 
 ## Inputs
 
@@ -51,19 +51,19 @@ Non-goals:
 
 ## User / System Behavior
 
-**Templates.** Exactly three, unnamed ("Template #1/#2/#3"), always 4 slots. Each holds five editable REQ values plus two optional condition columns — `2×XP ≥` and `FAIL ≥` — configurable on **any** template, each holding **at most one** threshold (setting another stat's moves it). On a fresh planner state each template rolls REQs uniformly in 3–8; as worked examples, #2 rolls one random stat's XP threshold in 6–9 and #3 gets a fixed fail threshold — combat at 8, the common end-game case. Everything is editable afterwards and travels with the build. One template is active at a time and drives the requirements check and the math.
+**Templates.** Exactly three, unnamed ("Template #1/#2/#3"), always 4 slots. Each holds five editable REQ values plus two optional condition columns — `2×XP ≥` and `FAIL ≥` — configurable on **any** template, each holding **at most one** threshold (setting another stat's moves it). A fresh planner state rolls REQs uniformly in 3–8; as worked examples, #2 rolls one random stat's XP threshold in 6–9 and #3 gets a fixed fail threshold, combat at 8. All of it is editable afterwards and travels with the build. One template is active at a time and drives the requirements check and the math.
 
-**Motion and certainty.** Switching tabs fades the new tab's content in; switching the active template animates the card heights; every number in the requirements check and the math travels to its new value rather than jumping. A fully covered mission reads 100% on a green field with a check; a 0% mission reads on a red field with a ✕.
+**Motion and certainty.** Switching tabs fades the new content in; switching the active template animates the card heights; every number in the requirements check and the math travels to its new value rather than jumping. A fully covered mission reads 100% on a green field with a check; a 0% mission on a red field with a ✕.
 
-**Layout and stability.** Desktop-first: the templates panel, the requirements check, and the math panel form the top row (left, middle, right), stretched to equal height; the team is a bottom row of four vertical slot cards — controls on top, avatar, then label. Only the active template renders expanded; the others collapse to a REQ summary, changing only with the selection (#1 selected by default). Space is otherwise reserved: every math row (synergy, reattempt, fail check, 2×XP) is always present — a dash when it has nothing to say — and value and team slots are fixed-size. The radar overlays the required shape (dashed ink) under the team shape, marks the set `FAIL ≥` threshold (an error ✕ disc) and `2×XP ≥` threshold (a gold 2× disc) on their axes with hover tooltips, and animates every change — edits and template switches alike.
+**Layout and stability.** The templates panel, the requirements check and the math panel form the top row (left, middle, right) at equal height; the team is a bottom row of four vertical slot cards — controls on top, avatar, then label. Only the active template renders expanded; the others collapse to a REQ summary, changing only with the selection (#1 by default). Space is otherwise reserved: every math row (synergy, reattempt, fail check, 2×XP) is always present, a dash when it has nothing to say, and value and team slots are fixed-size. The radar overlays the required shape (dashed ink) under the team shape, marks a set `FAIL ≥` (error ✕ disc) and `2×XP ≥` (gold 2× disc) on their axes with hover tooltips, and animates every change.
 
 **Team.** Four positional slots, 0–4 filled. An empty slot opens the hero picker (roster minus the team); a filled portrait opens that hero's detail dialog (the illusion its source's) — replacing is remove-then-add; X removes; arrows swap with the neighbor. Team totals per stat = sum of occupants' effective stats (each hero clamped at 10 first), the sum clamped at 10.
 
 **Slot-derived powers** — computed from the real team, ignoring (and never writing) the manual chips on other tabs:
 
 - Coupé: +1 Combat in slot 1, +1 Mobility in slot 2 (+3 with À la Seconde trained), nothing in slots 3–4.
-- Golem (Spread Thin trained): placing him spawns a **copy of himself** in every free slot to his right. Each standing copy pays him `floor((starting + allocations) × 0.25 × copies)` in total (clamped at 10); the copy itself contributes no stats and is nobody for power or pair purposes. Copies dissolve **right-to-left only** — an inner copy's remove is inert until the outer ones are gone — vanish when Golem leaves or Spread Thin is untrained, and return when he is placed again.
-- Prism: placed into slot _k_ with a hero in slot _k−1_ and slot _k+1_ free, an illusion of that left neighbor appears in _k+1_ — stats at half, floored (full with Perfect Copy), no power effects. A real occupant: counts toward the 4 slots, removable and replaceable. Removal is sticky — it returns only when Prism is placed again; it vanishes when she or the source moves or leaves.
+- Golem (Spread Thin trained): placing him spawns a **copy of himself** in every free slot to his right, paying him `floor((starting + allocations) × 0.25 × copies)` in total (clamped at 10); a copy contributes no stats and is nobody for power or pair purposes. Copies dissolve **right-to-left only** — an inner copy's remove is inert until the outer ones are gone — vanish when Golem leaves or Spread Thin is untrained, and return when he is placed again.
+- Prism: placed into slot _k_ with a hero in _k−1_ and _k+1_ free, an illusion of that left neighbor appears in _k+1_ — stats at half, floored (full with Perfect Copy), no power effects. A real occupant: counts toward the 4 slots, removable and replaceable. Removal is sticky — it returns only when Prism is placed again; it vanishes when she or the source moves or leaves.
 - Supernova and Sonar's shared form flow in through effective stats exactly as elsewhere (they are assumptions, not slot facts).
 
 **Success calculation**, shown as labelled rows in the math panel:
@@ -76,7 +76,7 @@ Non-goals:
 
 The 2×XP indicator lights purely on its own per-stat check — team total for that stat ≥ threshold — independent of the estimate.
 
-**Persistence.** Simulator state serializes as new optional `SerializedBuild` v1 keys — templates (`mt`), team slots (`mh`: hero id, `illusion`/`copy` marker, or empty × 4), synergy level (`ml`), active template (`ma`) — written only when non-default, entering dirty tracking, local saves, cloud saves, and `?build=` links automatically. `?tab=` composes with `?build=` and rides into share links.
+**Persistence.** Simulator state serializes as new optional `SerializedBuild` v1 keys — templates (`mt`), team slots (`mh`: hero id, `illusion`/`copy` marker, or empty × 4), synergy level (`ml`), active template (`ma`) — written only when non-default, and so entering dirty tracking, local and cloud saves and `?build=` links automatically. `?tab=` composes with `?build=` and rides into share links.
 
 ## Roles And Access
 
@@ -84,18 +84,16 @@ Not role-specific. (Cloud saves require the API schema to accept the new keys; n
 
 ## Examples
 
+The success model, the slot effects and the illusion lifecycle are exercised case by case in the two test files named under Tests. These rows pin a rendered state or a boundary rather than a number.
+
 | Input | Expected Output | Notes |
 | --- | --- | --- |
-| team shape fully contains required shape, synergy 0 | 100% | coverage alone |
 | all REQs 0 | 100% regardless of team | empty required area covers trivially |
 | empty team, any REQ > 0 | 0% | nothing to cover with |
-| coverage 92%, synergy switch at 1, pair on team | 97% | +5% |
 | synergy switch at 3, no pair on team | switch disabled, +0% | stored level kept |
 | `FAIL ≥ 8` on charisma, team charisma total 8 | 0%, FAILED | at-or-above trips |
 | `2×XP ≥ 7` on combat, team combat total 7 | indicator fulfilled | independent of estimate |
-| Coupé slot 1, À la Seconde trained | +3 Combat in team totals | slot 2 would give +3 Mobility |
 | Golem (Spread Thin) placed with 2 free right slots | 2 copies spawn, +50% to Golem | manual chip ignored here |
-| Prism slot 2, hero slot 1, slot 3 free | illusion of slot-1 hero in slot 3, half stats floored | full stats with Perfect Copy |
 | remove illusion, then free its slot again | stays gone | returns only on re-placing Prism |
 | Pirouette trained, Coupé on team, coverage+synergy 60% | 84% with reattempt note | `1−0.4²` |
 | ep3 cut removes a team hero | hero silently leaves the team | also on deserialization |
