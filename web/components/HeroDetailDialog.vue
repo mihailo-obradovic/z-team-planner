@@ -365,9 +365,21 @@
                     />
                   </div>
 
-                  <p class="mt-1 text-sm text-muted">
-                    {{ specialAbility.description }}
-                  </p>
+                  <!-- ! Every state's line is rendered invisibly in this one grid cell, so the card reserves the tallest of them and keeps its height when the power is toggled. The copy is shorter once active, and at the widths a phone lands on that is the difference between two lines and one — the card used to collapse under the tap and drag everything below it up. Reserving beats a fixed height: the tallest variant is two lines at 393px and one on desktop. -->
+                  <div class="mt-1 grid">
+                    <p
+                      v-for="variant in specialAbility.descriptionVariants"
+                      :key="variant"
+                      class="invisible col-start-1 row-start-1 text-sm text-muted"
+                      aria-hidden="true"
+                    >
+                      {{ variant }}
+                    </p>
+
+                    <p class="col-start-1 row-start-1 text-sm text-muted">
+                      {{ specialAbility.description }}
+                    </p>
+                  </div>
                 </div>
               </section>
             </div>
@@ -665,9 +677,12 @@ const specialAbility = computed(() => {
 
   if (mechanics.type === 'supernova') {
     const hasRequiredPower = powerState.value?.trainableSelected === 2;
+    const description = 'Combat and Mobility set to 10 after two successes.';
+
     return {
       name: 'Supernova',
-      description: 'Combat and Mobility set to 10 after two successes.',
+      description,
+      descriptionVariants: [description],
       icon: 'i-lucide-flame',
       active: state > 0,
       disabled: !hasRequiredPower
@@ -677,11 +692,13 @@ const specialAbility = computed(() => {
   if (mechanics.type === 'en-pointe') {
     const isUpgraded = powerState.value?.trainableSelected === 2;
     const bonus = isUpgraded ? '+3' : '+1';
-    const statLabel =
-      state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
+
     return {
       name: 'En Pointe',
-      description: `${bonus} ${statLabel} when placed in a specific slot.`,
+      description: enPointeDescription(bonus, state),
+      descriptionVariants: [0, 1, 2].map((each) =>
+        enPointeDescription(bonus, each)
+      ),
       icon:
         state === 1
           ? 'i-lucide-sword'
@@ -695,14 +712,12 @@ const specialAbility = computed(() => {
 
   if (mechanics.type === 'spread-thin') {
     const hasRequiredPower = powerState.value?.trainableSelected === 1;
-    const slots = state === 1 ? '1 slot' : `${state} slots`;
+    const states = Array.from({ length: mechanics.max + 1 }, (_, each) => each);
 
     return {
       name: 'Spread Thin',
-      description:
-        state > 0
-          ? `Expanded into ${slots} — every stat up ${state * 25}%.`
-          : 'Expands into each empty slot, raising every stat 25% per slot.',
+      description: spreadThinDescription(state),
+      descriptionVariants: states.map(spreadThinDescription),
       icon: 'i-lucide-expand',
       active: state > 0,
       disabled: !hasRequiredPower
@@ -711,6 +726,24 @@ const specialAbility = computed(() => {
 
   return null;
 });
+
+// * One source for the line, so the description shown and the variants reserved behind it can never drift apart.
+function spreadThinDescription(state: number): string {
+  if (state === 0) {
+    return 'Expands into each empty slot, raising every stat 25% per slot.';
+  }
+
+  const slots = state === 1 ? '1 slot' : `${state} slots`;
+
+  return `Expanded into ${slots} — every stat up ${state * 25}%.`;
+}
+
+function enPointeDescription(bonus: string, state: number): string {
+  const statLabel =
+    state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
+
+  return `${bonus} ${statLabel} when placed in a specific slot.`;
+}
 
 // * The radar takes the same effective value the stat row shows, so the two can never disagree. Axis order is Combat first, which the component puts at the apex, then clockwise — that lands Intellect opposite Vigor and Charisma opposite Mobility.
 const radarAxes = computed(() =>
