@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- * The wordmark's own Z: ember on the lagoon chrome, square with the ink edge every panel carries (annex §1). Drawn as a path rather than set in Barlow Condensed, because a favicon loads no webfont and would fall back to whatever the machine has. -->
+  <rect width="64" height="64" fill="#143e38"/>
+  <rect x="1" y="1" width="62" height="62" fill="none" stroke="#16130c" stroke-width="2"/>
+  <path d="M17 13 H47 V21 L27 43 H47 V51 H17 V43 L37 21 H17 Z" fill="#df8a20"/>
+</svg>

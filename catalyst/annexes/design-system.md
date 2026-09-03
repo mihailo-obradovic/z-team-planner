@@ -313,7 +313,7 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 
 ## 9. Iconography
 
-**Lucide, product-wide**, bundled locally from `@iconify-json/lucide` and resolved through `@nuxt/icon` (registered by Nuxt UI). Reaching for an icon outside the collection resolves over the network at runtime instead of failing the build — so it must not happen. A second collection is a Dependency Change and a violation of this section both; the brand-mark carve-out the stack allows is currently unused, and `@iconify-json/simple-icons` was removed as dead weight.
+**Lucide, product-wide**, bundled locally from `@iconify-json/lucide` and resolved through `@nuxt/icon` (registered by Nuxt UI). Reaching for an icon outside the collection resolves over the network at runtime instead of failing the build — so it must not happen. A second collection is a Dependency Change and a violation of this section both; `@iconify-json/simple-icons` was removed as dead weight. The brand-mark carve-out the stack allows is spent on one mark, the app icon of §10 — it is drawn as a path in a single SVG, not an icon-set entry, so nothing here has to resolve it.
 
 - **Sizes:** 16 / 20 / 24 px only, keyed to the adjacent text role — 16 with `small` and `label`, 20 with `body`, 24 standalone. Icon-only buttons take a control height from §4, and the glyph inside stays on this scale.
 - **Colour:** `currentColor`, always. This is why the stat glyphs became icons: the retired `public/stat-icons/*.webp` rasters could not follow a text colour.
@@ -340,6 +340,13 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 - **Radius** is 0 like everything else; a portrait's separation is its 2px ink border.
 - **Placeholder:** a `--ui-bg-elevated` block at the same aspect ratio while loading, occupying the final geometry.
 - **Alt text is required** — the hero's name for a portrait. `alt=""` only for imagery that is decorative and already `aria-hidden` in effect.
+
+**The app icon is the product's only brand mark.** `public/favicon.svg` is the source, a 64-unit square: the `lagoon-600` chrome as the ground, the 2px ink edge every panel carries, and the wordmark's **Z** in `ember-500` at 30 × 38 units with an 8-unit stroke. The letter is a path rather than type set in Barlow Condensed, because a favicon loads no webfont and would otherwise fall back to whatever the reader's machine happens to have.
+
+- **Every other icon file is generated from that SVG** and none is drawn by hand: `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), and `icon-192.png` / `icon-512.png` for the manifest. Changing the mark means re-rendering the set, never editing a raster.
+- **The Z is sized for 16px first.** It fills 30 of 64 units across because a smaller letter turns to mush in a tab strip; the ink edge is 2 units for the same reason, thin enough not to eat the tile at that size.
+- **`theme-color` is `lagoon-600`**, the same value the header paints, so a mobile browser's own bar continues the page instead of framing it.
+- **The manifest declares `display: "browser"`**. Nothing here works offline — there is no service worker — and `standalone` would promise an app that keeps running without the network.
 
 **The page ground carries one decorative image**, and it is the only one in the product that is not a hero portrait: `public/images/background.webp`, fixed and full-bleed behind the whole app at **20% opacity** over the `secondary-900` ground of §1. Structural depth still comes from the panel treatment — the wash sits under it and adds texture, never separation, which is why nothing above it is restyled to account for it.
 

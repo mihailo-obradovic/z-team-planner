@@ -1,0 +1,14 @@
+{
+  "name": "Z-Team Planner",
+  "short_name": "Z-Team",
+  "description": "Build calculator for Dispatch — plan your Z-Team's stats, powers and synergy pairs.",
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ],
+  "theme_color": "#143e38",
+  "background_color": "#171c19",
+  "display": "browser",
+  "start_url": "/"
+}
