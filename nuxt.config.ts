@@ -74,7 +74,12 @@ export default defineNuxtConfig({
   },
 
   hooks: {
-    'build:before'() {
+    // ! `ready`, not `build:before`, and it takes the nuxt instance for one reason: `nuxt prepare` runs the build hooks too, and it sets NODE_ENV=production itself. Gating on NODE_ENV alone therefore failed every `pnpm install` that had no .env beside it — CI's install step, and any fresh clone — while passing locally because .env was there. `_prepare` is the flag that separates generating types from producing an artifact.
+    ready(nuxt) {
+      if (nuxt.options._prepare) {
+        return;
+      }
+
       // * Only a real production build gates on these (feature 006): `nuxt build` sets NODE_ENV=production, while vitest's Nuxt environment also builds, without .env, and is not a deployable artifact.
       if (process.env.NODE_ENV !== 'production') {
         return;
