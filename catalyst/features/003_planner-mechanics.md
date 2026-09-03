@@ -118,6 +118,7 @@ Not role-specific.
 ## Entry Points
 
 - `web/composables/`: `useHeroPlanner.ts` (singleton aggregator, also `resetHero`) over the four rule domains — `useHeroEpisodeSetup.ts`, `useHeroLevelUp.ts`, `useHeroPowerTraining.ts`, `useHeroFlightTraining.ts`.
+- `web/composables/useHeroDerived.ts`: one hero read out of that state for the two surfaces that show the same hero, so the card and the detail dialog cannot disagree about a level, a bonus or a flight lock.
 - `web/components/HeroCard.vue` (per-hero controls), `web/pages/index.vue` (roster layout and tabs).
 - `web/components/_shared/`: `StorySetupDrawer.vue` (episode fields, budget rows, `Reset all trainings`), `BudgetCounters.vue` (the top-bar readout).
 - `web/app.vue`: the shell placing the readout, the drawer trigger and the mobile action bar.

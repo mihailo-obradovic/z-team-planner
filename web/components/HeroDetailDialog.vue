@@ -417,17 +417,10 @@
 <script setup lang="ts">
 import {
   STAT_NAMES,
-  FIXED_LEVEL_HEROES,
-  MAX_LEVEL_UPS,
   MAX_STAT_VALUE,
   MAX_POWER_TRAININGS,
-  MAX_FLIGHT_TRAININGS,
-  MAX_BONUS_POINTS,
   HERO_POWERS,
-  HERO_FLIGHT,
-  HERO_FLIGHT_CAPABILITY,
-  SPECIAL_POWER_MECHANICS,
-  isFlightTrainable
+  SPECIAL_POWER_MECHANICS
 } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
@@ -448,18 +441,13 @@ const emit = defineEmits<{
 }>();
 
 const {
-  heroes,
   visibleHeroes,
   synergyPairColumns,
   ep8Recruits,
   showEp8Recruits,
-  getStatAllocations,
-  getLevelUpPointsUsed,
   statUp,
   statDown,
-  getBonusLevel,
   addBonusLevel,
-  bonusLevelsUsed,
   getPowerState,
   toggleStartingPower,
   toggleTrainablePower,
@@ -470,10 +458,7 @@ const {
   getPairCombinedStats,
   monsterForm,
   toggleMonsterForm,
-  resolveDisplayStat,
-  flyingHeroIds,
   toggleFlight,
-  flightTrainingsUsed,
   resetHero
 } = useHeroPlanner();
 
@@ -505,35 +490,23 @@ const synergyPartner = computed(() => {
   return null;
 });
 
-const hero = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-  return heroes.value?.find((h) => h.id === props.heroId) ?? null;
-});
-
-const heroLevel = computed(() => {
-  if (!props.heroId) {
-    return 0;
-  }
-  const fixedLevel =
-    FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
-  if (fixedLevel !== undefined) {
-    return fixedLevel;
-  }
-  return 1 + getLevelUpPointsUsed(props.heroId);
-});
-
-const canLevelUp = computed(() => {
-  if (!props.heroId) {
-    return false;
-  }
-  return !(props.heroId in FIXED_LEVEL_HEROES);
-});
-
-const portraitSrc = computed(() =>
-  props.heroId ? portraitSrcFor(props.heroId) : ''
-);
+const {
+  hero,
+  statBonuses,
+  levelUpPointsUsed,
+  bonusLevel,
+  pointsRemaining,
+  bonusFull,
+  canLevelUp,
+  heroLevel,
+  flightActive,
+  flightInfo,
+  flightShown,
+  flightLocked,
+  portraitSrc,
+  hasPowers,
+  resolvedStat
+} = useHeroDerived(() => props.heroId);
 
 function portraitSrcFor(heroId: HeroId): string {
   return heroPortraitSrc(heroId, monsterForm.value ? 'monster' : 'hybrid');
@@ -555,88 +528,11 @@ const powerState = computed(() => {
 
 const displayPowers = computed(() => powers.value ?? []);
 
-const statBonuses = computed(() => {
-  if (!props.heroId) {
-    return { combat: 0, intellect: 0, vigor: 0, charisma: 0, mobility: 0 };
-  }
-  return getStatAllocations(props.heroId);
-});
-
-const getLevelUpPointsUsedValue = computed(() => {
-  if (!props.heroId) {
-    return 0;
-  }
-  return getLevelUpPointsUsed(props.heroId);
-});
-
-const pointsRemaining = computed(() => {
-  if (!props.heroId) {
-    return 0;
-  }
-  return (
-    MAX_LEVEL_UPS +
-    getBonusLevel(props.heroId) -
-    getLevelUpPointsUsed(props.heroId)
-  );
-});
-
-const bonusLevel = computed(() => {
-  if (!props.heroId) {
-    return 0;
-  }
-  return getBonusLevel(props.heroId);
-});
-
-const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
-
-const flightInfo = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-  return HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT] ?? null;
-});
-
-const flightActive = computed(
-  () => !!props.heroId && flyingHeroIds.value.has(props.heroId)
-);
-
-const flightShown = computed(() => {
-  const capability =
-    HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
-
-  if (capability?.type !== 'conditional-power') {
-    return true;
-  }
-
-  return flightActive.value;
-});
-
-const flightLocked = computed(() => {
-  if (!props.heroId) {
-    return true;
-  }
-  if (!isFlightTrainable(props.heroId)) {
-    return true;
-  }
-  return (
-    !flightActive.value && flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
-  );
-});
-
 const specialPowerStateValue = computed(() => {
   if (!props.heroId) {
     return 0;
   }
   return getSpecialPowerState(props.heroId);
-});
-
-const hasPowers = computed(() => {
-  if (!powerState.value) {
-    return false;
-  }
-  return (
-    powerState.value.startingRevealed || powerState.value.trainableSelected > 0
-  );
 });
 
 const specialAbility = computed(() => {
@@ -732,10 +628,6 @@ const radarAxes = computed(() =>
     value: computedStat(stat)
   }))
 );
-
-function resolvedStat(stat: StatName): StatName {
-  return props.heroId ? resolveDisplayStat(props.heroId, stat) : stat;
-}
 
 function computedStat(stat: StatName): number {
   return props.heroId ? getEffectiveStats(props.heroId)[stat] : 0;

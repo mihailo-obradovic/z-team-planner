@@ -25,7 +25,7 @@
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
           <IconButton
             v-if="
-              getLevelUpPointsUsedValue > 0 ||
+              levelUpPointsUsed > 0 ||
               hasPowers ||
               flightActive ||
               bonusLevel > 0
@@ -126,17 +126,7 @@
 <script setup lang="ts">
 import HeroPowerChips from '@/components/HeroPowerChips.vue';
 
-import {
-  STAT_NAMES,
-  FIXED_LEVEL_HEROES,
-  MAX_LEVEL_UPS,
-  MAX_STAT_VALUE,
-  MAX_FLIGHT_TRAININGS,
-  MAX_BONUS_POINTS,
-  HERO_FLIGHT,
-  HERO_FLIGHT_CAPABILITY,
-  isFlightTrainable
-} from '@/types/hero';
+import { STAT_NAMES, MAX_STAT_VALUE } from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
 
@@ -149,73 +139,39 @@ defineEmits<{
 }>();
 
 const {
-  heroes,
-  getStatAllocations,
-  getLevelUpPointsUsed,
   statUp,
   statDown,
-  getBonusLevel,
   addBonusLevel,
-  bonusLevelsUsed,
-  getPowerState,
   getSpecialPowerBonusStats,
   monsterForm,
-  resolveDisplayStat,
-  flyingHeroIds,
   toggleFlight,
-  flightTrainingsUsed,
   resetHero
 } = useHeroPlanner();
 
-const hero = computed(() =>
-  (heroes.value ?? []).find((h) => h.id === props.heroId)!
-);
+const {
+  hero: maybeHero,
+  statBonuses,
+  levelUpPointsUsed,
+  bonusLevel,
+  pointsRemaining,
+  bonusFull,
+  canLevelUp,
+  heroLevel,
+  flightActive,
+  flightInfo,
+  flightShown,
+  flightLocked,
+  portraitSrc,
+  hasPowers,
+  resolvedStat
+} = useHeroDerived(() => props.heroId);
 
-const statBonuses = computed(() => getStatAllocations(props.heroId));
+// * The card is always given a hero that exists, so it narrows the shared value once here rather than guarding at every use. The dialog cannot: its hero is null while it is closed.
+const hero = computed(() => maybeHero.value!);
 
 const specialPowerBonus = computed(() =>
   getSpecialPowerBonusStats(props.heroId)
 );
-
-const pointsRemaining = computed(
-  () =>
-    MAX_LEVEL_UPS +
-    getBonusLevel(props.heroId) -
-    getLevelUpPointsUsed(props.heroId)
-);
-
-const flightActive = computed(() => flyingHeroIds.value.has(props.heroId));
-
-const bonusLevel = computed(() => getBonusLevel(props.heroId));
-
-const flightsFull = computed(
-  () => flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
-);
-
-const bonusFull = computed(() => bonusLevelsUsed.value >= MAX_BONUS_POINTS);
-
-const flightInfo = computed(
-  () => HERO_FLIGHT[props.heroId as keyof typeof HERO_FLIGHT]
-);
-
-// * Phenomaman on Heavily Medicated does not have a disabled flight — he has no flight. Every other flier's glyph is a state the card can show as off.
-const flightShown = computed(() => {
-  const capability =
-    HERO_FLIGHT_CAPABILITY[props.heroId as keyof typeof HERO_FLIGHT_CAPABILITY];
-
-  if (capability?.type !== 'conditional-power') {
-    return true;
-  }
-
-  return flightActive.value;
-});
-
-const flightLocked = computed(() => {
-  if (!isFlightTrainable(props.heroId)) {
-    return true;
-  }
-  return !flightActive.value && flightsFull.value;
-});
 
 const flightVisuallyActive = computed(() => {
   if (props.heroId !== 'sonar') {
@@ -231,34 +187,4 @@ const flightColor = computed(() =>
       ? 'secondary'
       : 'neutral'
 );
-
-const portraitSrc = computed(() =>
-  heroPortraitSrc(props.heroId, monsterForm.value ? 'monster' : 'hybrid')
-);
-
-const canLevelUp = computed(() => !(props.heroId in FIXED_LEVEL_HEROES));
-
-const heroLevel = computed(() => {
-  const fixedLevel =
-    FIXED_LEVEL_HEROES[props.heroId as keyof typeof FIXED_LEVEL_HEROES];
-  if (fixedLevel !== undefined) {
-    return fixedLevel;
-  }
-  // * A bonus level raises the per-hero cap; it does not itself raise the level. Counting it here made the level jump the moment the bonus was granted, before the extra point was spent — and disagreed with the detail dialog.
-  return 1 + getLevelUpPointsUsedValue.value;
-});
-
-const getLevelUpPointsUsedValue = computed(() =>
-  getLevelUpPointsUsed(props.heroId)
-);
-
-const hasPowers = computed(() => {
-  const powerState = getPowerState(props.heroId);
-
-  return powerState.startingRevealed || powerState.trainableSelected > 0;
-});
-
-function resolvedStat(stat: StatName): StatName {
-  return resolveDisplayStat(props.heroId, stat);
-}
 </script>
