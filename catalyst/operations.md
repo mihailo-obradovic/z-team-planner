@@ -129,6 +129,33 @@ The restore drill is the Neon section's. The decryption key's private half lives
 - A dump holds user emails: personal data. Retention follows the accounts feature document; the workflow prunes dumps older than that window on every run, so the bucket never becomes a shadow copy with its own retention.
 - R2's free tier is far beyond two small tables; the thing that grows is the number of dumps, not their size. Pruning is what keeps it free.
 
+## GitHub repository security
+
+Three settings that live in the repository rather than in this tree, so nothing here fails when they are off — they simply stop reporting. All three are free on a public repository and none touches CI. Decision 009 holds the why.
+
+### Operate
+
+```bash
+gh api repos/{owner}/{repo} --jq '.security_and_analysis'          # secret scanning + push protection
+gh api repos/{owner}/{repo}/vulnerability-alerts -i | head -1      # 204 = alerts on, 404 = off
+gh api repos/{owner}/{repo}/dependabot/alerts --jq 'length'        # open advisories, both lockfiles
+gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts            # turn alerts back on
+```
+
+Enabled 3 September 2026; the first scan answered **130 open advisories** (6 critical, 70 high, all npm — the PyPI half of the graph carries none). Enabling needs a token with `repo`; the settings pages are **Settings → Code security**.
+
+### Recovery
+
+Nothing to restore — re-enable and the scans re-run over current history. A fork or a transfer starts with all three **off**, which is the case worth re-checking rather than assuming.
+
+### Quirks
+
+- **Renovate's advisory path depends on Dependabot alerts being on.** `vulnerabilityAlerts` defaults to jumping the schedule, but on GitHub the advisories feeding it come from here. With alerts off the feature is configured and starved, and nothing anywhere reports that — the bot simply never files a security PR.
+- `dependabot/alerts` answers **403 with a message**, not an empty list, when alerts are disabled. A script reading `length` on that will crash rather than report zero, and a script ignoring the error will report "no advisories" while blind.
+- **Alerts read empty for a few minutes after enabling**, before the first scan finishes. Reading the count straight after the `PUT` reports zero and means nothing; this repository answered `0`, then `130`.
+- The endpoint pages at 100. `--paginate` or a count taken from one page will under-report a backlog this size.
+- Dependabot **security updates** (the PR-opening half) stay off on purpose: Renovate opens those PRs, and both bots on one lockfile means duplicate PRs racing each other.
+
 ## Firebase Authentication
 
 Spark plan, Google sign-in only. Firebase holds identities; the app's own `users` table holds the Firebase uid **and** the Google subject so the table stays portable.

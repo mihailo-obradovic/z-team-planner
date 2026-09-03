@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -45,7 +45,7 @@ No application code, no dependency, no behavior contract.
 
 ## Consequences
 
-Better: pins move deliberately and visibly, on a weekly cadence, with both lockfiles covered. A security advisory jumps the schedule rather than waiting for Monday. The repository stops advertising a bot it does not run.
+Better: pins move deliberately and visibly, on a weekly cadence, with both lockfiles covered. A security advisory jumps the schedule rather than waiting for Monday — which holds only while GitHub's Dependabot alerts stay enabled, since that is what feeds it (Verification). The repository stops advertising a bot it does not run.
 
 Riskier: a bot whose PRs are ignored is worse than no bot — the pins rot while the repository looks maintained.
 
@@ -61,6 +61,10 @@ Follow-up: automerge for patch/minor lockfile-only updates is revisited after a 
 
 ## Verification
 
-`renovate.json` is valid against the schema it now declares and formats clean; the copied module is byte-identical to the template's (`diff -q`, Catalyst 1.11.0). The pipeline this record leans on is green — run 33728237490, both jobs, the first success since 2026-08-31.
+`renovate.json` is valid against the schema it declares and formats clean; the copied module is byte-identical to the template's (`diff -q`, Catalyst 1.11.0). The pipeline this record leans on is green — run 33728237490, both jobs.
 
-**Not yet verified, deliberately: the GitHub App is not installed**, so the configuration is as inert as it was before — what changed is that the repository says so on purpose. This record stays `Accepted` until the app is enabled and its first PR lands.
+**The app is installed and the bot has run** (3 September 2026): Dependency Dashboard is issue #3, first PR #2 (`nuxt to ^4.5.2`), open and waiting for a person as the Decision requires.
+
+**"A security advisory jumps the schedule" was not true when this record claimed it.** `vulnerabilityAlerts` already defaults to `schedule: []` and `prCreation: "immediate"`, so nothing was missing from `renovate.json` — but on GitHub it is fed by Dependabot alerts, and those were disabled here. Now enabled (`204`). The file stays unchanged: restating a default would have hidden that the gap was a repository setting. Secret scanning and push protection went on in the same pass.
+
+**The first scan answered 130 open advisories** — 6 critical, 70 high, all npm; the 73 PyPI packages in the dependency graph carry none. The deployed framework is among them: Nuxt 4.3.0 against advisories fixed in 4.5.1, one of them server-side remote code execution. PR #2 already moves it. That is the measure of how long the layer ran blind, and working the backlog down is its own effort, not this record's.
