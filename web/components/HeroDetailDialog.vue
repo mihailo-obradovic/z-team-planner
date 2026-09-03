@@ -72,14 +72,16 @@
             </button>
           </ScrollRegion>
 
+          <!-- * Three tiers, on viewport breakpoints rather than container queries: the dialog is fullscreen, so its width is the viewport and a container query would be measuring the same number twice. -->
+          <!-- * At `md` the portrait comes back above the radar in a column of its own and the stats sit beside them; powers and notes fall into implicit rows below and size to content, so the body scrolls rather than the panels. -->
           <!-- ! The first two rows are fixed heights on purpose: a fixed-level hero has no steppers and may have no partner, and letting the rows size to content made the whole dialog resize when switching to one. -->
           <!-- ! The base `grid-cols-[minmax(0,1fr)]` is the fix for the iOS sideways scroll, not a restatement of the default: with no columns declared, the single column below `lg` is an implicit `auto` track, and an `auto` track is floored by the largest min-content among its items. `minmax(0,1fr)` removes that floor; the `min-w-0` on each item below removes the matching floor on the items themselves. -->
           <div
-            class="grid grid-cols-[minmax(0,1fr)] gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
+            class="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[17rem_minmax(0,1fr)] md:grid-rows-[18rem_18rem] lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
           >
             <!-- * Stretched, not square: the two columns beside this one span both rows, and letting the portrait and the radar fill their own rows is what leaves all three ending on the same line. -->
             <div
-              class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 lg:block"
+              class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 md:block"
             >
               <NuxtImg
                 :src="portraitSrc"
@@ -89,7 +91,7 @@
             </div>
 
             <div
-              class="flex min-w-0 flex-col gap-3 border-2 border-accented bg-default p-3 lg:row-span-2 lg:min-h-0 lg:overflow-y-auto"
+              class="flex min-w-0 flex-col gap-3 border-2 border-accented bg-default p-3 md:row-span-2 md:min-h-0 md:overflow-y-auto lg:row-span-2 lg:min-h-0 lg:overflow-y-auto"
             >
               <div
                 class="flex items-center gap-4 border-b-2 border-default pb-3"
@@ -229,17 +231,17 @@
               </template>
             </div>
 
-            <!-- ! Capped from `sm`, not left to the column. The frame is `aspect-square` at the column's full width, and the dialog is fullscreen, so between 640 and 1023 the radar was a square as wide as the viewport and pushed everything else off screen. From `md` it has a column of its own and fills it instead, which is why the cap is dropped there rather than at `lg`. -->
+            <!-- ! Capped from `sm`, not left to the column. The frame is `aspect-square` at the column's full width, and the dialog is fullscreen, so between 640 and 1023 the radar was a square as wide as the viewport and pushed everything else off screen. From `md` it has a column of its own and fills it instead, which is why the cap and the centring are dropped there rather than at `lg`. -->
             <!-- ! `w-full` is load-bearing beside the cap, and `mx-auto` is not what centres this. Auto margins on a grid item drop it out of `stretch` and size it to its content — which for a `viewBox`-only SVG is the replaced-element default of 300px, so the frame measured 304 against a 320 cap that never bound. Width 100% capped by `max-w-80`, centred by the grid, is what actually holds. -->
             <div
-              class="order-first aspect-square min-w-0 border-2 border-accented bg-default sm:w-full sm:max-w-80 sm:justify-self-center md:max-w-none md:justify-self-auto lg:order-none lg:aspect-auto lg:min-h-0"
+              class="order-first aspect-square min-w-0 border-2 border-accented bg-default sm:w-full sm:max-w-80 sm:justify-self-center md:order-none md:aspect-auto md:min-h-0 md:max-w-none md:justify-self-auto lg:order-none lg:aspect-auto lg:min-h-0"
             >
               <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
             </div>
 
             <!-- * Powers apart from effects: the first is what a training is spent on, the second is what the hero already has or gains. Mixing them made a trained power read as the same kind of thing as a passive. -->
             <div
-              class="flex min-w-0 flex-col gap-4 border-2 border-accented bg-default p-4 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto"
+              class="flex min-w-0 flex-col gap-4 border-2 border-accented bg-default p-4 md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto"
             >
               <section class="flex flex-col gap-2">
                 <h3 class="font-heading tracking-label text-toned uppercase">
@@ -396,7 +398,7 @@
 
             <!-- * Reserved and not editable: the copy is authored in the repository, and persisting player-written notes would bump the serialized build format (feature 001). -->
             <div
-              class="flex min-w-0 flex-col border-2 border-accented bg-default lg:col-span-3 lg:min-h-0"
+              class="flex min-w-0 flex-col border-2 border-accented bg-default md:col-span-2 lg:col-span-3 lg:min-h-0"
             >
               <div class="flex plate shrink-0 items-center px-4">
                 <span class="font-heading tracking-label text-toned uppercase">
