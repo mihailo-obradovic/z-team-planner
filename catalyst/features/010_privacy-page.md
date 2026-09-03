@@ -32,6 +32,7 @@ The page takes no user input; it renders a fixed document. Its content is derive
 | -------------------- | --------- | --------------------------------------------------------------------------------------- |
 | `/privacy`           | HTML page | prerendered; the policy text, headed and sectioned, with a last-updated date            |
 | footer link          | UI        | a `<footer>` in the app shell with a **Privacy** link, on every route, signed in or not |
+| notice link          | UI        | a **Privacy** link added to feature 017's browser-storage notice                        |
 | consent-screen URL   | external  | the deployed page's URL, entered in the Google Auth Platform consent configuration      |
 
 No cookies, no analytics, no network calls, no state. The page is inert.
@@ -46,7 +47,7 @@ In scope:
 
 Non-goals:
 
-- A cookie banner or consent management — the app sets no cookies and runs no analytics, so there is nothing to consent to.
+- A cookie banner or consent management — the app sets no cookies and runs no analytics, so there is nothing to consent to. The first-run notices that do exist, including the browser-storage notice, are feature 017's; this feature adds only the **Privacy** link into that notice once this page is live.
 - Terms of service, an imprint, or an accessibility statement — separate documents if ever wanted.
 - A privacy item in the profile menu — the footer is the contract; a second entry point is optional later.
 - Markdown rendering or a CMS. No markdown dependency is installed and adding one would be its own decision.
@@ -56,7 +57,7 @@ Non-goals:
 
 - A visitor on any route sees a footer with a single **Privacy** link. It is present signed in and signed out, on the prerendered page and after hydration, at every breakpoint.
 - Following it renders `/privacy`: a headed document, styled as a panel like the rest of the app, scrolling inside the page rather than growing it.
-- The page states, in the app's plain register: who is responsible and how to reach them; that anonymous use stores nothing on a server; what the three localStorage keys hold; that a `?build=` link carries build data inside the URL; that signing in with Google stores the six `users` fields, on the basis of the account the user asked for; that builds saved to the account are stored until deleted; that an account build's share link is readable by anyone holding it; the processors and their regions; that backups hold a deleted row for at most 30 days; and how to delete everything — the profile menu's **Delete account**, which is immediate and total.
+- The page states, in the app's plain register: who is responsible and how to reach them; that anonymous use stores nothing on a server; what the localStorage keys hold — the two build keys, the first-login offer flag, and feature 017's two acknowledgement flags; that a `?build=` link carries build data inside the URL; that signing in with Google stores the six `users` fields, on the basis of the account the user asked for; that builds saved to the account are stored until deleted; that an account build's share link is readable by anyone holding it; the processors and their regions; that backups hold a deleted row for at most 30 days; and how to delete everything — the profile menu's **Delete account**, which is immediate and total.
 - **Back to the planner** returns the visitor to `/`, matching the error page's single-way-back shape.
 - The page never claims a protection the app does not have. If a fact changes in its source feature, this page changes in the same change.
 
@@ -114,6 +115,7 @@ Not role-specific. The page is public and identical for every visitor — anonym
 - `features/004_accounts.md` — the personal-data declaration this page reports; the single source for the fields, basis, retention and deletion path.
 - `features/001_build-persistence.md` — the localStorage keys and the `?build=` snapshot format.
 - `features/007_share-links.md` — the unlisted-by-id share semantics.
+- `features/017_first-run-banners.md` — the browser-storage notice this page links from, and the two acknowledgement keys the page must list alongside the build keys.
 - `operations.md`, `decisions/007_infra_hosting-vercel.md` — the processors, their regions, and the backup retention window.
 - `annexes/design-system.md` — panel, type scale and spacing for the page and the footer.
 - Decision 007 named this page as a section of feature 004. It is a separate document because 004 sits 102 characters from the 14,400 hard maximum, and because the page states facts owned by 001, 007 and the hosting record rather than by 004. Decision 007 stays as written — history, not edited.
