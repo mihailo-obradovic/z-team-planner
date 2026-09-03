@@ -93,7 +93,7 @@
           class="flex min-h-0 w-full flex-1 flex-col items-center gap-2"
         >
           <NuxtImg
-            :src="heroPortraitSrc('golem', monsterForm)"
+            :src="heroPortraitSrc('golem', sonarForm)"
             alt="Golem's copy"
             class="size-22 border-2 border-accented bg-accented object-cover opacity-40 @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
           />
@@ -135,7 +135,7 @@
             @click="pick(hero.id)"
           >
             <NuxtImg
-              :src="heroPortraitSrc(hero.id, monsterForm)"
+              :src="heroPortraitSrc(hero.id, sonarForm)"
               :alt="hero.name"
               class="aspect-square w-full border-2 border-accented bg-accented object-cover"
             />
@@ -178,6 +178,9 @@ const emit = defineEmits<{
 
 const pickerOpen = ref(false);
 const pickerSlot = ref<number | null>(null);
+
+// * Three portraits in this panel follow Sonar's shared form (feature 012); the state converts here, once.
+const sonarForm = computed(() => (monsterForm.value ? 'monster' : 'hybrid'));
 
 function openPicker(index: number) {
   pickerSlot.value = index;
@@ -239,6 +242,6 @@ function slotName(slot: Exclude<MissionSlot, null>): string {
 function slotPortrait(slot: Exclude<MissionSlot, null>): string {
   const id = slot === ILLUSION_SLOT ? illusionSource() : slot;
 
-  return heroPortraitSrc(id ?? 'prism', monsterForm.value);
+  return heroPortraitSrc(id ?? 'prism', sonarForm.value);
 }
 </script>

@@ -226,7 +226,7 @@ const flightColor = computed(() =>
 );
 
 const portraitSrc = computed(() =>
-  heroPortraitSrc(props.heroId, monsterForm.value)
+  heroPortraitSrc(props.heroId, monsterForm.value ? 'monster' : 'hybrid')
 );
 
 const canLevelUp = computed(() => !(props.heroId in FIXED_LEVEL_HEROES));

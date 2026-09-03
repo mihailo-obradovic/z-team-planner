@@ -32,6 +32,6 @@ const hero = computed(
 );
 
 const portraitSrc = computed(() =>
-  heroPortraitSrc(props.heroId, monsterForm.value)
+  heroPortraitSrc(props.heroId, monsterForm.value ? 'monster' : 'hybrid')
 );
 </script>

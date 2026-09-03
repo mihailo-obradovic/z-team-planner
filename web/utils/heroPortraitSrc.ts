@@ -1,9 +1,11 @@
 import type { HeroId } from '@/types/hero';
 
+export type SonarForm = 'hybrid' | 'monster';
+
 // * Sonar's portrait follows the shared monster form (feature 012); every other hero has one image.
-export function heroPortraitSrc(heroId: HeroId, monsterForm: boolean): string {
+export function heroPortraitSrc(heroId: HeroId, form: SonarForm): string {
   if (heroId === 'sonar') {
-    return monsterForm
+    return form === 'monster'
       ? '/images/portraits/sonar-monster.webp'
       : '/images/portraits/sonar-hybrid.webp';
   }

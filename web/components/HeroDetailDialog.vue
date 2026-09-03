@@ -35,7 +35,7 @@
             @click="emit('select', rosterHero.id)"
           >
             <NuxtImg
-              :src="`/images/portraits/${rosterHero.id}.webp`"
+              :src="portraitSrcFor(rosterHero.id)"
               :alt="rosterHero.name"
               class="size-full object-cover object-top"
             />
@@ -65,7 +65,7 @@
               @click="emit('select', rosterHero.id)"
             >
               <NuxtImg
-                :src="`/images/portraits/${rosterHero.id}.webp`"
+                :src="portraitSrcFor(rosterHero.id)"
                 :alt="rosterHero.name"
                 class="size-full object-cover object-top"
               />
@@ -528,8 +528,12 @@ const canLevelUp = computed(() => {
 });
 
 const portraitSrc = computed(() =>
-  props.heroId ? heroPortraitSrc(props.heroId, monsterForm.value) : ''
+  props.heroId ? portraitSrcFor(props.heroId) : ''
 );
+
+function portraitSrcFor(heroId: HeroId): string {
+  return heroPortraitSrc(heroId, monsterForm.value ? 'monster' : 'hybrid');
+}
 
 const powers = computed(() => {
   if (!props.heroId) {
