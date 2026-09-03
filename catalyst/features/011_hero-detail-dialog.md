@@ -56,7 +56,11 @@ Non-goals:
 
 - Opening a hero's portrait opens the dialog fullscreen at every tier. The toolbar carries a portrait thumbnail before the hero's name.
 - **From `lg`:** a vertical roster rail on the left; then a three-column grid — portrait above the radar in the first column, the stats column spanning both rows, the powers column spanning both rows — with notes across the bottom taking the remaining height.
-- **Below `lg`:** the rail becomes a horizontally scrolling ribbon across the top and the large portrait is dropped, the thumbnail in the toolbar standing in for it. Order is radar, stats, synergy partner, powers, notes; each takes only the height it needs and the dialog scrolls.
+- **`md` to just under `lg`:** the ribbon rail, but the large portrait returns above the radar in its own column with the stats beside them across both rows. Powers then notes run full width beneath, sized to content, so the body scrolls rather than either panel.
+- **Below `md`:** the rail becomes a horizontally scrolling ribbon across the top and the large portrait is dropped, the thumbnail in the toolbar standing in for it. Order is radar, stats, synergy partner, powers, notes; each takes only the height it needs and the dialog scrolls.
+- **The radar is capped at `20rem` from `sm`** and centred. Its frame is square at the column's full width and the dialog is fullscreen, so uncapped it grows with the viewport and pushes everything else below the fold. From `md` the cap is released: the column bounds it.
+- The two top rows are a **fixed height wherever they exist**, never content-sized — a fixed-level hero has no steppers and may have no partner, and content-sized rows resized the dialog when switching to one.
+- A power's **Revealed** or **Trained** badge wraps to its own line rather than leaving the panel when its name crowds it.
 - The roster shows the current-setup roster **in the same order the overview grid draws it** — each synergy column top then bottom, then episode-8 recruits when shown. The open hero is marked; the others are not.
 - The stats column carries the hero's level and bonus count, the bonus and reset controls, the five editable stat rows, the synergy partner control, and the pair totals beneath it.
 - Selecting the partner control opens that hero in the same dialog. A hero without a partner shows neither the control nor the totals.
@@ -81,6 +85,8 @@ Not role-specific.
 | Phenomaman with Heavily Medicated selected | no flight card at all                                         | feature 003: removed, not disabled   |
 | Sonar, monster form toggled                | displayed stats swap; nothing serialized                      | feature 003                          |
 | at 320px                                   | nothing exceeds the viewport; the ribbon scrolls horizontally |                                      |
+| at 700px                                   | radar frame 320 wide, centred                                 | capped from `sm`                     |
+| at 900px                                   | portrait over radar at 272, stats beside, powers full width   | the `md` grid                        |
 
 ## Business Rules
 
@@ -133,11 +139,13 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 ## Verification
 
-By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. 189 tests across 24 files pass.
+By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. The suite passes: 297 tests, 37 files.
 
 In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9 with the other four unchanged; zero `panel` classes inside the dialog. Switching Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — which is the fixed-level case that used to make it jump.
 
 At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes.
+
+The `md` tier and the cap, measured in Chrome (2026-09-03): radar 282 at 320 with no overflow, 320 at 375, and exactly 320 centred at 700; two columns at 768/900/1023 with the radar held to 272 × 288 where it had been viewport-wide; 1280 unchanged (272/384/426, rows 288/288/118), and rows steady across three heroes. The badge wraps in a 186px powers column and sits inline in a 746px one.
 
 Horizontal overflow is verified per engine, because the first pass at this checked Chromium only and shipped two defects it cannot show. The document itself never scrolls — `main.css` pins `html, body, #__nuxt` to `overflow: hidden` — so `documentElement.scrollWidth` proves nothing here; the check is a scan for any element whose `scrollWidth` exceeds its `clientWidth`. The one permitted result is the roster ribbon, which scrolls sideways by design.
 
