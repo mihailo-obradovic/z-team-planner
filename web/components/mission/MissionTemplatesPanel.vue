@@ -90,7 +90,7 @@
                 color="secondary"
                 :active="columnView === option.value"
                 :aria-pressed="columnView === option.value"
-                @click="columnView = option.value"
+                @click="setColumnView(option.value)"
               >
                 {{ option.label }}
               </u-button>
@@ -200,6 +200,10 @@ const COLUMN_VIEWS = [
 ] as const;
 
 const columnView = ref<(typeof COLUMN_VIEWS)[number]['value']>('req');
+
+function setColumnView(value: (typeof COLUMN_VIEWS)[number]['value']) {
+  columnView.value = value;
+}
 
 // * Hiding is scoped to the narrow tier: above it both sets render and the toggle is gone.
 const reqColumnClass = computed(() =>

@@ -10,7 +10,7 @@
       list: 'shrink-0',
       content: 'min-h-0 flex-1 overflow-y-auto'
     }"
-    @update:model-value="setActiveTab($event as TabValue)"
+    @update:model-value="handleTabChange"
   >
     <template #default="{ item }">
       <span class="sm:hidden">{{ item.shortLabel }}</span>
@@ -146,6 +146,12 @@ import type { TabValue } from '@/composables/useActiveTab';
 const selectedHeroId = ref<HeroId | null>(null);
 
 const { activeTab, initTabFromUrl, setActiveTab } = useActiveTab();
+
+// * UTabs models its value as string | number; the tab union is ours, so the narrowing
+// * happens here rather than as a cast in the template.
+function handleTabChange(value: string | number) {
+  setActiveTab(value as TabValue);
+}
 
 onMounted(initTabFromUrl);
 

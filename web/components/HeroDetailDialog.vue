@@ -257,7 +257,7 @@
                       ? 'cursor-not-allowed opacity-50'
                       : 'cursor-pointer'
                   ]"
-                  @click="handlePowerClick(power)"
+                  @click="handleTogglePower(power)"
                 >
                   <div class="flex items-center gap-2">
                     <u-icon
@@ -781,7 +781,7 @@ function isPowerDisabled(power: HeroPowerDefinition): boolean {
   return false;
 }
 
-function handlePowerClick(power: HeroPowerDefinition) {
+function handleTogglePower(power: HeroPowerDefinition) {
   if (!props.heroId || isPowerDisabled(power)) {
     return;
   }
