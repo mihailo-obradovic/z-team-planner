@@ -61,10 +61,9 @@ export function buildGameData(): GameData {
       hero.id,
       {
         starting_stats: STAT_NAMES.map((stat) => hero.startingStats[stat]),
-        // * A trainable slot counts only when it is a real power: Blonde Blazer's two are empty placeholders that keep her power set the same shape as everyone else's.
-        trainable_powers: HERO_POWERS[hero.id]
-          .slice(1)
-          .filter((power) => power.name !== '').length
+        // * A power set holds the starting power plus the trainable options, so the count is
+        // * everything past index 0 — none for a hero who arrived in episode 8.
+        trainable_powers: HERO_POWERS[hero.id].length - 1
       }
     ])
   ) as GameData['heroes'];

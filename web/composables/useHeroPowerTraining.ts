@@ -98,9 +98,10 @@ export function useHeroPowerTraining(
       return;
     }
 
-    if (!powerSet[index].name) {
+    // * A one-power hero has no slot to train (Blonde Blazer): the set carries the starting power alone.
+    if (index >= powerSet.length) {
       return;
-    } // * Empty power slot (e.g., Blonde Blazer)
+    }
 
     if (!heroPowers.value[id]) {
       heroPowers.value[id] = { ...DEFAULT_POWER_STATE };

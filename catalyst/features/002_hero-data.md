@@ -33,7 +33,7 @@ In scope:
 
 - The `HeroId` union (11 ids) and `Hero`/`HeroStats` shapes; `STAT_NAMES` order (combat, intellect, vigor, charisma, mobility).
 - Starting stats in the `HEROES` constant, and `HERO_STARTING_STATS` keyed by hero id.
-- `HERO_POWERS`: exactly 3 powers per hero (starting + two trainable options; some trainables override the starting power; Blonde Blazer's two trainable slots are deliberately empty).
+- `HERO_POWERS`: a starting power plus the two trainable options, or a starting power alone for a hero who arrived in episode 8 (Blonde Blazer). `HeroPowerSet` is the union of those two shapes; some trainables override the starting power.
 - `SPECIAL_POWER_MECHANICS` (Flambae supernova, Coupé en-pointe), `HERO_FLIGHT` + `HERO_FLIGHT_CAPABILITY` (innate / conditional-power / trainable), `FLIGHT_SCHOOL_HEROES`.
 - `BASE_SYNERGY_PAIRS` (4) and `CONDITIONAL_SYNERGY_PAIRS` (4, keyed `<ep3Cut>-cut-<ep4Hire>-hired`).
 - Episode options (`EP3_CUT_OPTIONS`: coupe/sonar; `EP4_HIRE_OPTIONS`: phenomaman/waterboy), `FIXED_LEVEL_HEROES` (phenomaman 12, blonde-blazer 20).
@@ -59,7 +59,7 @@ Not role-specific.
 | Input                                                   | Expected Output                                                           | Notes                                          |
 | ------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
 | `HEROES`                                                | 11 heroes; e.g. coupe → 4/3/1/1/3, blonde-blazer → 8/7/8/6/7 (C/I/V/Ch/M) | full table matches `context/game-mechanics.md` |
-| `HERO_POWERS['blonde-blazer']`                          | Radiant Light + two empty trainable slots                                 | she has only the starting power                |
+| `HERO_POWERS['blonde-blazer']`                          | Radiant Light alone                                                       | she has only the starting power                |
 | `CONDITIONAL_SYNERGY_PAIRS['coupe-cut-waterboy-hired']` | punch-up + waterboy                                                       | the cut hero's partner gains the new hire      |
 | `HERO_FLIGHT_CAPABILITY['phenomaman']`                  | conditional-power on trainable-1, inverted                                | Heavily Medicated _removes_ flight             |
 
@@ -71,7 +71,7 @@ Not role-specific.
 
 ## Edge Cases
 
-- Blonde Blazer's empty trainable slots: consumers must treat a power with an empty `name` as absent (feature 003 does).
+- A one-power hero: the set's length is the contract, so a consumer reading past index 0 checks it. No placeholder power exists to filter out, and a power's `name` is never empty.
 - `sonar`'s flight is trainable but only visually active when transformed — a UI concern, noted in the capability comment, not modeled as state.
 
 ## Invariants

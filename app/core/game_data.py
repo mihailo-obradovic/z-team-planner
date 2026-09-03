@@ -19,7 +19,7 @@ class HeroData:
     """One hero's validation-relevant facts."""
 
     starting_stats: tuple[int, ...]
-    # * Named trainable slots only: Blonde Blazer's two are empty placeholders, so hers is 0.
+    # * How many trainable options the hero has: two, or none for an episode 8 arrival.
     trainable_powers: int
 
 

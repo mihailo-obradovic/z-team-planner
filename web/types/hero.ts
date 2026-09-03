@@ -75,7 +75,7 @@ export const MAX_BONUS_LEVEL_PER_HERO = 4;
 
 // * Power system
 
-// * Definition of a single hero power. Most heroes have exactly 3 powers: 1 starting + 2 trainable options. Only one of the two trainable powers can be selected. Episode 8 hires have only 1 power: the starting power.
+// * Definition of a single hero power. Only one of a hero's two trainable powers can be selected.
 export interface HeroPowerDefinition {
   name: string;
   description: string;
@@ -85,12 +85,10 @@ export interface HeroPowerDefinition {
   overridesStarting?: boolean;
 }
 
-// * A complete set of powers for a hero (always 3). Index 0: Starting power (always present, may be overridden) Index 1: First trainable option (mutually exclusive with index 2) Index 2: Second trainable option (mutually exclusive with index 1)
-export type HeroPowerSet = [
-  HeroPowerDefinition,
-  HeroPowerDefinition,
-  HeroPowerDefinition
-];
+// * A hero's powers, and the game gives only two shapes: a starting power alone, or a starting power plus the two mutually exclusive trainable options. Index 0 is always the starting power (it may be overridden); a one-power hero is someone who arrived in episode 8, with the training opportunities behind her.
+export type HeroPowerSet =
+  | [HeroPowerDefinition]
+  | [HeroPowerDefinition, HeroPowerDefinition, HeroPowerDefinition];
 
 // * User's power selection state for a hero.
 // * - startingRevealed: Whether the starting power has been revealed/used
@@ -338,17 +336,6 @@ export const HERO_POWERS = {
       description:
         "All heroes that pass through Blazer's radiant light gain a protective shield that defends them against one injury.",
       slot: 'starting' as const
-    },
-    // * Blonde Blazer only has starting power, add dummy trainable slots
-    {
-      name: '',
-      description: '',
-      slot: 'trainable-1' as const
-    },
-    {
-      name: '',
-      description: '',
-      slot: 'trainable-2' as const
     }
   ]
 } as const satisfies Partial<Record<HeroId, HeroPowerSet>>;

@@ -549,12 +549,7 @@ const powerState = computed(() => {
   return getPowerState(props.heroId);
 });
 
-const displayPowers = computed(() => {
-  if (!powers.value) {
-    return [];
-  }
-  return powers.value.filter((p) => p.name !== '');
-});
+const displayPowers = computed(() => powers.value ?? []);
 
 const statBonuses = computed(() => {
   if (!props.heroId) {
