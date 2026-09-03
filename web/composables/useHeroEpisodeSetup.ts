@@ -34,6 +34,10 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
         .map((h) => ({ label: h.name, value: h.id })) ?? []
   );
 
+  // * Who joins in episode 8, which is the same question as who cannot be trained: arriving
+  // * that late is exactly what removes the training (context/glossary.md, Trainable). It
+  // * decides who gets a card and what the training call sites gate on, and the two readings
+  // * cannot diverge — a hero hired in episode 4 is never in here.
   const ep8RecruitIds = computed<Set<HeroId>>(() => {
     const ids = new Set<HeroId>(EP8_ALWAYS_RECRUITED);
 
@@ -45,11 +49,6 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
 
     return ids;
   });
-
-  // * Who cannot be trained, asked as its own question rather than reusing `ep8RecruitIds` at the call sites. Arriving that late is what removes the training, so the two sets currently hold the same heroes — but they answer different questions, and the arrival set is also what decides who gets a card, which is not a training concern. A hero hired in episode 4 is never in here: that is what keeps Heavily Medicated reachable for Phenomaman, and it is the reason this is separate from FIXED_LEVEL_HEROES, which fixes his level in both cases.
-  const untrainableIds = computed<Set<HeroId>>(
-    () => new Set<HeroId>(ep8RecruitIds.value)
-  );
 
   const visibleHeroes = computed(
     () =>
@@ -123,8 +122,6 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     ep8RecruitIds,
     ep8Recruits,
     showEp8Recruits,
-
-    untrainableIds,
 
     // * The heroes that have a card, and so the only ones any control can reach. Derived here already for `ep8Recruits` and `synergyPairColumns`; exposed so feature 005's agreement test can ask the app which heroes are drivable instead of keeping its own copy of the rule.
     visibleHeroes,

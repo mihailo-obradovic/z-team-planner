@@ -30,7 +30,7 @@ export function useHeroFlightTraining(
         HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
       // * A hero who arrives in episode 8 brings no trainable power with them, so nothing on the card can train or untrain them and a flier among them flies unconditionally. That is why Phenomaman's flight is conditional only while he is the episode 4 hire: Heavily Medicated is a power he can take just in that case.
-      if (episodeSetup.untrainableIds.value.has(id)) {
+      if (episodeSetup.ep8RecruitIds.value.has(id)) {
         result.add(id);
         continue;
       }

@@ -111,7 +111,7 @@ export function useHeroPowerTraining(
       return;
     }
     // * Arriving in episode 8 means there was never any training to do: whoever joins then keeps only their starting power. Level-ups are a separate question — an episode 8 Waterboy still levels up, which is why FIXED_LEVEL_HEROES is not consulted here.
-    if (episodeSetup.untrainableIds.value.has(id)) {
+    if (episodeSetup.ep8RecruitIds.value.has(id)) {
       return;
     }
 

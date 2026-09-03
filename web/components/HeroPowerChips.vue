@@ -77,7 +77,7 @@ const {
   toggleStartingPower,
   toggleTrainablePower,
   trainingsUsed,
-  untrainableIds,
+  ep8RecruitIds,
   getSpecialPowerState,
   toggleSpecialPower,
   monsterForm,
@@ -94,8 +94,9 @@ const trainingsFull = computed(
 
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
+// * An episode 8 arrival never had training available, so there are no upgrades to offer.
 const upgradePowers = computed((): HeroPowerDefinition[] => {
-  if (!powers.value || untrainableIds.value.has(props.heroId)) {
+  if (!powers.value || ep8RecruitIds.value.has(props.heroId)) {
     return [];
   }
   return powers.value.slice(1).filter((p) => p.name !== '');
