@@ -426,7 +426,8 @@ import {
   HERO_POWERS,
   HERO_FLIGHT,
   HERO_FLIGHT_CAPABILITY,
-  SPECIAL_POWER_MECHANICS
+  SPECIAL_POWER_MECHANICS,
+  isFlightTrainable
 } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
@@ -614,7 +615,7 @@ const flightLocked = computed(() => {
   if (!props.heroId) {
     return true;
   }
-  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman') {
+  if (!isFlightTrainable(props.heroId)) {
     return true;
   }
   return (

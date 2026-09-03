@@ -132,7 +132,8 @@ import {
   MAX_FLIGHT_TRAININGS,
   MAX_BONUS_POINTS,
   HERO_FLIGHT,
-  HERO_FLIGHT_CAPABILITY
+  HERO_FLIGHT_CAPABILITY,
+  isFlightTrainable
 } from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
@@ -208,7 +209,7 @@ const flightShown = computed(() => {
 });
 
 const flightLocked = computed(() => {
-  if (props.heroId === 'blonde-blazer' || props.heroId === 'phenomaman') {
+  if (!isFlightTrainable(props.heroId)) {
     return true;
   }
   return !flightActive.value && flightsFull.value;

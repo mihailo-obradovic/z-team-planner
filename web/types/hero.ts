@@ -123,6 +123,13 @@ export const FLIGHT_SCHOOL_HEROES = [
   'sonar'
 ] as const satisfies readonly HeroId[];
 
+// * Flight is bought with the training budget only for the flight-school heroes. Every other
+// * hero's flight is already settled by their own data — innate for Blonde Blazer, driven by a
+// * power for Phenomaman, absent for the rest — so no control on a card can toggle it.
+export function isFlightTrainable(id: HeroId): boolean {
+  return (FLIGHT_SCHOOL_HEROES as readonly HeroId[]).includes(id);
+}
+
 export const MAX_FLIGHT_TRAININGS = 2;
 
 export const HERO_POWERS = {
