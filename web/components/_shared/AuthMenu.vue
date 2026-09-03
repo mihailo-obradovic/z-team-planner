@@ -28,35 +28,40 @@
     />
   </u-dropdown-menu>
 
-  <button
-    v-else-if="tier === 'bare'"
-    type="button"
-    class="size-11 touch-manipulation items-center justify-center text-neutral-100"
-    :class="[visibilityClass, { invisible: !isResolved }]"
-    :disabled="isSignInUnavailable"
-    :aria-hidden="isResolved ? undefined : 'true'"
-    :tabindex="isResolved ? undefined : -1"
-    :aria-label="signInLabel"
-    @click="handleSignIn"
-  >
-    <u-icon name="i-lucide-log-in" class="size-5" />
-  </button>
-
-  <u-tooltip v-else :text="signInLabel" :disabled="isTooltipRedundant">
-    <u-button
-      size="md"
-      variant="subtle"
-      color="neutral"
-      icon="i-lucide-log-in"
+  <!-- ! Two different absences, and only one of them reserves space. While the identity is
+       ! still `unknown` the control renders at its real geometry and is merely `invisible`,
+       ! so the header does not reflow when the SDK reports (feature 004). When there is no
+       ! backend to sign in to at all it renders nothing: an unreachable control is not worth
+       ! a gap in the row, and that gap is what stage 1 shipped. -->
+  <template v-if="!isSignInUnavailable">
+    <button
+      v-if="tier === 'bare'"
+      type="button"
+      class="size-11 touch-manipulation items-center justify-center text-neutral-100"
       :class="[visibilityClass, { invisible: !isResolved }]"
-      :disabled="isSignInUnavailable"
       :aria-hidden="isResolved ? undefined : 'true'"
       :tabindex="isResolved ? undefined : -1"
-      :label="tier === 'labelled' ? 'Sign in' : undefined"
-      :aria-label="tier === 'labelled' ? undefined : signInLabel"
+      aria-label="Sign in"
       @click="handleSignIn"
-    />
-  </u-tooltip>
+    >
+      <u-icon name="i-lucide-log-in" class="size-5" />
+    </button>
+
+    <u-tooltip v-else text="Sign in" :disabled="tier === 'labelled'">
+      <u-button
+        size="md"
+        variant="subtle"
+        color="neutral"
+        icon="i-lucide-log-in"
+        :class="[visibilityClass, { invisible: !isResolved }]"
+        :aria-hidden="isResolved ? undefined : 'true'"
+        :tabindex="isResolved ? undefined : -1"
+        :label="tier === 'labelled' ? 'Sign in' : undefined"
+        :aria-label="tier === 'labelled' ? undefined : 'Sign in'"
+        @click="handleSignIn"
+      />
+    </u-tooltip>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -90,14 +95,6 @@ const visibilityClass = computed(
       icon: 'hidden md:inline-flex lg:hidden',
       bare: 'flex md:hidden'
     })[props.tier]
-);
-
-const signInLabel = computed(() =>
-  isSignInUnavailable.value ? 'Sign-in is unavailable' : 'Sign in'
-);
-
-const isTooltipRedundant = computed(
-  () => props.tier === 'labelled' && !isSignInUnavailable.value
 );
 
 const menuItems = computed<DropdownMenuItem[][]>(() => [

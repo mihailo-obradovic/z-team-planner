@@ -18,6 +18,25 @@
 
         <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
 
+        <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
+        <ClientOnly>
+          <BuildManager class="hidden lg:flex" tier="labelled" />
+          <BuildManager
+            class="hidden md:flex lg:hidden"
+            :labelled="false"
+            tier="icon"
+          />
+        </ClientOnly>
+
+        <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
+             * the first client render alike, so both draw the same reserved slot and the
+             * prerendered page never shows the wrong button (feature 004). -->
+        <AuthMenu tier="labelled" />
+
+        <AuthMenu tier="icon" />
+
+        <AuthMenu tier="bare" />
+
         <u-button
           class="hidden lg:inline-flex"
           size="md"
@@ -49,25 +68,6 @@
         >
           <u-icon name="i-lucide-sliders-horizontal" class="size-5" />
         </button>
-
-        <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-        <ClientOnly>
-          <BuildManager class="hidden lg:flex" tier="labelled" />
-          <BuildManager
-            class="hidden md:flex lg:hidden"
-            :labelled="false"
-            tier="icon"
-          />
-        </ClientOnly>
-
-        <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
-             * the first client render alike, so both draw the same reserved slot and the
-             * prerendered page never shows the wrong button (feature 004). -->
-        <AuthMenu tier="labelled" />
-
-        <AuthMenu tier="icon" />
-
-        <AuthMenu tier="bare" />
       </template>
     </u-header>
 

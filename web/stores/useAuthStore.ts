@@ -1,6 +1,6 @@
 import { skipHydrate } from 'pinia';
 
-import type { AuthStatus, AuthUser } from '@/types/auth';
+import type { AuthStatus, AuthUser, SignInAvailability } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
   const status = ref<AuthStatus>('unknown');
@@ -27,8 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
     activeAccountBuildId.value = id;
   }
 
-  function markSignInUnavailable() {
-    isSignInUnavailable.value = true;
+  function setSignInAvailability(availability: SignInAvailability) {
+    isSignInUnavailable.value = availability === 'unavailable';
   }
 
   return {
@@ -41,6 +41,6 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     resetUser,
     setActiveAccountBuildId,
-    markSignInUnavailable
+    setSignInAvailability
   };
 });

@@ -11,12 +11,12 @@ import { clearUserScopedCache } from '@/services/queries/clearUserScopedCache';
 import type { Pinia } from 'pinia';
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const { setUser, resetUser, markSignInUnavailable } = useAuthStore();
+  const { setUser, resetUser, setSignInAvailability } = useAuthStore();
   const { firebase, apiBaseUrl } = useRuntimeConfig().public;
 
-  // * An empty base URL is a deployment with no API behind it (decision 007, stage 1). Signing in would succeed against Google and then fail against nothing, so Firebase is never initialised — which also stops a stale session from resurrecting into an app that cannot serve it. The status stays `unknown`, exactly as when initialisation fails below: the SDK never reports, so AuthMenu keeps the slot reserved and empty rather than offering a control that cannot work.
+  // * An empty base URL is a deployment with no API behind it (decision 007, stage 1). Signing in would succeed against Google and then fail against nothing, so Firebase is never initialised — which also stops a stale session from resurrecting into an app that cannot serve it. The status stays `unknown`, exactly as when initialisation fails below — so availability, not status, is what AuthMenu reads to drop the control entirely instead of holding a slot the SDK will never fill.
   if (!apiBaseUrl) {
-    markSignInUnavailable();
+    setSignInAvailability('unavailable');
 
     return { provide: { firebaseAuth: null } };
   }
@@ -43,7 +43,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'Firebase failed to initialise; sign-in is unavailable.',
       error
     );
-    markSignInUnavailable();
+    setSignInAvailability('unavailable');
   }
 
   if (auth) {
@@ -65,7 +65,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       },
       (error) => {
         console.error('Firebase auth state subscription failed.', error);
-        markSignInUnavailable();
+        setSignInAvailability('unavailable');
       }
     );
   }

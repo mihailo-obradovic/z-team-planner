@@ -42,7 +42,11 @@ describe('AuthMenu', () => {
   });
 
   it('reserves the slot rather than guessing while the SDK has not reported', async () => {
-    const page = await mountSuspended(AuthMenu, { global: { stubs: STUBS } });
+    // ! Availability is arranged, not inherited: the Firebase plugin has no project config in a test environment, so it flags sign-in unavailable for real and every case below would otherwise render nothing.
+    const page = await mountSuspended(
+      withStore(() => useAuthStore().setSignInAvailability('available')),
+      { global: { stubs: STUBS } }
+    );
 
     // ! Invisible, not absent: the button holds its geometry so the header does not reflow when the store resolves (feature 004, Examples — "no layout shift").
     const button = page.get('button');
@@ -53,7 +57,12 @@ describe('AuthMenu', () => {
 
   it('offers sign-in once the store resolves to anonymous', async () => {
     const page = await mountSuspended(
-      withStore(() => useAuthStore().resetUser()),
+      withStore(() => {
+        const store = useAuthStore();
+
+        store.setSignInAvailability('available');
+        store.resetUser();
+      }),
       { global: { stubs: STUBS } }
     );
 
@@ -63,19 +72,15 @@ describe('AuthMenu', () => {
     expect(page.text()).toContain('Sign in');
   });
 
-  it('disables sign-in when the SDK never initialised', async () => {
-    // ! Not arranged — observed. The Firebase plugin has no project config in a test environment, so it flags sign-in unavailable for real, which is exactly the degradation feature 006 asks for: a disabled button with a reason, never one that cannot work. Popup behaviour is proven in `test/unit/useAuth.test.ts` instead.
+  it('renders no control at all when there is nothing to sign in to', async () => {
+    // ! The unknown-identity slot above is a moment; this is permanent — with no API behind the build the SDK never reports, so a reserved slot would be a gap in the header row for the life of the page (feature 004).
     const page = await mountSuspended(
-      withStore(() => useAuthStore().resetUser()),
+      withStore(() => useAuthStore().setSignInAvailability('unavailable')),
       { global: { stubs: STUBS } }
     );
 
-    expect(page.get('button').attributes('disabled')).toBeDefined();
-
-    // * The labelled tier still reads "Sign in" on the button, so the tooltip is the only place that can say why it does nothing — which is why it is not suppressed here.
-    const tooltip = page.findComponent({ name: 'UTooltip' });
-    expect(tooltip.props('text')).toBe('Sign-in is unavailable');
-    expect(tooltip.props('disabled')).toBe(false);
+    expect(page.find('button').exists()).toBe(false);
+    expect(page.findComponent({ name: 'UTooltip' }).exists()).toBe(false);
   });
 
   it('shows the account name and its menu once signed in', async () => {

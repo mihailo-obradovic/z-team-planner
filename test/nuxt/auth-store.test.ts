@@ -68,7 +68,7 @@ describe('useAuthStore', () => {
   it('stays unknown but flags sign-in unavailable when the SDK fails', () => {
     const store = useAuthStore();
 
-    store.markSignInUnavailable();
+    store.setSignInAvailability('unavailable');
 
     // ! Not `anonymous`: the app never learned whether anyone is signed in. The header disables the button rather than offering one that cannot work.
     expect(store.status).toBe('unknown');
