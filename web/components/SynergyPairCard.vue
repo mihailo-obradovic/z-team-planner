@@ -18,7 +18,7 @@
         class="flex flex-wrap items-center gap-4 max-sm:justify-between lg:contents"
       >
         <div
-          class="@max-[31rem]:basis-full @max-[31rem]:justify-center flex shrink-0 gap-3"
+          class="flex shrink-0 gap-3 @max-[31rem]:basis-full @max-[31rem]:justify-center"
         >
           <SynergyHeroPortrait
             :hero-id="top.id"
@@ -33,7 +33,7 @@
 
         <!-- * Below lg the type steps down so five rows land near the portrait column's height (portrait 108 + gap + chip row). -->
         <ul
-          class="@max-[31rem]:mx-auto flex min-w-40 flex-1 flex-col gap-1 max-md:w-56 max-md:flex-none lg:gap-2"
+          class="flex min-w-40 flex-1 flex-col gap-1 max-md:w-56 max-md:flex-none lg:gap-2 @max-[31rem]:mx-auto"
         >
           <li
             v-for="entry in combinedStats"
@@ -60,7 +60,7 @@
 
       <!-- * One query drives the whole stacked state: below 31rem of the tab container's content box (= the card; portraits 228 + gap 16 + stats 224 + card padding 24 = 492, plus a 4px margin against subpixel wrapping) the portraits stack, the stats center, and this frame caps — all together. -->
       <div
-        class="@max-[31rem]:max-w-56 @max-[31rem]:self-center w-full border-2 border-accented bg-default lg:w-56 lg:shrink-0"
+        class="w-full border-2 border-accented bg-default lg:w-56 lg:shrink-0 @max-[31rem]:max-w-56 @max-[31rem]:self-center"
       >
         <div class="mx-auto aspect-square w-full max-w-56">
           <StatRadar

@@ -75,19 +75,19 @@ Not role-specific.
 
 ## Examples
 
-| Input                                            | Expected Output                                    |
-| ------------------------------------------------ | -------------------------------------------------- |
-| any over-budget action — 10th point, 5th bonus   | silent no-op, control disabled (see Business Rules)|
-| level, stat past 10, 8th training, 3rd flight    |                                                    |
-| +1 bonus level, then allocate a 10th point       | accepted                                           |
-| +1 bonus level, allocate nothing                 | level unchanged; a 10th point is now allocatable   |
-| switch a trained hero's trainable 1 → 2          | accepted, budget unchanged                         |
-| un-reveal a trained hero's starting power        | trainable and special power cleared too            |
-| select Heavily Medicated on Phenomaman           | leaves the flying set, plane glyph disappears      |
-| change ep3 cut sonar → coupe                     | Coupé's state wiped, Sonar's kept; column updates  |
-| `Reset all trainings` at 2/7 · 0/2 · 2/4         | all three read 0; per-hero allocations unchanged   |
-| reset bonus levels, a hero at 10 of 9+1 spent    | bonus reads 0; hero drops to 9, tallest stat −1    |
-| show episode-8 recruits at one column wide       | recruits under their heading, pairs stay grouped   |
+| Input                                          | Expected Output                                     |
+| ---------------------------------------------- | --------------------------------------------------- |
+| any over-budget action — 10th point, 5th bonus | silent no-op, control disabled (see Business Rules) |
+| level, stat past 10, 8th training, 3rd flight  |                                                     |
+| +1 bonus level, then allocate a 10th point     | accepted                                            |
+| +1 bonus level, allocate nothing               | level unchanged; a 10th point is now allocatable    |
+| switch a trained hero's trainable 1 → 2        | accepted, budget unchanged                          |
+| un-reveal a trained hero's starting power      | trainable and special power cleared too             |
+| select Heavily Medicated on Phenomaman         | leaves the flying set, plane glyph disappears       |
+| change ep3 cut sonar → coupe                   | Coupé's state wiped, Sonar's kept; column updates   |
+| `Reset all trainings` at 2/7 · 0/2 · 2/4       | all three read 0; per-hero allocations unchanged    |
+| reset bonus levels, a hero at 10 of 9+1 spent  | bonus reads 0; hero drops to 9, tallest stat −1     |
+| show episode-8 recruits at one column wide     | recruits under their heading, pairs stay grouped    |
 
 ## Business Rules
 

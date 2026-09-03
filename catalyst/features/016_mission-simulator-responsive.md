@@ -14,17 +14,17 @@ Feature 015 designed the mission simulator at desktop width and named the respon
 
 ## Inputs
 
-| Input | Type | Source | Constraints |
-| --- | --- | --- | --- |
-| tab content width | layout | `@container` on the mission tab wrapper | the wrapper's **content** box: `p-4` is outside it and the scrolling main takes 10px more when its scrollbar is up, so a threshold fires 32–42px below the viewport width it names |
-| condition-column view | UI event | the templates panel's `Requirements` / `Conditions` toggle | rendered below 28.5rem only |
+| Input                 | Type     | Source                                                     | Constraints                                                                                                                                                                        |
+| --------------------- | -------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| tab content width     | layout   | `@container` on the mission tab wrapper                    | the wrapper's **content** box: `p-4` is outside it and the scrolling main takes 10px more when its scrollbar is up, so a threshold fires 32–42px below the viewport width it names |
+| condition-column view | UI event | the templates panel's `Requirements` / `Conditions` toggle | rendered below 28.5rem only                                                                                                                                                        |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type | Description |
-| --- | --- | --- |
-| tier layout | rendered | panel order, row composition and column counts per threshold |
-| slot anatomy | rendered | the team slot's classic form, or the overlay form below 35rem |
+| Output / Side Effect  | Type            | Description                                                         |
+| --------------------- | --------------- | ------------------------------------------------------------------- |
+| tier layout           | rendered        | panel order, row composition and column counts per threshold        |
+| slot anatomy          | rendered        | the team slot's classic form, or the overlay form below 35rem       |
 | condition-column view | component `ref` | which column set the narrow templates panel shows; never serialized |
 
 ## Scope And Non-Goals
@@ -71,18 +71,18 @@ Not role-specific.
 
 ## Examples
 
-| Input | Expected Output | Notes |
-| --- | --- | --- |
-| 1280px viewport | feature 015's layout, untouched | 454 / 316 / 388 tracks, the team 568 and centred |
-| 1000px viewport | templates + requirements 471 each, team and math 958 | the math panel in two columns |
-| 900px container | templates floored at 454, requirements 430 | equal tracks give way to the floor |
-| 819px viewport | one column, every panel 777 | past the 49.5rem crossing |
-| 768 → 767px viewport | the math panel two columns, then one | its bound is its own, not the layout's |
-| 600px viewport | team slots 128 square, controls on the portrait | past the 35rem crossing |
-| 490px viewport | the toggle shown, wordmarks intact; team slots 101 | the narrowest tier |
-| 375px viewport, Conditions view | full stat names, compact row, buttons still 24 | an iPhone SE reads normally |
-| 320px viewport | four team slots 59 square in one row; radar frame 250; Conditions on icons; no horizontal scrolling | the reflow floor |
-| toggle on `Conditions`, then the tab widens past 28.5rem | both column sets shown, no toggle | its position is kept for a return |
+| Input                                                    | Expected Output                                                                                     | Notes                                            |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 1280px viewport                                          | feature 015's layout, untouched                                                                     | 454 / 316 / 388 tracks, the team 568 and centred |
+| 1000px viewport                                          | templates + requirements 471 each, team and math 958                                                | the math panel in two columns                    |
+| 900px container                                          | templates floored at 454, requirements 430                                                          | equal tracks give way to the floor               |
+| 819px viewport                                           | one column, every panel 777                                                                         | past the 49.5rem crossing                        |
+| 768 → 767px viewport                                     | the math panel two columns, then one                                                                | its bound is its own, not the layout's           |
+| 600px viewport                                           | team slots 128 square, controls on the portrait                                                     | past the 35rem crossing                          |
+| 490px viewport                                           | the toggle shown, wordmarks intact; team slots 101                                                  | the narrowest tier                               |
+| 375px viewport, Conditions view                          | full stat names, compact row, buttons still 24                                                      | an iPhone SE reads normally                      |
+| 320px viewport                                           | four team slots 59 square in one row; radar frame 250; Conditions on icons; no horizontal scrolling | the reflow floor                                 |
+| toggle on `Conditions`, then the tab widens past 28.5rem | both column sets shown, no toggle                                                                   | its position is kept for a return                |
 
 ## Business Rules
 

@@ -14,20 +14,20 @@ Fill the planner's empty "Synergy pairs" tab (a feature 003 placeholder) with wh
 
 ## Inputs
 
-| Input                       | Type     | Source                                    | Constraints                                                        |
-| --------------------------- | -------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| derived synergy pairs       | state    | episode setup (feature 003)               | 4 base pairs + at most 1 conditional; never user-selected here     |
-| power / special toggles     | UI event | the icon row under each portrait          | same shared planner state the overview writes; same gating         |
-| sonar form toggle           | UI event | Sonar's icon row                          | shared display state; never serialized (feature 012)               |
-| portrait click              | UI event | either portrait in a card                 | opens that hero's detail dialog; the active tab does not change    |
+| Input                   | Type     | Source                           | Constraints                                                     |
+| ----------------------- | -------- | -------------------------------- | --------------------------------------------------------------- |
+| derived synergy pairs   | state    | episode setup (feature 003)      | 4 base pairs + at most 1 conditional; never user-selected here  |
+| power / special toggles | UI event | the icon row under each portrait | same shared planner state the overview writes; same gating      |
+| sonar form toggle       | UI event | Sonar's icon row                 | shared display state; never serialized (feature 012)            |
+| portrait click          | UI event | either portrait in a card        | opens that hero's detail dialog; the active tab does not change |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type     | Description                                                                  |
-| -------------------- | -------- | ---------------------------------------------------------------------------- |
+| Output / Side Effect | Type     | Description                                                                        |
+| -------------------- | -------- | ---------------------------------------------------------------------------------- |
 | pair cards           | rendered | one content-width card per derived pair, centered and wrapping in the tab's scroll |
-| pair total           | rendered | per-stat sum of both heroes' effective stats — read-only, no steppers        |
-| combined radar       | rendered | one `StatRadar` series of the pair totals, `max` 10, clipping at the rim     |
+| pair total           | rendered | per-stat sum of both heroes' effective stats — read-only, no steppers              |
+| combined radar       | rendered | one `StatRadar` series of the pair totals, `max` 10, clipping at the rim           |
 
 No new serialized state; Sonar's shared form toggle stays out of the build format.
 
@@ -41,7 +41,7 @@ In scope:
 
 Non-goals:
 
-- Synergy *levels* (0–3, +5%/level) — unmodeled, reserved for the mission simulator.
+- Synergy _levels_ (0–3, +5%/level) — unmodeled, reserved for the mission simulator.
 - Editing chrome: no stat steppers, no flight, no reset, no level controls — those live on the overview and in the dialog.
 - Adding, removing, or toggling pairs — pairs are derived from episode setup only.
 
@@ -62,17 +62,17 @@ Not role-specific.
 
 ## Examples
 
-| Input                                                     | Expected Output                                                          | Notes                              |
-| --------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------- |
-| default episode setup                                     | 4 cards; a 5th appears once the ep3 cut + ep4 hire form a conditional pair | pairs derived, never edited here   |
-| change the ep3 cut or ep4 hire                            | the conditional card swaps or disappears; base cards unaffected           |                                    |
-| pair combat 8 + 7                                         | list shows 15; radar combat axis sits at the rim (10)                     | clip in the radar only             |
-| Coupé at 10 combat with En Pointe +3, partner combat 5    | pair combat shows 15, not 18                                             | per-hero clamp before summing      |
-| Golem's card, Spread Thin at 3 slots                      | pair total credits 2 slots — the partner fills one                        | same figure as the dialog's block  |
-| toggle a power on a synergy card                          | overview card and dialog reflect it immediately                          | one shared state                   |
-| toggle Sonar's form on the overview                       | the Malevola–Sonar card shows the swapped stats                          | form state lifted to shared        |
-| click a portrait on a card                                | that hero's detail dialog opens; synergy tab still active on close        |                                    |
-| viewport below `lg`                                       | small portraits side by side with the stats; the radar centered, own row  | full width below `sm`, 320px floor |
+| Input                                                  | Expected Output                                                            | Notes                              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- | ---------------------------------- |
+| default episode setup                                  | 4 cards; a 5th appears once the ep3 cut + ep4 hire form a conditional pair | pairs derived, never edited here   |
+| change the ep3 cut or ep4 hire                         | the conditional card swaps or disappears; base cards unaffected            |                                    |
+| pair combat 8 + 7                                      | list shows 15; radar combat axis sits at the rim (10)                      | clip in the radar only             |
+| Coupé at 10 combat with En Pointe +3, partner combat 5 | pair combat shows 15, not 18                                               | per-hero clamp before summing      |
+| Golem's card, Spread Thin at 3 slots                   | pair total credits 2 slots — the partner fills one                         | same figure as the dialog's block  |
+| toggle a power on a synergy card                       | overview card and dialog reflect it immediately                            | one shared state                   |
+| toggle Sonar's form on the overview                    | the Malevola–Sonar card shows the swapped stats                            | form state lifted to shared        |
+| click a portrait on a card                             | that hero's detail dialog opens; synergy tab still active on close         |                                    |
+| viewport below `lg`                                    | small portraits side by side with the stats; the radar centered, own row   | full width below `sm`, 320px floor |
 
 ## Business Rules
 

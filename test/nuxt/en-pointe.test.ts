@@ -57,9 +57,9 @@ describe('En Pointe', () => {
     }
 
     expect(p.getSpecialPowerBonusStats('coupe').combat).toBe(1);
-    expect(
-      9 + p.getSpecialPowerBonusStats('coupe').combat
-    ).toBe(MAX_STAT_VALUE);
+    expect(9 + p.getSpecialPowerBonusStats('coupe').combat).toBe(
+      MAX_STAT_VALUE
+    );
   });
 
   it('contributes nothing on a stat already at the cap', async () => {

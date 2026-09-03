@@ -10,22 +10,22 @@ Medium
 
 ## Purpose
 
-The display-only stat effects a hero's power grants once it is trained — Flambae's Supernova, Coupé's En Pointe, Golem's Spread Thin, and Sonar's form swap. Split out of feature 003, which owns the training *budgets* and the roster layout: these effects have their own state field, their own serialized key, their own chip on every card, and rules that grow with each hero who gets a toggle. Nothing here allocates anything; every effect is computed from state feature 003 already holds.
+The display-only stat effects a hero's power grants once it is trained — Flambae's Supernova, Coupé's En Pointe, Golem's Spread Thin, and Sonar's form swap. Split out of feature 003, which owns the training _budgets_ and the roster layout: these effects have their own state field, their own serialized key, their own chip on every card, and rules that grow with each hero who gets a toggle. Nothing here allocates anything; every effect is computed from state feature 003 already holds.
 
 ## Inputs
 
-| Input               | Type     | Source                                | Constraints                                                          |
-| ------------------- | -------- | ------------------------------------- | -------------------------------------------------------------------- |
+| Input                | Type     | Source                                 | Constraints                                                           |
+| -------------------- | -------- | -------------------------------------- | --------------------------------------------------------------------- |
 | special power toggle | UI event | the card's special chip, or the dialog | gated on the required trainable power; cycles, never wraps past `max` |
-| sonar form toggle   | UI event | any surface rendering Sonar            | one shared display state — never serialized                          |
+| sonar form toggle    | UI event | any surface rendering Sonar            | one shared display state — never serialized                           |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type            | Description                                                       |
-| -------------------- | --------------- | ----------------------------------------------------------------- |
-| `heroSpecialPowers`  | `useState` ref  | one integer per hero — feature 001 serializes it as `sp`          |
-| effective stats      | rendered        | `startingStats + allocations + specialPowerBonus`, per stat        |
-| chip state           | rendered        | the chip's colour, active flag and label at the current step       |
+| Output / Side Effect | Type           | Description                                                  |
+| -------------------- | -------------- | ------------------------------------------------------------ |
+| `heroSpecialPowers`  | `useState` ref | one integer per hero — feature 001 serializes it as `sp`     |
+| effective stats      | rendered       | `startingStats + allocations + specialPowerBonus`, per stat  |
+| chip state           | rendered       | the chip's colour, active flag and label at the current step |
 
 ## Scope And Non-Goals
 
@@ -58,16 +58,16 @@ Not role-specific.
 
 ## Examples
 
-| Input                                         | Expected Output                                    |
-| --------------------------------------------- | -------------------------------------------------- |
-| Supernova on Flambae (4 combat, +2 allocated) | Combat shows 10 (+4 special bonus, never past 10)  |
-| Spread Thin at 2 slots, Golem Combat 6        | Combat shows 9 (`floor(6 × 0.5)` = +3)             |
-| Spread Thin at 3 slots, Golem Intellect 1     | Intellect shows 1 (`floor(0.75)` = +0)             |
-| Spread Thin at 3 slots, Golem Vigor 9         | Vigor shows 10, not 15 (`MAX_STAT_VALUE`)          |
-| En Pointe +3 on Coupé at 9 combat             | Combat shows 10, not 12 (`MAX_STAT_VALUE`)         |
-| toggle a gated effect without its trainable   | no-op, chip disabled                               |
-| Spread Thin at 3 slots, Golem's pair total    | pair credits 2 slots only — the partner fills one  |
-| un-reveal a trained hero's starting power     | trainable and special power cleared together       |
+| Input                                         | Expected Output                                   |
+| --------------------------------------------- | ------------------------------------------------- |
+| Supernova on Flambae (4 combat, +2 allocated) | Combat shows 10 (+4 special bonus, never past 10) |
+| Spread Thin at 2 slots, Golem Combat 6        | Combat shows 9 (`floor(6 × 0.5)` = +3)            |
+| Spread Thin at 3 slots, Golem Intellect 1     | Intellect shows 1 (`floor(0.75)` = +0)            |
+| Spread Thin at 3 slots, Golem Vigor 9         | Vigor shows 10, not 15 (`MAX_STAT_VALUE`)         |
+| En Pointe +3 on Coupé at 9 combat             | Combat shows 10, not 12 (`MAX_STAT_VALUE`)        |
+| toggle a gated effect without its trainable   | no-op, chip disabled                              |
+| Spread Thin at 3 slots, Golem's pair total    | pair credits 2 slots only — the partner fills one |
+| un-reveal a trained hero's starting power     | trainable and special power cleared together      |
 
 ## Business Rules
 

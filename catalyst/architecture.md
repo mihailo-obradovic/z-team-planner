@@ -239,13 +239,13 @@ Packages this project runs that the adopted stack modules' Approved Libraries do
 
 The GitHub Actions the pipeline uses. Actions are not packages and carry no lockfile row, so they are recorded here under the same rule; each is pinned to a major tag, which Renovate moves once the Maintenance layer is adopted.
 
-| Action                | Job      | Why it is needed                                                                                                                                     | Approved by      |
-| --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `actions/checkout`    | both     | The source has to be on the runner.                                                                                                                  | decision 005     |
-| `jdx/mise-action`     | web      | `mise.toml` is the only Node pin and `actions/setup-node` cannot read it, so the toolchain is installed from the pin file itself rather than a copy. | user, 2026-09-03 |
-| `pnpm/action-setup`   | web      | Installs the exact pnpm named in `packageManager`.                                                                                                    | decision 005     |
-| `actions/cache`       | web      | Caches the pnpm store keyed to the lockfile — the caching that left with `actions/setup-node`.                                                        | user, 2026-09-03 |
-| `astral-sh/setup-uv`  | api      | Installs uv, which then provisions the interpreter from `.python-version`.                                                                            | decision 005     |
+| Action               | Job  | Why it is needed                                                                                                                                     | Approved by      |
+| -------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `actions/checkout`   | both | The source has to be on the runner.                                                                                                                  | decision 005     |
+| `jdx/mise-action`    | web  | `mise.toml` is the only Node pin and `actions/setup-node` cannot read it, so the toolchain is installed from the pin file itself rather than a copy. | user, 2026-09-03 |
+| `pnpm/action-setup`  | web  | Installs the exact pnpm named in `packageManager`.                                                                                                   | decision 005     |
+| `actions/cache`      | web  | Caches the pnpm store keyed to the lockfile — the caching that left with `actions/setup-node`.                                                       | user, 2026-09-03 |
+| `astral-sh/setup-uv` | api  | Installs uv, which then provisions the interpreter from `.python-version`.                                                                           | decision 005     |
 
 `temporal-polyfill` is imported inside `web/utils/formatTimestamp.ts` rather than installed as a global shim. That does **not** keep it out of the first load: Rollup merges it into the shared vendor chunk alongside `firebase`, `zod` and `regle`, and that chunk is preloaded from the prerendered `/`. Measured cost of the class API as used here is **22 kB gzip**; the tree-shaken `fns/Instant` entrypoint would be 4.6 kB. The class API was kept deliberately — it is the shape `Temporal` will have natively, so reaching Baseline means deleting one import and this dependency with no change to calling code, where the `fns` form would have to be rewritten. The extra weight is accepted as temporary.
 

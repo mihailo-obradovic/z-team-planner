@@ -29,7 +29,7 @@ describe('monster form', () => {
     p.monsterForm.value = false;
   });
 
-  it('swaps Sonar\'s display stats only while the form is on', async () => {
+  it("swaps Sonar's display stats only while the form is on", async () => {
     const p = await planner();
 
     expect(p.resolveDisplayStat('sonar', 'combat')).toBe('combat');

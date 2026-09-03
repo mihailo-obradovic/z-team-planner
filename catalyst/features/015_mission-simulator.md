@@ -14,24 +14,24 @@ Fill the planner's empty "Mission simulator" tab (the last feature 003 placehold
 
 ## Inputs
 
-| Input | Type | Source | Constraints |
-| --- | --- | --- | --- |
-| template stat edits | UI event | any template's REQ / threshold rows | REQ 0–10; thresholds 1–10 or unset; integers |
-| active template select | UI event | template list | exactly one of the three active |
-| slot fill | UI event | empty-slot click → hero picker dialog | roster filtered by episode setup; on-team heroes excluded |
-| slot remove / move | UI event | X and arrow buttons on a filled slot | arrows swap with the adjacent slot; slots are positional 1–4 |
-| synergy level switch | UI event | success-calculation panel | 4 positions (0–3); enabled only while the team holds a synergy pair |
-| `?tab=` URL param | URL | address bar / share link | `synergy-pairs` \ | `mission-simulator`; absent = overview; unknown value ignored and stripped |
+| Input                  | Type     | Source                                | Constraints                                                                |
+| ---------------------- | -------- | ------------------------------------- | -------------------------------------------------------------------------- |
+| template stat edits    | UI event | any template's REQ / threshold rows   | REQ 0–10; thresholds 1–10 or unset; integers                               |
+| active template select | UI event | template list                         | exactly one of the three active                                            |
+| slot fill              | UI event | empty-slot click → hero picker dialog | roster filtered by episode setup; on-team heroes excluded                  |
+| slot remove / move     | UI event | X and arrow buttons on a filled slot  | arrows swap with the adjacent slot; slots are positional 1–4               |
+| synergy level switch   | UI event | success-calculation panel             | 4 positions (0–3); enabled only while the team holds a synergy pair        |
+| `?tab=` URL param      | URL      | address bar / share link              | `synergy-pairs` or `mission-simulator`; absent = overview; unknown ignored |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type | Description |
-| --- | --- | --- |
-| simulator state | `useState` refs | templates, team slots, synergy level, active template — serialized with the build (new optional v1 keys) |
-| `?tab=` URL sync | side effect | active tab mirrored via `history.replaceState`; never part of the build document |
-| requirements radar | rendered | `StatRadar` overlay: required shape vs team shape (max 10) |
-| estimated success | rendered | the percentage plus a "math" breakdown: coverage, synergy, reattempt, fail check |
-| 2×XP indicator | rendered | any template with set 2×XP thresholds: fulfilled / not fulfilled |
+| Output / Side Effect | Type            | Description                                                                                              |
+| -------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
+| simulator state      | `useState` refs | templates, team slots, synergy level, active template — serialized with the build (new optional v1 keys) |
+| `?tab=` URL sync     | side effect     | active tab mirrored via `history.replaceState`; never part of the build document                         |
+| requirements radar   | rendered        | `StatRadar` overlay: required shape vs team shape (max 10)                                               |
+| estimated success    | rendered        | the percentage plus a "math" breakdown: coverage, synergy, reattempt, fail check                         |
+| 2×XP indicator       | rendered        | any template with set 2×XP thresholds: fulfilled / not fulfilled                                         |
 
 ## Scope And Non-Goals
 
@@ -86,20 +86,13 @@ Not role-specific. (Cloud saves require the API schema to accept the new keys; n
 
 The success model, the slot effects and the illusion lifecycle are exercised case by case in the two test files named under Tests. These rows pin a rendered state or a boundary rather than a number.
 
-| Input | Expected Output | Notes |
-| --- | --- | --- |
-| all REQs 0 | 100% regardless of team | empty required area covers trivially |
-| empty team, any REQ > 0 | 0% | nothing to cover with |
-| synergy switch at 3, no pair on team | switch disabled, +0% | stored level kept |
-| `FAIL ≥ 8` on charisma, team charisma total 8 | 0%, FAILED | at-or-above trips |
-| `2×XP ≥ 7` on combat, team combat total 7 | indicator fulfilled | independent of estimate |
-| Golem (Spread Thin) placed with 2 free right slots | 2 copies spawn, +50% to Golem | manual chip ignored here |
-| remove illusion, then free its slot again | stays gone | returns only on re-placing Prism |
-| Pirouette trained, Coupé on team, coverage+synergy 60% | 84% with reattempt note | `1−0.4²` |
-| ep3 cut removes a team hero | hero silently leaves the team | also on deserialization |
-| open `/?tab=mission-simulator` | simulator tab active | unknown value → overview, param stripped |
-| load an old v1 document without the new keys | defaults, fresh random templates | backward compatible |
-| coverage 100%, nothing failing | 100% on green with a check | the certain-success state |
+| Input                                | Expected Output                  | Notes                                |
+| ------------------------------------ | -------------------------------- | ------------------------------------ |
+| all REQs 0                           | 100% regardless of team          | empty required area covers trivially |
+| empty team, any REQ > 0              | 0%                               | nothing to cover with                |
+| coverage 100%, nothing failing       | 100% on green with a check       | the certain-success state            |
+| ep3 cut removes a team hero          | hero silently leaves the team    | also on deserialization              |
+| old v1 document without the new keys | defaults, fresh random templates | backward compatible                  |
 
 ## Business Rules
 

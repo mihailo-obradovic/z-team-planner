@@ -27,8 +27,8 @@ defineEmits<{
 
 const { heroes, monsterForm } = useHeroPlanner();
 
-const hero = computed(
-  () => (heroes.value ?? []).find((h) => h.id === props.heroId)!
+const hero = computed(() =>
+  (heroes.value ?? []).find((h) => h.id === props.heroId)!
 );
 
 const portraitSrc = computed(() =>

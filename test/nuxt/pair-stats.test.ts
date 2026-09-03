@@ -74,15 +74,16 @@ describe('pair combined stats', () => {
     }
   });
 
-  it('swaps Sonar\'s contribution when the form is on, whichever side he is', async () => {
+  it("swaps Sonar's contribution when the form is on, whichever side he is", async () => {
     const p = await planner();
     const off = p.getPairCombinedStats('malevola', 'sonar');
 
     p.toggleMonsterForm();
 
     const on = p.getPairCombinedStats('malevola', 'sonar');
-    const sonarBase = p.heroes.value!.find((h) => h.id === 'sonar')!
-      .startingStats;
+    const sonarBase = p.heroes.value!.find(
+      (h) => h.id === 'sonar'
+    )!.startingStats;
     const malevolaCombat = p.getEffectiveStats('malevola').combat;
 
     expect(off.combat).toBe(malevolaCombat + sonarBase.combat);

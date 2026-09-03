@@ -101,8 +101,7 @@ describe('Spread Thin', () => {
 
     spread(p, 3);
 
-    const vigor =
-      9 + p.getSpecialPowerBonusStats('golem').vigor;
+    const vigor = 9 + p.getSpecialPowerBonusStats('golem').vigor;
 
     expect(vigor).toBe(MAX_STAT_VALUE);
   });

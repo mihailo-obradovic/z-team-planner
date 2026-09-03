@@ -73,10 +73,14 @@ describe('synergy pairs', () => {
     // * Cutting Coupé also dissolves the Punch Up + Coupé base pair, so the conditional pair lands the count back on four.
     const pairs = p.synergyPairColumns.value;
 
-    expect(pairs.some((c) => c.top.id === 'phenomaman' || c.bottom.id === 'phenomaman')).toBe(true);
+    expect(
+      pairs.some(
+        (c) => c.top.id === 'phenomaman' || c.bottom.id === 'phenomaman'
+      )
+    ).toBe(true);
   });
 
-  it('shows the planner\'s combined values for the pair', async () => {
+  it("shows the planner's combined values for the pair", async () => {
     const { p, card, column } = await mountGolemPair();
 
     const totals = p.getPairCombinedStats(column.top.id, column.bottom.id);
@@ -99,7 +103,7 @@ describe('synergy pairs', () => {
     expect(card.text()).toContain(String(totals.combat));
   });
 
-  it('emits viewDetail with the clicked hero\'s id', async () => {
+  it("emits viewDetail with the clicked hero's id", async () => {
     const { card, column } = await mountGolemPair();
 
     await card.find('img').trigger('click');

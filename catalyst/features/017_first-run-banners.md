@@ -16,17 +16,17 @@ The same first run is the honest moment to say where a build is kept, since the 
 
 ## Inputs
 
-| Input                                | Type      | Source                        | Constraints                                                        |
-| ------------------------------------ | --------- | ----------------------------- | ------------------------------------------------------------------ |
-| `z-team-spoiler-acknowledged`        | `'1'`     | `localStorage`                | absent or unreadable → the banner shows; any value → it does not   |
-| `z-team-storage-notice-acknowledged` | `'1'`     | `localStorage`                | absent or unreadable → the banner shows; any value → it does not   |
-| confirm click                        | UI event  | one button per banner         | acknowledges that banner alone                                     |
+| Input                                | Type     | Source                | Constraints                                                      |
+| ------------------------------------ | -------- | --------------------- | ---------------------------------------------------------------- |
+| `z-team-spoiler-acknowledged`        | `'1'`    | `localStorage`        | absent or unreadable → the banner shows; any value → it does not |
+| `z-team-storage-notice-acknowledged` | `'1'`    | `localStorage`        | absent or unreadable → the banner shows; any value → it does not |
+| confirm click                        | UI event | one button per banner | acknowledges that banner alone                                   |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect                 | Type          | Description                                                       |
-| ------------------------------------ | ------------- | ----------------------------------------------------------------- |
-| banner region                        | UI            | a column of unacknowledged banners at the bottom of the app shell  |
+| Output / Side Effect                 | Type           | Description                                                       |
+| ------------------------------------ | -------------- | ----------------------------------------------------------------- |
+| banner region                        | UI             | a column of unacknowledged banners at the bottom of the app shell |
 | `z-team-spoiler-acknowledged`        | `localStorage` | written `'1'` when the spoiler banner is confirmed                |
 | `z-team-storage-notice-acknowledged` | `localStorage` | written `'1'` when the storage notice is confirmed                |
 
@@ -64,15 +64,15 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Examples
 
-| Input                                             | Expected Output                                                | Notes                                  |
-| ------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------- |
-| first load, empty `localStorage`                  | both banners, spoiler above the notice                         | one confirm button each                |
-| confirm the spoiler banner                        | it goes, its key is written, the notice stays at the bottom     | independent acknowledgement            |
-| reload with only the notice key set               | the spoiler banner alone, at the bottom                        | the column collapses                   |
-| reload with both keys set                         | no banners, no flash                                           | returning visitor                      |
-| `localStorage` unreadable (private mode, blocked) | both banners show                                              | a warning fails visible, not silent    |
+| Input                                             | Expected Output                                                      | Notes                                |
+| ------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------ |
+| first load, empty `localStorage`                  | both banners, spoiler above the notice                               | one confirm button each              |
+| confirm the spoiler banner                        | it goes, its key is written, the notice stays at the bottom          | independent acknowledgement          |
+| reload with only the notice key set               | the spoiler banner alone, at the bottom                              | the column collapses                 |
+| reload with both keys set                         | no banners, no flash                                                 | returning visitor                    |
+| `localStorage` unreadable (private mode, blocked) | both banners show                                                    | a warning fails visible, not silent  |
 | `localStorage` unwritable                         | confirming removes the banner for this session; it returns next load | the write is lost, never the session |
-| 320px viewport                                    | copy wraps, the button stays reachable, the build bar is not covered | annex §13 base tier               |
+| 320px viewport                                    | copy wraps, the button stays reachable, the build bar is not covered | annex §13 base tier                  |
 
 ## Business Rules
 
