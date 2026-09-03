@@ -83,6 +83,11 @@
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
     <ClientOnly>
+      <FirstRunBanners />
+    </ClientOnly>
+
+    <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
+    <ClientOnly>
       <div
         class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
       >

@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -124,6 +124,12 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 - Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout.
 
 ## Verification
+
+`test/nuxt/first-run-banners.test.ts` — 6 cases, all passing: both banners on a first run in spoiler-first order, one acknowledged leaving the other, only the missing key's banner, nothing once both keys are set, both shown when `getItem` throws, and no `HEROES` name in the spoiler copy. Full suite 287 passed / 36 files; `pnpm lint` clean; `pnpm typecheck` reports only the three pre-existing mission-simulator `HeroId` errors (identical on a clean baseline).
+
+Live walk at 1280 and at 320 (mobile, touch): both banners render stacked and in-flow below the roster, spoiler above notice; confirming the spoiler writes its key and leaves the notice at the bottom; confirming the notice leaves nothing; a reload with both keys renders no banner and no flash. At 320 the copy wraps, the buttons are full-width, `document.documentElement.scrollWidth <= innerWidth`, and a hit test at the mobile build bar's Save centre lands inside that 44px button — the bar stays reachable with both banners up. The region's computed background and stacking are identical to the existing mobile build bar's.
+
+Remaining risk: at 320 the two banners together occupy roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Acceptable for a one-time notice; shortening the copy is the lever if it proves annoying.
 
 ## Agent Change Rules
 
