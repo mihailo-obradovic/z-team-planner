@@ -33,7 +33,7 @@
     "@regle/nuxt": "^1.29.1",
     "@regle/rules": "^1.29.1",
     "firebase": "^12.18.0",
-    "nuxt": "^4.3.0",
+    "nuxt": "^4.5.2",
     "pinia": "^4.0.3",
     "tailwindcss": "^4.1.18",
     "temporal-polyfill": "^1.0.4",
