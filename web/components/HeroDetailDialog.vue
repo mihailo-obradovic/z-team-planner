@@ -193,8 +193,7 @@
                   <p class="text-sm text-muted">
                     {{ hero.name }} and {{ synergyPartner.name }} combined, with
                     every bonus applied.<template v-if="pairFillsASlot">
-                      The pair fills a slot, so Spread Thin counts one
-                      fewer.</template
+                      Spread Thin counts the partner's slot as filled.</template
                     >
                   </p>
                 </div>
@@ -703,16 +702,16 @@ const combinedStats = computed(() => {
 });
 
 // * The note only earns its line where a slot-filling power is actually in play — feature 012's deduction is invisible on every other pair.
-const pairFillsASlot = computed(() => {
-  const ids = [props.heroId, synergyPartner.value?.id];
-
-  return ids.some(
+// * Only while the power is actually contributing. The line explains a subtraction from the pair total, and with Spread Thin untrained there is no bonus to subtract from — the sentence would be describing arithmetic the reader cannot see, on the panel where the copy is tightest.
+const pairFillsASlot = computed(() =>
+  [props.heroId, synergyPartner.value?.id].some(
     (id) =>
-      id &&
+      !!id &&
       SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS]
-        ?.type === 'spread-thin'
-  );
-});
+        ?.type === 'spread-thin' &&
+      getSpecialPowerState(id) > 0
+  )
+);
 
 const hasEffects = computed(
   () =>

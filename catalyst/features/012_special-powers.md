@@ -67,6 +67,7 @@ Not role-specific.
 | En Pointe +3 on Coupé at 9 combat             | Combat shows 10, not 12 (`MAX_STAT_VALUE`)        |
 | toggle a gated effect without its trainable   | no-op, chip disabled                              |
 | Spread Thin at 3 slots, Golem's pair total    | pair credits 2 slots only — the partner fills one |
+| Golem's pair total, Spread Thin untrained     | no deduction note above the totals                |
 | un-reveal a trained hero's starting power     | trainable and special power cleared together      |
 
 ## Business Rules
@@ -74,7 +75,7 @@ Not role-specific.
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat, and never exceeds `MAX_STAT_VALUE`: every special bonus is clamped against what the stat already holds. Special bonuses are computed, never written into `heroLevelUps`.
 - Spread Thin's bonus is `floor((startingStats + allocations) × 0.25 × slots)` per stat, clamped to `MAX_STAT_VALUE`. The tier is picked by the slot count and floored **once** against the total — not a per-slot increment repeated, which pays differently on any stat that is not a multiple of 4.
 - Golem fills at most three slots (+75%): calls hold four and he occupies one. Squeeze In's fifth slot is Punch Up's alone and never empty, so the source's "up to 200%" is unreachable.
-- **Feature 011's pair total is a two-hero call**, so it re-derives Spread Thin at `min(slots, 2)` — the partner fills a slot Golem would have. His own rows keep all three; each figure is right for its label. The rule is about the pair being two heroes, not about Invisigal, and stays true if the conditional synergy pairs change.
+- **Feature 011's pair total is a two-hero call**, so it re-derives Spread Thin at `min(slots, 2)` — the partner fills a slot Golem would have. His own rows keep all three; each figure is right for its label. The rule is about the pair being two heroes, not about Invisigal, and stays true if the conditional synergy pairs change. The one-line note explaining that deduction appears only while the power is contributing — with Spread Thin untrained there is nothing subtracted and the line would describe arithmetic the reader cannot see.
 - A gated effect is inert without its trainable power selected, guarded in state and disabled in the UI (feature 003's guard-clause convention).
 - `SPECIAL_POWER_MECHANICS` (`web/types/hero.ts`) is the single source: `scripts/export-game-data.ts` derives `special_powers` (`max`, `requires_trainable`) from it rather than restating it. A hand-copied value that drifts lets the client offer a step the API rejects on save — a bug visible only at persistence.
 - The card's power strip holds at most **four** chips — `sonar form? + starting + upgrades(≤2) + special?` — and a fifth breaks every card's alignment (annex §13, Card body). A second toggle for any hero must first move something out of the strip, the way flight was moved.
@@ -119,7 +120,7 @@ Not role-specific.
 
 ## Verification
 
-By test (`test/nuxt/spread-thin.test.ts`, 7 cases): the toggle is inert until trainable-1 is selected and stays inert on Found Himself; it cycles `0 → 1 → 2 → 3 → 0`; Combat 6 yields +1 / +3 / +4 (the value where a floored tier and a repeated per-slot increment disagree); Intellect 1 never moves; Vigor 9 stops at `MAX_STAT_VALUE`; the pair total credits 3 where the card credits 4; a hero without a slot power is unaffected by the pair rule. `shared/build-cases.json` gained `sp` range and gating cases for Golem, and its "hero with no special power" case moved to Prism, since Golem now has one.
+By test (`test/nuxt/spread-thin.test.ts`, 9 cases): the toggle is inert until trainable-1 is selected and stays inert on Found Himself; it cycles `0 → 1 → 2 → 3 → 0`; Combat 6 yields +1 / +3 / +4 (the value where a floored tier and a repeated per-slot increment disagree); Intellect 1 never moves; Vigor 9 stops at `MAX_STAT_VALUE`; the pair total credits 3 where the card credits 4; a hero without a slot power is unaffected by the pair rule; and the deduction note is absent from the dialog while Spread Thin contributes nothing, present once it is expanded into a slot. `shared/build-cases.json` gained `sp` range and gating cases for Golem, and its "hero with no special power" case moved to Prism, since Golem now has one.
 
 Walked live at `localhost:3123` in Chrome (2026-08-30): revealing Diamond in the Rough then training Spread Thin adds a fourth chip and no more; clicking it stepped the card through `+1 slot (+25%)` → `+2 slots (+50%)` → `+3 slots (+75%)`, with stats 3/1/4/2/2 → 3/1/5/2/2 → 4/1/6/3/3 → 5/1/7/3/3 — matching the formula, including the stats that never move. In the detail dialog the Effects row read "Expanded into 3 slots — every stat up 75%", while the Golem + Invisigal pair total read 7/3/8/4/6: Golem counted at two slots against his own rows' three. The deduction is explained in one line above that block, shown only for a pair where a slot-filling power is actually in play — the note has to earn its height, since the stats column scrolls before the dialog does.
 

@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, nextTick } from 'vue';
+
+import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
 import { MAX_STAT_VALUE } from '@/types/hero';
 
@@ -129,5 +131,46 @@ describe('Spread Thin', () => {
     expect(p.getPairSpecialPowerBonusStats('coupe')).toEqual(
       p.getSpecialPowerBonusStats('coupe')
     );
+  });
+
+  describe('the pair total note', () => {
+    // ! The dialog teleports to the body and a teleport outlives its component, so each mount is torn down and the body cleared.
+    let mounted: Awaited<ReturnType<typeof mountSuspended>> | null = null;
+
+    afterEach(() => {
+      mounted?.unmount();
+      mounted = null;
+      document.body.innerHTML = '';
+    });
+
+    async function pairTotalText() {
+      mounted = await mountSuspended(HeroDetailDialog, {
+        props: { heroId: 'golem' },
+        global: { stubs: { UTooltip: { template: '<div><slot /></div>' } } }
+      });
+
+      await nextTick();
+
+      return document.body.textContent!.replace(/\s+/g, ' ');
+    }
+
+    it('is absent while Spread Thin contributes nothing', async () => {
+      const p = await planner();
+
+      p.resetAllTrainings();
+      p.resetHero('golem');
+
+      expect(await pairTotalText()).not.toContain('Spread Thin counts');
+    });
+
+    it('appears once Spread Thin is expanded into a slot', async () => {
+      const p = await trainedGolem();
+
+      spread(p, 1);
+
+      expect(await pairTotalText()).toContain(
+        "Spread Thin counts the partner's slot as filled"
+      );
+    });
   });
 });
