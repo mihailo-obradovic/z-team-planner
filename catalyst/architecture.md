@@ -204,7 +204,7 @@ This table lists what **this project** runs — pruned from the template's full 
 | Identity (optional)        | Firebase Authentication — the template's `keycloak` module **swapped** by decision 004, which is the contract; no module document in this bundle                                                                                               |
 | Background work (optional) | declined (`celery` in the template) — no work outside the request/response cycle                                                                                                                                                               |
 | Deployment (optional)      | declined (`docker-compose` in the template) — a managed database and a hosted IdP leave no multi-service run to orchestrate (decision 004)                                                                                                     |
-| Maintenance (optional)     | deferred (`renovate` in the template) — decision 001                                                                                                                                                                                           |
+| Maintenance (optional)     | `renovate` — decision 009 (adopted; no automerge, weekly, both lockfiles in scope)                                                                                                                                                             |
 
 ### Approved Dependencies Beyond The Modules
 
