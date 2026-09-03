@@ -303,7 +303,10 @@
                   <div class="flex items-center gap-2">
                     <u-icon name="i-lucide-plane" class="size-4 shrink-0" />
 
-                    <span class="font-medium">{{ flightInfo.name }}</span>
+                    <!-- * A hero whose flight the game leaves unnamed still needs a heading here. -->
+                    <span class="font-medium">
+                      {{ flightInfo.name ?? 'Flight' }}
+                    </span>
 
                     <u-badge
                       v-if="flightActive"

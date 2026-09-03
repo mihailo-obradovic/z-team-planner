@@ -62,6 +62,7 @@ Not role-specific.
 | `HERO_POWERS['blonde-blazer']`                          | Radiant Light alone                                                       | she has only the starting power                |
 | `CONDITIONAL_SYNERGY_PAIRS['coupe-cut-waterboy-hired']` | punch-up + waterboy                                                       | the cut hero's partner gains the new hire      |
 | `HERO_FLIGHT_CAPABILITY['phenomaman']`                  | conditional-power on trainable-1, inverted                                | Heavily Medicated _removes_ flight             |
+| `HERO_FLIGHT['blonde-blazer'].name`                     | `null`                                                                    | the game names her flight nothing              |
 
 ## Business Rules
 

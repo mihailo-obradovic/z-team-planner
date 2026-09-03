@@ -9,7 +9,11 @@
         <div v-if="flightInfo" class="flex w-6 items-center justify-center">
           <TooltipButton
             v-if="flightShown"
-            :text="`${flightInfo.name}: ${flightInfo.description}`"
+            :text="
+              flightInfo.name
+                ? `${flightInfo.name}: ${flightInfo.description}`
+                : flightInfo.description
+            "
             icon="i-lucide-plane"
             :color="flightColor"
             :active="flightActive"

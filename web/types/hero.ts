@@ -366,8 +366,11 @@ export const SPECIAL_POWER_MECHANICS = {
 } as const satisfies Partial<Record<HeroId, any>>;
 
 // * Flight capability information for each hero. Name and description of their flight ability.
+// * `name` is null for a hero whose flight the game never names (Blonde Blazer,
+// * game-mechanics.md): the UI supplies its own generic word there rather than the data
+// * inventing a proper noun the game does not have.
 export interface FlightInfo {
-  name: string;
+  name: string | null;
   description: string;
 }
 
@@ -392,7 +395,7 @@ export const HERO_FLIGHT = {
       'Phenomaman flies to call locations, greatly reducing travel time. Disabled by Heavily Medicated.'
   },
   'blonde-blazer': {
-    name: 'Flight',
+    name: null,
     description:
       'Blonde Blazer flies to call locations, greatly reducing travel time.'
   }
