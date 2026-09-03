@@ -216,9 +216,7 @@ def _mission_ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail
         )
     else:
         for index, template in enumerate(document.mt):
-            details.extend(
-                _stat_values(f"data.mt[{index}].r", template.r, game)
-            )
+            details.extend(_stat_values(f"data.mt[{index}].r", template.r, game))
 
             # * Both condition columns may appear on any template, each holding at most
             # * one threshold (feature 015).
@@ -255,9 +253,7 @@ def _mission_ranges(document: BuildDocument, game: GameData) -> list[ErrorDetail
 
     if not 0 <= document.ml <= _MAX_SYNERGY_LEVEL:
         details.append(
-            ErrorDetail(
-                path="data.ml", message=f"Must be 0 to {_MAX_SYNERGY_LEVEL}."
-            )
+            ErrorDetail(path="data.ml", message=f"Must be 0 to {_MAX_SYNERGY_LEVEL}.")
         )
 
     if not 0 <= document.ma <= _MISSION_TEMPLATES - 1:
