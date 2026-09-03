@@ -229,8 +229,10 @@
               </template>
             </div>
 
+            <!-- ! Capped from `sm`, not left to the column. The frame is `aspect-square` at the column's full width, and the dialog is fullscreen, so between 640 and 1023 the radar was a square as wide as the viewport and pushed everything else off screen. From `md` it has a column of its own and fills it instead, which is why the cap is dropped there rather than at `lg`. -->
+            <!-- ! `w-full` is load-bearing beside the cap, and `mx-auto` is not what centres this. Auto margins on a grid item drop it out of `stretch` and size it to its content — which for a `viewBox`-only SVG is the replaced-element default of 300px, so the frame measured 304 against a 320 cap that never bound. Width 100% capped by `max-w-80`, centred by the grid, is what actually holds. -->
             <div
-              class="order-first aspect-square min-w-0 border-2 border-accented bg-default lg:order-none lg:aspect-auto lg:min-h-0"
+              class="order-first aspect-square min-w-0 border-2 border-accented bg-default sm:w-full sm:max-w-80 sm:justify-self-center md:max-w-none md:justify-self-auto lg:order-none lg:aspect-auto lg:min-h-0"
             >
               <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
             </div>
@@ -258,13 +260,14 @@
                   ]"
                   @click="handleTogglePower(power)"
                 >
-                  <div class="flex items-center gap-2">
+                  <!-- ! `flex-wrap` alone does not do it: without `min-w-0` the name refuses to shrink and pushes the badge past the panel instead of wrapping it. The pair is what lets the badge drop to its own line just over `lg`, where this column is at its narrowest. -->
+                  <div class="flex flex-wrap items-center gap-2">
                     <u-icon
                       :name="POWER_ICONS[index]!"
                       class="size-4 shrink-0"
                     />
 
-                    <span class="font-medium">{{ power.name }}</span>
+                    <span class="min-w-0 font-medium">{{ power.name }}</span>
 
                     <u-badge
                       v-if="isPowerActive(power)"
@@ -273,6 +276,7 @@
                       "
                       size="xs"
                       variant="subtle"
+                      class="shrink-0"
                     />
                   </div>
 
