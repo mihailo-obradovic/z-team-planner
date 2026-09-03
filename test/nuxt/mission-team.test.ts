@@ -393,3 +393,36 @@ describe('derived slot effects and team totals', () => {
     ]);
   });
 });
+
+describe('the illusion source', () => {
+  it('is the hero standing to Prism’s left', () => {
+    planner.fillMissionSlot(0, 'coupe');
+    planner.fillMissionSlot(1, 'prism');
+
+    expect(planner.missionIllusionSource.value).toBe('coupe');
+  });
+
+  it('is nobody once a copy takes the source’s slot', async () => {
+    // * The state the panel's own copy of this rule used to mistype: removing the source
+    // * frees its slot, and Golem's copies fill it. Only the watcher keeps it honest.
+    if (planner.getPowerState('golem').trainableSelected !== 1) {
+      planner.toggleStartingPower('golem');
+      planner.toggleTrainablePower('golem', 1);
+    }
+
+    planner.fillMissionSlot(1, 'coupe');
+    planner.fillMissionSlot(2, 'prism');
+
+    expect(slots()).toEqual([null, 'coupe', 'prism', 'illusion']);
+
+    planner.removeMissionSlot(1);
+    planner.fillMissionSlot(0, 'golem');
+    await nextTick();
+
+    // * The sanitize watcher runs pre-flush on every slot change, so the illusion is
+    // * already gone by the time anything renders — a copy never stands beside Prism
+    // * with an illusion to her right.
+    expect(slots()).toEqual(['golem', 'copy', 'prism', null]);
+    expect(planner.missionIllusionSource.value).toBeNull();
+  });
+});

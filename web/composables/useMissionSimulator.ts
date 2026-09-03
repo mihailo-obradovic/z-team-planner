@@ -247,6 +247,19 @@ export function useMissionSimulator(
     );
   });
 
+  // * Who the illusion mirrors: the hero to Prism's left, or nobody. The sanitize watcher
+  // * below keeps an illusion from standing without one, so this returns null only for the
+  // * frame-less instant before it runs — and every reader gets a hero id or nothing.
+  const missionIllusionSource = computed<HeroId | null>(() => {
+    if (!missionSlots.value.includes(ILLUSION_SLOT) || prismIndex.value <= 0) {
+      return null;
+    }
+
+    const source = missionSlots.value[prismIndex.value - 1] ?? null;
+
+    return isHeroSlot(source) ? source : null;
+  });
+
   const missionDerivedEffects = computed<MissionDerivedEffect[]>(() => {
     const effects: MissionDerivedEffect[] = [];
     const slots = missionSlots.value;
@@ -263,15 +276,10 @@ export function useMissionSimulator(
       effects.push({ type: 'spread-thin', copies: missionCopyCount.value });
     }
 
-    const illusionSource =
-      slots.includes(ILLUSION_SLOT) && prismIndex.value > 0
-        ? slots[prismIndex.value - 1]
-        : null;
-
-    if (illusionSource && isHeroSlot(illusionSource)) {
+    if (missionIllusionSource.value) {
       effects.push({
         type: 'illusion',
-        source: illusionSource,
+        source: missionIllusionSource.value,
         ratio: missionIllusionRatio.value
       });
     }
@@ -325,17 +333,13 @@ export function useMissionSimulator(
 
   function moveMissionSlot(index: number, direction: -1 | 1) {
     const target = index + direction;
+    const moved = missionSlots.value[index] ?? null;
 
-    if (
-      !isSlotIndex(index) ||
-      !isSlotIndex(target) ||
-      !isHeroSlot(missionSlots.value[index] ?? null)
-    ) {
+    if (!isSlotIndex(index) || !isSlotIndex(target) || !isHeroSlot(moved)) {
       return;
     }
 
     const slots = [...missionSlots.value];
-    const moved = slots[index]!;
 
     slots[index] = slots[target]!;
     slots[target] = moved;
@@ -446,6 +450,7 @@ export function useMissionSimulator(
     missionSlotStats,
     missionTeamTotals,
     missionDerivedEffects,
+    missionIllusionSource,
     missionIllusionRatio,
     missionActiveTemplateData,
     missionSuccess,

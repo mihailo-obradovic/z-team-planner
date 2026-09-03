@@ -167,6 +167,7 @@ const {
   missionSlots,
   missionCandidates,
   missionIllusionRatio,
+  missionIllusionSource,
   fillMissionSlot,
   removeMissionSlot,
   moveMissionSlot
@@ -205,8 +206,7 @@ function isRemovableCopy(index: number): boolean {
 }
 
 function viewSlotDetail(slot: Exclude<MissionSlot, null>) {
-  const id =
-    slot === ILLUSION_SLOT ? illusionSource() : isHero(slot) ? slot : null;
+  const id = isHero(slot) ? slot : missionIllusionSource.value;
 
   if (id) {
     emit('viewDetail', id);
@@ -215,14 +215,6 @@ function viewSlotDetail(slot: Exclude<MissionSlot, null>) {
 
 function heroName(id: HeroId): string {
   return (heroes.value ?? []).find((hero) => hero.id === id)?.name ?? id;
-}
-
-// * The illusion is named after its source — the hero to Prism's left.
-function illusionSource(): HeroId | null {
-  const prism = missionSlots.value.indexOf('prism');
-  const source = prism > 0 ? missionSlots.value[prism - 1] : null;
-
-  return source !== null && source !== ILLUSION_SLOT ? source : null;
 }
 
 function slotName(slot: Exclude<MissionSlot, null>): string {
@@ -234,13 +226,13 @@ function slotName(slot: Exclude<MissionSlot, null>): string {
     return heroName(slot);
   }
 
-  const source = illusionSource();
+  const source = missionIllusionSource.value;
 
   return source ? `Illusion of ${heroName(source)}` : 'Illusion';
 }
 
 function slotPortrait(slot: Exclude<MissionSlot, null>): string {
-  const id = slot === ILLUSION_SLOT ? illusionSource() : slot;
+  const id = isHero(slot) ? slot : missionIllusionSource.value;
 
   return heroPortraitSrc(id ?? 'prism', sonarForm.value);
 }
