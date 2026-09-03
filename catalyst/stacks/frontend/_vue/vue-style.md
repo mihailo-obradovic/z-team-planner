@@ -54,7 +54,7 @@ Always `<script setup lang="ts">`. Use the **`@/` alias, never `~/`**.
 - **Child → parent goes through emits**, every one of them declared in `defineEmits`. A component does not take a callback prop for it.
 - **The parent's handler is the matching `handle*`** — `@save` → `handleSave`, one handler per event.
 - **`defineModel` over a hand-rolled pair** — never declare a `modelValue` prop and emit `update:modelValue` by hand. A named model emits `update:<name>`.
-- **A handler with no matching emit is named for intent, not input device** — `handleSubmit`, not `handleButtonClick`. Add the subject only to separate two handlers of the same intent (`handleSearchInput`, `handleFilterInput`).
+- **A handler with no matching emit is named for intent, not input device** — `handleSubmit`, not `handleButtonClick`. Add the subject only to separate two handlers of the same intent (`handleSearchInput`, `handleFilterInput`). The `handle*` prefix is what pairs a handler with its event, so where there is no event to pair with, a bare intent verb is equally correct: `openPicker`, `closeDialog`, `confirmDelete`, `step`. Prefix or verb, the name states the intent — and a set of such handlers reads better paired than prefixed (`closeDelete`/`confirmDelete` over `handleCloseDelete`/`handleConfirmDelete`). What is never allowed is the input device.
 - **An inline template expression only forwards or binds** — `@click="handleSelect(user.id)"`. A statement, a branch, or an `await` moves into a named `handle*` (section 16).
 - **The event parameter is `event`**, never `e`.
 

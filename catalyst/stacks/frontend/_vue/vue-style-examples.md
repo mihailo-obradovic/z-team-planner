@@ -180,6 +180,30 @@ function handleSearch(event: Event) {
 </script>
 ```
 
+With no emit to pair with, a bare intent verb is equally correct — and a set of them reads better paired than prefixed. What the rule forbids is naming the input device.
+
+```vue
+<script setup lang="ts">
+// ✅ nothing to pair with; the verb is the intent
+function openPicker(index: number) {
+  pickerSlot.value = index;
+}
+
+function closeDelete() {
+  deleteTarget.value = null;
+}
+
+function confirmDelete() {
+  remove(deleteTarget.value!);
+}
+
+// ❌ the input device, whatever the prefix
+function handleDeleteButtonClick() {
+  remove(deleteTarget.value!);
+}
+</script>
+```
+
 ```vue
 <!-- parent -->
 <template>
