@@ -36,7 +36,9 @@
           />
         </div>
 
-        <span class="w-8 text-end text-xs text-muted">Lv. {{ heroLevel }}</span>
+        <span class="w-8 text-end text-xs text-muted select-none">
+          Lv. {{ heroLevel }}
+        </span>
 
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
           <IconButton
@@ -61,7 +63,7 @@
         <NuxtImg
           :src="portraitSrc"
           :alt="hero.name"
-          class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
+          class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
           @click="$emit('viewDetail')"
         />
 
@@ -73,7 +75,7 @@
           <li
             v-for="stat in STAT_NAMES"
             :key="stat"
-            class="flex items-center justify-between"
+            class="flex items-center justify-between select-none"
           >
             <span
               class="flex items-center gap-2 font-heading tracking-label text-toned uppercase"

@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden items-center gap-6 md:flex">
+  <div class="hidden items-center gap-6 select-none md:flex">
     <span
       v-for="counter in counters"
       :key="counter.label"

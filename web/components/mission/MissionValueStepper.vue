@@ -12,7 +12,7 @@
          tight (feature 016) — the buttons beside it cannot, being on the 24px touch floor
          (annex §14.2), so the slot and the gaps are what give. -->
     <span
-      class="w-7 text-center font-heading text-lg font-bold @max-[28.5rem]:w-6"
+      class="w-7 text-center font-heading text-lg font-bold select-none @max-[28.5rem]:w-6"
     >
       {{ value ?? '—' }}
     </span>

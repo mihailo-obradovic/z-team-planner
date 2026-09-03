@@ -7,7 +7,9 @@ export default {
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger: [
       'group relative inline-flex items-center min-w-0 data-[state=inactive]:text-muted hover:data-[state=inactive]:not-disabled:text-default font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75',
-      'transition-colors'
+      'transition-colors',
+      // * Added: a tab is a control, and a double-click meant to switch tabs was selecting its label instead (annex §12).
+      'select-none'
     ],
     leadingIcon: 'shrink-0',
     leadingAvatar: 'shrink-0',

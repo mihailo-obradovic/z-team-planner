@@ -8,7 +8,9 @@ export default {
       'rounded-md font-heading font-bold uppercase tracking-label inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-40 aria-disabled:opacity-40',
       'transition-colors',
       // * Added: a button never benefits from double-tap zoom, and without this a second fast tap on a stepper is consumed by the browser as the zoom gesture instead of a second click. Pinch zoom and the viewport meta are untouched.
-      'touch-manipulation'
+      'touch-manipulation',
+      // * Added: a control's own label is not content (annex §12). Repeated taps on a stepper otherwise leave the label highlighted, which reads as a selection the user did not ask for.
+      'select-none'
     ],
     label: 'truncate',
     leadingIcon: 'shrink-0',

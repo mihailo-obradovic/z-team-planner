@@ -24,7 +24,7 @@
             v-for="rosterHero in rosterOrder"
             :key="rosterHero.id"
             type="button"
-            class="aspect-square shrink-0 border-2"
+            class="aspect-square shrink-0 border-2 select-none"
             :class="
               rosterHero.id === heroId
                 ? 'border-primary'
@@ -54,7 +54,7 @@
               v-for="rosterHero in rosterOrder"
               :key="rosterHero.id"
               type="button"
-              class="size-14 shrink-0 border-2"
+              class="size-14 shrink-0 border-2 select-none"
               :class="
                 rosterHero.id === heroId
                   ? 'border-primary'
@@ -96,14 +96,14 @@
               >
                 <span class="font-heading tracking-label text-toned uppercase">
                   Level
-                  <span class="text-lg font-bold text-highlighted">
+                  <span class="text-lg font-bold text-highlighted select-none">
                     {{ heroLevel }}
                   </span>
                 </span>
 
                 <span class="font-heading tracking-label text-toned uppercase">
                   Bonus
-                  <span class="text-lg font-bold text-highlighted">
+                  <span class="text-lg font-bold text-highlighted select-none">
                     {{ bonusLevel }}
                   </span>
                 </span>

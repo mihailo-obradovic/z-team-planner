@@ -3,7 +3,7 @@
   <!-- ! `block max-w-full` is load-bearing, not tidying: WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic 320px where Chromium gives 0, so without the cap the chart floors the width of whatever holds it and the dialog's mobile column scrolls sideways on iOS. -->
   <svg
     :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
-    class="block h-full w-full max-w-full"
+    class="block h-full w-full max-w-full select-none"
     role="img"
     :aria-labelledby="`${uid}-title ${uid}-desc`"
     preserveAspectRatio="xMidYMid meet"

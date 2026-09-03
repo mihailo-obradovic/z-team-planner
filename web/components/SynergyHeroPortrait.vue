@@ -4,7 +4,7 @@
     <NuxtImg
       :src="portraitSrc"
       :alt="hero.name"
-      class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow hover:ring-2 hover:ring-warning"
+      class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
       @click="$emit('viewDetail')"
     />
 
