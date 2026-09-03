@@ -1,4 +1,5 @@
 <template>
+  <!-- * The `click` listener falls through to `IconButton` and on to the button itself; see the note there. -->
   <u-tooltip :text="text">
     <IconButton
       :label="text"
@@ -7,7 +8,6 @@
       :size="size"
       :disabled="disabled"
       :active="active"
-      @click="$emit('click')"
     />
   </u-tooltip>
 </template>
@@ -24,8 +24,4 @@ withDefaults(
   }>(),
   { size: 'xs' }
 );
-
-defineEmits<{
-  click: [];
-}>();
 </script>

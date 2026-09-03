@@ -1,4 +1,8 @@
 <template>
+  <!-- * No `click` emit is declared, deliberately. An emit named after an input device is
+       * what the style guide rules out, and re-emitting one would also fire twice: with no
+       * declaration a parent's `@click` stays in attrs and falls through to the button
+       * itself, which is the native event the call sites already expect. -->
   <u-button
     :icon="icon"
     :color="color"
@@ -9,7 +13,6 @@
     :aria-pressed="active === undefined ? undefined : active"
     variant="subtle"
     square
-    @click="$emit('click')"
   >
     <slot />
   </u-button>
@@ -27,8 +30,4 @@ withDefaults(
   }>(),
   { size: 'xs' }
 );
-
-defineEmits<{
-  click: [];
-}>();
 </script>
