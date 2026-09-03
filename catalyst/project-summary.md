@@ -44,7 +44,7 @@ One line per record: type, status, title, link.
 | 006 | refactor    | Implemented | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md)     |
 | 007 | infra       | Implemented | Host on Vercel — two projects, one repository                                   | [007_infra_hosting-vercel](decisions/007_infra_hosting-vercel.md)                             |
 | 008 | refactor    | Implemented | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                     |
-| 009 | tooling     | Proposed    | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
+| 009 | tooling     | Accepted    | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
 
 ## Domain Decision Index
 

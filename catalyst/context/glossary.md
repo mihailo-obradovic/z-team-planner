@@ -27,6 +27,8 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 
 **Allocation** — any budgeted spend on a hero: a stat level-up, a bonus level, a power training, a flight training. Budgets are per category, never pooled.
 
+**Trainable** — a hero who can receive power or flight training. Every hero present before episode 8 is trainable; arriving in episode 8 is exactly what removes training, so "episode 8 recruit" and "untrainable" name the same set of heroes — one by cause, one by consequence. Named in code around `ep8RecruitIds`.
+
 ## Synergy
 
 **Synergy pair** — a fixed two-hero pairing the game grants a bonus to. Pairs are always derived from episode setup (four base pairs, plus at most one conditional pair determined by the episode 3 cut and episode 4 hire); a user never creates, removes, or toggles a pair directly.
