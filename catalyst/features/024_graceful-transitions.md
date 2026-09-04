@@ -1,8 +1,8 @@
-# Feature: Graceful state transitions
+# Feature: Hero card transitions
 
 ## Status
 
-Active
+Changing
 
 ## Task Weight
 
@@ -10,24 +10,27 @@ Easy
 
 ## Purpose
 
-Two surfaces answer a click by making things appear and vanish in a single frame. On the hero card (feature 003), toggling a power, adding a bonus level or resetting a hero mounts and unmounts the reset icon, the flight icon, the bonus button and the chips under the portrait, instantly. In the hero detail dialog (feature 011), switching hero re-renders every panel in place while only the radar travels (decision 008), so the one thing that moves gracefully is surrounded by things that jump.
+The hero card (feature 003) answers a click by making things appear and vanish in a single frame: toggling a power, adding a bonus level or resetting a hero mounts and unmounts the reset icon, the flight icon, the bonus button and the chips under the portrait, instantly.
 
-Both surfaces get the same rule: **content that comes or goes with a state change fades, and a control that stays while its glyph changes swaps it with a scale**. Nothing about what any control does changes.
+The card gets two motions: **content that comes or goes with a state change fades, and a control that stays while its glyph changes swaps it with a scale**. Nothing about what any control does changes.
+
+Use then found the fade applied too bluntly in one place. The chip row is centre-justified, so a chip fading in left its neighbours to jump into their new positions in a single frame. The row needs the annex's move as well as its fade, which this document now carries.
+
+The dialog was originally this feature's second surface. It is [025_dialog-transitions](025_dialog-transitions.md) now, split off when what it needed stopped being a fade.
 
 ## Inputs
 
 | Input          | Type          | Source                           | Constraints                                       |
 | -------------- | ------------- | -------------------------------- | ------------------------------------------------- |
 | card state     | derived flags | feature 003's composables        | the `v-if` conditions each card element has today |
-| dialog hero    | `HeroId`      | feature 011's roster rail        | any switch while the dialog stays open            |
 | reduced motion | media query   | `prefers-reduced-motion: reduce` | short-circuits the glyph swap; the fade is exempt |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type | Description                                                             |
-| -------------------- | ---- | ----------------------------------------------------------------------- |
-| state fade           | UI   | mounting and unmounting card elements and dialog panels fade in and out |
-| glyph swap           | UI   | a control's changing icon or label shrinks away and grows back          |
+| Output / Side Effect | Type | Description                                                    |
+| -------------------- | ---- | -------------------------------------------------------------- |
+| state fade           | UI   | mounting and unmounting card elements fade in and out          |
+| glyph swap           | UI   | a control's changing icon or label shrinks away and grows back |
 
 No state is written. Nothing here is serialized.
 
@@ -35,30 +38,28 @@ No state is written. Nothing here is serialized.
 
 In scope:
 
-- The two motions, and the annex §11 rows that settle them as named patterns (**State fade**, **Glyph swap**) so a later instance inherits the values.
-- Which card elements and dialog panels each motion applies to.
+- The two motions, and the annex §11 rows settling them as named patterns (**State fade**, **Glyph swap**), plus the note allowing a list to carry a fade and a move at once.
+- Which card elements each motion applies to.
 
 Non-goals:
 
-- **Any change to what a control does.** Feature 003's budgets and 011's roster switch are read, never altered.
-- **Colour-only changes** — the trainable chips swapping which one is active. The annex's baseline colour fade covers them.
-- **Values changing in place** — stat numbers, the level readout, pair totals, the synergy-pair markers.
-- **The dialog's effect cards** (flight, Sonar, special ability): text cards, not glyphs; the panel fade covers their hero change.
-- **The dialog's bonus control.** It is a fixed plus beside a count that changes in place, so there is no glyph to swap.
-- **The radar**, including on a hero switch. Its tween is decision 008's. Its hardcoded 200ms bypasses the `--duration-*` scale — pre-existing drift, recorded here and not fixed here.
-- **Sibling movement** when a chip leaves. Neighbours close the gap when the fade ends; the annex's _list move_ can be added later if the snap earns it.
+- **Any change to what a control does.** Budgets and the roster switch are read, never altered.
+- **Colour-only changes**, such as which trainable chip is active. The annex's baseline colour fade covers them.
+- **The hero detail dialog.** Feature 025 owns it, including the figures that count and the powers panel's collapse.
+- **Movement anywhere but the chip row.** Reserved slots leave no neighbour to displace.
+- **Values changing in place** on the card: stat numbers, the level readout, the synergy-pair markers.
 
 ## User / System Behavior
 
 **State fade** — opacity only, `--duration-baseline`, `ease-out` entering and `ease-in` leaving. Opacity at the baseline needs no reduced-motion guard (annex §14.4).
 
-- On the card: the reset icon, the flight icon, the bonus button and every chip in the row (the trainables, Supernova, En Pointe, Spread Thin, Sonar's form) fade in when their condition becomes true and out when it becomes false. A leaving chip holds its place while it fades; its neighbours close the gap afterwards. The reserved slots and the fixed-height chip row (annex §13) mean nothing else moves.
-- In the dialog: on a hero change, each hero-bound panel — the toolbar thumbnail and name, the large portrait, the stats panel, the synergy partner block with its pair totals, the powers and effects panel, the notes panel (feature 022) — fades out with the old hero, then in with the new one. Feature 022's advisories, which come and go inside the notes panel as the player allocates, take the same state fade; the panel is a fixed-height scroll region, so nothing outside it moves. The roster rail and the radar are outside the fade: the rail is stable, the radar keeps its own tween. The top rows are fixed height (feature 011), so the empty moment between the legs moves nothing.
+- The reset icon, the flight icon, the bonus button and every chip in the row fade in when their condition becomes true and out when it becomes false. The reserved slots and the fixed-height row (annex §13) mean nothing else moves.
+- **The chip row also moves.** It is centre-justified, so a chip arriving or leaving re-centres every other one. The neighbours travel under the annex's _list move_ instead of jumping, and a leaving chip leaves the flow as its fade begins so the travel and the fade run together.
 
-**Glyph swap** — for a control that stays while its icon or label changes: the old glyph scales to zero over `--duration-baseline` with `ease-in`, then the new one grows from zero over `--duration-baseline` with `ease-out`. Transform-based, so it short-circuits under reduced motion and the glyph lands instantly.
+**Glyph swap** — a control that stays while its icon or label changes: the old glyph scales to zero over `--duration-baseline` with `ease-in`, then the new one grows from zero with `ease-out`. Transform-based, so it short-circuits under reduced motion.
 
-- Applies to the bonus button at every step (plus → `+1` → … → `+4`, and back on reset) on the card, to Coupé's chip when En Pointe changes its icon, and to Sonar's form chip.
-- Fires only on a change while the control is on screen. First render — page load, a saved build, a share link — never swaps. On `/` the load runs under feature 023's cover, so a swap that fired there would be hidden anyway; the contract stands regardless.
+- Applies to the bonus button at every step (plus → `+1` → … → `+4`, and back on reset), to Coupé's chip when En Pointe changes its icon, and to Sonar's form chip.
+- Fires only on a change while the control is on screen. A first render — page load, saved build, share link — never swaps; feature 023's wait would hide one anyway, but the contract stands regardless.
 - A swap interrupted by another change re-targets to the newest glyph; nothing queues.
 
 Neither motion depends on viewport width.
@@ -69,64 +70,57 @@ Not role-specific.
 
 ## Examples
 
-| Input                                        | Expected Output                                    | Notes                                |
-| -------------------------------------------- | -------------------------------------------------- | ------------------------------------ |
-| reveal a hero's starting power               | the reset icon fades in                            | 150ms opacity                        |
-| select Flambae's trainable 2                 | the Supernova chip fades in                        | siblings hold, then close after      |
-| switch Flambae's trainable 2 → 1             | the Supernova chip fades out; the row stays 24px   | fixed-height row                     |
-| switch a hero's trainable 1 → 2              | the active colour moves, no swap and no fade       | colour-only, non-goal                |
-| press bonus `+` at bonus 0                   | the plus shrinks away, `+1` grows in               | glyph swap, 150ms + 150ms            |
-| press bonus `+` twice quickly                | the swap re-targets to `+2`                        | never shows `+1` once the state is 2 |
-| reset a hero at bonus 2 with a trained power | bonus swaps to plus; the reset icon fades out      | both motions on one click            |
-| load a share link with Coupé at En Pointe    | the chip renders in its final state, no swap       | change only, never first render      |
-| click Flambae in the dialog rail             | portrait, stats, partner, powers fade out, then in | the radar tweens; the rail holds     |
-| switch from Golem to Blonde Blazer           | the same fade; dialog geometry unchanged           | feature 011's fixed rows             |
-| planner state after any of the above         | identical to before this feature                   | presentation only                    |
-| `prefers-reduced-motion: reduce`             | glyphs land instantly; the fades still run         | annex §14.4                          |
+| Input                                     | Expected Output                                  | Notes                                |
+| ----------------------------------------- | ------------------------------------------------ | ------------------------------------ |
+| reveal a hero's starting power            | the reset icon fades in                          | 150ms opacity                        |
+| select Flambae's trainable 2              | the Supernova chip fades in, neighbours travel   | no jump; the row re-centres          |
+| switch Flambae's trainable 2 → 1          | the chip fades out of flow while the rest travel | fade and move run together           |
+| switch a hero's trainable 1 → 2           | the active colour moves, no swap and no fade     | colour-only, non-goal                |
+| press bonus `+` at bonus 0                | the plus shrinks away, `+1` grows in             | glyph swap, 150ms each leg           |
+| press bonus `+` twice quickly             | the swap re-targets to `+2`                      | never shows `+1` once the state is 2 |
+| reset at bonus 2 with a trained power     | bonus swaps to plus; the reset icon fades out    | both motions on one click            |
+| load a share link with Coupé at En Pointe | the chip renders settled, no swap                | change only, never first render      |
+| planner state after any of the above      | identical to before this feature                 | presentation only                    |
+| `prefers-reduced-motion: reduce`          | glyphs land instantly; the fades still run       | annex §14.4                          |
 
 ## Business Rules
 
-- **Presentation only.** Both motions read state; neither delays, batches or suppresses a write. Budgets, totals and pair markers are correct on the first frame.
-- **Durations come from the token scale.** Every transition class reads `--duration-baseline`; a hardcoded duration has bypassed the scale (annex §11).
-- **Easing follows the annex:** `ease-out` entering or growing, `ease-in` leaving or shrinking. One baseline per leg for every out-in, panel fade or glyph swap alike.
+- **Presentation only.** The motions read state; none delays, batches or suppresses a write. Budgets, totals and pair markers are correct on the first frame.
+- **Durations come from the token scale.** Every transition class reads a `--duration-*` token; a hardcoded one has bypassed it (annex §11).
+- **Easing follows the annex:** `ease-out` entering or growing, `ease-in` leaving or shrinking, one baseline per leg.
 - **Properties are named**, never `transition: all`.
 
 ## Edge Cases
 
-- **Several elements change on one click.** Reset unmounts the reset icon, swaps the bonus glyph and may unmount chips at once. Each runs its own motion in parallel; none waits for another.
-- **A hero switch mid-fade** in the dialog re-targets the out leg: the panels enter with the hero selected last, never an intermediate one.
-- **A chip toggled on and off within one baseline** is interrupted, never queued; it fades back from wherever it was.
-- **Switching to a partnerless hero** removes the dialog's partner block — a state fade of the whole block, with the fixed row keeping the height.
-- **`loadInitialBuild` replacing state after hydration** (feature 023) changes every card at once. It is a load, not a change the user made: no glyph swaps.
+- **Several elements change on one click.** Reset unmounts an icon, swaps the bonus glyph and may unmount chips at once. The motions run in parallel.
+- **A chip toggled on and off within one baseline** is interrupted, never queued.
+- **`loadInitialBuild` replacing state after hydration** (feature 023) changes every card at once. A load, not a change the user made: no glyph swaps.
 
 ## Invariants
 
-- No motion changes what a control does, what it shows once settled, or when state changes — only how the change is drawn.
-- No animation state is serialized, shared or readable by another feature.
-- The card's header slots and chip row keep their reserved size at every moment of a motion; the dialog's fixed rows never resize.
+- No motion changes what a control does, what it shows once settled, or when state changes; only how the change is drawn.
+- No animation state is serialized or readable by another feature.
+- The card's header slots and chip row keep their reserved size throughout, including while a chip is out of flow.
 - A control never displays a glyph that disagrees with its state for longer than one swap.
 - Every duration the motions use is a `--duration-*` token from `web/assets/css/main.css`.
 
 ## Error Handling
 
-No failure mode reaches the user. A browser that runs no transition renders the settled state immediately — the pre-feature behaviour, and the reduced-motion behaviour of the glyph swap.
+No failure mode reaches the user. A browser running no transition renders the settled state immediately: the pre-feature behaviour, and the reduced-motion behaviour of the glyph swap.
 
 ## Entry Points
 
 - `web/components/HeroCard.vue`: the header-row icons and the bonus button.
-- `web/components/HeroPowerChips.vue`: the chip row — the fades and the Coupé and Sonar swaps.
-- `web/components/HeroDetailDialog.vue`: the per-panel fades, and the notes list's own fade for advisories.
-- `annexes/design-system.md` §11: the two named-pattern rows.
+- `web/components/HeroPowerChips.vue`: the chip row's fade, move and the Coupé and Sonar swaps.
+- `annexes/design-system.md` §11: the named-pattern rows, and the note allowing a fade and a move on one list.
 
 ## Dependencies
 
-- [003_planner-mechanics](003_planner-mechanics.md): the card state every fade and swap reads. Unchanged.
-- [011_hero-detail-dialog](011_hero-detail-dialog.md): the roster switch and the fixed-height rows the panel fade relies on. Unchanged.
+- [003_planner-mechanics](003_planner-mechanics.md): the card state every motion reads. Unchanged.
 - [012_special-powers](012_special-powers.md): the chips and glyphs that come, go and swap.
-- [022_hero-notes](022_hero-notes.md): the notes panel that now changes with the hero, and the advisories that come and go.
-- [023_initial-load](023_initial-load.md): the cover under which the first load runs; the reason a load never swaps.
-- `annexes/design-system.md` §11 and §14.4: tokens, easing, the reduced-motion rule, and the home of the two patterns.
-- Decision 008: the radar tween, left as it is.
+- [023_initial-load](023_initial-load.md): the wait the first load runs under; the reason a load never swaps.
+- [025_dialog-transitions](025_dialog-transitions.md): the dialog half, split out of this feature.
+- `annexes/design-system.md` §11 and §14.4: tokens, easing, the reduced-motion rule, and the patterns' home.
 
 ## Open Questions
 
@@ -134,14 +128,14 @@ _None._
 
 ## Tests
 
-- No automated test. A test that looks for a transition wrapper mirrors implementation, and jsdom lays out and animates nothing (the limit features 013 and 020 record).
-- Live browser walk of the Examples table at desktop and 375px: each card action, the interrupted bonus press, a dialog switch to a partnerless and to a fixed-level hero, a share-link load, and the reduced-motion guard confirmed in the shipped CSSOM.
+- No automated test. A test looking for a transition wrapper mirrors implementation, and jsdom lays out and animates nothing (the limit features 013 and 020 record).
+- Live browser walk of the Examples table at desktop and 375px: each card action, the interrupted bonus press, chip neighbours travelling rather than jumping when one arrives and when one leaves, a share-link load, and the reduced-motion guard read from the CSSOM.
 
 ## Verification
 
-Lint, typecheck and the full suite clean (383 tests, 48 files); no automated test was added, per Tests. Live in headless Chrome against the dev server, reading transition classes and computed styles mid-flight at 1905px and again at 375px. Card: revealing Flambae's power fades the reset icon in (`opacity 0.15s ease-out`); selecting Supernova fades its chip in with the row held at 24px, and switching back fades it out with the chip still in flow (14 elements mid-fade, 13 after); the bonus plus shrinks and `+1` grows (`transform 0.15s`, `ease-in` then `ease-out`), two fast presses re-target mid-shrink (scale 0.49) and land on `+3`; reset runs a fade and a swap on one click; Coupé's reveal fades two elements in and En Pointe swaps the glyph. Dialog: a rail click fades all five hero-bound panels out (`ease-in`) then in (`ease-out`) while the radar's data polygon tweens through the switch and the rail carries no class; the five panel shells measure 288/592/288/592/1351 before, after, and on Blonde Blazer (no steppers, no partner); a second click mid-fade lands on the hero clicked last; five Combat points on Golem fade two advisories in (opacity 0.34 mid-fade) and removing one fades them out. A share link with Coupé at En Pointe loads with zero swap or fade class changes observed from document start, the chip already in its active state.
+**Card motions (2026-09-04).** Lint, typecheck and suite clean; walked in headless Chrome at 1905px and 375px. The reset icon, Supernova's chip, the bonus swap (two fast presses re-targeting to `+3`), a reset running both motions at once, and Coupé's glyph swap all behaved; a share link loaded with no motion. The walk found both button components rendering fragments, which `Transition` cannot animate, so every transitioned element now sits in a plain span. Sonar's chip and a reduced-motion machine were not covered.
 
-Found and fixed by the walk: both button components render fragments (the tooltip's renderless root, and the annotation comments the dev build keeps as DOM comments), which `Transition` cannot animate — every transitioned chip and icon now sits in a plain span. Not covered: Sonar's form chip (the episode-4 hire select would not open by script; it runs the same `swap-key` path Coupé's chip was verified on) and a `prefers-reduced-motion: reduce` machine — the guard is confirmed in the shipped CSSOM as `.glyph-swap-enter-active, .glyph-swap-leave-active { transition: none }` inside the reduce query, with no rule for the fade.
+**Chip movement.** Empty: unbuilt. What prompted it: revealing Coupé's En Pointe moved three chips 14px left in one frame at full opacity, while only the arriving chip faded.
 
 ## Agent Change Rules
 
