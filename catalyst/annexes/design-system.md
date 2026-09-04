@@ -389,7 +389,20 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 
 - **Easing:** `ease-in-out` default, `ease-out` for enter, `ease-in` for exit. A custom cubic-bezier needs a comment saying why.
 - **Properties:** name them (`transition: color, background-color, box-shadow`), never `transition: all`.
-- **Reduced motion:** anything longer than the baseline, and anything transform-based, short-circuits under `@media (prefers-reduced-motion: reduce)`. Colour and opacity fades at the baseline do not need the guard.
+- **Reduced motion:** anything longer than the baseline, and anything transform-based, short-circuits under `@media (prefers-reduced-motion: reduce)`. Colour and opacity fades at the baseline do not need the guard. This is an accessibility constraint (§14.4), not a taste call: the preference is the visitor's own OS setting, and it fires only for someone who has asked for it.
+
+### Named patterns
+
+Two motions recur and are settled here once, so a second instance of either inherits the values instead of re-deciding them.
+
+| Pattern             | Contract                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **List move**       | A keyed element travelling to a new position in its own list: `--duration-slow`, `ease-in-out`, `transform` only. The whole element travels, never a subset of its contents. Interrupting re-aims the travel; it never queues. |
+| **Bring into view** | A scroll region scrolling one of its own children to the minimum position that leaves it fully visible: `--duration-slow`, the platform's smooth curve. The region scrolls itself only, never an ancestor.                     |
+
+- **List move** needs a stable identity per element. Where a list holds derived or interchangeable entries (a placeholder, a generated copy), those are keyed by position: they cross-fade where they stand rather than travelling, and only the entries with an identity of their own move.
+- **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
+- Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
 
 ---
 
@@ -535,7 +548,9 @@ Three fixes worth remembering, all of them things that reasoning got wrong and t
 
 ### 14.4 Motion & reduced motion
 
-Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
+Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit, and both named patterns in §11 — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
+
+The preference is the visitor's own operating-system setting, switched on by people for whom motion causes nausea, migraine or seizures. Honouring it costs nothing anyone else sees, so the guard is never traded away for a nicer default. One consequence is worth stating: where a motion also **corrects what is on screen** — §11's bring-into-view — the correction still happens under reduce and only its smoothness is dropped. The guard removes decoration, never information.
 
 ---
 
