@@ -14,6 +14,7 @@
       :size="size"
       :disabled="disabled"
       :active="active"
+      :swap-key="swapKey"
     />
   </u-tooltip>
 </template>
@@ -27,6 +28,8 @@ const props = withDefaults(
     size?: 'xs' | 'sm';
     disabled?: boolean;
     active?: boolean;
+    // * Passed through to the button (feature 024).
+    swapKey?: string | number;
     // * Called after the click resolves, with the chip's resulting state already applied; a null return shows nothing (feature 018 — every deactivation).
     confirmation?: () => string | null;
   }>(),

@@ -6,42 +6,52 @@
       </h3>
 
       <div class="flex items-center gap-2">
+        <!-- * Every header icon sits in a reserved slot and comes and goes with the state fade (annex §11, feature 024); the slot is what keeps the row still while it does. The span is the transition's element: the button components render fragments (the tooltip's renderless root, the annotation comments the dev build keeps), which `Transition` cannot animate. -->
         <div v-if="flightInfo" class="flex w-6 items-center justify-center">
-          <TooltipButton
-            v-if="flightShown"
-            :text="
-              flightInfo.name
-                ? `${flightInfo.name}: ${flightInfo.description}`
-                : flightInfo.description
-            "
-            icon="i-lucide-plane"
-            :color="flightColor"
-            :active="flightActive"
-            :disabled="flightLocked"
-            :confirmation="
-              () =>
-                confirmationText({
-                  kind: 'flight',
-                  name: flightInfo!.name,
-                  trained: flightActive
-                })
-            "
-            @click="toggleFlight(heroId)"
-          />
+          <Transition name="state-fade">
+            <span v-if="flightShown" class="flex">
+              <TooltipButton
+                :text="
+                  flightInfo.name
+                    ? `${flightInfo.name}: ${flightInfo.description}`
+                    : flightInfo.description
+                "
+                icon="i-lucide-plane"
+                :color="flightColor"
+                :active="flightActive"
+                :disabled="flightLocked"
+                :confirmation="
+                  () =>
+                    confirmationText({
+                      kind: 'flight',
+                      name: flightInfo!.name,
+                      trained: flightActive
+                    })
+                "
+                @click="toggleFlight(heroId)"
+              />
+            </span>
+          </Transition>
         </div>
 
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
-          <IconButton
-            v-if="
-              levelUpPointsUsed > 0 ||
-              hasPowers ||
-              flightActive ||
-              bonusLevel > 0
-            "
-            icon="i-lucide-rotate-ccw"
-            color="neutral"
-            @click="resetHero(heroId)"
-          />
+          <Transition name="state-fade">
+            <span
+              v-if="
+                levelUpPointsUsed > 0 ||
+                hasPowers ||
+                flightActive ||
+                bonusLevel > 0
+              "
+              class="flex"
+            >
+              <IconButton
+                icon="i-lucide-rotate-ccw"
+                color="neutral"
+                @click="resetHero(heroId)"
+              />
+            </span>
+          </Transition>
         </div>
 
         <span class="w-8 text-end text-xs text-muted select-none">
@@ -49,17 +59,21 @@
         </span>
 
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
-          <IconButton
-            v-if="bonusLevel > 0 || !bonusFull"
-            :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
-            :color="bonusLevel > 0 ? 'primary' : 'neutral'"
-            :disabled="bonusLevel >= 4 || bonusFull"
-            @click="addBonusLevel(heroId)"
-          >
-            <span v-if="bonusLevel > 0" class="text-xs font-semibold"
-              >+{{ bonusLevel }}</span
-            >
-          </IconButton>
+          <Transition name="state-fade">
+            <span v-if="bonusLevel > 0 || !bonusFull" class="flex">
+              <IconButton
+                :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
+                :color="bonusLevel > 0 ? 'primary' : 'neutral'"
+                :disabled="bonusLevel >= 4 || bonusFull"
+                :swap-key="bonusLevel"
+                @click="addBonusLevel(heroId)"
+              >
+                <span v-if="bonusLevel > 0" class="text-xs font-semibold"
+                  >+{{ bonusLevel }}</span
+                >
+              </IconButton>
+            </span>
+          </Transition>
         </div>
       </div>
     </div>

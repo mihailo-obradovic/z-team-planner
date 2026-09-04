@@ -252,6 +252,41 @@
     display: none;
 }
 
+/* * Annex §11 named patterns, feature 024. State fade: content that mounts or unmounts with a state change. Opacity at the baseline, so no reduced-motion guard. */
+.state-fade-enter-active {
+    transition: opacity var(--duration-baseline) ease-out;
+}
+
+.state-fade-leave-active {
+    transition: opacity var(--duration-baseline) ease-in;
+}
+
+.state-fade-enter-from,
+.state-fade-leave-to {
+    opacity: 0;
+}
+
+/* * Glyph swap: a control that stays while its icon or label changes — the old glyph shrinks to nothing, the new one grows from nothing, one baseline each. Transform-based, so it short-circuits under reduced motion and the glyph lands at once. */
+.glyph-swap-enter-active {
+    transition: transform var(--duration-baseline) ease-out;
+}
+
+.glyph-swap-leave-active {
+    transition: transform var(--duration-baseline) ease-in;
+}
+
+.glyph-swap-enter-from,
+.glyph-swap-leave-to {
+    transform: scale(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glyph-swap-enter-active,
+    .glyph-swap-leave-active {
+        transition: none;
+    }
+}
+
 /* * The annex's loading ring (§11), the initial-load ring's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
 @utility loading-ring {
     animation: loading-ring 1.4s linear infinite;

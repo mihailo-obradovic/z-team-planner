@@ -1,101 +1,120 @@
 <template>
-  <div v-if="powers" class="flex h-6 items-center justify-center gap-1">
-    <TooltipButton
-      v-if="heroId === 'sonar'"
-      :text="sonarFormTooltip"
-      :icon="sonarFormIcon"
-      :color="monsterForm ? 'primary' : 'neutral'"
-      :active="monsterForm"
-      :confirmation="
-        () =>
-          confirmationText({
-            kind: 'monster-form',
-            form: monsterForm ? 'mega-bat' : 'hybrid'
-          })
-      "
-      @click="toggleMonsterForm"
-    />
+  <!-- * A chip comes and goes with the state fade (annex §11, feature 024). No move transition: a leaving chip holds its place while it fades and its neighbours close the gap afterwards. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
+  <TransitionGroup
+    v-if="powers"
+    tag="div"
+    name="state-fade"
+    class="flex h-6 items-center justify-center gap-1"
+  >
+    <span v-if="heroId === 'sonar'" key="sonar-form" class="flex">
+      <TooltipButton
+        :text="sonarFormTooltip"
+        :icon="sonarFormIcon"
+        :swap-key="sonarFormIcon"
+        :color="monsterForm ? 'primary' : 'neutral'"
+        :active="monsterForm"
+        :confirmation="
+          () =>
+            confirmationText({
+              kind: 'monster-form',
+              form: monsterForm ? 'mega-bat' : 'hybrid'
+            })
+        "
+        @click="toggleMonsterForm"
+      />
+    </span>
 
-    <TooltipButton
-      :text="`${powers[0]!.name}: ${powers[0]!.description}`"
-      :icon="POWER_ICONS[0]"
-      :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
-      :active="powerStates.startingRevealed"
-      :confirmation="
-        () =>
-          confirmationText({
-            kind: 'starting',
-            name: powers![0]!.name,
-            revealed: powerStates.startingRevealed
-          })
-      "
-      @click="toggleStartingPower(heroId)"
-    />
+    <span key="starting" class="flex">
+      <TooltipButton
+        :text="`${powers[0]!.name}: ${powers[0]!.description}`"
+        :icon="POWER_ICONS[0]"
+        :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
+        :active="powerStates.startingRevealed"
+        :confirmation="
+          () =>
+            confirmationText({
+              kind: 'starting',
+              name: powers![0]!.name,
+              revealed: powerStates.startingRevealed
+            })
+        "
+        @click="toggleStartingPower(heroId)"
+      />
+    </span>
 
-    <TooltipButton
+    <span
       v-for="(power, i) in upgradePowers"
-      :key="i"
-      :text="`${power.name}: ${power.description}`"
-      :icon="POWER_ICONS[i + 1]!"
-      :color="trainablePowerColor(i)"
-      :active="trainablePowerActive(i)"
-      :disabled="isTrainableDisabled(i)"
-      :confirmation="
-        () =>
-          confirmationText({
-            kind: 'upgrade',
-            name: power.name,
-            trained: trainablePowerActive(i)
-          })
-      "
-      @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
-    />
+      :key="`trainable-${i}`"
+      class="flex"
+    >
+      <TooltipButton
+        :text="`${power.name}: ${power.description}`"
+        :icon="POWER_ICONS[i + 1]!"
+        :color="trainablePowerColor(i)"
+        :active="trainablePowerActive(i)"
+        :disabled="isTrainableDisabled(i)"
+        :confirmation="
+          () =>
+            confirmationText({
+              kind: 'upgrade',
+              name: power.name,
+              trained: trainablePowerActive(i)
+            })
+        "
+        @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
+      />
+    </span>
 
-    <TooltipButton
-      v-if="showFlambaeSupernova"
-      text="Supernova: Set Combat and Mobility to 10"
-      icon="i-lucide-flame"
-      :color="specialPowerState ? 'primary' : 'neutral'"
-      :active="specialPowerState > 0"
-      :confirmation="
-        () => confirmationText({ kind: 'supernova', on: specialPowerState > 0 })
-      "
-      @click="toggleSpecialPower(heroId)"
-    />
+    <span v-if="showFlambaeSupernova" key="supernova" class="flex">
+      <TooltipButton
+        text="Supernova: Set Combat and Mobility to 10"
+        icon="i-lucide-flame"
+        :color="specialPowerState ? 'primary' : 'neutral'"
+        :active="specialPowerState > 0"
+        :confirmation="
+          () =>
+            confirmationText({ kind: 'supernova', on: specialPowerState > 0 })
+        "
+        @click="toggleSpecialPower(heroId)"
+      />
+    </span>
 
-    <TooltipButton
-      v-if="showCoupeEnPointe"
-      :text="coupeTooltip"
-      :icon="coupeIcon"
-      :color="specialPowerState ? 'primary' : 'neutral'"
-      :active="specialPowerState > 0"
-      :confirmation="
-        () =>
-          confirmationText({
-            kind: 'en-pointe',
-            state: specialPowerState as 0 | 1 | 2,
-            bonus: coupeBonus
-          })
-      "
-      @click="toggleSpecialPower(heroId)"
-    />
+    <span v-if="showCoupeEnPointe" key="en-pointe" class="flex">
+      <TooltipButton
+        :text="coupeTooltip"
+        :icon="coupeIcon"
+        :swap-key="coupeIcon"
+        :color="specialPowerState ? 'primary' : 'neutral'"
+        :active="specialPowerState > 0"
+        :confirmation="
+          () =>
+            confirmationText({
+              kind: 'en-pointe',
+              state: specialPowerState as 0 | 1 | 2,
+              bonus: coupeBonus
+            })
+        "
+        @click="toggleSpecialPower(heroId)"
+      />
+    </span>
 
-    <TooltipButton
-      v-if="showGolemSpreadThin"
-      :text="golemTooltip"
-      icon="i-lucide-expand"
-      :color="specialPowerState ? 'primary' : 'neutral'"
-      :active="specialPowerState > 0"
-      :confirmation="
-        () =>
-          confirmationText({
-            kind: 'spread-thin',
-            slots: specialPowerState as 0 | 1 | 2 | 3
-          })
-      "
-      @click="toggleSpecialPower(heroId)"
-    />
-  </div>
+    <span v-if="showGolemSpreadThin" key="spread-thin" class="flex">
+      <TooltipButton
+        :text="golemTooltip"
+        icon="i-lucide-expand"
+        :color="specialPowerState ? 'primary' : 'neutral'"
+        :active="specialPowerState > 0"
+        :confirmation="
+          () =>
+            confirmationText({
+              kind: 'spread-thin',
+              slots: specialPowerState as 0 | 1 | 2 | 3
+            })
+        "
+        @click="toggleSpecialPower(heroId)"
+      />
+    </span>
+  </TransitionGroup>
 </template>
 
 <script setup lang="ts">

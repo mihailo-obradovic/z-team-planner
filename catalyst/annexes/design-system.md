@@ -396,17 +396,21 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 
 ### Named patterns
 
-Three motions recur and are settled here once, so a second instance of any of them inherits the values instead of re-deciding them.
+Five motions recur and are settled here once, so a second instance of any of them inherits the values instead of re-deciding them.
 
 | Pattern             | Contract                                                                                                                                                                                                                                                                                  |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **List move**       | A keyed element travelling to a new position in its own list: `--duration-slow`, `ease-in-out`, `transform` only. The whole element travels, never a subset of its contents. Interrupting re-aims the travel; it never queues.                                                            |
 | **Bring into view** | A scroll region scrolling one of its own children to the minimum position that leaves it fully visible: `--duration-slow`, the platform's smooth curve. The region scrolls itself only, never an ancestor.                                                                                |
 | **Loading ring**    | The app's one indeterminate progress mark: a 32px ring with a 4px stroke turning once per 1.4s, `linear`, `transform` only — the primary at full strength for the leading arc over the same colour at 25% for the rest. Never carries text, never pulses, never resizes to its container. |
+| **State fade**      | Content that mounts or unmounts with a state change: opacity only, `--duration-baseline`, `ease-out` entering and `ease-in` leaving. A leaving element holds its place while it fades. Feature 024.                                                                                       |
+| **Glyph swap**      | A control that stays while its icon or label changes: the old glyph scales to zero over `--duration-baseline` with `ease-in`, then the new one grows from zero over `--duration-baseline` with `ease-out`. Feature 024.                                                                   |
 
 - **List move** needs a stable identity per element. Where a list holds derived or interchangeable entries (a placeholder, a generated copy), those are keyed by position: they change where they stand rather than travelling, and only the entries with an identity of their own move. Give such a list a move transition and **no enter or leave transition** — a leaving element holds its place in the row unless it is taken out of flow, and the coordinates that would need are not worth a fade.
 - **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
 - Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
+- **State fade** is what a mounting or unmounting element gets by default. A control whose glyph changes while it stays is a **glyph swap**, never a fade, and a colour-only change is neither — it keeps the baseline colour fade. A glyph swap fires only on a change while the control is on screen, never on first render, and an interrupted swap re-targets to the newest glyph rather than queueing. Both live as the `state-fade` and `glyph-swap` transition classes in `main.css`.
+- **Glyph swap** short-circuits under reduced motion and the glyph lands at once. **State fade** is opacity at the baseline and needs no guard.
 - **Loading ring** short-circuits too, and it is the one pattern where the guard leaves something behind: the ring stays drawn and stops turning. Its presence is the information — something is still working — and only the rotation is decoration. It is the mark for a wait with no known length; a wait whose final geometry is known takes §10's placeholder instead.
 
 ---
@@ -558,7 +562,7 @@ Three fixes worth remembering, all of them things that reasoning got wrong and t
 
 ### 14.4 Motion & reduced motion
 
-Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit, and both named patterns in §11 — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
+Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit, and §11's list move, bring into view, loading ring and glyph swap — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
 
 The preference is the visitor's own operating-system setting, switched on by people for whom motion causes nausea, migraine or seizures. Honouring it costs nothing anyone else sees, so the guard is never traded away for a nicer default. One consequence is worth stating: where a motion also **corrects what is on screen** — §11's bring-into-view — the correction still happens under reduce and only its smoothness is dropped. The guard removes decoration, never information.
 
