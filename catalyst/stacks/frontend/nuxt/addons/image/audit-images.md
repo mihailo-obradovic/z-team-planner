@@ -29,10 +29,10 @@ Audit an area of the codebase for how it loads images — the masters it referen
 - Sized to the largest request — at most 2× the largest rendered CSS size — and never upscaled by a preset. A master smaller than a usage requests is flagged with the cap it forces, not silently upscaled.
 - One canvas per family: images sharing a slot share a size and aspect, reached by padding, never by cropping.
 
-### 4. Presets and screens
+### 4. Widths and screens
 
-- Every content `NuxtImg` names a `preset` that exists under `image.presets`, carrying `width` in CSS px, `densities: 'x1 x2'`, `fit: 'cover'`. Inline `width`/`sizes` props on a usage that a preset could carry are moved into one.
-- `image.screens` equals the set of preset widths × densities — no more, no less. A Tailwind breakpoint list here is flagged.
+- Every content image's width is declared once per usage site — a preset under `image.presets`, or the project's image component keyed by usage — with `densities: 'x1 x2'`. An inline `width` at a call site is flagged; a preset-only width on `@nuxt/image` 2.0.0 is flagged too, since it never reaches the density srcset (`../image.md`, One declaration per usage site).
+- `image.screens` equals the set of declared widths × densities, capped at the master's size — no more, no less. A Tailwind breakpoint list here is flagged.
 - A `sizes` string appears only where rendered width changes purely at viewport breakpoints; every entry carries a breakpoint prefix (bare `vw` is `nuxt/image#1637`); never together with `densities`.
 - When rendered size is not derivable from the classes and their containers, ask: _"What width does `[image]` render at, at the narrowest and the widest layout?"_
 
