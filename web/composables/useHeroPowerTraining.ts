@@ -117,9 +117,7 @@ export function useHeroPowerTraining(
     }
 
     if (powers.trainableSelected === index) {
-      // * Deselect: also reset any active special powers
       powers.trainableSelected = 0;
-      delete heroSpecialPowers.value[id];
     } else {
       // * Only count as a new slot when switching from nothing
       if (
@@ -129,6 +127,20 @@ export function useHeroPowerTraining(
         return;
       }
       powers.trainableSelected = index;
+    }
+
+    // ! Clear a gated effect the selection no longer satisfies, on every path that changes it and not
+    // ! just deselection (feature 012, Clearing). Switching straight from one trainable to the other
+    // ! used to keep it: Flambae kept Supernova's Combat and Mobility 10 after Supernova itself was
+    // ! replaced by Comet, with no chip left on screen to turn it off. `getSpecialPowerBonus` does not
+    // ! re-check the gate, so a state left behind goes on paying out and serializes into a build the
+    // ! API rejects.
+    // * Asking the gate rather than clearing outright is what keeps Coupé's En Pointe: it hangs off her
+    // * starting power and is ungated, so her trainables only change the size of its bonus.
+    const mechanics = specialPowerMechanics(id);
+
+    if (mechanics && !hasRequiredPower(id, mechanics)) {
+      delete heroSpecialPowers.value[id];
     }
   }
 
