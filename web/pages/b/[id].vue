@@ -13,7 +13,8 @@
     </div>
   </div>
 
-  <div v-else-if="build" class="flex flex-col gap-4 p-4">
+  <!-- * `min-h-full` against the scrolling main, `mt-auto` on the line: bottom of the viewport while the build is short, after it once it is not (feature 010). -->
+  <div v-else-if="build" class="flex min-h-full flex-col gap-4 p-4">
     <div
       class="flex flex-col items-start justify-between gap-3 bg-default p-4 panel sm:flex-row sm:items-center"
     >
@@ -66,7 +67,7 @@
       </div>
     </div>
 
-    <PrivacyLink />
+    <PrivacyLink class="mt-auto" />
   </div>
 </template>
 

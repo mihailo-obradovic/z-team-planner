@@ -218,12 +218,13 @@ The power chips started at 28 and are 24: four of them plus their gaps is 108 at
 
 ### Widths
 
-| Thing           | Value               | Note                                                        |
-| --------------- | ------------------- | ----------------------------------------------------------- |
-| Page container  | full width          | The roster grid centres itself; there is no fixed page rail |
-| Page padding    | `p-4`, ≥ md `p-6`   | Inline padding on the page frame                            |
-| Content measure | 65ch                | Running prose — descriptions, empty states                  |
-| Form field      | fills its container | Never a fixed px width                                      |
+| Thing            | Value               | Note                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page container   | full width          | The roster grid centres itself; there is no fixed page rail                                                                                                                                                                                                                                                                                                  |
+| Page padding     | `p-4`, ≥ md `p-6`   | Inline padding on the page frame                                                                                                                                                                                                                                                                                                                             |
+| Content measure  | 65ch                | Running prose — descriptions, empty states                                                                                                                                                                                                                                                                                                                   |
+| Document measure | 130ch               | A page that is a document — the privacy policy. Wider than the prose measure, with `gap-4` between sections and `p-4` on the panel, so a 1080p browser viewport (~930px after the browser's own chrome) holds it whole — measured: 130ch is the narrowest width that drops the last row, 813px tall; justified, with the key list left-aligned (feature 010) |
+| Form field       | fills its container | Never a fixed px width                                                                                                                                                                                                                                                                                                                                       |
 
 Dialog widths are per-dialog and land in §13 once measured.
 

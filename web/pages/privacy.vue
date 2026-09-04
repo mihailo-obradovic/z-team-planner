@@ -1,7 +1,8 @@
 <template>
   <div class="flex flex-col items-center p-4 md:p-6">
+    <!-- * Justified with automatic hyphenation: at 65ch, justification alone opens rivers on the lines that hold a long storage key. -->
     <article
-      class="flex w-full max-w-[65ch] flex-col gap-6 bg-default p-4 text-sm panel sm:p-6"
+      class="flex w-full max-w-[130ch] flex-col gap-4 bg-default p-4 text-justify text-sm hyphens-auto panel"
     >
       <header class="flex flex-col gap-1">
         <h1 class="font-heading text-title text-highlighted uppercase">
@@ -13,17 +14,14 @@
 
       <section class="flex flex-col gap-2">
         <h2 class="font-heading text-label text-muted uppercase">
-          Who is responsible
+          About this app
         </h2>
 
         <p>
-          Z-Team Planner is run by {{ CONTROLLER }}. For anything about your
-          data, write to
-          <a
-            class="text-link hover:text-muted"
-            :href="`mailto:${CONTACT_EMAIL}`"
-            >{{ CONTACT_EMAIL }}</a
-          >. Questions that need not be private can also go to the project's
+          Z-Team Planner is a non-profit fan project, made in free time by a
+          single maintainer. All in-game assets used here are the property of
+          AdHoc Studio, and all rights to them are reserved to AdHoc Studio. To
+          report issues or ask questions, go to the project's
           <a
             class="text-link hover:text-muted"
             :href="ISSUES_URL"
@@ -36,16 +34,18 @@
 
       <section class="flex flex-col gap-2">
         <h2 class="font-heading text-label text-muted uppercase">
-          Planning without signing in
+          Your builds stay in this browser
         </h2>
 
         <p>
-          Nothing is sent to a server. The planner keeps everything in this
-          browser's storage, and it stays there until you clear this site's
-          data. What it holds:
+          Without signing in, nothing you do here leaves your browser. The
+          planner keeps its data in this browser's storage, nothing is sent to a
+          server, and no data is shared with anyone. It stays until you clear
+          this site's data. What the storage holds:
         </p>
 
-        <ul class="flex list-disc flex-col gap-1 pl-4">
+        <!-- * Left-aligned inside the justified article: a row holding two unbreakable storage keys justifies into one wide gap. -->
+        <ul class="flex list-disc flex-col gap-1 pl-4 text-start">
           <li>
             <span class="font-semibold">z-team-builds</span> — the builds you
             saved, and <span class="font-semibold">z-team-active-build</span> —
@@ -72,7 +72,35 @@
 
       <section class="flex flex-col gap-2">
         <h2 class="font-heading text-label text-muted uppercase">
-          Share links
+          Signing in with Google
+        </h2>
+
+        <p>
+          Signing in is optional and exists so your builds can follow you across
+          devices. It uses Google through Firebase Authentication: Google
+          confirms who you are, and the app receives your Firebase user ID, your
+          Google account ID, your email address and your display name. The app
+          also records when the account was created and when it was last seen.
+          That is everything — no password is stored, and nothing else is read
+          from your Google account.
+        </p>
+
+        <p>
+          These details are used only to attach your builds to your account and
+          to show your name in the header. They are never edited and never
+          shared. Builds you save to the account are stored until you delete
+          them or the account.
+        </p>
+
+        <p>
+          The app and its API run on Vercel, the database is on Neon, and
+          encrypted nightly backups are kept on Cloudflare R2.
+        </p>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <h2 class="font-heading text-label text-muted uppercase">
+          Sharing a build
         </h2>
 
         <p>
@@ -92,45 +120,7 @@
 
       <section class="flex flex-col gap-2">
         <h2 class="font-heading text-label text-muted uppercase">
-          Signing in with Google
-        </h2>
-
-        <p>
-          When you sign in, an account is created because you asked for one, and
-          it holds six things: your Firebase user id, your Google account id,
-          your email address, your display name, when the account was created,
-          and when it was last seen. They are copied from Google at sign-in,
-          used only to attach your builds to you and show your name, and never
-          edited or shared.
-        </p>
-
-        <p>
-          Builds you save to the account are stored until you delete them or the
-          account.
-        </p>
-      </section>
-
-      <section class="flex flex-col gap-2">
-        <h2 class="font-heading text-label text-muted uppercase">
-          Where it is kept
-        </h2>
-
-        <ul class="flex list-disc flex-col gap-1 pl-4">
-          <li>Vercel hosts the app and its API; the API runs in Frankfurt.</li>
-
-          <li>Neon holds the database, in Frankfurt (eu-central-1).</li>
-
-          <li>Google Firebase Authentication handles the Google sign-in.</li>
-
-          <li>
-            Cloudflare R2 holds encrypted nightly backups of the database.
-          </li>
-        </ul>
-      </section>
-
-      <section class="flex flex-col gap-2">
-        <h2 class="font-heading text-label text-muted uppercase">
-          Deleting everything
+          Deleting your data
         </h2>
 
         <p>
@@ -162,8 +152,6 @@
 <script setup lang="ts">
 // ! Every fact on this page traces to a feature document (feature 010, Inputs). Change the source first, then this page, then the date — the three move together.
 const LAST_UPDATED = '4 September 2026';
-const CONTROLLER = 'Mihailo Obradović';
-const CONTACT_EMAIL = 'mihailo.obradovic@pm.me';
 const ISSUES_URL = 'https://github.com/mihailo-obradovic/z-team-planner/issues';
 const BACKUP_DAYS = 30;
 
