@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, nextTick } from 'vue';
 
+import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 import { rollMissionTemplates } from '@/utils/missionTemplates';
 
 import type { MissionSlot } from '@/types/mission';
@@ -424,5 +425,111 @@ describe('the illusion source', () => {
     // * with an illusion to her right.
     expect(slots()).toEqual(['golem', 'copy', 'prism', null]);
     expect(planner.missionIllusionSource.value).toBeNull();
+  });
+});
+
+// ! These cases pick heroes that spawn nothing: power training survives between cases in this file, so a
+// ! Golem fill can arrive with Spread Thin already trained and quietly seed copies into the free slots.
+// * Feature 020's travel, as the two things a test can see in jsdom: which DOM node ends up where (the
+// * identity that makes a card travel rather than swap contents), and where focus lands. The motion
+// * itself is not asserted — jsdom lays nothing out — and is verified on the live walk.
+describe('the swap travel', () => {
+  async function mountTeam() {
+    return mountSuspended(MissionTeamPanel, { attachTo: document.body });
+  }
+
+  function card(page: Awaited<ReturnType<typeof mountTeam>>, index: number) {
+    return page.get(`[data-team-slot="${index}"]`).element;
+  }
+
+  function arrow(
+    page: Awaited<ReturnType<typeof mountTeam>>,
+    index: number,
+    direction: -1 | 1
+  ) {
+    return page.get(`[data-team-slot="${index}"] [data-move="${direction}"]`);
+  }
+
+  it('carries the hero card itself to its new slot', async () => {
+    planner.fillMissionSlot(0, 'invisigal');
+    planner.fillMissionSlot(1, 'malevola');
+    await nextTick();
+
+    const page = await mountTeam();
+    const invisigal = card(page, 0);
+    const malevola = card(page, 1);
+
+    await arrow(page, 0, 1).trigger('click');
+    await nextTick();
+
+    // ! The same nodes, in each other's places: a keyed move, not two cards repainted.
+    expect(card(page, 1)).toBe(invisigal);
+    expect(card(page, 0)).toBe(malevola);
+  });
+
+  it('leaves an empty slot where it stands rather than travelling it', async () => {
+    planner.fillMissionSlot(1, 'invisigal');
+    await nextTick();
+
+    const page = await mountTeam();
+    const emptySlotZero = card(page, 0);
+    const hero = card(page, 1);
+
+    await arrow(page, 1, -1).trigger('click');
+    await nextTick();
+
+    expect(planner.missionSlots.value).toEqual(['invisigal', null, null, null]);
+    // * The hero's own card travelled into slot 0; the empty, keyed by position, was simply rebuilt where
+    // * the gap now is rather than following it across.
+    expect(card(page, 0)).toBe(hero);
+    expect(card(page, 1)).not.toBe(emptySlotZero);
+    expect(document.body.contains(emptySlotZero)).toBe(false);
+  });
+
+  it('changes the slots exactly as the action alone would', async () => {
+    planner.fillMissionSlot(0, 'invisigal');
+    planner.fillMissionSlot(2, 'malevola');
+    await nextTick();
+
+    const page = await mountTeam();
+
+    await arrow(page, 2, -1).trigger('click');
+    await nextTick();
+
+    expect(planner.missionSlots.value).toEqual([
+      'invisigal',
+      'malevola',
+      null,
+      null
+    ]);
+  });
+
+  it('hands focus to the other arrow when the pressed one lands disabled', async () => {
+    planner.fillMissionSlot(2, 'invisigal');
+    await nextTick();
+
+    const page = await mountTeam();
+    const pressed = arrow(page, 2, 1);
+
+    (pressed.element as HTMLElement).focus();
+    await pressed.trigger('click');
+    await nextTick();
+
+    // * Slot 4 has no right arrow to keep, so focus belongs on that card's left one — not the document.
+    expect(document.activeElement).toBe(arrow(page, 3, -1).element);
+  });
+
+  it('keeps focus on the pressed arrow while it stays enabled', async () => {
+    planner.fillMissionSlot(0, 'invisigal');
+    await nextTick();
+
+    const page = await mountTeam();
+    const pressed = arrow(page, 0, 1);
+
+    (pressed.element as HTMLElement).focus();
+    await pressed.trigger('click');
+    await nextTick();
+
+    expect(document.activeElement).toBe(arrow(page, 1, 1).element);
   });
 });

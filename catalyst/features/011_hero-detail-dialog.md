@@ -127,6 +127,7 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 - Feature 003: every rule the dialog exposes — budgets, gating, displayed level, effective stat, silent no-ops.
 - Feature 002: hero data, the stat icon set, synergy pairs.
 - Decision 008: the radar component and its tween.
+- [019_roster-follow](019_roster-follow.md): keeps the marked hero visible in the rail or ribbon; owns those triggers, not this document.
 - `annexes/design-system.md`: panel and border treatment, the type scale, control heights.
 
 ## Open Questions
@@ -141,7 +142,7 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. The suite passes: 297 tests, 37 files.
 
-In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9 with the other four unchanged; zero `panel` classes inside the dialog. Switching Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — which is the fixed-level case that used to make it jump.
+In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9, the other four unchanged; zero `panel` classes inside. Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — the fixed-level case that used to make it jump.
 
 At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes.
 

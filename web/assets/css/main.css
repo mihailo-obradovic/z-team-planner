@@ -169,6 +169,8 @@
     --duration-baseline: 150ms;
     --duration-slow: 250ms;
     --duration-slowest: 400ms;
+    /* * Added: how long a confirmation holds before it closes (feature 018). A hold, not motion, so no reduced-motion guard. */
+    --duration-linger: 1500ms;
 
     /* * Scrollbars (annex §1). Two pairs — thumb then track — because the app scrolls on two grounds: the dark page and the paper surfaces. Written as one variable each so the value is a single decision applied at several roots, not repeated. */
     --scrollbar-ground: var(--ui-color-secondary-300)

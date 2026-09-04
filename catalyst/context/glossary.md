@@ -56,3 +56,11 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 **Estimated success** — the simulator's percentage for the active mission template: radar coverage plus the synergy boost, adjusted by reattempt powers, zeroed by a tripped fail threshold.
 
 **Synergy level** — the 0–3 setting standing for how practiced a synergy pair is, worth +5% success per level. One global level, applied once; meaningful only while the mission team holds a synergy pair. Named in code around `SynergyLevel`.
+
+## Interface
+
+**Hint** — supplementary information about an element that is never required to operate it: a power's name and description behind its chip, a flight power behind its icon. A hint is shown on hover, so it exists only where the input device can hover; elsewhere the same information is read in the element's detail surface (for a power, the hero detail dialog). "Tooltip" names the rendering of a hint, never the hint itself.
+
+**Confirmation** — a short, self-dismissing line that names what a control's action just did ("Comet trained"). It reports an action; it never explains the control, and it is not a hint.
+
+**Common symbol** — an icon whose meaning is assumed known (copy, save, share, close) and which therefore carries a label for assistive technology but no hint.

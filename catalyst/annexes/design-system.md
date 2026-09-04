@@ -380,17 +380,31 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 
 ## 11. Transitions
 
-| Token                 | Value | Use                                                       |
-| --------------------- | ----- | --------------------------------------------------------- |
-| `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions |
-| `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit     |
-| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                           |
+| Token                 | Value | Use                                                                                               |
+| --------------------- | ----- | ------------------------------------------------------------------------------------------------- |
+| `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions                                         |
+| `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit                                             |
+| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                                                                   |
+| `--duration-linger`   | 1.5s  | A confirmation's hold before it closes (feature 018). A hold, not motion: no reduced-motion guard |
 
 Start at the baseline and step up only when the element's size justifies it. Vue `<Transition>` classes draw from the same tokens — a duration hardcoded in a transition class has bypassed the scale.
 
 - **Easing:** `ease-in-out` default, `ease-out` for enter, `ease-in` for exit. A custom cubic-bezier needs a comment saying why.
 - **Properties:** name them (`transition: color, background-color, box-shadow`), never `transition: all`.
-- **Reduced motion:** anything longer than the baseline, and anything transform-based, short-circuits under `@media (prefers-reduced-motion: reduce)`. Colour and opacity fades at the baseline do not need the guard.
+- **Reduced motion:** anything longer than the baseline, and anything transform-based, short-circuits under `@media (prefers-reduced-motion: reduce)`. Colour and opacity fades at the baseline do not need the guard. This is an accessibility constraint (§14.4), not a taste call: the preference is the visitor's own OS setting, and it fires only for someone who has asked for it.
+
+### Named patterns
+
+Two motions recur and are settled here once, so a second instance of either inherits the values instead of re-deciding them.
+
+| Pattern             | Contract                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **List move**       | A keyed element travelling to a new position in its own list: `--duration-slow`, `ease-in-out`, `transform` only. The whole element travels, never a subset of its contents. Interrupting re-aims the travel; it never queues. |
+| **Bring into view** | A scroll region scrolling one of its own children to the minimum position that leaves it fully visible: `--duration-slow`, the platform's smooth curve. The region scrolls itself only, never an ancestor.                     |
+
+- **List move** needs a stable identity per element. Where a list holds derived or interchangeable entries (a placeholder, a generated copy), those are keyed by position: they change where they stand rather than travelling, and only the entries with an identity of their own move. Give such a list a move transition and **no enter or leave transition** — a leaving element holds its place in the row unless it is taken out of flow, and the coordinates that would need are not worth a fade.
+- **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
+- Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
 
 ---
 
@@ -443,6 +457,8 @@ The scales above, resolved per element. Every value here was measured from the b
 The text link is the privacy page's only element that is not already in this table: the surface's text colour carrying a 1px underline at a 2px offset, with the hover colour set per surface — `text-muted` on paper, cream on the ground. The underline is the affordance because no amber step passes as small text on paper except `ember-800`, and a link that has to be told apart from emphasis by hue alone is not a link at a glance (`text-link`, feature 010).
 
 A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
+
+Each power chip's tooltip text is a **hint** (feature 018): hover-only, on a device that can hover. Tapping a chip on one that cannot shows a **confirmation** instead — a short line naming the resulting state, held for `--duration-linger` (§11) — never the hint's own text, and never on deactivation.
 
 **Header tier ladder.** Every header action is a 32px button (`md`, the button step — `xs` is the stepper step and was never a button height); the bare glyphs below `md` are 44. The 32px step also costs horizontal room: `md`'s `px-3` is 8px per labelled button more than `xs`'s `px-2`, so the labelled row is ~24px wider than the ~1120px it was measured at. It still cannot hold one shape across the range. What gives way, in order:
 
@@ -509,7 +525,7 @@ Re-measure after any token change. A brand colour that fails as text is constrai
 
 The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44. A checkbox is the one control whose box is under the floor at every size the library offers: `xl` is the largest and paints at 20, in a 24 row. It is used with a label, which is part of the target, so the row is what clears the floor — a bare checkbox with no label would not, and does not belong in this design.
 
-The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there.
+The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there. Their tooltip text is hover-only for the same reason a mobile-first design never adds a second interaction to reach it: a hint stays a hint, and the chip's own tap confirms the action instead (§13, feature 018).
 
 The mission team's slot controls make the same trade harder. Below 35rem they leave the row above the portrait and sit in its corners; at a 320 viewport the slot is 61px and the portrait 53, so three 24 × 24 targets cover most of the art. They stay at 24 because the floor is the floor — the portrait shrinks around them, they do not shrink with it — and the same rule governs the mission templates' steppers, where the gaps, the value slot and the label's type size absorb a narrowing row while the buttons hold — and each carries its own `bg-default/85` scrim, because the button variant alone left a _disabled_ control indistinguishable from the art, and an arrow that reads as absent reads as a bug. Measured at 320: the two bottom arrows occupy x 2–26 and 35–59 of a 61px slot, so they never overlap.
 
@@ -539,7 +555,9 @@ Three fixes worth remembering, all of them things that reasoning got wrong and t
 
 ### 14.4 Motion & reduced motion
 
-Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
+Transitions are colour and opacity at the baseline duration, which needs no guard. Anything transform-based or longer than the baseline — the slideover, dialog enter/exit, and both named patterns in §11 — must short-circuit under `@media (prefers-reduced-motion: reduce)`. The tab indicator's slide is moot here: the design hides it.
+
+The preference is the visitor's own operating-system setting, switched on by people for whom motion causes nausea, migraine or seizures. Honouring it costs nothing anyone else sees, so the guard is never traded away for a nicer default. One consequence is worth stating: where a motion also **corrects what is on screen** — §11's bring-into-view — the correction still happens under reduce and only its smoothness is dropped. The guard removes decoration, never information.
 
 ---
 
