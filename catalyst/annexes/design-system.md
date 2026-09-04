@@ -396,16 +396,18 @@ Start at the baseline and step up only when the element's size justifies it. Vue
 
 ### Named patterns
 
-Two motions recur and are settled here once, so a second instance of either inherits the values instead of re-deciding them.
+Three motions recur and are settled here once, so a second instance of any of them inherits the values instead of re-deciding them.
 
-| Pattern             | Contract                                                                                                                                                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **List move**       | A keyed element travelling to a new position in its own list: `--duration-slow`, `ease-in-out`, `transform` only. The whole element travels, never a subset of its contents. Interrupting re-aims the travel; it never queues. |
-| **Bring into view** | A scroll region scrolling one of its own children to the minimum position that leaves it fully visible: `--duration-slow`, the platform's smooth curve. The region scrolls itself only, never an ancestor.                     |
+| Pattern             | Contract                                                                                                                                                                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **List move**       | A keyed element travelling to a new position in its own list: `--duration-slow`, `ease-in-out`, `transform` only. The whole element travels, never a subset of its contents. Interrupting re-aims the travel; it never queues.                                                            |
+| **Bring into view** | A scroll region scrolling one of its own children to the minimum position that leaves it fully visible: `--duration-slow`, the platform's smooth curve. The region scrolls itself only, never an ancestor.                                                                                |
+| **Loading ring**    | The app's one indeterminate progress mark: a 32px ring with a 4px stroke turning once per 1.4s, `linear`, `transform` only — the primary at full strength for the leading arc over the same colour at 25% for the rest. Never carries text, never pulses, never resizes to its container. |
 
 - **List move** needs a stable identity per element. Where a list holds derived or interchangeable entries (a placeholder, a generated copy), those are keyed by position: they change where they stand rather than travelling, and only the entries with an identity of their own move. Give such a list a move transition and **no enter or leave transition** — a leaving element holds its place in the row unless it is taken out of flow, and the coordinates that would need are not worth a fade.
 - **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
 - Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
+- **Loading ring** short-circuits too, and it is the one pattern where the guard leaves something behind: the ring stays drawn and stops turning. Its presence is the information — something is still working — and only the rotation is decoration. It is the mark for a wait with no known length; a wait whose final geometry is known takes §10's placeholder instead.
 
 ---
 

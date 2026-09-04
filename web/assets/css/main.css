@@ -240,6 +240,24 @@
     }
 }
 
+/* * The annex's loading ring (§11), the initial-load cover's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
+@utility loading-ring {
+    animation: loading-ring 1.4s linear infinite;
+}
+
+/* * Transform-based, so it short-circuits under reduced motion (annex §11). The ring stays drawn and only stops turning: its presence is the information. */
+@media (prefers-reduced-motion: reduce) {
+    .loading-ring {
+        animation: none;
+    }
+}
+
+@keyframes loading-ring {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @utility plate {
     height: var(--control-h-plate);
     background: linear-gradient(
