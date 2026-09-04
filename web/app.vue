@@ -71,8 +71,11 @@
       </template>
     </u-header>
 
+    <!-- * `width` is the master's own 2560 and there is no 2x: `image.screens` is feature 021's portrait list, a width-less image would be snapped to its largest entry, and the module's default densities would ask for a 5120 that no source has. The wash's fitting size per viewport is a change of its own. -->
     <NuxtImg
       src="/images/background.webp"
+      width="2560"
+      densities="x1"
       class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"
       alt=""
     />

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import HeroPortrait from '@/components/HeroPortrait.vue';
 
-// * Feature 021: a usage site names its width once and gets an x1/x2 srcset at exactly that width, at the one quality, from the hero's own master. IPX serves the test environment, so the URLs are its `/_ipx/<modifiers>/<path>` form.
+// * Feature 021: a usage site names its width once and gets an x1/x2 srcset at exactly that width, at the one quality and format, from the hero's own master. IPX serves the test environment, so the URLs are its `/_ipx/<modifiers>/<path>` form.
 
 let mounted: Awaited<ReturnType<typeof mountSuspended>> | null = null;
 
@@ -35,14 +35,15 @@ describe('HeroPortrait', () => {
     expect(img.attributes('alt')).toBe('Coupe');
   });
 
-  it('carries the one quality for every portrait', async () => {
+  it('carries the one quality and format for every portrait', async () => {
     const img = await mountPortrait({
       heroId: 'golem',
       usage: 'header',
       alt: 'Golem'
     });
 
-    expect(img.attributes('src')).toContain('q_80');
+    expect(img.attributes('src')).toContain('q_90');
+    expect(img.attributes('src')).toContain('f_avif');
     expect(img.attributes('src')).toContain('w_24');
   });
 

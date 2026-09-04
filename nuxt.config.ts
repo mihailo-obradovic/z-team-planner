@@ -40,7 +40,7 @@ export default defineNuxtConfig({
 
   // * Feature 021. `screens` is derived, not typed by hand: on Vercel it is also the optimizer's allowed sizes, and a width absent from it is snapped up to the next present one. The background wash is the one non-portrait image and keeps its master's width so the tightened list cannot shrink it.
   image: {
-    quality: 80,
+    quality: 90,
     densities: PORTRAIT_DENSITIES,
     screens: { ...portraitScreens(), background: 2560 }
   },

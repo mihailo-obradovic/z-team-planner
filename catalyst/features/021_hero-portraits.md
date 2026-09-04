@@ -24,17 +24,17 @@ The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust**
 | canvas rule                                  | none                     | this document                            | no canvas normalisation: every usage fills its box edge to edge under `object-fit: cover`, so a transparent margin would show as background. Sizes that differ by a few percent are the browser's scaling to absorb |
 | usage width                                  | `PORTRAIT_WIDTHS[usage]` | `web/config/portraits.ts`                | CSS px per usage site: header 24, ribbon 52, rail 90, card 108, tile 120, synergy 224, panel 256 (renders at 268; 256 so its 2x is exactly the master); applied only by `HeroPortrait`, densities x1 and x2         |
 | `image.screens`                              | `portraitScreens()`      | `nuxt.config.ts`                         | derived: every width × density, plus `background: 2560` for the wash                                                                                                                                                |
-| `image.quality`                              | `80`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                                        |
+| `image.quality`                              | `90`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                                        |
 | `nitro.vercel.config.images.minimumCacheTTL` | `31536000`               | `nuxt.config.ts`                         | one year at the edge; the provider has no option of its own and writes 300s                                                                                                                                         |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect   | Type                     | Description                                                                                                         |
-| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| served portrait        | AVIF or WebP by `Accept` | on Vercel `/_vercel/image?url=…&w=<usage width × density>&q=80`; in `nuxt dev` and tests, the same through IPX      |
-| `srcset`               | HTML                     | x1 and x2 candidates per usage site, the largest exactly 512                                                        |
-| edge cache             | Vercel image cache       | one entry per (master, width, quality, format) for one year                                                         |
-| Vercel `images` config | build output             | `sizes` from `image.screens`, AVIF + WebP, `minimumCacheTTL` — emitted at build, never a hand-written `vercel.json` |
+| Output / Side Effect   | Type               | Description                                                                                                                                                                    |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| served portrait        | AVIF               | on Vercel `/_vercel/image?url=…&w=<usage width × density>&q=90`, negotiated by `Accept`; in `nuxt dev` and tests, IPX with `f_avif` so local review sees production's encoding |
+| `srcset`               | HTML               | x1 and x2 candidates per usage site, the largest exactly 512                                                                                                                   |
+| edge cache             | Vercel image cache | one entry per (master, width, quality, format) for one year                                                                                                                    |
+| Vercel `images` config | build output       | `sizes` from `image.screens`, AVIF + WebP, `minimumCacheTTL` — emitted at build, never a hand-written `vercel.json`                                                            |
 
 ## Scope And Non-Goals
 
@@ -58,7 +58,7 @@ Non-goals:
 - Every hero renders from one master; a portrait looks the same in the card, the dialog, the roster rail, the synergy tab and the mission slot, only smaller or larger.
 - Each usage site names its usage and gets that width's x1 and x2 candidates. Nothing requests more than twice what it renders, and nothing requests more than the master holds.
 - A first request for a variant is a Vercel transformation; every later request for a year is a cache hit. Browsers revalidate each load (Vercel sends `max-age=0, must-revalidate`), so an edge reset reaches them on the next visit.
-- In `nuxt dev` and the test environment IPX produces the same variants from the same widths; IPX does not snap to `screens`, so parity is the unit test's job, not the dev server's.
+- In `nuxt dev` and the test environment IPX produces the same variants from the same widths and the same AVIF; IPX does not snap to `screens`, so width parity is the unit test's job, not the dev server's.
 
 ## Roles And Access
 
@@ -70,10 +70,10 @@ Not role-specific.
 | ------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------ |
 | `identify public/images/portraits/*.webp`        | twelve lossless WebPs, 450–512 a side, square within 2px     | one per hero id, plus Sonar's second form                          |
 | Malevola's master beside Fandom's `Malevola.png` | identical pixels, 496×496                                    | never resampled, never padded                                      |
-| `HeroPortrait` with `usage="card"`               | `srcset` with `w=108 1x` and `w=216 2x`, `q=80`              | IPX spells it `w_108`, `q_80`                                      |
+| `HeroPortrait` with `usage="card"`               | `srcset` with `w=108 1x` and `w=216 2x`, `q=90`              | IPX spells it `w_108`, `q_90`, `f_avif`                            |
 | `usage="panel"`                                  | `w=256 1x`, `w=512 2x`                                       | the 2x is the largest master; a smaller master answers with itself |
-| card on a 2x screen, production                  | `…&w=216&q=80`, `content-type: image/avif`                   | AVIF for a browser that accepts it                                 |
-| the same without AVIF in `Accept`                | `image/webp`, same width                                     | negotiated by the provider                                         |
+| card on a 2x screen, production                  | `…&w=216&q=90`, `content-type: image/avif`                   | AVIF for a browser that accepts it                                 |
+| the same without AVIF in `Accept`                | `image/webp`, same width                                     | Vercel negotiates; the `format` modifier is its provider's no-op   |
 | a portrait `NuxtImg` outside `HeroPortrait`      | test failure                                                 | the component is the one declaration                               |
 | a width × density above 512 in `PORTRAIT_WIDTHS` | test failure                                                 | Vercel's `sizes` list stays the app's, and never an upscale        |
 | a master replaced under the same name, deployed  | old variants until `vercel cache invalidate --srcimg …` runs | then fresh on the next request                                     |
@@ -83,7 +83,7 @@ Not role-specific.
 
 - A master is lossless and is the only copy of the portrait in the repository; it is never upscaled, cropped, or padded. A request above a master's own size returns the master: neither Vercel nor IPX enlarges.
 - A usage site names its usage; the number lives in `web/config/portraits.ts` and nowhere else. `image.screens` is derived from it, never typed.
-- One quality for all portraits, compared at 2x before approval (q80 24 KB against q100 102 KB, no visible difference).
+- One quality and one format for all portraits, both compared at the card's size against a reference downscale before approval: AVIF q90 measures 43.5 dB PSNR against q80's 41.9 and WebP q100's 41.7, for about 1.3 KB more per variant.
 
 ## Edge Cases
 
@@ -127,7 +127,7 @@ Not role-specific.
 
 - `test/unit/portrait-masters.test.ts`: every hero id and both Sonar forms have a master; each is a lossless WebP, 450–512 a side, square within 2px.
 - `test/unit/portrait-sizes.test.ts`: no width × density above 512; `portraitScreens()` is exactly widths × densities; no `NuxtImg` outside `HeroPortrait.vue` references a portrait source.
-- `test/nuxt/hero-portrait.test.ts`: the card usage yields `w_108 1x` and `w_216 2x` at `q_80`; the panel's 2x is `w_512`; class and listeners pass through.
+- `test/nuxt/hero-portrait.test.ts`: the card usage yields `w_108 1x` and `w_216 2x` at `q_90` and `f_avif`; the panel's 2x is `w_512`; class and listeners pass through.
 - Live walk, production, per the Examples table: headers and `x-vercel-cache` on first and second hit, AVIF and WebP negotiation, the browser cache header after the TTL change, and the Hobby image quota read into `operations.md`.
 
 ## Verification

@@ -8,8 +8,6 @@ import {
   isFlightTrainable
 } from '@/types/hero';
 
-import { heroPortraitSrc } from '@/utils/heroPortraitSrc';
-
 import type { Hero, HeroId, HeroStats, StatName } from '@/types/hero';
 
 const NO_ALLOCATIONS: HeroStats = {
@@ -30,7 +28,6 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     getBonusLevel,
     bonusLevelsUsed,
     getPowerState,
-    monsterForm,
     resolveDisplayStat,
     flyingHeroIds,
     flightTrainingsUsed
@@ -111,12 +108,6 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     );
   });
 
-  const portraitSrc = computed(() =>
-    id.value
-      ? heroPortraitSrc(id.value, monsterForm.value ? 'monster' : 'hybrid')
-      : ''
-  );
-
   const hasPowers = computed(() => {
     if (!id.value) {
       return false;
@@ -145,7 +136,6 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     flightInfo,
     flightShown,
     flightLocked,
-    portraitSrc,
     hasPowers,
     resolvedStat
   };

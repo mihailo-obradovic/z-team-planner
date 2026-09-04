@@ -68,8 +68,9 @@
     <div class="flex justify-between gap-2 p-3 sm:gap-3">
       <!-- ! Shrinkable, not fixed: at 27rem the portrait column plus the stat rows need 316px of a 260px row below ~328px viewport, and the portrait is the only part that degrades gracefully — the stat steppers are tap targets and must not shrink at the narrowest width. Nothing moves at 360px and up. -->
       <div class="flex w-27 min-w-0 shrink flex-col gap-2">
-        <NuxtImg
-          :src="portraitSrc"
+        <HeroPortrait
+          :hero-id="heroId"
+          usage="card"
           :alt="hero.name"
           class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
           @click="$emit('viewDetail')"
@@ -132,6 +133,7 @@
 </template>
 
 <script setup lang="ts">
+import HeroPortrait from '@/components/HeroPortrait.vue';
 import HeroPowerChips from '@/components/HeroPowerChips.vue';
 
 import { confirmationText } from '@/utils/confirmationText';
@@ -170,7 +172,6 @@ const {
   flightInfo,
   flightShown,
   flightLocked,
-  portraitSrc,
   hasPowers,
   resolvedStat
 } = useHeroDerived(() => props.heroId);
