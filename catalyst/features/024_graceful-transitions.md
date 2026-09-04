@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Approved
 
 ## Task Weight
 
@@ -52,7 +52,7 @@ Non-goals:
 **State fade** — opacity only, `--duration-baseline`, `ease-out` entering and `ease-in` leaving. Opacity at the baseline needs no reduced-motion guard (annex §14.4).
 
 - On the card: the reset icon, the flight icon, the bonus button and every chip in the row (the trainables, Supernova, En Pointe, Spread Thin, Sonar's form) fade in when their condition becomes true and out when it becomes false. A leaving chip holds its place while it fades; its neighbours close the gap afterwards. The reserved slots and the fixed-height chip row (annex §13) mean nothing else moves.
-- In the dialog: on a hero change, each hero-bound panel — the toolbar thumbnail and name, the large portrait, the stats panel, the synergy partner block with its pair totals, the powers and effects panel, the notes panel (feature 022) — fades out with the old hero, then in with the new one. The roster rail and the radar are outside the fade: the rail is stable, the radar keeps its own tween. The top rows are fixed height (feature 011), so the empty moment between the legs moves nothing.
+- In the dialog: on a hero change, each hero-bound panel — the toolbar thumbnail and name, the large portrait, the stats panel, the synergy partner block with its pair totals, the powers and effects panel, the notes panel (feature 022) — fades out with the old hero, then in with the new one. Feature 022's advisories, which come and go inside the notes panel as the player allocates, take the same state fade; the panel is a fixed-height scroll region, so nothing outside it moves. The roster rail and the radar are outside the fade: the rail is stable, the radar keeps its own tween. The top rows are fixed height (feature 011), so the empty moment between the legs moves nothing.
 
 **Glyph swap** — for a control that stays while its icon or label changes: the old glyph scales to zero over `--duration-baseline` with `ease-in`, then the new one grows from zero over `--duration-baseline` with `ease-out`. Transform-based, so it short-circuits under reduced motion and the glyph lands instantly.
 
@@ -129,7 +129,7 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 ## Open Questions
 
-- Feature 022's advisories are lines in the notes panel that appear and disappear as the player allocates — content that comes or goes with a state change, by this document's own rule. Do they get the state fade (recommended: yes, the rule is the rule; the panel is a fixed-height scroll region, so nothing outside it moves) or are they excluded as text in a scrolling list?
+_None._
 
 ## Tests
 
