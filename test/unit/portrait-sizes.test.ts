@@ -10,6 +10,9 @@ import {
   portraitScreens
 } from '@/config/portraits';
 
+// * The keys `portraitScreens` reuses so the module's defaults cannot survive its merge (web/config/portraits.ts).
+const MODULE_SCREEN_KEYS = ['sm', 'md', 'lg', 'xl', '2xl'];
+
 // * Feature 021, Invariants: nothing requests more than the master holds, `image.screens` is exactly what the usage sites request — on Vercel that list is the optimizer's allowed sizes — and every portrait renders through `HeroPortrait`, the one place a width is declared.
 
 const WEB_DIR = join(import.meta.dirname, '../../web');
@@ -44,12 +47,21 @@ describe('portrait widths', () => {
     const screens = portraitScreens();
 
     expect(new Set(Object.values(screens))).toEqual(expected);
+
+    // ! The module merges its own `sm`…`2xl` defaults under this map, and each survivor widens Vercel's allowed sizes. Covering those keys is what keeps the allowlist equal to the app's widths.
+    expect(Object.keys(screens)).toEqual(
+      expect.arrayContaining(MODULE_SCREEN_KEYS)
+    );
     expect(Object.values(screens)).toEqual(
       Object.values(screens).sort((a, b) => a - b)
     );
-    for (const [key, width] of Object.entries(screens)) {
-      expect(key).toBe(`portrait-${width}`);
-    }
+    const ownKeys = Object.entries(screens).filter(
+      ([key]) => !MODULE_SCREEN_KEYS.includes(key)
+    );
+
+    expect(ownKeys.map(([key]) => key)).toEqual(
+      ownKeys.map(([, width]) => `portrait-${width}`)
+    );
   });
 
   it('are declared only by HeroPortrait — no other component renders a portrait', () => {

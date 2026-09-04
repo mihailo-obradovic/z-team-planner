@@ -25,6 +25,9 @@ export const PORTRAIT_WIDTHS: Record<PortraitUsage, number> = {
   panel: 256
 };
 
+// ! The module's own `screens` default (`sm` 640 … `2xl` 1536) is merged under whatever is set here, and every surviving value joins Vercel's allowed `sizes` — five widths the app never renders. Reusing those five keys for our own widths is what leaves the allowlist equal to what the app asks for; the keys themselves are inert, since nothing here uses a `sizes` string.
+const MODULE_SCREEN_KEYS = ['sm', 'md', 'lg', 'xl', '2xl'];
+
 // * Every width × density the component can request, keyed for `image.screens`. On Vercel this list is also the optimizer's allowed sizes, and a width missing from it is snapped up to the next one present.
 export function portraitScreens(): Record<string, number> {
   const widths = Object.values(PORTRAIT_WIDTHS).flatMap((width) =>
@@ -33,6 +36,9 @@ export function portraitScreens(): Record<string, number> {
   const unique = [...new Set(widths)].sort((a, b) => a - b);
 
   return Object.fromEntries(
-    unique.map((width) => [`portrait-${width}`, width])
+    unique.map((width, index) => [
+      MODULE_SCREEN_KEYS[index] ?? `portrait-${width}`,
+      width
+    ])
   );
 }

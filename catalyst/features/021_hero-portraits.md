@@ -23,7 +23,7 @@ The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust**
 | Blonde Blazer                                | PNG                      | Fandom `Blonde_Blazer.png`, 2439×2054    | the Training render: a 2000px square at x=250 with 100px of transparent headroom above the hair, downscaled once to 512                                                                                             |
 | canvas rule                                  | none                     | this document                            | no canvas normalisation: every usage fills its box edge to edge under `object-fit: cover`, so a transparent margin would show as background. Sizes that differ by a few percent are the browser's scaling to absorb |
 | usage width                                  | `PORTRAIT_WIDTHS[usage]` | `web/config/portraits.ts`                | CSS px per usage site: header 24, ribbon 52, rail 90, card 108, tile 120, synergy 224, panel 256 (renders at 268; 256 so its 2x is exactly the master); applied only by `HeroPortrait`, densities x1 and x2         |
-| `image.screens`                              | `portraitScreens()`      | `nuxt.config.ts`                         | derived: every width × density, plus `background: 2560` for the wash                                                                                                                                                |
+| `image.screens`                              | `portraitScreens()`      | `nuxt.config.ts`                         | derived: every width × density, plus `background: 2560` for the wash. Its first five keys are the module's own `sm`…`2xl`, whose defaults would otherwise survive the merge and widen Vercel's allowed sizes        |
 | `image.quality`                              | `90`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                                        |
 | `nitro.vercel.config.images.minimumCacheTTL` | `31536000`               | `nuxt.config.ts`                         | one year at the edge; the provider has no option of its own and writes 300s                                                                                                                                         |
 
@@ -91,7 +91,7 @@ Not role-specific.
 - Replacing a master under its existing name: replace, deploy, `vercel cache invalidate --srcimg /images/portraits/<hero-id>.webp` (`operations.md`). Skipping it leaves the old portrait at the edge for up to a year.
 - A game update that adds a hero adds a master under the new hero id (feature 002 owns the id); no config changes.
 - A hero with no master falls to the browser's broken-image state; the roster is closed, so a missing file is a build defect, not a runtime case.
-- A new usage site at a new size adds a key to `PORTRAIT_WIDTHS`; the screens list follows. A width whose 2x would pass 512 declares 256 instead and accepts the 1x stretch, as the panel does.
+- A new usage site at a new size adds a key to `PORTRAIT_WIDTHS`; the screens list follows, and the five module keys keep absorbing the module's defaults however many widths there are. A width whose 2x would pass 512 declares 256 instead and accepts the 1x stretch, as the panel does.
 
 ## Invariants
 
@@ -102,7 +102,7 @@ Not role-specific.
 
 ## Error Handling
 
-- A width outside `image.screens` is snapped up by the Vercel provider, silently overfetching; deriving the list prevents it.
+- A width outside `image.screens` is snapped up by the Vercel provider, silently overfetching; deriving the list prevents it. Vercel rejects a width outside the list with a 400, so the list being right is what keeps every rendered variant reachable.
 - A `usage` outside the union is a type error, not a runtime state.
 
 ## Entry Points
