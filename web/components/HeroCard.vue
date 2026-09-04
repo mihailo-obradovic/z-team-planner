@@ -18,6 +18,14 @@
             :color="flightColor"
             :active="flightActive"
             :disabled="flightLocked"
+            :confirmation="
+              () =>
+                confirmationText({
+                  kind: 'flight',
+                  name: flightInfo!.name,
+                  trained: flightActive
+                })
+            "
             @click="toggleFlight(heroId)"
           />
         </div>
@@ -126,6 +134,7 @@
 <script setup lang="ts">
 import HeroPowerChips from '@/components/HeroPowerChips.vue';
 
+import { confirmationText } from '@/utils/confirmationText';
 import { STAT_NAMES, MAX_STAT_VALUE } from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
