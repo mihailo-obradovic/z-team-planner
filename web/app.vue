@@ -80,9 +80,26 @@
       alt=""
     />
 
-    <u-main class="relative z-10">
+    <!-- * Feature 023. All three are true on the server, in the prerender and on the first
+         * client render alike, and all three drop together once the build is loaded.
+         * ! `covered || undefined`, not `covered`: Vue only removes an attribute when the value
+         * ! is null or undefined, and `inert="false"` still makes an element inert. -->
+    <u-main
+      class="relative z-10"
+      :class="{ 'overflow-hidden': covered }"
+      :inert="covered || undefined"
+      :aria-busy="covered || undefined"
+    >
       <NuxtPage />
     </u-main>
+
+    <!-- * Leave-only: the cover is already there when the app mounts, so it has no enter to play. -->
+    <Transition
+      leave-active-class="transition-opacity duration-(--duration-baseline) ease-in"
+      leave-to-class="opacity-0"
+    >
+      <LoadingCover v-if="covered" />
+    </Transition>
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
     <ClientOnly>
@@ -125,12 +142,28 @@ const { setupBeforeUnload } = useUnsavedChanges();
 
 const storySetupOpen = ref(false);
 
+// * Feature 023. Read once, not reactively: the cover belongs to the boot of `/`, never to a
+// * later navigation that happens to land there. The value is the same on the server, in the
+// * prerendered HTML and on the first client render, which is what keeps the cover out of the
+// * hydration diff — it is removed only after mount, below.
+// * A plain ref rather than the query layer's `isPending` (stacks/frontend/nuxt/nuxt.md): what
+// * this waits on is local planner state read from localStorage, not a request, so there is no
+// * query whose state could stand in for it.
+const covered = ref(useRoute().path === '/');
+
 function openStorySetup() {
   storySetupOpen.value = true;
 }
 
 onMounted(async () => {
-  await loadInitialBuild();
+  // * `finally`, so a build that will not deserialize reveals the planner instead of leaving the
+  // * visitor behind a ring that never stops. What happens after the throw is unchanged.
+  try {
+    await loadInitialBuild();
+  } finally {
+    covered.value = false;
+  }
+
   setupBeforeUnload();
 });
 
@@ -153,7 +186,14 @@ useHead({
   ],
   htmlAttrs: {
     lang: 'en'
-  }
+  },
+
+  // * Feature 023. The cover is in `/`'s prerendered HTML and only JavaScript ever lifts it, so
+  // * with scripting off it would sit there for good over a planner that is perfectly readable.
+  // ! In <head>, not the template: with scripting *on*, a browser parses the contents of a
+  // ! <noscript> element as plain text, while Vue's virtual DOM holds a <style> element — and
+  // ! hydrating one against the other is the exact mismatch this feature exists to avoid.
+  noscript: [{ innerHTML: '<style>[data-loading-cover]{display:none}</style>' }]
 });
 
 // ! No ogImage or twitterImage on purpose. Both pointed at a Nuxt UI template screenshot left over from the starter, and decision 003 removed them rather than ship a picture of someone else's product — twitterCard dropped to `summary` at the same time, so cards render as text instead of a broken image.

@@ -322,7 +322,7 @@ The template's "in dark mode, elevation is surface colour, not shadow" does not 
 | `--z-base`     | 0     | In-flow content                      |
 | `--z-dropdown` | 10    | Menus, comboboxes, tooltips          |
 | `--z-sticky`   | 20    | The top bar, sticky section headings |
-| `--z-overlay`  | 30    | Modal scrim                          |
+| `--z-overlay`  | 30    | Modal scrim, the initial-load cover  |
 | `--z-modal`    | 40    | Dialogs, the mobile slideover        |
 | `--z-popover`  | 50    | Floating layers raised from a dialog |
 | `--z-toast`    | 60    | Toasts — always on top               |
