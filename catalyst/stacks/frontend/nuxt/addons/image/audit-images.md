@@ -27,7 +27,7 @@ Audit an area of the codebase for how it loads images — the masters it referen
 
 - Lossless at rest (PNG or lossless WebP). A lossy file in `public/` served through the optimizer is flagged: it is encoded twice.
 - Sized to the largest request — at most 2× the largest rendered CSS size — and never upscaled by a preset. A master smaller than a usage requests is flagged with the cap it forces, not silently upscaled.
-- One canvas per family: images sharing a slot share a size and aspect, reached by padding, never by cropping.
+- One aspect per family at native size: a master padded onto a shared canvas (a transparent margin that shows under `object-fit: cover`) is flagged, as is a cropped or resampled one.
 
 ### 4. Widths and screens
 

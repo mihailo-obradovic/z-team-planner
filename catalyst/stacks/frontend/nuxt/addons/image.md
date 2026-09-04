@@ -21,7 +21,7 @@ The files in `public/` are the **masters** the optimizer resizes from, and the m
 
 - **Lossless at rest.** A master is PNG or lossless WebP (lossless WebP is typically 40% smaller than PNG at identical pixels). Never pre-encode a master to a lossy format: the optimizer re-encodes on delivery, and a lossy master is encoded twice. AVIF and WebP are what the optimizer _serves_, negotiated by `Accept`; nothing lossy is committed.
 - **Sized to the largest request, never above.** A master holds at most what the largest usage requests at its highest density (2× the largest rendered CSS size) — more is repo weight the browser never downloads — and is **never upscaled**: when no source carries more pixels, the usage caps at the master, and the document says so.
-- **One canvas per family, by padding.** Images that render in the same slots (avatars, portraits, thumbnails) share one square or one aspect canvas. A smaller source reaches the canvas by centring on a transparent margin, never by cropping or resampling; the framing is the source's.
+- **Native size, one aspect per family.** Images that render in the same slots (avatars, portraits, thumbnails) share an aspect, not a pixel count: each stays at its source's size, and the browser's own scaling absorbs a few percent of difference. Never pad a smaller source onto a shared canvas — under `object-fit: cover` a transparent margin is content, and it shows as background wherever the box is filled edge to edge — and never crop or resample it; the framing is the source's.
 - **Named for the content, not the version.** A master's path is stable; a replaced master is reset at the edge (Cache) rather than renamed.
 
 ## One declaration per usage site
