@@ -257,6 +257,25 @@ Separation is a border **or** a shadow, not both — except the `panel` treatmen
 
 **Focus** is a `:focus-visible` ring, 2px with a 2px offset, and `outline: none` is only ever allowed alongside a replacement ring. The ring colour is contrast-driven, not brand-driven: **ink (`--ui-border-accented`) on paper surfaces**, and **cream (`paper-100`) on the teal chrome** — amber fails 3:1 against paper and must never be the ring. Components rendering on chrome (the header, inactive tabs) carry the cream override in their config, annotated.
 
+### Scroll edge affordance
+
+A region with its own scroll box marks each edge that is **currently** clipping content — per edge, not per overflow. A rule on both edges the moment a region overflows claims there is more above while the user is sitting at the top; the point of the mark is that the desktop scrollbar is an overlay on a phone and appears only once a drag is already under way.
+
+| Aspect     | Value                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| Width      | 1px, the divider tier                                                                                |
+| Colour     | `border-default` (`--ui-border`, paper-500) — 3.13:1 on `bg-default`, clearing the 3:1 floor         |
+| Transition | `--duration-baseline`, colour only — no reduced-motion guard needed (§11)                            |
+| Owner      | `ScrollRegion` (`web/components/_shared/ScrollRegion.vue`); components never hand-roll the treatment |
+
+Three rules hold around it:
+
+- **The 3:1 non-text floor applies** (§14.1), because this rule carries information — it is the only sign that content is off-screen. `border-muted` (paper-400) is the colour the eye reaches for first and measures 1.47:1, so it is disqualified.
+- **Every edge is drawn at all times and only its colour changes**, transparent to `--ui-border`. Toggling the border itself resizes the content box by 1px whenever an edge is reached, which jitters the content and feeds that pixel straight back into the measurement that drew it.
+- **An element carrying `overflow` never also carries a structural border.** Where a bordered surface must scroll, the surface stays a static shell and the region sits inside it with the padding — otherwise the 1px rule lands inside the surface's own 2px border, which is the doubling this section forbids. The hero dialog's stats and powers panels are built this way.
+
+The affordance is for a region **inside** the page. A `UModal` or `USlideover` body is excluded: its clipping edges are already marked by the filled `plate` band above and the footer below.
+
 ---
 
 ## 6. Elevation
@@ -442,7 +461,7 @@ Two rules this ladder encodes. **Labels go before information**: an unlabelled f
 
 ### 14.1 Colour contrast
 
-WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px rule that only decorates is exempt, and there are three: the band under a section heading, the tab row's bottom edge (`secondary-500` on the ground, 1.98:1) and the header's divider (`secondary-400` on the chrome, 2.74:1 — 500 was tried first and is invisible there at 1.29:1). None carries information the labels either side do not, and none is a target. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
+WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px rule that only decorates is exempt, and there are three: the band under a section heading, the tab row's bottom edge (`secondary-500` on the ground, 1.98:1) and the header's divider (`secondary-400` on the chrome, 2.74:1 — 500 was tried first and is invisible there at 1.29:1). None carries information the labels either side do not, and none is a target — unlike the scroll edge rule (§5), which is the only sign that content is off-screen and is therefore held to the floor. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
 
 | Foreground              | On          | Ratio | Verdict                         |
 | ----------------------- | ----------- | ----- | ------------------------------- |
