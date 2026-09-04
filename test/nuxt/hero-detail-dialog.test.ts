@@ -155,4 +155,74 @@ describe('hero detail dialog', () => {
 
     expect(steppers).toHaveLength(0);
   });
+
+  it('renders the hero note then every true advisory, warnings before suggestions', async () => {
+    const p = await planner();
+
+    p.resetAllTrainings();
+    p.resetHero('golem');
+    p.resetHero('flambae');
+
+    p.statUp('golem', 'combat');
+    p.statUp('golem', 'combat');
+    p.statUp('flambae', 'combat');
+    p.statUp('flambae', 'combat');
+    p.statUp('flambae', 'combat');
+    // * Golem's synergy partner (Invisigal) has 1 base Charisma, so the pair total lands
+    // * exactly at 10 here rather than over it — this exercises advisory 5 in isolation
+    // * from advisory 3, which has its own boundary coverage in hero-notes.test.ts.
+    for (let i = 0; i < 7; i++) {
+      p.statUp('golem', 'charisma');
+    }
+    p.toggleStartingPower('golem');
+    p.toggleTrainablePower('golem', 1); // * Spread Thin
+
+    await openDialog('golem');
+    await nextTick();
+
+    const notes = document.querySelector('[aria-label="Notes"]');
+    const lines = [...(notes?.querySelectorAll('li') ?? [])].map(
+      (line) => line.textContent
+    );
+
+    expect(lines[0]).toContain('breadth rather than any single peak');
+    expect(lines[1]).toContain('least required stat');
+    expect(lines[2]).toContain('Spread Thin alone reaches the cap on Charisma');
+    expect(lines[3]).toContain('strong spare-point recipient');
+    expect(lines[4]).toContain('solo multi-slot calls effectively');
+    expect(lines).toHaveLength(5);
+  });
+
+  it('keeps the notes panel structurally identical whether or not advisories fire', async () => {
+    await openDialog('prism');
+    await nextTick();
+
+    const empty = document
+      .querySelector('[aria-label="Notes"]')!
+      .parentElement!.getAttribute('class');
+
+    open?.unmount();
+    document.body.innerHTML = '';
+
+    const p = await planner();
+
+    p.resetAllTrainings();
+    p.resetHero('golem');
+    p.resetHero('flambae');
+
+    p.statUp('golem', 'combat');
+    p.statUp('golem', 'combat');
+    p.statUp('flambae', 'combat');
+    p.statUp('flambae', 'combat');
+    p.statUp('flambae', 'combat');
+
+    await openDialog('golem');
+    await nextTick();
+
+    const withAdvisories = document
+      .querySelector('[aria-label="Notes"]')!
+      .parentElement!.getAttribute('class');
+
+    expect(withAdvisories).toBe(empty);
+  });
 });

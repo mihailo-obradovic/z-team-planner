@@ -216,13 +216,21 @@
                       Pair total
                     </p>
 
-                    <p class="text-sm text-muted">
-                      {{ hero.name }} and {{ synergyPartner.name }} combined,
-                      with every bonus applied.<template v-if="pairFillsASlot">
-                        Spread Thin counts the partner's slot as
-                        filled.</template
+                    <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
+                    <div aria-label="Pair total description" class="grid">
+                      <p
+                        v-for="variant in pairTotalDescriptionVariants"
+                        :key="variant"
+                        class="invisible col-start-1 row-start-1 text-sm text-muted"
+                        aria-hidden="true"
                       >
-                    </p>
+                        {{ variant }}
+                      </p>
+
+                      <p class="col-start-1 row-start-1 text-sm text-muted">
+                        {{ pairTotalDescription }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
@@ -429,7 +437,7 @@
               </ScrollRegion>
             </div>
 
-            <!-- * Reserved and not editable: the copy is authored in the repository, and persisting player-written notes would bump the serialized build format (feature 001). -->
+            <!-- * Content is authored (feature 022): a hero note plus zero or more advisories, never player-written or persisted. -->
             <div
               class="flex min-w-0 flex-col border-2 border-accented bg-default md:col-span-2 lg:col-span-3 lg:min-h-0"
             >
@@ -440,10 +448,18 @@
               </div>
 
               <ScrollRegion
-                as="p"
-                class="p-3 text-sm text-dimmed lg:min-h-0 lg:flex-1"
+                as="ul"
+                aria-label="Notes"
+                class="flex list-outside list-disc flex-col gap-2 p-3 pl-7 text-base marker:text-muted lg:min-h-0 lg:flex-1"
               >
-                Reserved for notes on this hero.
+                <li v-if="heroNote" class="text-muted">{{ heroNote }}</li>
+                <li
+                  v-for="advisory in heroAdvisories"
+                  :key="advisory.id"
+                  class="text-muted"
+                >
+                  {{ advisory.text }}
+                </li>
               </ScrollRegion>
             </div>
           </div>
@@ -611,6 +627,10 @@ const {
   hasPowers,
   resolvedStat
 } = useHeroDerived(() => props.heroId);
+
+const { note: heroNote, advisories: heroAdvisories } = useHeroNotes(
+  () => props.heroId
+);
 
 const powers = computed(() => {
   if (!props.heroId) {
@@ -812,6 +832,28 @@ const pairFillsASlot = computed(() =>
         ?.type === 'spread-thin' &&
       getSpecialPowerState(id) > 0
   )
+);
+
+const pairTotalBaseText = computed(() =>
+  synergyPartner.value
+    ? `${hero.value?.name} and ${synergyPartner.value.name} combined, with every bonus applied.`
+    : ''
+);
+
+const PAIR_TOTAL_SPREAD_THIN_SUFFIX =
+  " Spread Thin counts the partner's slot as filled.";
+
+// * Both possible lengths, for the reserved-height grid in the template — see
+// * descriptionVariants above for the same technique.
+const pairTotalDescriptionVariants = computed(() => [
+  pairTotalBaseText.value,
+  pairTotalBaseText.value + PAIR_TOTAL_SPREAD_THIN_SUFFIX
+]);
+
+const pairTotalDescription = computed(() =>
+  pairFillsASlot.value
+    ? pairTotalDescriptionVariants.value[1]
+    : pairTotalDescriptionVariants.value[0]
 );
 
 const hasEffects = computed(

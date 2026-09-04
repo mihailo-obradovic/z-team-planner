@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -139,24 +139,24 @@ No error states; a predicate that can never be satisfied under the current episo
 
 ## Dependencies
 
-- Feature 011: owns the panel, its fixed height, and the geometry invariant.
-- Feature 013: `ScrollRegion`, the fixed-height scroll and its edge affordance.
+- Feature 011: owns the panel, its fixed height, the geometry invariant; amended here (its notes-area non-goal now points here for content) and its pair-total reserved-height bug fixed alongside.
+- Feature 013: `ScrollRegion`, the fixed-height scroll and edge affordance.
 - Feature 003: allocation state and budgets every predicate reads.
-- Feature 012: `SPECIAL_POWER_MECHANICS`, `heroSpecialPowers`, the effective-stat and pair-total math advisories 2–5 and 9–10 reuse.
-- `context/game-mechanics.md`: amended here to add the Combat auto-fail mechanic and its scope; Phenomaman's and Prism's-illusion XP burn; Invisigal's and Waterboy's XP curves; the Min Max achievement.
-- `context/glossary.md`: amended to add **hero note** and **advisory**.
-- Amends `features/011_hero-detail-dialog.md`: its notes-area non-goal now points here for content; layout stays 011's.
+- Feature 012: `SPECIAL_POWER_MECHANICS`, `heroSpecialPowers`, the effective-stat/pair-total math advisories 2–5, 9–10 reuse.
+- `context/game-mechanics.md`, `context/glossary.md`: amended for the sourced facts and the two new terms.
 
 ## Open Questions
 
 ## Tests
 
-- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary (Combat roster sum 4 vs 5; Spread Thin raw stat 8 vs 9; pair total 10 vs 11 with and without allocation; advisory 4 suppressed exactly when 3 fires on the same stat; Phenomaman + Malevola and monster-form Sonar produce neither 3 nor 4 with nothing allocated; advisory 9 gated strictly on À la Seconde trained); Waterboy's two notes are mutually exclusive on episode setup; declaration order holds regardless of which subset is true.
-- `test/nuxt/hero-detail-dialog.test.ts` (extended): a fixture build renders the expected note + advisory set in the expected order for a hero with multiple advisories firing; panel height is identical between a hero with zero advisories and one with several.
+- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary, incl. #4 suppressed exactly where #3 fires on the same stat and #3 silent with nothing allocated; Waterboy's two notes stay mutually exclusive; declaration order holds regardless of which subset is true.
+- `test/nuxt/hero-detail-dialog.test.ts` (extended): a fixture build renders the note + advisory set in order; panel height matches between zero and several advisories.
 
 ## Verification
 
-_Filled at implementation._
+`test/unit/hero-notes.test.ts` (16 cases): every advisory boundary, declaration order, Waterboy's two exclusive notes. `test/nuxt/hero-detail-dialog.test.ts` (+2) and `test/nuxt/spread-thin.test.ts` (reserved-height selector): a fixture Golem render matches the exact 5-line order; panel class is identical at zero vs. several advisories. Suite: 47 files, 377 tests, `nuxt typecheck` clean.
+
+Live in Chrome: bullets, `text-base`, `text-muted` (`text-dimmed` is label-only per the annex); a 4-advisory Golem scrolls with the edge affordance, geometry unchanged from none. Also fixed a latent 011 bug this surfaced — see 011's Verification.
 
 ## Agent Change Rules
 

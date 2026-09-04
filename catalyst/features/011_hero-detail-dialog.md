@@ -47,7 +47,7 @@ In scope:
 Non-goals:
 
 - Editing the partner. The pair totals are read-only; the dialog edits one hero.
-- Player-written notes. The area's copy is authored (022); persisting per-hero notes would bump the serialized build format (001, protected) and is its own effort.
+- Player-written notes. Copy is authored (022); persisting per-hero notes would bump the serialized build format (001, protected) and is its own effort.
 - Tabs. The mockup's tabbed treatment was considered and rejected — the information fits one screen.
 - Changing any planner rule. Budgets, gating, displayed level and effective stat are feature 003's and are untouched.
 - A combined-stat _view_ of the pair beyond the totals — that belongs to the Synergy Pairs tab.
@@ -140,9 +140,9 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 ## Verification
 
-By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. The suite passes: 297 tests, 37 files.
+By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. Suite: 297 tests, 37 files.
 
-In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9, the other four unchanged; zero `panel` classes inside. Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — the fixed-level case that used to make it jump.
+In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9, the other four unchanged; zero `panel` classes inside. Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — the case that used to jump. Feature 022 fixed a live case: unreserved pair-total text scrolled Golem's pair.
 
 At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes.
 
@@ -153,7 +153,7 @@ Horizontal overflow is verified per engine, because the first pass at this check
 - **WebKit (iOS Safari and every iOS browser, Brave included), 393×852.** The dialog's scrolling column must not scroll sideways. WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic size where Chromium gives 0, and that column is `overflow-y-auto`, which forces the x-axis to `auto` as well — so any item that floors the grid track turns it into a horizontal scroller. The base `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what holds this; removing any of them reopens it.
 - **Every engine, 320px.** The hero card's portrait column shrinks rather than holding 27rem. At the fixed size the card's row needs 316px of a 260px panel, and the overview grid scrolls sideways.
 
-Not covered: a `prefers-reduced-motion` machine. The notes content is [022](022_hero-notes.md)'s; here, layout only.
+Not covered: `prefers-reduced-motion`. Notes are [022](022_hero-notes.md)'s.
 
 ## Agent Change Rules
 

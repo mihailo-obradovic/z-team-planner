@@ -151,7 +151,13 @@ describe('Spread Thin', () => {
 
       await nextTick();
 
-      return document.body.textContent!.replace(/\s+/g, ' ');
+      // ! The reserved-height grid keeps every variant in the DOM so the block never
+      // ! resizes (feature 011); only the one without aria-hidden is actually shown.
+      const description = document.querySelector(
+        '[aria-label="Pair total description"] p:not([aria-hidden])'
+      );
+
+      return description?.textContent?.replace(/\s+/g, ' ') ?? '';
     }
 
     it('is absent while Spread Thin contributes nothing', async () => {
