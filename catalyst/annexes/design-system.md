@@ -353,7 +353,7 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 
 ## 10. Imagery
 
-**This project uses `NuxtImg` (`@nuxt/image`), not a plain `<img>`** — a deliberate departure from the template's default, recorded here: every image in the product is a bundled hero portrait, and the module's sizing and format handling is what serves them. The rule the default protects still holds: every image ships explicit dimensions or a sized box, so nothing reflows when it loads.
+**This project uses `NuxtImg` (`@nuxt/image`), not a plain `<img>`** — the `image` addon (`stacks/frontend/nuxt/addons/image.md`, adopted by feature 021), recorded here: every image in the product is a bundled hero portrait, and the module's sizing and format handling is what serves them. The rule the default protects still holds: every image ships explicit dimensions or a sized box, so nothing reflows when it loads.
 
 - **Aspect ratio, not height:** portraits are `1/1` in a hero card and `4/3` in a roster strip, with `object-fit: cover` and `object-position: top` on the strips so faces survive the crop.
 - **Card portrait: 108 × 108** (`size-27`). The value comes from the power-chip row beneath it (§4) — four 24px chips and their gaps — not from the imagery scale, so it moves only if that row does.
