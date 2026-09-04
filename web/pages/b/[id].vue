@@ -65,6 +65,8 @@
         </div>
       </div>
     </div>
+
+    <PrivacyLink />
   </div>
 </template>
 

@@ -66,6 +66,8 @@
             />
           </div>
         </div>
+
+        <PrivacyLink />
       </div>
     </template>
 
@@ -78,6 +80,8 @@
           :bottom="pair.bottom"
           @viewDetail="handleViewDetail"
         />
+
+        <PrivacyLink />
       </div>
     </template>
 
@@ -92,7 +96,7 @@
            a single column — the point where the two tracks and their gap (454 + 316 + 16)
            stop fitting, not a round number. The two thresholds below that — 35rem for the team, 28.5rem for
            the templates and the requirements check — live in those components. -->
-      <div class="@container tab-fade p-4">
+      <div class="@container flex tab-fade flex-col gap-4 p-4">
         <!-- * A grid, not a wrapping flex row: the team has to take a row of its own at
              every width while staying its own natural width above 77rem, and only grid
              separates those two — `col-span-full` breaks the row, `justify-self` decides
@@ -120,6 +124,8 @@
             @viewDetail="handleViewDetail"
           />
         </div>
+
+        <PrivacyLink />
       </div>
     </template>
   </UTabs>

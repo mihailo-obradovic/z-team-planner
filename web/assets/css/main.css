@@ -207,15 +207,11 @@
     scrollbar-color: var(--scrollbar-paper);
 }
 
-/* * Feature 010: the one inline text link the product has, on paper. Ink with a 1px underline, so the affordance is the rule and not a colour — every amber step that clears 4.5:1 on paper is a text-only step, and a link should look like a link at a glance (annex §13). */
+/* * Feature 010: the inline text link. A 1px underline and nothing else, so the affordance is the rule and not a colour — every amber step that clears 4.5:1 on paper is a text-only step, and a link should look like a link at a glance. The hover colour is the surface's to set: one step dimmer on paper, cream on the ground (annex §13). */
 @utility text-link {
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
-
-    &:hover {
-        color: var(--ui-text-muted);
-    }
 }
 
 /* * Feature 015: a tab fades its content in on a switch, at the slow duration.

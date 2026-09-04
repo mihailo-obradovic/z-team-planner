@@ -19,11 +19,16 @@
         <p>
           Z-Team Planner is run by {{ CONTROLLER }}. For anything about your
           data, write to
-          <a class="text-link" :href="`mailto:${CONTACT_EMAIL}`">{{
-            CONTACT_EMAIL
-          }}</a
+          <a
+            class="text-link hover:text-muted"
+            :href="`mailto:${CONTACT_EMAIL}`"
+            >{{ CONTACT_EMAIL }}</a
           >. Questions that need not be private can also go to the project's
-          <a class="text-link" :href="ISSUES_URL" target="_blank" rel="noopener"
+          <a
+            class="text-link hover:text-muted"
+            :href="ISSUES_URL"
+            target="_blank"
+            rel="noopener"
             >GitHub issues</a
           >.
         </p>
