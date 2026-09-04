@@ -1,10 +1,12 @@
 <template>
-  <!-- * A chip comes and goes with the state fade (annex §11, feature 024). No move transition: a leaving chip holds its place while it fades and its neighbours close the gap afterwards. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
+  <!-- * A chip comes and goes with the state fade, and its neighbours travel under the list move (annex §11, feature 024). The row is centre-justified, so an arriving chip shifts every other one; `chip-leaving` takes a departing chip out of flow so the travel and the fade run together instead of one after the other, and `relative` is what it is then positioned against. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
   <TransitionGroup
     v-if="powers"
     tag="div"
     name="state-fade"
-    class="flex h-6 items-center justify-center gap-1"
+    move-class="chip-move"
+    leave-active-class="state-fade-leave-active chip-leaving"
+    class="relative flex h-6 items-center justify-center gap-1"
   >
     <span v-if="heroId === 'sonar'" key="sonar-form" class="flex">
       <TooltipButton

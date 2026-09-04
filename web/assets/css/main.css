@@ -266,6 +266,32 @@
     opacity: 0;
 }
 
+/* * Annex §11 list move, and the one place it rides alongside a state fade (feature 024). The chip row is centre-justified, so an arriving or leaving chip re-centres every other one; without this the survivors jump a whole chip width in a single frame.
+ * ! `position: absolute` is what makes the two work together. A leaving chip left in flow holds its slot until its fade ends, so the survivors would wait and then jump anyway. Safe only because the row's height is reserved (annex §13) — taking the chip out of layout cannot resize anything.
+ * ! Applied through the group's `move-class` and `leave-active-class` rather than by renaming the transition, so the fade's own values stay defined once. */
+.chip-move {
+    transition: transform var(--duration-slow) ease-in-out;
+}
+
+/* ! Declares both legs, and must stay after `.chip-move`. Vue puts the move class on the leaving element too, and two `transition` shorthands on one element do not merge — the later one wins outright, so `chip-move` alone silently replaced the fade with a transform and departing chips blinked out. */
+.chip-leaving {
+    position: absolute;
+    transition:
+        opacity var(--duration-baseline) ease-in,
+        transform var(--duration-slow) ease-in-out;
+}
+
+/* * Transform-based and past the baseline, so the travel short-circuits (annex §11). The fade is opacity at the baseline and stays. */
+@media (prefers-reduced-motion: reduce) {
+    .chip-move {
+        transition: none;
+    }
+
+    .chip-leaving {
+        transition: opacity var(--duration-baseline) ease-in;
+    }
+}
+
 /* * Glyph swap: a control that stays while its icon or label changes — the old glyph shrinks to nothing, the new one grows from nothing, one baseline each. Transform-based, so it short-circuits under reduced motion and the glyph lands at once. */
 .glyph-swap-enter-active {
     transition: transform var(--duration-baseline) ease-out;
