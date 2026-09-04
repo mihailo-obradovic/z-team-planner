@@ -66,7 +66,7 @@ One always-shown line per hero, ≤200 characters, two sentences maximum:
 | Coupé         | Her slot position decides which bonus she gets, so where you place her matters more than for anyone else.                                                         |
 | Flambae       | A win-more hero: he can deliver huge results once he is rolling. Whichever power you take, a loss is expensive.                                                   |
 | Golem         | His value is breadth rather than any single peak. Points given to him are the least likely to be wasted.                                                          |
-| Invisigal     | Starts with 11 stat points, one short of the usual 12, and reaches the same ceiling as everyone else — so she stays a point behind all game.                      |
+| Invisigal     | Starts with 11 stat points, one short of the usual 12, and reaches the same ceiling as everyone else.                                                             |
 | Malevola      | Versatile: she can be built around whatever the rest of the team is short of. Her powers see few uses on a clean run.                                             |
 | Phenomaman    | Fixed at rank 12 and cannot gain XP. Every call he joins burns a share of that call's XP pool.                                                                    |
 | Prism         | Her value is filling empty slots rather than her own stats. The copy she places takes a share of the call's XP.                                                   |

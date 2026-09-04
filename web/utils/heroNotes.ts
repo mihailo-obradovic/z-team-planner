@@ -45,7 +45,7 @@ export const HERO_NOTES: Record<HeroId, string> = {
   golem:
     'His value is breadth rather than any single peak. Points given to him are the least likely to be wasted.',
   invisigal:
-    'Starts with 11 stat points, one short of the usual 12, and reaches the same ceiling as everyone else — so she stays a point behind all game.',
+    'Starts with 11 stat points, one short of the usual 12, and reaches the same ceiling as everyone else.',
   malevola:
     'Versatile: she can be built around whatever the rest of the team is short of. Her powers see few uses on a clean run.',
   phenomaman:
