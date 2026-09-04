@@ -23,14 +23,16 @@ This implements Catalyst 1.11.0's `stacks/frontend/_common/scroll-affordance.md`
 | default slot    | markup                                 | the consuming component    | the scrolled content; the component supplies the scroll box |
 | element size    | `ResizeObserver`                       | the region and its content | both observed — slot growth need not resize the container   |
 | scroll position | passive `scroll` event                 | the region's own element   | per-edge state changes on every scroll                      |
+| `bringIntoView` | exposed method                         | the consuming component    | takes a descendant of the region; a no-op otherwise         |
 
 ## Outputs And Side Effects
 
 | Output / Side Effect | Type  | Description                                                                |
 | -------------------- | ----- | -------------------------------------------------------------------------- |
 | edge borders         | class | a 1px `border-default` rule on each edge whose content is currently hidden |
+| scroll position      | write | `bringIntoView` moves the region's own `scrollLeft` / `scrollTop`          |
 
-No persisted state, no store, no route or API involvement. The component reads layout and writes classes; nothing else observes it.
+No persisted state, no store, no route or API. The component reads layout, writes classes, and scrolls itself when asked; nothing else observes it.
 
 ## Scope And Non-Goals
 
@@ -38,6 +40,7 @@ In scope:
 
 - `ScrollRegion.vue` in `web/components/_shared/`, owning the scroll box, its padding, and the edge borders.
 - A pure edge-computation function with its own unit tests.
+- `bringIntoView`, scrolling a child to the minimum position that leaves it fully visible (annex §11).
 - Feature 011's six scroll containers converted onto it, including the two panels that must be restructured to stop carrying a structural border on the scrolling element.
 - The rule recorded in the design-system annex.
 
@@ -46,6 +49,8 @@ Non-goals:
 - **The `UModal` and `USlideover` body slots.** Their clipping edges are already marked — a filled `plate` band above, a footer below — and a second line under the plate's 2px border is the doubling `design-system.md` forbids.
 - **The page's own scroll.** The viewport bounds it; there is no hidden edge to mark.
 - **A fade or mask** on the horizontal ribbon — deferred to the on-device check (Verification).
+- **`Element.scrollIntoView`** — it walks the ancestor chain, so a ribbon tile could scroll the dialog body with it. `bringIntoView` moves this region alone.
+- **Deciding _when_.** The caller's; feature 011 owns the roster's triggers.
 - **`scroll-state()` container queries** — native, but Chromium-only, and the platform they are missing on is the one this feature exists for.
 - **Retiring `divide-y` from the modal and slideover configs** — upstream residue with its own decision to make.
 
@@ -56,6 +61,9 @@ Non-goals:
 - When a region does not overflow at all, it carries no rules on any edge.
 - Borders run the full width or height of the region and content scrolls **under** them; the component owns the padding so nothing is inset.
 - The state re-evaluates when the region resizes, when its content resizes, and on every scroll.
+- `bringIntoView(target)` scrolls the region by the **minimum** leaving `target` fully visible, on whichever axes it actually scrolls, clamped to its range. An already-visible target does not move.
+- The target clears the edge by the region's own **gap**, read from its computed style, so it does not land flush against the clipping edge or under an edge rule. Where the range is too short, the clearance gives up first — never the visibility.
+- Annex §11 governs the rest: smooth at `--duration-slow`, jumping under reduced motion — where it still runs, because it corrects what is visible.
 
 ## Roles And Access
 
@@ -74,6 +82,15 @@ For a vertical region 300px tall whose content is 900px:
 | content 200px (no overflow)    | no rules             | nothing hidden on either edge              |
 | `overflow` not active at width | no rules             | see Business Rules                         |
 
+For `bringIntoView`, a horizontal region 300px wide with `gap: 8px` (the leading edge mirrors):
+
+| Input                                      | Expected Output     | Notes                       |
+| ------------------------------------------ | ------------------- | --------------------------- |
+| target fully visible                       | no scroll           | already satisfied           |
+| clipped 20px past the right edge           | `scrollLeft` += 28  | 20 to clear, 8 for the gap  |
+| the same, with 12px of range left          | `scrollLeft` += 12  | the clearance gives first   |
+| axis not scrollable, or target not a child | no scroll, no error | never throws at a call site |
+
 ## Business Rules
 
 - The border is `1px` at the divider tier, `border-default` (`--ui-border`, paper-500 `#8a7c5e`) — **3.13:1** against `bg-default` (paper-100 `#ece0c6`), clearing the 3:1 non-text floor that applies because it carries information rather than decorating. `border-muted` (paper-400) measures **1.47:1** and is disqualified.
@@ -81,6 +98,7 @@ For a vertical region 300px tall whose content is 900px:
 - A `ScrollRegion` never also carries a structural border. Where a bordered surface must scroll, the surface stays a static shell and the region sits inside it with the padding.
 - `axis` is a named string union. A two-state input is never a boolean (`code-style`).
 - **Reaching an edge never moves content.** Every edge is drawn at all times and only its colour changes, fading at the baseline duration (annex §11 — a colour fade needs no reduced-motion guard). Toggling the border itself would resize the content box by 1px whenever an edge was reached, and feed that pixel straight back into the measurement that drew it.
+- **`bringIntoView` scrolls this region and nothing above it** — a dialog body scrolling because a ribbon tile moved is a second, unasked-for motion. The clearance is the region's own computed `gap`, not a constant; no gap, no clearance.
 - Borders are drawn on pointer and touch alike. The desktop redundancy against a visible scrollbar is accepted; gating on `(pointer: fine)` would make the touch path the untested one, and iOS is not reproducible on this machine.
 
 ## Edge Cases
@@ -89,12 +107,15 @@ For a vertical region 300px tall whose content is 900px:
 - **Content shrinking while scrolled to the bottom.** The browser clamps `scrollTop`; the content observer fires and the rules re-evaluate against the clamped position.
 - **Zero-height region** (a collapsed `lg:` branch, a closed dialog). Not scrollable, no borders, no error.
 - **`axis: 'both'`** may draw all four rules at once. Legal; no call site needs it.
+- **A region not laid out yet** — a dialog's first frame. Zeroes measured, the call a no-op rather than a wrong scroll; the caller retries after layout.
+- **A target larger than the region.** Its leading edge comes into view; nothing satisfies "fully visible" and nothing is invented.
 
 ## Invariants
 
 - A rule is drawn on an edge **iff** content is hidden past that edge and the region is scrollable on that axis.
 - The element carrying `overflow` never also carries a structural border.
 - The edge computation stays a pure function of numbers — no DOM reads inside it.
+- `bringIntoView` moves no element's scroll position but the region's own, and never moves an already-visible target.
 
 ## Error Handling
 
@@ -102,17 +123,18 @@ No failure mode reaches the user. A region whose observers never fire renders wi
 
 ## Entry Points
 
-- `web/components/_shared/ScrollRegion.vue`: the component — scroll box, observers, scroll listener, border classes.
+- `web/components/_shared/ScrollRegion.vue`: the component — scroll box, observers, scroll listener, border classes, exposed `bringIntoView`.
 - `web/utils/scrollEdges.ts`: the pure edge computation, unit-tested directly.
 - `web/components/HeroDetailDialog.vue`: the six call sites (`:19`, `:44`, `:47`, `:89`, `:237`, `:398` at time of writing), two of which restructure.
-- `catalyst/annexes/design-system.md` §5: the rule as this project states it.
+- `catalyst/annexes/design-system.md` §5: the edge rule; §11: the bring-into-view pattern.
 
 ## Dependencies
 
 - `catalyst/stacks/frontend/_common/scroll-affordance.md` — the Catalyst rule this implements; the contract for per-edge gating, the tolerance and the contrast floor.
 - `catalyst/annexes/design-system.md` — the border-width tier and the "a border or a shadow, not both" rule that forces the panel restructure.
 - [011_hero-detail-dialog](011_hero-detail-dialog.md) — owns every call site. Its layout is unchanged; only the elements carrying `overflow` and padding move.
-- `@vueuse/core` `useResizeObserver` — already a project dependency.
+- No runtime dependency: `ResizeObserver`, `MutationObserver` and `Element.scrollTo` directly. The project carries no `@vueuse/core` — an earlier revision of this line claimed it did and was wrong.
+- `annexes/design-system.md` §11 — the _bring into view_ pattern this implements.
 
 ## Open Questions
 
@@ -121,15 +143,19 @@ _None._
 ## Tests
 
 - `test/unit/scrollEdges.test.ts`: no overflow → no edges; at the top → trailing edge only; mid-scroll → both; at the end → leading edge only; within 1px of the end → still treated as the end; horizontal axis mirrors vertical; a non-scrollable axis reports no edges.
+- `test/unit/scrollEdges.test.ts` also covers the bring-into-view offset as a pure computation: already visible, clipped past each edge, a short range, a non-scrollable axis.
+- `test/nuxt/scroll-region.test.ts`: `scrollTo` is called on the region's own element and no ancestor; a non-descendant target is a no-op; reduced motion passes `behavior: 'auto'`.
 - No component test asserts the borders. In jsdom `scrollHeight` and `clientHeight` are both `0`, so the region never reports overflow and such a test would pass while proving nothing — the rule's own guidance. The wiring is verified on the live walk.
 
 ## Verification
 
 `test/unit/scrollEdges.test.ts` passes (8 cases, whole suite 81/81), alongside `pnpm typecheck`, `pnpm lint` and `pnpm format:check`.
 
-Walked in Chromium at 320×640@2×, 768×700, 1024×700 and 1280×620, reading the four computed border colours per region at the top, mid-scroll and the end. Every scrolling region gave trailing-only, both, then leading-only, and at `end - 0.6px` still read as the end — the 1px tolerance holds. The mobile ribbon mirrors it horizontally and its rules read at 2× beside the `size-14` tiles, with portraits clipping under them, so the deferred fade is not needed. Regions that do not overflow, and regions below the width where their `overflow` applies, carry no rules.
+Walked in Chromium at 320×640@2×, 768×700, 1024×700 and 1280×620, reading the computed border colours per region at the top, mid-scroll and the end. Every region gave trailing-only, both, then leading-only, and at `end - 0.6px` still read as the end — the tolerance holds. The mobile ribbon mirrors it horizontally, its rules reading at 2× beside the `size-14` tiles with portraits clipping under them, so the deferred fade is not needed. Regions that do not overflow, and regions below the width where their `overflow` applies, carry none.
 
-Two notes. The stats panel does not overflow at any width for any of the eight heroes (range 0 throughout), so its rules stay clear — correct, but its scrolling path is covered by the unit suite and by the four regions sharing the component, not by a live rule. The `UModal` body is confirmed untouched: it keeps its own 2px accented border and none of the 1px treatment.
+Two notes. The stats panel does not overflow at any width for any of the eight heroes, so its rules stay clear — correct, but its scrolling path is covered by the unit suite rather than by a live rule. The `UModal` body is confirmed untouched: it keeps its own 2px accented border.
+
+`bringIntoView` (2026-09-04): `test/unit/scrollEdges.test.ts` now 18 cases, 8 of them the offset — already visible, clipped past either edge, the clamp giving up the clearance, the tolerance, a no-gap region, a dead axis. Live evidence is [feature 019](019_roster-follow.md)'s walk, its only caller.
 
 The iOS device check is outstanding — no local WebKit — and is the user's at `localhost:3001`.
 

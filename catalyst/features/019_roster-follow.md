@@ -55,7 +55,7 @@ Non-goals:
   - **The dialog opens.** The strip has no prior scroll position to preserve, and the hero was chosen somewhere else entirely — a card, a pair, a mission slot.
   - **The app changes the hero.** The synergy partner control is the case: the user names a hero, not a position, and the partner is commonly outside the visible window.
   - **A click on a partly clipped tile.** The user reached for a tile they could only half see; it becomes whole where they clicked it. A click on a fully visible tile scrolls nothing.
-- The rail follows vertically from `lg`, the ribbon horizontally below it. Only the rendered one is asked; the other does not exist at that width.
+- The rail follows vertically from `lg`, the ribbon horizontally below it. Both are mounted at every width and one is `display: none`, so both are asked and the hidden one measures zero and does nothing — no tier detection anywhere.
 - Under `prefers-reduced-motion: reduce` the follow still happens and lands in the same place, without the smooth curve (annex §14.4). It corrects what is visible; only its smoothness is decoration.
 
 ## Roles And Access
@@ -124,6 +124,14 @@ _None._
 - Live browser walk of the Examples at `lg`+ (rail) and 320px (ribbon), plus a reduced-motion pass.
 
 ## Verification
+
+`test/nuxt/roster-follow.test.ts` — 5 cases against a `ScrollRegion` stub that records what it was asked to bring into view: opening asks both strips with the marked tile; a hero change asks with the new tile and never the one it replaced; the synergy partner control follows; a click follows the clicked tile even when it is already the open hero; nothing is asked when no hero is open. `test/unit/scrollEdges.test.ts` covers the arithmetic (feature 013). Full suite 313 passed / 38 files; lint, format and typecheck clean.
+
+Live in Chrome. **Rail at 1440×520** (8 heroes, 426 visible of 728): opening on the last hero scrolls `0 → 302`, its maximum, and the tile is whole — the clearance gave way at the end of the range, as specified. With the rail hand-scrolled to 0, the partner control moved to a hero off-screen and the rail followed `0 → 302`. A tile clipped by 25px scrolled to `34` — 25 to clear plus the 8px gap — leaving 9px below it; clicking an already-whole tile moved nothing. **Ribbon at 320×640@2×** (280 visible of 504): opening on the last hero scrolled to 224, its maximum; a tile clipped by 31px scrolled to `40`, leaving 9px. Throughout, the dialog's own scrolling column stayed at 0 and the page never scrolled sideways.
+
+One bug found by the walk and fixed in this change: the open trigger was first written as an `immediate` watcher, which runs in setup — on the server, where there is no `requestAnimationFrame`. `/` is prerendered, so the page 500'd. It is an `onMounted` hook instead, which never runs server-side. No test could have caught it; the component tests run client-only.
+
+Not covered: a `prefers-reduced-motion: reduce` machine — Chrome DevTools offers no media emulation for it, so the `behavior: 'auto'` branch is unexercised.
 
 ## Agent Change Rules
 

@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   hiddenScrollEdges,
+  scrollOffsetIntoView,
   type ScrollableAxis,
-  type ScrollMetrics
+  type ScrollMetrics,
+  type ViewportSpan
 } from '@/utils/scrollEdges';
 
 // * A 300px-tall viewport over 900px of content, so 600px of scroll range — the shape of the dialog's powers column.
@@ -133,5 +135,67 @@ describe('hiddenScrollEdges', () => {
       top: false,
       bottom: false
     });
+  });
+});
+
+// * Feature 013's bring-into-view, as arithmetic: a 300px region with an 8px gap holding 56px tiles.
+describe('scrollOffsetIntoView', () => {
+  function span(overrides: Partial<ViewportSpan> = {}): ViewportSpan {
+    return {
+      scrollable: true,
+      offset: 0,
+      viewport: 300,
+      content: 600,
+      targetStart: 0,
+      targetSize: 56,
+      clearance: 8,
+      ...overrides
+    };
+  }
+
+  it('leaves a fully visible target alone', () => {
+    expect(scrollOffsetIntoView(span({ targetStart: 100 }))).toBe(0);
+  });
+
+  it('scrolls a target clipped past the trailing edge, clearing it by the gap', () => {
+    // * Target 280–336 against a 0–300 window: 36 to clear the edge, 8 more for the gap.
+    expect(scrollOffsetIntoView(span({ targetStart: 280 }))).toBe(44);
+  });
+
+  it('scrolls back to a target past the leading edge, clearing it by the gap', () => {
+    expect(scrollOffsetIntoView(span({ offset: 200, targetStart: 150 }))).toBe(
+      142
+    );
+  });
+
+  it('gives up the clearance before the visibility when the range runs out', () => {
+    // ! Wanting 44 with only 12 of range left: the clamp keeps the target visible and drops the gap.
+    expect(scrollOffsetIntoView(span({ targetStart: 280, content: 312 }))).toBe(
+      12
+    );
+  });
+
+  it('never scrolls past the start', () => {
+    expect(scrollOffsetIntoView(span({ offset: 4, targetStart: 0 }))).toBe(0);
+  });
+
+  it('does not move an axis that cannot scroll', () => {
+    expect(
+      scrollOffsetIntoView(
+        span({ scrollable: false, offset: 20, targetStart: 900 })
+      )
+    ).toBe(20);
+  });
+
+  // ! The same 1px tolerance the edge rules carry: a fractional device pixel ratio must not provoke a scroll
+  // ! of half a pixel every time the marked tile is already where it should be.
+  it('treats a target within the tolerance as already visible', () => {
+    expect(scrollOffsetIntoView(span({ targetStart: 244.6 }))).toBe(0);
+  });
+
+  it('gives no clearance when the region has no gap', () => {
+    expect(scrollOffsetIntoView(span({ targetStart: 280, clearance: 0 }))).toBe(
+      36
+    );
   });
 });

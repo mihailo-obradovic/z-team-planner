@@ -66,3 +66,45 @@ function isBeforeEnd(
 ): boolean {
   return offset + viewport < content - EDGE_TOLERANCE_PX;
 }
+
+export type ViewportSpan = {
+  scrollable: boolean;
+  offset: number;
+  viewport: number;
+  content: number;
+  targetStart: number;
+  targetSize: number;
+  clearance: number;
+};
+
+// * The minimum offset that leaves the target fully visible on one axis — the other half of the affordance
+// * above (feature 013): the rules say content is hidden, this brings a named child back.
+// * Returns the current offset unchanged when there is nothing to do, so a caller can compare and skip.
+export function scrollOffsetIntoView(span: ViewportSpan): number {
+  if (!span.scrollable) {
+    return span.offset;
+  }
+
+  const targetEnd = span.targetStart + span.targetSize;
+  const visibleEnd = span.offset + span.viewport;
+
+  if (
+    span.targetStart >= span.offset - EDGE_TOLERANCE_PX &&
+    targetEnd <= visibleEnd + EDGE_TOLERANCE_PX
+  ) {
+    return span.offset;
+  }
+
+  // ! Clamping is what makes the clearance give way first: a target near the end of the range still lands
+  // ! fully visible, just without the gap beside it. Visibility is the contract; the clearance is manners.
+  const wanted =
+    span.targetStart < span.offset
+      ? span.targetStart - span.clearance
+      : targetEnd + span.clearance - span.viewport;
+
+  return clamp(wanted, 0, Math.max(0, span.content - span.viewport));
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
