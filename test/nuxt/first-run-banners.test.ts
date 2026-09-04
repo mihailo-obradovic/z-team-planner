@@ -57,6 +57,16 @@ describe('FirstRunBanners', () => {
     expect(labels(page)).toEqual(['Browser storage notice']);
   });
 
+  it('links the storage notice, and only it, to /privacy', async () => {
+    const page = await mountSuspended(FirstRunBanners);
+    const links = page.findAll('a[href="/privacy"]');
+
+    expect(links).toHaveLength(1);
+    expect(links[0]?.text()).toBe('Privacy');
+    expect(page.findAll('[role="region"]')[1]?.find('a').exists()).toBe(true);
+    expect(page.findAll('[role="region"]')[0]?.find('a').exists()).toBe(false);
+  });
+
   it('shows only the banner whose key is missing', async () => {
     storage.set(STORAGE_KEY, '1');
 

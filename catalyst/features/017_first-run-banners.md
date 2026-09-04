@@ -46,7 +46,6 @@ Non-goals:
 - Cookies of any kind. Acknowledgement lives in `localStorage`, which keeps feature 010's "the app sets no cookies" true.
 - Per-episode or per-hero spoiler gating. `showEp8Recruits` already defaults off; this feature neither extends nor replaces that.
 - Re-prompting when the app later gains content for newer episodes. Acknowledgement is unversioned.
-- A link to `/privacy` from the storage notice — added by feature 010 when that page exists, in that feature's change.
 - Translation. The app has no i18n layer and this feature does not add one.
 
 ## User / System Behavior
@@ -55,7 +54,7 @@ Non-goals:
 - Each banner carries its copy and one confirm button. Confirming removes that banner and persists its key; the other banner stays. When one remains, it takes the bottom of the shell on its own.
 - A returning visitor with both keys set sees no banner, and no banner markup renders on the way to that state — nothing flashes on the first frame.
 - The spoiler banner's copy names roster changes first — that heroes are cut, hired, and joined later than the visitor may have played — then powers and upgrades. It warns; it never names which hero.
-- The storage notice states that builds are saved in this browser, and that signing in saves them to the account instead.
+- The storage notice states that builds are saved in this browser, and that signing in saves them to the account instead, and ends with a **Privacy** link to feature 010's page — the only link in either banner.
 - Below `md` the banners sit above the mobile build bar, which stays reachable while they are up.
 
 ## Roles And Access
@@ -112,7 +111,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 - `features/001_build-persistence.md` — the localStorage facts the storage notice restates.
 - `features/004_accounts.md` — what signing in changes about where a build is stored.
-- `features/010_privacy-page.md` — owns the `/privacy` page and will add the link from the notice; its non-goal is amended to point here for the notices themselves.
+- `features/010_privacy-page.md` — owns the `/privacy` page the storage notice links to; its non-goal points here for the notices themselves.
 - `context/game-mechanics.md` — the story events that make the app spoiler-heavy, and the source for what the warning must cover without naming.
 - `annexes/design-system.md` — the bottom-chrome treatment the region borrows from the mobile build bar, and the base responsive tier.
 
@@ -120,7 +119,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Tests
 
-- `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`.
+- `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; the storage notice alone links to `/privacy`; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`.
 - Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout.
 
 ## Verification

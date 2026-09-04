@@ -11,6 +11,14 @@
       <p class="text-sm text-neutral-100">
         <span class="font-semibold">{{ notice.lead }}</span>
         {{ notice.body }}
+
+        <NuxtLink
+          v-if="notice.link"
+          class="text-link hover:text-secondary-300"
+          :to="notice.link.to"
+        >
+          {{ notice.link.label }}
+        </NuxtLink>
       </p>
 
       <!-- * Neutral subtle, like Story Setup and Save: a secondary solid on this bar is 1.29:1 and is never a control (annex §14.1). -->
@@ -33,6 +41,7 @@ type Notice = {
   lead: string;
   body: string;
   confirm: string;
+  link?: { to: string; label: string };
 };
 
 // * Array order is stacking order: the spoiler warning sits above the storage notice (feature 017).
@@ -49,7 +58,9 @@ const NOTICES: Notice[] = [
     label: 'Browser storage notice',
     lead: 'Your builds stay in this browser.',
     body: "Saved builds live in this browser's storage, not on a server. Sign in and they're saved to your account instead.",
-    confirm: 'Got it'
+    confirm: 'Got it',
+    // * The notice is the moment the storage is first mentioned, so the policy is one step away from it (feature 010).
+    link: { to: '/privacy', label: 'Privacy' }
   }
 ];
 
