@@ -1,16 +1,21 @@
 <template>
   <u-modal :open="!!heroId" fullscreen @update:open="emit('close')">
     <!-- * The thumbnail rides in the toolbar so the hero is named even below `lg`, where the large portrait is not drawn. -->
+    <!-- * Every hero-bound panel below is keyed by the hero and fades out, then in, on a roster switch — annex §11 state fade, out-in (feature 024). The roster rail and the radar stay outside: the rail is stable and the radar keeps its own tween. -->
     <template #title>
       <span class="flex items-center gap-2">
-        <HeroPortrait
-          v-if="heroId"
-          :hero-id="heroId"
-          usage="header"
-          :alt="hero?.name ?? ''"
-          class="size-6 shrink-0 object-cover object-top"
-        />
-        {{ hero?.name }}
+        <Transition name="state-fade" mode="out-in">
+          <span :key="heroId ?? ''" class="flex items-center gap-2">
+            <HeroPortrait
+              v-if="heroId"
+              :hero-id="heroId"
+              usage="header"
+              :alt="hero?.name ?? ''"
+              class="size-6 shrink-0 object-cover object-top"
+            />
+            {{ hero?.name }}
+          </span>
+        </Transition>
       </span>
     </template>
 
@@ -91,12 +96,16 @@
             <div
               class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 md:block"
             >
-              <HeroPortrait
-                :hero-id="hero.id"
-                usage="panel"
-                :alt="hero.name"
-                class="size-full object-cover object-top"
-              />
+              <Transition name="state-fade" mode="out-in">
+                <div :key="hero.id" class="size-full">
+                  <HeroPortrait
+                    :hero-id="hero.id"
+                    usage="panel"
+                    :alt="hero.name"
+                    class="size-full object-cover object-top"
+                  />
+                </div>
+              </Transition>
             </div>
 
             <!-- ! Split into a static shell and an inner scroll box for the reason the powers panel below is: the element carrying `overflow` never also carries a structural border. -->
@@ -104,164 +113,170 @@
               class="flex min-w-0 flex-col border-2 border-accented bg-default md:row-span-2 md:min-h-0 lg:row-span-2 lg:min-h-0"
             >
               <ScrollRegion
-                class="flex flex-col gap-3 p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
+                class="flex flex-col p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
               >
-                <div
-                  class="flex items-center gap-4 border-b-2 border-default pb-3"
-                >
-                  <span
-                    class="font-heading tracking-label text-toned uppercase"
-                  >
-                    Level
-                    <span
-                      class="text-lg font-bold text-highlighted select-none"
+                <Transition name="state-fade" mode="out-in">
+                  <div :key="hero.id" class="flex flex-col gap-3">
+                    <div
+                      class="flex items-center gap-4 border-b-2 border-default pb-3"
                     >
-                      {{ heroLevel }}
-                    </span>
-                  </span>
-
-                  <span
-                    class="font-heading tracking-label text-toned uppercase"
-                  >
-                    Bonus
-                    <span
-                      class="text-lg font-bold text-highlighted select-none"
-                    >
-                      {{ bonusLevel }}
-                    </span>
-                  </span>
-
-                  <div class="ml-auto flex items-center gap-2">
-                    <IconButton
-                      icon="i-lucide-plus"
-                      color="neutral"
-                      size="sm"
-                      :disabled="bonusFull || !canLevelUp"
-                      label="Add a bonus level"
-                      @click="addBonusLevel(heroId!)"
-                    />
-
-                    <IconButton
-                      icon="i-lucide-rotate-ccw"
-                      color="neutral"
-                      size="sm"
-                      :disabled="!canLevelUp"
-                      label="Reset this hero"
-                      @click="resetHero(heroId!)"
-                    />
-                  </div>
-                </div>
-
-                <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
-                <ul class="flex flex-col gap-1 px-3">
-                  <li
-                    v-for="stat in STAT_NAMES"
-                    :key="stat"
-                    class="flex items-center justify-between"
-                  >
-                    <span
-                      class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                    >
-                      <u-icon
-                        :name="STAT_ICONS[stat]"
-                        class="size-5 shrink-0"
-                      />
-                      {{ stat }}
-                    </span>
-
-                    <div class="ml-2 flex items-center gap-1">
-                      <div class="flex w-7 items-center justify-center">
-                        <IconButton
-                          v-if="canLevelUp"
-                          icon="i-lucide-minus"
-                          color="neutral"
-                          size="sm"
-                          :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                          :label="`Remove a ${stat} point`"
-                          @click="statDown(heroId!, resolvedStat(stat))"
-                        />
-                      </div>
-
-                      <span class="w-7 text-center text-xl font-bold">
-                        {{ computedStat(stat) }}
+                      <span
+                        class="font-heading tracking-label text-toned uppercase"
+                      >
+                        Level
+                        <span
+                          class="text-lg font-bold text-highlighted select-none"
+                        >
+                          {{ heroLevel }}
+                        </span>
                       </span>
 
-                      <div class="flex w-7 items-center justify-center">
+                      <span
+                        class="font-heading tracking-label text-toned uppercase"
+                      >
+                        Bonus
+                        <span
+                          class="text-lg font-bold text-highlighted select-none"
+                        >
+                          {{ bonusLevel }}
+                        </span>
+                      </span>
+
+                      <div class="ml-auto flex items-center gap-2">
                         <IconButton
-                          v-if="canLevelUp"
                           icon="i-lucide-plus"
                           color="neutral"
                           size="sm"
-                          :disabled="isStatCapped(stat)"
-                          :label="`Add a ${stat} point`"
-                          @click="statUp(heroId!, resolvedStat(stat))"
+                          :disabled="bonusFull || !canLevelUp"
+                          label="Add a bonus level"
+                          @click="addBonusLevel(heroId!)"
+                        />
+
+                        <IconButton
+                          icon="i-lucide-rotate-ccw"
+                          color="neutral"
+                          size="sm"
+                          :disabled="!canLevelUp"
+                          label="Reset this hero"
+                          @click="resetHero(heroId!)"
                         />
                       </div>
                     </div>
-                  </li>
-                </ul>
 
-                <template v-if="synergyPartner">
-                  <button
-                    type="button"
-                    class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-                    @click="emit('select', synergyPartner.id)"
-                  >
-                    <u-icon name="i-lucide-link" class="size-4 shrink-0" />
-                    Synergy partner: {{ synergyPartner.name }}
-                  </button>
-
-                  <div class="flex flex-col gap-1 bg-muted p-3">
-                    <p class="font-heading tracking-label text-toned uppercase">
-                      Pair total
-                    </p>
-
-                    <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
-                    <div aria-label="Pair total description" class="grid">
-                      <p
-                        v-for="variant in pairTotalDescriptionVariants"
-                        :key="variant"
-                        class="invisible col-start-1 row-start-1 text-sm text-muted"
-                        aria-hidden="true"
+                    <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
+                    <ul class="flex flex-col gap-1 px-3">
+                      <li
+                        v-for="stat in STAT_NAMES"
+                        :key="stat"
+                        class="flex items-center justify-between"
                       >
-                        {{ variant }}
-                      </p>
-
-                      <p class="col-start-1 row-start-1 text-sm text-muted">
-                        {{ pairTotalDescription }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
-                  <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
-                    <li
-                      v-for="entry in combinedStats"
-                      :key="entry.stat"
-                      class="flex items-center justify-between"
-                    >
-                      <span
-                        class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                      >
-                        <u-icon
-                          :name="STAT_ICONS[entry.stat]"
-                          class="size-5 shrink-0"
-                        />
-                        {{ entry.stat }}
-                      </span>
-
-                      <div class="ml-2 flex items-center gap-1">
-                        <div class="w-7" />
-
-                        <span class="w-7 text-center text-xl font-bold">
-                          {{ entry.value }}
+                        <span
+                          class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
+                        >
+                          <u-icon
+                            :name="STAT_ICONS[stat]"
+                            class="size-5 shrink-0"
+                          />
+                          {{ stat }}
                         </span>
 
-                        <div class="w-7" />
+                        <div class="ml-2 flex items-center gap-1">
+                          <div class="flex w-7 items-center justify-center">
+                            <IconButton
+                              v-if="canLevelUp"
+                              icon="i-lucide-minus"
+                              color="neutral"
+                              size="sm"
+                              :disabled="statBonuses[resolvedStat(stat)] <= 0"
+                              :label="`Remove a ${stat} point`"
+                              @click="statDown(heroId!, resolvedStat(stat))"
+                            />
+                          </div>
+
+                          <span class="w-7 text-center text-xl font-bold">
+                            {{ computedStat(stat) }}
+                          </span>
+
+                          <div class="flex w-7 items-center justify-center">
+                            <IconButton
+                              v-if="canLevelUp"
+                              icon="i-lucide-plus"
+                              color="neutral"
+                              size="sm"
+                              :disabled="isStatCapped(stat)"
+                              :label="`Add a ${stat} point`"
+                              @click="statUp(heroId!, resolvedStat(stat))"
+                            />
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+
+                    <template v-if="synergyPartner">
+                      <button
+                        type="button"
+                        class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
+                        @click="emit('select', synergyPartner.id)"
+                      >
+                        <u-icon name="i-lucide-link" class="size-4 shrink-0" />
+                        Synergy partner: {{ synergyPartner.name }}
+                      </button>
+
+                      <div class="flex flex-col gap-1 bg-muted p-3">
+                        <p
+                          class="font-heading tracking-label text-toned uppercase"
+                        >
+                          Pair total
+                        </p>
+
+                        <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
+                        <div aria-label="Pair total description" class="grid">
+                          <p
+                            v-for="variant in pairTotalDescriptionVariants"
+                            :key="variant"
+                            class="invisible col-start-1 row-start-1 text-sm text-muted"
+                            aria-hidden="true"
+                          >
+                            {{ variant }}
+                          </p>
+
+                          <p class="col-start-1 row-start-1 text-sm text-muted">
+                            {{ pairTotalDescription }}
+                          </p>
+                        </div>
                       </div>
-                    </li>
-                  </ul>
-                </template>
+
+                      <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
+                      <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
+                        <li
+                          v-for="entry in combinedStats"
+                          :key="entry.stat"
+                          class="flex items-center justify-between"
+                        >
+                          <span
+                            class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
+                          >
+                            <u-icon
+                              :name="STAT_ICONS[entry.stat]"
+                              class="size-5 shrink-0"
+                            />
+                            {{ entry.stat }}
+                          </span>
+
+                          <div class="ml-2 flex items-center gap-1">
+                            <div class="w-7" />
+
+                            <span class="w-7 text-center text-xl font-bold">
+                              {{ entry.value }}
+                            </span>
+
+                            <div class="w-7" />
+                          </div>
+                        </li>
+                      </ul>
+                    </template>
+                  </div>
+                </Transition>
               </ScrollRegion>
             </div>
 
@@ -278,162 +293,178 @@
             <div
               class="flex min-w-0 flex-col border-2 border-accented bg-default md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0"
             >
-              <ScrollRegion
-                class="flex flex-col gap-4 p-4 lg:min-h-0 lg:flex-1"
-              >
-                <section class="flex flex-col gap-2">
-                  <h3 class="font-heading tracking-label text-toned uppercase">
-                    Powers
-                  </h3>
-
-                  <div
-                    v-for="(power, index) in displayPowers"
-                    :key="power.name"
-                    class="border-2 p-3 transition-colors"
-                    :class="[
-                      isPowerActive(power)
-                        ? 'border-accented bg-elevated'
-                        : 'border-default hover:border-accented/50',
-                      isPowerDisabled(power)
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer'
-                    ]"
-                    @click="handleTogglePower(power)"
-                  >
-                    <!-- ! `flex-wrap` alone does not do it: without `min-w-0` the name refuses to shrink and pushes the badge past the panel instead of wrapping it. The pair is what lets the badge drop to its own line just over `lg`, where this column is at its narrowest. -->
-                    <div class="flex flex-wrap items-center gap-2">
-                      <u-icon
-                        :name="POWER_ICONS[index]!"
-                        class="size-4 shrink-0"
-                      />
-
-                      <span class="min-w-0 font-medium">{{ power.name }}</span>
-
-                      <u-badge
-                        v-if="isPowerActive(power)"
-                        :label="
-                          power.slot === 'starting' ? 'Revealed' : 'Trained'
-                        "
-                        size="xs"
-                        variant="subtle"
-                        class="shrink-0"
-                      />
-                    </div>
-
-                    <p class="mt-1 text-sm text-muted">
-                      {{ power.description }}
-                    </p>
-                  </div>
-                </section>
-
-                <section v-if="hasEffects" class="flex flex-col gap-2">
-                  <h3 class="font-heading tracking-label text-toned uppercase">
-                    Effects
-                  </h3>
-
-                  <!-- ! Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
-                  <div
-                    v-if="flightInfo && flightShown"
-                    class="border-2 p-3 transition-colors"
-                    :class="[
-                      flightActive
-                        ? 'border-accented bg-elevated'
-                        : 'border-default hover:border-accented/50',
-                      flightLocked
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer'
-                    ]"
-                    @click="handleToggleFlight"
-                  >
-                    <div class="flex items-center gap-2">
-                      <u-icon name="i-lucide-plane" class="size-4 shrink-0" />
-
-                      <!-- * A hero whose flight the game leaves unnamed still needs a heading here. -->
-                      <span class="font-medium">
-                        {{ flightInfo.name ?? 'Flight' }}
-                      </span>
-
-                      <u-badge
-                        v-if="flightActive"
-                        label="Trained"
-                        size="xs"
-                        variant="subtle"
-                      />
-                    </div>
-
-                    <p class="mt-1 text-sm text-muted">
-                      {{ flightInfo.description }}
-                    </p>
-                  </div>
-
-                  <div
-                    v-if="heroId === 'sonar'"
-                    class="cursor-pointer border-2 p-3 transition-colors"
-                    :class="
-                      monsterForm
-                        ? 'border-accented bg-elevated'
-                        : 'border-default hover:border-accented/50'
-                    "
-                    @click="toggleMonsterForm"
-                  >
-                    <div class="flex items-center gap-2">
-                      <u-icon name="i-lucide-shuffle" class="size-4 shrink-0" />
-
-                      <span class="font-medium">Monster form</span>
-                    </div>
-
-                    <p class="mt-1 text-sm text-muted">
-                      View only — swaps which stats are shown. Nothing is spent
-                      and nothing is saved.
-                    </p>
-                  </div>
-
-                  <div
-                    v-if="specialAbility"
-                    class="border-2 p-3 transition-colors"
-                    :class="[
-                      specialAbility.active
-                        ? 'border-accented bg-elevated'
-                        : 'border-default hover:border-accented/50',
-                      specialAbility.disabled
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'cursor-pointer'
-                    ]"
-                    @click="handleToggleSpecialPower"
-                  >
-                    <div class="flex items-center gap-2">
-                      <u-icon
-                        :name="specialAbility.icon"
-                        class="size-4 shrink-0"
-                      />
-
-                      <span class="font-medium">{{ specialAbility.name }}</span>
-
-                      <u-badge
-                        v-if="specialAbility.active"
-                        label="Active"
-                        size="xs"
-                        variant="subtle"
-                      />
-                    </div>
-
-                    <!-- ! Every state's line is rendered invisibly in this one grid cell, so the card reserves the tallest of them and keeps its height when the power is toggled. The copy is shorter once active, and at the widths a phone lands on that is the difference between two lines and one — the card used to collapse under the tap and drag everything below it up. Reserving beats a fixed height: the tallest variant is two lines at 393px and one on desktop. -->
-                    <div class="mt-1 grid">
-                      <p
-                        v-for="variant in specialAbility.descriptionVariants"
-                        :key="variant"
-                        class="invisible col-start-1 row-start-1 text-sm text-muted"
-                        aria-hidden="true"
+              <ScrollRegion class="flex flex-col p-4 lg:min-h-0 lg:flex-1">
+                <Transition name="state-fade" mode="out-in">
+                  <div :key="hero.id" class="flex flex-col gap-4">
+                    <section class="flex flex-col gap-2">
+                      <h3
+                        class="font-heading tracking-label text-toned uppercase"
                       >
-                        {{ variant }}
-                      </p>
+                        Powers
+                      </h3>
 
-                      <p class="col-start-1 row-start-1 text-sm text-muted">
-                        {{ specialAbility.description }}
-                      </p>
-                    </div>
+                      <div
+                        v-for="(power, index) in displayPowers"
+                        :key="power.name"
+                        class="border-2 p-3 transition-colors"
+                        :class="[
+                          isPowerActive(power)
+                            ? 'border-accented bg-elevated'
+                            : 'border-default hover:border-accented/50',
+                          isPowerDisabled(power)
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer'
+                        ]"
+                        @click="handleTogglePower(power)"
+                      >
+                        <!-- ! `flex-wrap` alone does not do it: without `min-w-0` the name refuses to shrink and pushes the badge past the panel instead of wrapping it. The pair is what lets the badge drop to its own line just over `lg`, where this column is at its narrowest. -->
+                        <div class="flex flex-wrap items-center gap-2">
+                          <u-icon
+                            :name="POWER_ICONS[index]!"
+                            class="size-4 shrink-0"
+                          />
+
+                          <span class="min-w-0 font-medium">{{
+                            power.name
+                          }}</span>
+
+                          <u-badge
+                            v-if="isPowerActive(power)"
+                            :label="
+                              power.slot === 'starting' ? 'Revealed' : 'Trained'
+                            "
+                            size="xs"
+                            variant="subtle"
+                            class="shrink-0"
+                          />
+                        </div>
+
+                        <p class="mt-1 text-sm text-muted">
+                          {{ power.description }}
+                        </p>
+                      </div>
+                    </section>
+
+                    <section v-if="hasEffects" class="flex flex-col gap-2">
+                      <h3
+                        class="font-heading tracking-label text-toned uppercase"
+                      >
+                        Effects
+                      </h3>
+
+                      <!-- ! Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
+                      <div
+                        v-if="flightInfo && flightShown"
+                        class="border-2 p-3 transition-colors"
+                        :class="[
+                          flightActive
+                            ? 'border-accented bg-elevated'
+                            : 'border-default hover:border-accented/50',
+                          flightLocked
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer'
+                        ]"
+                        @click="handleToggleFlight"
+                      >
+                        <div class="flex items-center gap-2">
+                          <u-icon
+                            name="i-lucide-plane"
+                            class="size-4 shrink-0"
+                          />
+
+                          <!-- * A hero whose flight the game leaves unnamed still needs a heading here. -->
+                          <span class="font-medium">
+                            {{ flightInfo.name ?? 'Flight' }}
+                          </span>
+
+                          <u-badge
+                            v-if="flightActive"
+                            label="Trained"
+                            size="xs"
+                            variant="subtle"
+                          />
+                        </div>
+
+                        <p class="mt-1 text-sm text-muted">
+                          {{ flightInfo.description }}
+                        </p>
+                      </div>
+
+                      <div
+                        v-if="heroId === 'sonar'"
+                        class="cursor-pointer border-2 p-3 transition-colors"
+                        :class="
+                          monsterForm
+                            ? 'border-accented bg-elevated'
+                            : 'border-default hover:border-accented/50'
+                        "
+                        @click="toggleMonsterForm"
+                      >
+                        <div class="flex items-center gap-2">
+                          <u-icon
+                            name="i-lucide-shuffle"
+                            class="size-4 shrink-0"
+                          />
+
+                          <span class="font-medium">Monster form</span>
+                        </div>
+
+                        <p class="mt-1 text-sm text-muted">
+                          View only — swaps which stats are shown. Nothing is
+                          spent and nothing is saved.
+                        </p>
+                      </div>
+
+                      <div
+                        v-if="specialAbility"
+                        class="border-2 p-3 transition-colors"
+                        :class="[
+                          specialAbility.active
+                            ? 'border-accented bg-elevated'
+                            : 'border-default hover:border-accented/50',
+                          specialAbility.disabled
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'cursor-pointer'
+                        ]"
+                        @click="handleToggleSpecialPower"
+                      >
+                        <div class="flex items-center gap-2">
+                          <u-icon
+                            :name="specialAbility.icon"
+                            class="size-4 shrink-0"
+                          />
+
+                          <span class="font-medium">{{
+                            specialAbility.name
+                          }}</span>
+
+                          <u-badge
+                            v-if="specialAbility.active"
+                            label="Active"
+                            size="xs"
+                            variant="subtle"
+                          />
+                        </div>
+
+                        <!-- ! Every state's line is rendered invisibly in this one grid cell, so the card reserves the tallest of them and keeps its height when the power is toggled. The copy is shorter once active, and at the widths a phone lands on that is the difference between two lines and one — the card used to collapse under the tap and drag everything below it up. Reserving beats a fixed height: the tallest variant is two lines at 393px and one on desktop. -->
+                        <div class="mt-1 grid">
+                          <p
+                            v-for="variant in specialAbility.descriptionVariants"
+                            :key="variant"
+                            class="invisible col-start-1 row-start-1 text-sm text-muted"
+                            aria-hidden="true"
+                          >
+                            {{ variant }}
+                          </p>
+
+                          <p class="col-start-1 row-start-1 text-sm text-muted">
+                            {{ specialAbility.description }}
+                          </p>
+                        </div>
+                      </div>
+                    </section>
                   </div>
-                </section>
+                </Transition>
               </ScrollRegion>
             </div>
 
@@ -447,19 +478,28 @@
                 </span>
               </div>
 
-              <ScrollRegion
-                as="ul"
-                aria-label="Notes"
-                class="flex list-inside list-disc flex-col gap-2 p-4 text-base marker:text-muted lg:min-h-0 lg:flex-1"
-              >
-                <li v-if="heroNote" class="text-muted">{{ heroNote }}</li>
-                <li
-                  v-for="advisory in heroAdvisories"
-                  :key="advisory.id"
-                  class="text-muted"
-                >
-                  {{ advisory.text }}
-                </li>
+              <!-- * The list is a transition group inside the keyed fade: the whole list fades out-in on a hero switch, and within a hero an advisory that fires or clears fades on its own, holding its place while it leaves (feature 024). -->
+              <ScrollRegion class="flex flex-col p-4 lg:min-h-0 lg:flex-1">
+                <Transition name="state-fade" mode="out-in">
+                  <TransitionGroup
+                    :key="hero.id"
+                    tag="ul"
+                    name="state-fade"
+                    aria-label="Notes"
+                    class="flex list-inside list-disc flex-col gap-2 text-base marker:text-muted"
+                  >
+                    <li v-if="heroNote" key="note" class="text-muted">
+                      {{ heroNote }}
+                    </li>
+                    <li
+                      v-for="advisory in heroAdvisories"
+                      :key="advisory.id"
+                      class="text-muted"
+                    >
+                      {{ advisory.text }}
+                    </li>
+                  </TransitionGroup>
+                </Transition>
               </ScrollRegion>
             </div>
           </div>

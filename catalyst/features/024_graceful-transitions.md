@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -44,6 +44,7 @@ Non-goals:
 - **Colour-only changes** — the trainable chips swapping which one is active. The annex's baseline colour fade covers them.
 - **Values changing in place** — stat numbers, the level readout, pair totals, the synergy-pair markers.
 - **The dialog's effect cards** (flight, Sonar, special ability): text cards, not glyphs; the panel fade covers their hero change.
+- **The dialog's bonus control.** It is a fixed plus beside a count that changes in place, so there is no glyph to swap.
 - **The radar**, including on a hero switch. Its tween is decision 008's. Its hardcoded 200ms bypasses the `--duration-*` scale — pre-existing drift, recorded here and not fixed here.
 - **Sibling movement** when a chip leaves. Neighbours close the gap when the fade ends; the annex's _list move_ can be added later if the snap earns it.
 
@@ -56,7 +57,7 @@ Non-goals:
 
 **Glyph swap** — for a control that stays while its icon or label changes: the old glyph scales to zero over `--duration-baseline` with `ease-in`, then the new one grows from zero over `--duration-baseline` with `ease-out`. Transform-based, so it short-circuits under reduced motion and the glyph lands instantly.
 
-- Applies to the bonus button at every step (plus → `+1` → … → `+4`, and back on reset) on both the card and the dialog, to Coupé's chip when En Pointe changes its icon, and to Sonar's form chip.
+- Applies to the bonus button at every step (plus → `+1` → … → `+4`, and back on reset) on the card, to Coupé's chip when En Pointe changes its icon, and to Sonar's form chip.
 - Fires only on a change while the control is on screen. First render — page load, a saved build, a share link — never swaps. On `/` the load runs under feature 023's cover, so a swap that fired there would be hidden anyway; the contract stands regardless.
 - A swap interrupted by another change re-targets to the newest glyph; nothing queues.
 
@@ -114,7 +115,7 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 - `web/components/HeroCard.vue`: the header-row icons and the bonus button.
 - `web/components/HeroPowerChips.vue`: the chip row — the fades and the Coupé and Sonar swaps.
-- `web/components/HeroDetailDialog.vue`: the per-panel fades and the dialog's bonus button.
+- `web/components/HeroDetailDialog.vue`: the per-panel fades, and the notes list's own fade for advisories.
 - `annexes/design-system.md` §11: the two named-pattern rows.
 
 ## Dependencies
@@ -138,7 +139,9 @@ _None._
 
 ## Verification
 
-_Empty while the document is a draft._
+Lint, typecheck and the full suite clean (383 tests, 48 files); no automated test was added, per Tests. Live in headless Chrome against the dev server, reading transition classes and computed styles mid-flight at 1905px and again at 375px. Card: revealing Flambae's power fades the reset icon in (`opacity 0.15s ease-out`); selecting Supernova fades its chip in with the row held at 24px, and switching back fades it out with the chip still in flow (14 elements mid-fade, 13 after); the bonus plus shrinks and `+1` grows (`transform 0.15s`, `ease-in` then `ease-out`), two fast presses re-target mid-shrink (scale 0.49) and land on `+3`; reset runs a fade and a swap on one click; Coupé's reveal fades two elements in and En Pointe swaps the glyph. Dialog: a rail click fades all five hero-bound panels out (`ease-in`) then in (`ease-out`) while the radar's data polygon tweens through the switch and the rail carries no class; the five panel shells measure 288/592/288/592/1351 before, after, and on Blonde Blazer (no steppers, no partner); a second click mid-fade lands on the hero clicked last; five Combat points on Golem fade two advisories in (opacity 0.34 mid-fade) and removing one fades them out. A share link with Coupé at En Pointe loads with zero swap or fade class changes observed from document start, the chip already in its active state.
+
+Found and fixed by the walk: both button components render fragments (the tooltip's renderless root, and the annotation comments the dev build keeps as DOM comments), which `Transition` cannot animate — every transitioned chip and icon now sits in a plain span. Not covered: Sonar's form chip (the episode-4 hire select would not open by script; it runs the same `swap-key` path Coupé's chip was verified on) and a `prefers-reduced-motion: reduce` machine — the guard is confirmed in the shipped CSSOM as `.glyph-swap-enter-active, .glyph-swap-leave-active { transition: none }` inside the reduce query, with no rule for the fade.
 
 ## Agent Change Rules
 
