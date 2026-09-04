@@ -8,8 +8,10 @@ import { heroPortraitSrc } from '@/utils/heroPortraitSrc';
 
 import type { SonarForm } from '@/utils/heroPortraitSrc';
 
-// * Feature 021: one lossless 512×512 master per portrait. The file is what Vercel resizes from, so a lossy or off-size master would be encoded twice or upscaled.
-const MASTER_SIZE = 512;
+// * Feature 021: one lossless master per portrait at the bust's native size — 450 to 512 on a side, square but for Sonar's monster bust, which the game publishes at 450×452. The file is what Vercel resizes from, so a lossy master would be encoded twice, and a padded one would show its margin wherever the box is filled edge to edge.
+const SMALLEST_MASTER = 450;
+const LARGEST_MASTER = 512;
+const SQUARE_TOLERANCE = 2;
 
 const PUBLIC_DIR = join(import.meta.dirname, '../../public');
 
@@ -42,11 +44,18 @@ describe('portrait masters', () => {
     expect(new Set(portraitPaths).size).toBe(portraitPaths.length);
   });
 
-  it.each(portraitPaths)('%s is a lossless 512×512 WebP', (path) => {
-    const master = readWebpMaster(path);
-    expect(master.isWebp).toBe(true);
-    expect(master.chunk).toBe('VP8L');
-    expect(master.width).toBe(MASTER_SIZE);
-    expect(master.height).toBe(MASTER_SIZE);
-  });
+  it.each(portraitPaths)(
+    '%s is a lossless, square, native-size WebP',
+    (path) => {
+      const master = readWebpMaster(path);
+      expect(master.isWebp).toBe(true);
+      expect(master.chunk).toBe('VP8L');
+      expect(Math.abs(master.width - master.height)).toBeLessThanOrEqual(
+        SQUARE_TOLERANCE
+      );
+      expect(master.width).toBeGreaterThanOrEqual(SMALLEST_MASTER);
+      expect(master.width).toBeLessThanOrEqual(LARGEST_MASTER);
+      expect(master.height).toBeLessThanOrEqual(LARGEST_MASTER);
+    }
+  );
 });
