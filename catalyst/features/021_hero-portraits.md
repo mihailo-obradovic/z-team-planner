@@ -10,56 +10,55 @@ Medium
 
 ## Purpose
 
-Every hero is pictured in five places, and the pictures are uneven: twelve files at six pixel sizes, one a PNG wearing a `.webp` name, Blonde Blazer on a bust the game never leads with, and every one of them requested from Vercel at 1536px and quality 100 because `@nuxt/image` is installed but unconfigured. This feature makes the portrait a contract: one master per hero on one canvas, and a Nuxt Image configuration that serves each usage site exactly the pixels it renders.
+Every hero is pictured in five places, and the pictures were uneven: twelve files at six pixel sizes, one a PNG wearing a `.webp` name, Blonde Blazer on a bust the game never leads with, and every one requested from Vercel at 1536px and quality 100 because `@nuxt/image` was installed but unconfigured. This feature makes the portrait a contract: one master per hero on one canvas, and one declared width per usage site that Nuxt Image serves at exactly the pixels rendered.
 
-The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust** is the game's unedited roster art, a **portrait** is the square the app shows.
+The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust** is the game's unedited roster art, a **portrait** is the square the app shows. The rules are the `image` addon's (`stacks/frontend/nuxt/addons/image.md`).
 
 ## Inputs
 
-| Input                          | Type                     | Source                                   | Constraints                                                                                                                                                                                                                                                                                                      |
-| ------------------------------ | ------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| master                         | lossless WebP, square    | `public/images/portraits/<hero-id>.webp` | 512×512; never upscaled, never cropped, never pre-encoded lossy                                                                                                                                                                                                                                                  |
-| bust                           | PNG                      | Fandom `dispatch` wiki, `<Name>.png`     | the fuller framing (horns, ears, collars visible), native 450–512px; the only source of that framing — wiki.gg's 960×1040 busts crop tighter; Phenomaman and Waterboy match no Fandom upload — Waterboy is wiki.gg's 512 bust, Phenomaman's only source is the file the repo already carried (origin unrecorded) |
-| Blonde Blazer                  | PNG                      | Fandom `Blonde_Blazer.png`, 2439×2054    | the Training render, cut square around the face and downscaled once to 512                                                                                                                                                                                                                                       |
-| canvas rule                    | pad                      | this document                            | a bust smaller than 512 on a side is centred on a transparent 512 canvas; no pixel of the bust is resampled                                                                                                                                                                                                      |
-| preset                         | `image.presets.<name>`   | `nuxt.config.ts`                         | one per usage site: `width` in CSS px, `densities: 'x1 x2'`, `fit: 'cover'`; every portrait `NuxtImg` names one                                                                                                                                                                                                  |
-| `image.screens`                | `Record<string, number>` | `nuxt.config.ts`                         | exactly the preset widths × densities — the list Vercel will resize to                                                                                                                                                                                                                                           |
-| `image.quality`                | `80`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                                                                                                                                     |
-| `image.vercel.minimumCacheTTL` | `31536000`               | `nuxt.config.ts`                         | one year at the edge                                                                                                                                                                                                                                                                                             |
+| Input                                        | Type                     | Source                                   | Constraints                                                                                                                                                                                                         |
+| -------------------------------------------- | ------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| master                                       | lossless WebP            | `public/images/portraits/<hero-id>.webp` | the bust at its native size, 450–512 on a side, square (Sonar's monster bust is 450×452 as published); never upscaled, cropped, padded, or pre-encoded lossy                                                        |
+| bust                                         | PNG                      | Fandom `dispatch` wiki, `<Name>.png`     | the fuller framing (horns, ears, collars visible), native 450–512px — wiki.gg's 960×1040 busts crop tighter. Waterboy is wiki.gg's 512 bust; Phenomaman's only source is the file the repo already carried          |
+| Blonde Blazer                                | PNG                      | Fandom `Blonde_Blazer.png`, 2439×2054    | the Training render: a 2000px square at x=250 with 100px of transparent headroom above the hair, downscaled once to 512                                                                                             |
+| canvas rule                                  | none                     | this document                            | no canvas normalisation: every usage fills its box edge to edge under `object-fit: cover`, so a transparent margin would show as background. Sizes that differ by a few percent are the browser's scaling to absorb |
+| usage width                                  | `PORTRAIT_WIDTHS[usage]` | `web/config/portraits.ts`                | CSS px per usage site: header 24, ribbon 52, rail 90, card 108, tile 120, synergy 224, panel 256 (renders at 268; 256 so its 2x is exactly the master); applied only by `HeroPortrait`, densities x1 and x2         |
+| `image.screens`                              | `portraitScreens()`      | `nuxt.config.ts`                         | derived: every width × density, plus `background: 2560` for the wash                                                                                                                                                |
+| `image.quality`                              | `80`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                                        |
+| `nitro.vercel.config.images.minimumCacheTTL` | `31536000`               | `nuxt.config.ts`                         | one year at the edge; the provider has no option of its own and writes 300s                                                                                                                                         |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect   | Type                     | Description                                                                                                      |
-| ---------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| served portrait        | AVIF or WebP by `Accept` | on Vercel `/_vercel/image?url=…&w=<preset width × density>&q=80`; in `nuxt dev` the same through the bundled IPX |
-| `srcset`               | HTML                     | x1 and x2 candidates per usage site, from the preset's `densities`                                               |
-| edge cache             | Vercel image cache       | one entry per (master, width, quality, format) for one year                                                      |
-| Vercel `images` config | build output             | `sizes` from `image.screens`, AVIF + WebP, `minimumCacheTTL` — emitted by the provider, never hand-written       |
+| Output / Side Effect   | Type                     | Description                                                                                                         |
+| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| served portrait        | AVIF or WebP by `Accept` | on Vercel `/_vercel/image?url=…&w=<usage width × density>&q=80`; in `nuxt dev` and tests, the same through IPX      |
+| `srcset`               | HTML                     | x1 and x2 candidates per usage site, the largest exactly 512                                                        |
+| edge cache             | Vercel image cache       | one entry per (master, width, quality, format) for one year                                                         |
+| Vercel `images` config | build output             | `sizes` from `image.screens`, AVIF + WebP, `minimumCacheTTL` — emitted at build, never a hand-written `vercel.json` |
 
 ## Scope And Non-Goals
 
 In scope:
 
-- The twelve masters on one 512 canvas: Fandom's busts padded, Blonde Blazer re-cut from the Training render.
-- The Nuxt Image configuration and a preset on every portrait `NuxtImg`.
+- The twelve masters, lossless at native size.
+- `web/config/portraits.ts`, the `HeroPortrait` component, the `image` block, and the usage sites switched to the component.
 - The reset procedure after a portrait changes, in `operations.md`.
 
 Non-goals:
 
-- More pixels. No source carries the fuller framing above 512: Fandom's uploads are the originals, and wiki.gg's larger busts are a tighter crop that loses Malevola's horns and Sonar's ears. Extracting textures from the game's files is out of scope.
-- Vectors. Tracing was tested (vtracer, Coupe at 512px): 370–440 KB of SVG with posterised shading against 22 KB of AVIF for the same image.
-- Lossy files at rest. The master is the served source; a lossy master would be encoded twice.
-- Versioned filenames. `heroPortraitSrc` keeps building `<hero-id>.webp`; a changed master is reset by cache invalidation (Edge Cases).
+- More pixels. No source carries the fuller framing above 512; extracting textures from the game's files is out of scope.
+- Vectors. Tracing was tested (vtracer, Coupe at 512px): 370–440 KB of SVG with posterised shading against 22 KB of AVIF.
+- Lossy files at rest, or versioned filenames. `heroPortraitSrc` keeps building `<hero-id>.webp`; a changed master is reset by cache invalidation.
 - The injured and mustache bust variants. One portrait per hero, Sonar's two forms excepted (feature 012).
-- `sizes` strings per component. Presets are width-fixed per usage site because layouts today resize on container queries and content, not only on Tailwind breakpoints. A layout refactor that moves every portrait size onto a breakpoint would switch presets to `sizes`; that refactor owns the switch.
-- The background wash (`public/images/background.webp`). It goes through the same optimizer and deserves a width of its own, in a change of its own.
+- Presets. On `@nuxt/image` 2.0.0 a preset's width never reaches the density srcset (`getSizes` reads the element's own), so the declaration is the component. `sizes` strings are out too: layouts resize on container queries and content, not only on breakpoints; a refactor to breakpoint-only sizing would switch `HeroPortrait` to `sizes`, and owns that switch.
+- The background wash's own sizing. It gets `width="2560"` here only so the tightened `screens` cannot snap it down; a fitting width per viewport is its own change.
 
 ## User / System Behavior
 
-- Every hero renders from one master, and a portrait looks the same in the card, the dialog, the roster rail, the synergy tab and the mission slot, only smaller or larger.
-- Each usage site requests its own width: dialog header 24px, mission slot 88px, card 108px, synergy tab 224px, dialog panel 272px, plus the roster rail and ribbon tiles at their rendered size. A 2x screen gets the x2 candidate; nothing requests more than twice what it renders, and nothing requests more than the master holds.
-- A first request for a variant is a Vercel transformation; every later request for a year is a cache hit. Browsers revalidate on each load (Vercel sends `max-age=0, must-revalidate` on optimized images), so an edge reset reaches them on the next visit.
-- In `nuxt dev`, IPX produces the same variants from the same config, so what is checked locally is what ships.
+- Every hero renders from one master; a portrait looks the same in the card, the dialog, the roster rail, the synergy tab and the mission slot, only smaller or larger.
+- Each usage site names its usage and gets that width's x1 and x2 candidates. Nothing requests more than twice what it renders, and nothing requests more than the master holds.
+- A first request for a variant is a Vercel transformation; every later request for a year is a cache hit. Browsers revalidate each load (Vercel sends `max-age=0, must-revalidate`), so an edge reset reaches them on the next visit.
+- In `nuxt dev` and the test environment IPX produces the same variants from the same widths; IPX does not snap to `screens`, so parity is the unit test's job, not the dev server's.
 
 ## Roles And Access
 
@@ -67,67 +66,69 @@ Not role-specific.
 
 ## Examples
 
-| Input                                            | Expected Output                                             | Notes                                             |
-| ------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------- |
-| `identify public/images/portraits/*.webp`        | twelve files, all 512×512 lossless WebP                     | one per hero id, plus Sonar's second form         |
-| Malevola's master beside Fandom's `Malevola.png` | identical pixels, centred, 8px transparent margin each side | padded, never resampled                           |
-| card portrait on a 2x screen, production         | `…&w=216&q=80`, `content-type: image/avif`                  | AVIF for a browser that accepts it                |
-| the same in a browser without AVIF               | `image/webp`, same width                                    | negotiated by the provider                        |
-| dialog panel at `md`, 2x                         | `…&w=512&q=80`                                              | capped at the master; 544 would upscale           |
-| any portrait `NuxtImg` without a `preset`        | test failure                                                | the preset is how a usage site declares its width |
-| `image.screens` holds a width no preset produces | test failure                                                | Vercel's `sizes` list stays exactly the app's     |
-| a master replaced under the same name, deployed  | old variants until `vercel cache invalidate --srcimg …`     | then fresh on the next request                    |
-| second request for a served variant              | `x-vercel-cache: HIT`                                       | one transformation per variant per year           |
+| Input                                            | Expected Output                                              | Notes                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `identify public/images/portraits/*.webp`        | twelve lossless WebPs, 450–512 a side, square within 2px     | one per hero id, plus Sonar's second form                          |
+| Malevola's master beside Fandom's `Malevola.png` | identical pixels, 496×496                                    | never resampled, never padded                                      |
+| `HeroPortrait` with `usage="card"`               | `srcset` with `w=108 1x` and `w=216 2x`, `q=80`              | IPX spells it `w_108`, `q_80`                                      |
+| `usage="panel"`                                  | `w=256 1x`, `w=512 2x`                                       | the 2x is the largest master; a smaller master answers with itself |
+| card on a 2x screen, production                  | `…&w=216&q=80`, `content-type: image/avif`                   | AVIF for a browser that accepts it                                 |
+| the same without AVIF in `Accept`                | `image/webp`, same width                                     | negotiated by the provider                                         |
+| a portrait `NuxtImg` outside `HeroPortrait`      | test failure                                                 | the component is the one declaration                               |
+| a width × density above 512 in `PORTRAIT_WIDTHS` | test failure                                                 | Vercel's `sizes` list stays the app's, and never an upscale        |
+| a master replaced under the same name, deployed  | old variants until `vercel cache invalidate --srcimg …` runs | then fresh on the next request                                     |
+| second request for a served variant              | `x-vercel-cache: HIT`                                        | one transformation per variant per year                            |
 
 ## Business Rules
 
-- A master is lossless and is the only copy of the portrait in the repository.
-- Masters are never upscaled and never cropped: a bust reaches 512 by padding, and a preset never requests more than 512.
-- One quality value for all portraits; the art is flat-shaded and 80 was compared against 100 at 2x before approval (24 KB against 102 KB, no visible difference).
-- `image.screens` is derived from the presets, not from Tailwind's breakpoints. A width appears there because a preset requests it.
+- A master is lossless and is the only copy of the portrait in the repository; it is never upscaled, cropped, or padded. A request above a master's own size returns the master: neither Vercel nor IPX enlarges.
+- A usage site names its usage; the number lives in `web/config/portraits.ts` and nowhere else. `image.screens` is derived from it, never typed.
+- One quality for all portraits, compared at 2x before approval (q80 24 KB against q100 102 KB, no visible difference).
 
 ## Edge Cases
 
-- Sonar has two masters (`sonar-hybrid`, `sonar-monster`), selected by form (feature 012); the monster bust is 450×452 and pads asymmetrically to 512.
-- Replacing a master under its existing name: replace the file, deploy, then `vercel cache invalidate --srcimg /images/portraits/<hero-id>.webp`. The step is in `operations.md`; skipping it leaves the old portrait at the edge for up to a year.
-- A game update that adds a hero adds a master under the new hero id (feature 002 owns the id); nothing in the config changes.
-- A hero with no master falls to the browser's broken-image state; there is no placeholder art, because the roster is closed and a missing file is a build defect.
+- Sonar has two masters, selected by form (feature 012); the monster bust is 450×452 as published, and `object-fit: cover` absorbs the two rows.
+- Replacing a master under its existing name: replace, deploy, `vercel cache invalidate --srcimg /images/portraits/<hero-id>.webp` (`operations.md`). Skipping it leaves the old portrait at the edge for up to a year.
+- A game update that adds a hero adds a master under the new hero id (feature 002 owns the id); no config changes.
+- A hero with no master falls to the browser's broken-image state; the roster is closed, so a missing file is a build defect, not a runtime case.
+- A new usage site at a new size adds a key to `PORTRAIT_WIDTHS`; the screens list follows. A width whose 2x would pass 512 declares 256 instead and accepts the 1x stretch, as the panel does.
 
 ## Invariants
 
-- One master per portrait, lossless, 512×512.
-- Every portrait `NuxtImg` names a preset; every preset width × density is in `image.screens`, capped at 512; nothing else is.
+- One master per portrait, lossless, at the bust's native size.
+- Every portrait renders through `HeroPortrait`; every width × density it can request is in `image.screens`, at most 512, and nothing else is.
 - Nothing is delivered larger than twice its rendered CSS size.
 - `heroPortraitSrc` and the `<hero-id>.webp` path contract are unchanged.
 
 ## Error Handling
 
-- A `preset` that does not exist is a Nuxt Image runtime warning and an unmodified URL; the test above catches it first.
-- A request outside `image.screens` is a 400 from Vercel's image API; the same test prevents it.
+- A width outside `image.screens` is snapped up by the Vercel provider, silently overfetching; deriving the list prevents it.
+- A `usage` outside the union is a type error, not a runtime state.
 
 ## Entry Points
 
-- `nuxt.config.ts` — the `image` block: presets, screens, quality, Vercel cache TTL.
-- `public/images/portraits/` — the masters.
-- `web/utils/heroPortraitSrc.ts` — the path contract, untouched.
-- `web/components/HeroCard.vue`, `SynergyHeroPortrait.vue`, `HeroDetailDialog.vue`, `mission/MissionTeamPanel.vue` — the usage sites, each gaining a `preset`.
+- `web/config/portraits.ts` — the widths, the master size, `portraitScreens()`.
+- `web/components/HeroPortrait.vue` — the one `NuxtImg` for portraits.
+- `nuxt.config.ts` — the `image` block and the Vercel cache TTL under `nitro`.
+- `public/images/portraits/` — the masters; `web/utils/heroPortraitSrc.ts` — the path contract, untouched.
 - `operations.md` — the cache reset step.
 
 ## Dependencies
 
 - `features/002_hero-data.md` — hero ids name the master files.
 - `features/012_special-powers.md` — Sonar's form selects between two masters.
-- `annexes/design-system.md` §10 — records that the project uses `NuxtImg`; its sizes are the preset widths.
-- `stacks/frontend/nuxt/addons/image.md` — the Nuxt Image addon (Catalyst, arriving by upgrade before implementation): masters lossless, a preset per usage site, screens derived from presets, a long edge TTL with invalidation as the reset.
+- `annexes/design-system.md` §10 — records `NuxtImg` and points at the widths.
+- `stacks/frontend/nuxt/addons/image.md` — the addon whose rules this feature applies.
 - `context/glossary.md` — portrait and bust.
 
 ## Open Questions
 
 ## Tests
 
-- `test/unit/portrait-masters.test.ts`: every hero id (and both Sonar forms) has a master; each is 512×512 lossless WebP.
-- `test/unit/image-config.test.ts`: the set of preset widths × densities equals the set of `image.screens` values and none exceeds 512; every portrait `NuxtImg` in the usage-site components carries a `preset` that exists.
-- Live walk, production, per the Examples table: request headers and `x-vercel-cache` on first and second hit, AVIF and WebP negotiation, the browser cache header re-read after the TTL change, and the Vercel Hobby image quota read from the dashboard into `operations.md`.
+- `test/unit/portrait-masters.test.ts`: every hero id and both Sonar forms have a master; each is a lossless WebP, 450–512 a side, square within 2px.
+- `test/unit/portrait-sizes.test.ts`: no width × density above 512; `portraitScreens()` is exactly widths × densities; no `NuxtImg` outside `HeroPortrait.vue` references a portrait source.
+- `test/nuxt/hero-portrait.test.ts`: the card usage yields `w_108 1x` and `w_216 2x` at `q_80`; the panel's 2x is `w_512`; class and listeners pass through.
+- Live walk, production, per the Examples table: headers and `x-vercel-cache` on first and second hit, AVIF and WebP negotiation, the browser cache header after the TTL change, and the Hobby image quota read into `operations.md`.
 
 ## Verification
 
