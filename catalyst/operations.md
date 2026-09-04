@@ -38,6 +38,34 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
 - **Alembic never runs on Vercel.** Migrations are manual, from a workstation, against the direct endpoint — the Neon section's commands.
 - Vercel's **Neon marketplace integration is not used**: it injects a single `DATABASE_URL`, and this project needs the pooled and direct endpoints separately. Both variables are set by hand.
 
+## Portrait images (Vercel Image Optimization)
+
+The twelve hero portraits in `public/images/portraits/` are lossless WebP masters at the bust's native size; Vercel's optimizer resizes and re-encodes them on request. `nuxt.config.ts` holds the whole configuration — `image.screens` is derived from the per-usage widths in `web/config/portraits.ts` and becomes the optimizer's allowed `sizes`, `image.quality` is 90, and the one-year edge TTL sits under `nitro.vercel.config.images`. Feature 021 holds the why; there is no `vercel.json` and there must not be (see the Vercel section's Quirks).
+
+### Operate
+
+```bash
+curl -sI -H 'Accept: image/avif,image/webp,*/*' \
+  'https://z-team-planner.vercel.app/_vercel/image?url=%2Fimages%2Fportraits%2Fgolem.webp&w=216&q=90'
+                                            # what a card variant actually serves: type, length, x-vercel-cache
+vercel cache invalidate --srcimg /images/portraits/golem.webp
+                                            # after replacing one master, so the edge stops serving the old one
+```
+
+Transformation and cache-read counts are dashboard work: the project's Usage page, Image Optimization.
+
+### Recovery
+
+Replacing a portrait: overwrite the master under its existing name, deploy, then run the invalidate command above for that path. Filenames are never versioned, so without the invalidation the edge keeps the old image for up to a year. Never performed against production — the first portrait replacement is the drill.
+
+### Quirks
+
+- **`image.screens` is not a breakpoint list.** The Vercel provider snaps every requested width **up** to the nearest value present, and the same list is written into the build output as the optimizer's allowed `sizes`. A width that no usage renders is a transformation billed for nothing; a width missing from the list is silently overfetched. `test/unit/portrait-sizes.test.ts` is what keeps the list equal to what the app asks for.
+- **The Vercel provider does nothing in `nuxt dev`** — it returns the source URL untouched, and IPX serves instead without snapping to `screens`. A width that would overfetch in production looks perfect locally, which is why the parity check is a test and not a dev-server walk.
+- **The TTL lives under `nitro`, not `image`.** `@nuxt/image`'s Vercel provider has no `minimumCacheTTL` option and writes 300 seconds itself; the explicit `nitro.vercel.config.images.minimumCacheTTL` wins by `defu` merge. Moving it under `image` would silently restore the five-minute cache.
+- **The masters are not all the same size** (450 to 512 px). Neither Vercel nor IPX enlarges, so a request above a given master's size returns that master — the 2x panel variant is 512 for most heroes and less for Coupé, Invisigal, Malevola and Sonar.
+- **Optimized images are not browser-cached.** Vercel sends `cache-control: public, max-age=0, must-revalidate` on them whatever the edge TTL is, so an invalidation reaches readers on their next load.
+
 ## API service
 
 FastAPI in `app/`, run with uv. Stateless: it holds no data of its own, so everything below is about starting it and reading what it says. Structure and invariants are `app/CLAUDE.md`.
