@@ -206,7 +206,7 @@ No raw z-index literals and no `9999`. A new layer is **added to the scale** wit
 
 ## 10. Imagery
 
-Plain `<img>` on this stack — there is no approved image component. Every image ships either explicit `width`/`height` attributes or a sized box, so nothing reflows when it loads.
+Plain `<img>` on this stack — there is no approved image component unless the `image` addon is adopted (`addons/image.md`), which makes `NuxtImg` the component and keeps every rule below. Every image ships either explicit `width`/`height` attributes or a sized box, so nothing reflows when it loads.
 
 - **Aspect ratio, not height:** media boxes use `aspect-ratio` from a small named set (`<16/9 · 4/3 · 1/1>`) with `object-fit: cover`, so the box is stable before the image loads.
 - **Radius** comes from §5, matching the container it sits in; edge-to-edge media inside a card keeps the card's radius via `overflow: hidden`.

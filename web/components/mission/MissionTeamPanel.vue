@@ -80,8 +80,9 @@
           :aria-label="`View ${slotName(slot)}`"
           @click="viewSlotDetail(slot)"
         >
-          <NuxtImg
-            :src="slotPortrait(slot)"
+          <HeroPortrait
+            :hero-id="slotHeroId(slot)"
+            usage="tile"
             :alt="slotName(slot)"
             class="size-22 border-2 border-accented bg-accented object-cover select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
             :class="slot === ILLUSION_SLOT ? 'opacity-40' : ''"
@@ -99,8 +100,9 @@
           v-else-if="slot === GOLEM_COPY_SLOT"
           class="flex min-h-0 w-full flex-1 flex-col items-center gap-2"
         >
-          <NuxtImg
-            :src="heroPortraitSrc('golem', sonarForm)"
+          <HeroPortrait
+            hero-id="golem"
+            usage="tile"
             alt="Golem's copy"
             class="size-22 border-2 border-accented bg-accented object-cover opacity-40 select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
           />
@@ -141,8 +143,9 @@
             class="flex cursor-pointer flex-col items-center gap-2 border-2 border-default p-2 hover:border-accented"
             @click="pick(hero.id)"
           >
-            <NuxtImg
-              :src="heroPortraitSrc(hero.id, sonarForm)"
+            <HeroPortrait
+              :hero-id="hero.id"
+              usage="tile"
               :alt="hero.name"
               class="aspect-square w-full border-2 border-accented bg-accented object-cover"
             />
@@ -163,6 +166,8 @@
 <script setup lang="ts">
 // * Feature 015's team row: four positional slots. All state changes go through the
 // * guarded planner actions; the picker offers only the current roster minus the team.
+import HeroPortrait from '@/components/HeroPortrait.vue';
+
 import { GOLEM_COPY_SLOT, ILLUSION_SLOT } from '@/types/mission';
 
 import type { HeroId } from '@/types/hero';
@@ -170,7 +175,6 @@ import type { MissionSlot } from '@/types/mission';
 
 const {
   heroes,
-  monsterForm,
   missionSlots,
   missionCandidates,
   missionIllusionRatio,
@@ -186,9 +190,6 @@ const emit = defineEmits<{
 
 const pickerOpen = ref(false);
 const pickerSlot = ref<number | null>(null);
-
-// * Three portraits in this panel follow Sonar's shared form (feature 012); the state converts here, once.
-const sonarForm = computed(() => (monsterForm.value ? 'monster' : 'hybrid'));
 
 // * Identity for the swap travel (feature 020). A hero is the same card wherever it lands, so it is keyed
 // * by hero id and the row moves it. Empty slots, Golem copies and Prism illusions have no identity of
@@ -270,10 +271,11 @@ function slotName(slot: Exclude<MissionSlot, null>): string {
   return source ? `Illusion of ${heroName(source)}` : 'Illusion';
 }
 
-function slotPortrait(slot: Exclude<MissionSlot, null>): string {
+// * An illusion wears its source's face; before a source exists it wears Prism's, whose power it is.
+function slotHeroId(slot: Exclude<MissionSlot, null>): HeroId {
   const id = isHero(slot) ? slot : missionIllusionSource.value;
 
-  return heroPortraitSrc(id ?? 'prism', sonarForm.value);
+  return id ?? 'prism';
 }
 </script>
 

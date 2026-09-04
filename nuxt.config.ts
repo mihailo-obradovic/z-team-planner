@@ -1,3 +1,5 @@
+import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/ui',
@@ -35,6 +37,24 @@ export default defineNuxtConfig({
   },
 
   css: ['@/assets/css/main.css'],
+
+  // * Feature 021. `screens` is derived, not typed by hand: on Vercel it is also the optimizer's allowed sizes, and a width absent from it is snapped up to the next present one. The background wash is the one non-portrait image and keeps its master's width so the tightened list cannot shrink it.
+  image: {
+    quality: 90,
+    densities: PORTRAIT_DENSITIES,
+    screens: { ...portraitScreens(), background: 2560 }
+  },
+
+  nitro: {
+    vercel: {
+      config: {
+        images: {
+          // ! Not `image.vercel.minimumCacheTTL`: the provider has no such option and writes 300s itself. This block is merged with `defu`, so the explicit value wins. Masters change only by deliberate replacement; the reset is `vercel cache invalidate --srcimg` (operations.md).
+          minimumCacheTTL: 31536000
+        }
+      }
+    }
+  },
 
   ui: {
     colorMode: false

@@ -1,6 +1,6 @@
 # z-team-planner
 
-Catalyst version: 1.12.0
+Catalyst version: 1.13.2
 
 ## Project Purpose
 
@@ -71,14 +71,14 @@ Pointer index of protections declared in lazy-loaded feature/decision documents.
 
 One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices, adopted addons, and any optional layer. Filled at spawn; tells an agent which stack documents apply (`architecture.md` has the index).
 
-| Layer           | Module                                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| frontend        | nuxt                                                                                                    |
-| frontend/addons | ssr                                                                                                     |
-| frontend/ui     | nuxtui                                                                                                  |
-| backend         | python-fastapi                                                                                          |
-| persistence     | postgres (hosted on Neon)                                                                               |
-| identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
+| Layer           | Module                                                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| frontend        | nuxt                                                                                                                  |
+| frontend/addons | ssr, image (adopted 2026-09-04 by feature 021 — `@nuxt/image` was already installed; the addon makes it the contract) |
+| frontend/ui     | nuxtui                                                                                                                |
+| backend         | python-fastapi                                                                                                        |
+| persistence     | postgres (hosted on Neon)                                                                                             |
+| identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract               |
 
 ## Status Values
 

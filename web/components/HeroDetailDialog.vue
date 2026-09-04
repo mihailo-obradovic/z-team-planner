@@ -3,8 +3,10 @@
     <!-- * The thumbnail rides in the toolbar so the hero is named even below `lg`, where the large portrait is not drawn. -->
     <template #title>
       <span class="flex items-center gap-2">
-        <NuxtImg
-          :src="portraitSrc"
+        <HeroPortrait
+          v-if="heroId"
+          :hero-id="heroId"
+          usage="header"
           :alt="hero?.name ?? ''"
           class="size-6 shrink-0 object-cover object-top"
         />
@@ -36,8 +38,9 @@
             :aria-label="rosterHero.name"
             @click="handleRosterSelect(rosterHero.id, $event)"
           >
-            <NuxtImg
-              :src="portraitSrcFor(rosterHero.id)"
+            <HeroPortrait
+              :hero-id="rosterHero.id"
+              usage="rail"
               :alt="rosterHero.name"
               class="size-full object-cover object-top"
             />
@@ -68,8 +71,9 @@
               :aria-label="rosterHero.name"
               @click="handleRosterSelect(rosterHero.id, $event)"
             >
-              <NuxtImg
-                :src="portraitSrcFor(rosterHero.id)"
+              <HeroPortrait
+                :hero-id="rosterHero.id"
+                usage="ribbon"
                 :alt="rosterHero.name"
                 class="size-full object-cover object-top"
               />
@@ -87,8 +91,9 @@
             <div
               class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 md:block"
             >
-              <NuxtImg
-                :src="portraitSrc"
+              <HeroPortrait
+                :hero-id="hero.id"
+                usage="panel"
                 :alt="hero.name"
                 class="size-full object-cover object-top"
               />
@@ -449,6 +454,8 @@
 </template>
 
 <script setup lang="ts">
+import HeroPortrait from '@/components/HeroPortrait.vue';
+
 import {
   STAT_NAMES,
   MAX_STAT_VALUE,
@@ -601,14 +608,9 @@ const {
   flightInfo,
   flightShown,
   flightLocked,
-  portraitSrc,
   hasPowers,
   resolvedStat
 } = useHeroDerived(() => props.heroId);
-
-function portraitSrcFor(heroId: HeroId): string {
-  return heroPortraitSrc(heroId, monsterForm.value ? 'monster' : 'hybrid');
-}
 
 const powers = computed(() => {
   if (!props.heroId) {
