@@ -64,3 +64,9 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 **Confirmation** — a short, self-dismissing line that names what a control's action just did ("Comet trained"). It reports an action; it never explains the control, and it is not a hint.
 
 **Common symbol** — an icon whose meaning is assumed known (copy, save, share, close) and which therefore carries a label for assistive technology but no hint.
+
+## Roster imagery
+
+**Portrait** — the square hero image the app shows wherever a hero is pictured: card, dialog, roster rail, synergy pair, mission slot. One per hero, except Sonar, whose portrait follows the shared monster form. Named in code around `heroPortraitSrc`.
+
+**Bust** — the game's own head-and-shoulders roster art for a hero, as published unedited. A portrait is a bust cropped square; the bust itself never appears in the app.
