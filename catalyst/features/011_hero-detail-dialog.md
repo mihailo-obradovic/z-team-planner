@@ -47,7 +47,7 @@ In scope:
 Non-goals:
 
 - Editing the partner. The pair totals are read-only; the dialog edits one hero.
-- Player-written notes. The area is reserved and the copy is authored in the repository; persisting per-hero notes would bump the serialized build format (feature 001, a protected area) and is its own effort.
+- Player-written notes. The area's copy is authored (022); persisting per-hero notes would bump the serialized build format (001, protected) and is its own effort.
 - Tabs. The mockup's tabbed treatment was considered and rejected — the information fits one screen.
 - Changing any planner rule. Budgets, gating, displayed level and effective stat are feature 003's and are untouched.
 - A combined-stat _view_ of the pair beyond the totals — that belongs to the Synergy Pairs tab.
@@ -153,7 +153,7 @@ Horizontal overflow is verified per engine, because the first pass at this check
 - **WebKit (iOS Safari and every iOS browser, Brave included), 393×852.** The dialog's scrolling column must not scroll sideways. WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic size where Chromium gives 0, and that column is `overflow-y-auto`, which forces the x-axis to `auto` as well — so any item that floors the grid track turns it into a horizontal scroller. The base `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what holds this; removing any of them reopens it.
 - **Every engine, 320px.** The hero card's portrait column shrinks rather than holding 27rem. At the fixed size the card's row needs 316px of a 260px panel, and the overview grid scrolls sideways.
 
-Not covered: a `prefers-reduced-motion` machine, and the notes area holds placeholder copy until the maintainer writes it.
+Not covered: a `prefers-reduced-motion` machine. The notes content is [022](022_hero-notes.md)'s; here, layout only.
 
 ## Agent Change Rules
 

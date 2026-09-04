@@ -65,6 +65,12 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 
 **Common symbol** — an icon whose meaning is assumed known (copy, save, share, close) and which therefore carries a label for assistive technology but no hint.
 
+## Hero notes
+
+**Hero note** — one always-shown line of non-obvious characterization for a hero, rendered in the detail dialog's notes panel. Authored in the repository, never player-written, never persisted. Distinguished from an advisory by being unconditional (Waterboy's episode-8 variant is conditional on episode setup, not on allocation, so it is still a note).
+
+**Advisory** — a line in the same panel that appears or disappears as the player allocates, flagging a wasted spend (a **warning**) or a build worth doing (a **suggestion**). Both kinds render identically — no color, icon, or weight distinguishes them; only panel order does, warnings before suggestions. Named in code around `HERO_ADVISORIES` ([feature 022](../features/022_hero-notes.md)).
+
 ## Roster imagery
 
 **Portrait** — the square hero image the app shows wherever a hero is pictured: card, dialog, roster rail, synergy pair, mission slot. One per hero, except Sonar, whose portrait follows the shared monster form. Named in code around `heroPortraitSrc`.

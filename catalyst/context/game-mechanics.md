@@ -256,3 +256,26 @@ The fifth replacement pair is dependent on the member the player cuts in Episode
 At the end of Episode 3, the player must choose to let go of either Coupé or Sonar. Whoever is chosen, their closest comrade (Punch Up or Malevola respectively) will act out in the following episode by pulling a prank, refusing to take certain calls, making snide remarks, before eventually leaving early for the first shift.
 
 Before the second shift, Blonde Blazer presents Robert two choices to pick from to add to the team: Phenomaman or Waterboy. Whoever the player picks will then fill in as the new synergistic partner for whichever team member (Punch Up or Malevola) lost theirs.
+
+## Combat And Failure Thresholds
+
+Some calls carry a per-stat threshold that auto-fails the call if the assigned team's combined stat is too high — separate from and opposite to the usual "meet the requirement" scoring. Community-verified from Episode 5 onward (a Steam guide records combined-Combat thresholds of 5, 6, 7, 8 and 9 across Episode 5–8 missions), Combat is by far the most common stat this applies to — described by a widely-used community guide as *"the only stat associated with automatic failure"* until a handful of Episode 8 missions introduce rare Mobility and Charisma thresholds (e.g. one records "fails if MOB is 9+", another "fail if CHA 8+"). The final boss fight carries its own: keeping Invisigal's Mobility and Coupé's Intellect at 5 or below is cited as necessary to stay under its auto-fail criteria.
+
+Because this threshold is on the assigned team's *combined* stat, a hero with a naturally low Combat (Waterboy) is an asset on these calls rather than a liability, and over-investing Combat points across the roster narrows which calls can safely be attempted.
+
+Community guides call Vigor the most valuable stat by contrast, partly because it is the only one with no recorded auto-fail threshold and it can substitute for either an adjacent Combat or Mobility requirement.
+
+## XP Sharing And Waste
+
+A call's XP reward is a pool split evenly among every hero assigned to it — a hero who solos a call earns much more than one of four. Two consequences recorded by community guides:
+
+- **Phenomaman** is fixed at Rank 12 and cannot gain XP at all; assigning him to a call still consumes a share of that call's XP pool, which is lost rather than distributed to anyone.
+- **Prism's Doppelganger Illusion** copy occupies a slot and is credited a share of the call's XP the same way, reducing what the real assigned heroes receive.
+
+## Invisigal And Waterboy's XP Curves
+
+Most heroes reach level 2 at 1000 XP and each subsequent level at +300 XP. Invisigal and Waterboy, who start with fewer base stat points (11 and 8 respectively, both below the usual 12), have their own curves: Invisigal reaches her first skill point at 700 XP; Waterboy reaches his at 400 XP, then +300 per level after (700, 1000, 1300, …). Both are still capped at 9 skill points earned through XP, same as every other hero.
+
+## The Min Max Achievement
+
+The game's Steam achievement list includes "Min Max — Upgraded a Stat to 10", awarded for raising any single stat on any single hero to 10 (not all five, and not on every hero). Community build guides treat this achievement as the only real reason to push a stat to 10, since a call's combined stat requirement caps at 10 regardless of how high an individual hero's stat runs, and a synergy pair only needs to jointly reach 10 in a stat, not individually.
