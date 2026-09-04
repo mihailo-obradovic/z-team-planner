@@ -379,11 +379,12 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 
 ## 11. Transitions
 
-| Token                 | Value | Use                                                       |
-| --------------------- | ----- | --------------------------------------------------------- |
-| `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions |
-| `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit     |
-| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                           |
+| Token                 | Value | Use                                                                                               |
+| --------------------- | ----- | ------------------------------------------------------------------------------------------------- |
+| `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions                                         |
+| `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit                                             |
+| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                                                                   |
+| `--duration-linger`   | 1.5s  | A confirmation's hold before it closes (feature 018). A hold, not motion: no reduced-motion guard |
 
 Start at the baseline and step up only when the element's size justifies it. Vue `<Transition>` classes draw from the same tokens — a duration hardcoded in a transition class has bypassed the scale.
 
