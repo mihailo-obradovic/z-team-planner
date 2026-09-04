@@ -450,7 +450,7 @@
               <ScrollRegion
                 as="ul"
                 aria-label="Notes"
-                class="flex list-outside list-disc flex-col gap-2 p-3 pl-7 text-base marker:text-muted lg:min-h-0 lg:flex-1"
+                class="flex list-inside list-disc flex-col gap-2 p-4 text-base marker:text-muted lg:min-h-0 lg:flex-1"
               >
                 <li v-if="heroNote" class="text-muted">{{ heroNote }}</li>
                 <li

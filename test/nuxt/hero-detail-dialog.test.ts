@@ -225,4 +225,34 @@ describe('hero detail dialog', () => {
 
     expect(withAdvisories).toBe(empty);
   });
+
+  it("resolves a hero's active partner, not a cut hero's stale base pair", async () => {
+    const p = await planner();
+
+    p.resetAllTrainings();
+    p.resetHero('malevola');
+    p.resetHero('waterboy');
+
+    // ! Sonar is the default episode-3 cut and Waterboy the default episode-4 hire, so
+    // ! BASE_SYNERGY_PAIRS still carries malevola-sonar (stale — Sonar isn't on the visible
+    // ! roster) alongside the conditional malevola-waterboy pair that actually applies. A
+    // ! partner lookup over the raw pair list can match the stale one first; this pins the
+    // ! bug that shipped: it reported Malevola's Charisma pair total as over 10 against
+    // ! Sonar's base 3, when her real partner Waterboy leaves it at exactly 10.
+    for (let i = 0; i < 6; i++) {
+      p.statUp('malevola', 'charisma');
+    }
+
+    await openDialog('malevola');
+    await nextTick();
+
+    const notes = document.querySelector('[aria-label="Notes"]');
+    const lines = [...(notes?.querySelectorAll('li') ?? [])].map(
+      (line) => line.textContent
+    );
+
+    expect(dialogText()).toContain('Synergy partner: Waterboy');
+    expect(dialogText()).toContain('Pair total');
+    expect(lines.some((line) => line?.includes('Charisma'))).toBe(false);
+  });
 });

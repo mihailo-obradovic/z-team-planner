@@ -20,26 +20,32 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
     getBonusLevel,
     bonusLevelsUsed,
     getPairCombinedStats,
-    synergyPairs,
+    synergyPairColumns,
     ep8RecruitIds
   } = useHeroPlanner();
 
   const id = computed(() => toValue(heroId));
 
+  // * Mirrors HeroDetailDialog's own synergyPartner: synergyPairColumns is already resolved
+  // * against the visible roster, unlike the raw synergyPairs tuples, which still carry a
+  // * cut hero's base pair (e.g. Malevola-Sonar) alongside the conditional replacement that
+  // * actually applies — reading the raw list here once picked the wrong, stale partner.
   const partnerId = computed<HeroId | null>(() => {
     if (!id.value) {
       return null;
     }
 
-    const pair = synergyPairs.value.find(
-      ([a, b]) => a === id.value || b === id.value
-    );
+    for (const column of synergyPairColumns.value) {
+      if (column.top.id === id.value) {
+        return column.bottom.id;
+      }
 
-    if (!pair) {
-      return null;
+      if (column.bottom.id === id.value) {
+        return column.top.id;
+      }
     }
 
-    return pair[0] === id.value ? pair[1] : pair[0];
+    return null;
   });
 
   const isEp8Waterboy = computed(() => ep8RecruitIds.value.has('waterboy'));

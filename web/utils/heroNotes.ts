@@ -51,7 +51,7 @@ export const HERO_NOTES: Record<HeroId, string> = {
   phenomaman:
     'Fixed at rank 12 and cannot gain XP. Every call he joins burns a share of that call’s XP pool.',
   prism:
-    'Her value is filling empty slots rather than her own stats. The copy she places takes a share of the call’s XP.',
+    "If you're already comfortable completing the call, remove her clone to keep it from taking a share of the XP.",
   'punch-up':
     'Usually built with Vigor and Charisma maxed, which sit apart on the chart — a weak solo pick that way, but one of the strongest synergy pairs in the game.',
   sonar:
