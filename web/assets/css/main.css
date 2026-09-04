@@ -240,7 +240,19 @@
     }
 }
 
-/* * The annex's loading ring (§11), the initial-load cover's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
+/* * Feature 023's boot rules, both keyed off the flag `app.vue` puts on <html> through unhead. The flag carries `true` or `false` and is never absent — see the note beside it there. Written here rather than as bindings in the template so the decision lives in one place, and so a visitor with no JavaScript can be handed all of it back by the single <noscript> block that file emits.
+ * ! `visibility`, not `display`, and deliberately the one exception to the feature's own rule: the planner keeps its space so that arriving reflows nothing. Everything else withheld at boot is `display: none`, because reserving space is exactly what leaves an empty band.
+ * ! The scroll lock is not decoration. The region keeps its full height while hidden, so without this a wheel could scroll it and the reveal would land somewhere nobody chose. */
+[data-booting='true'] main {
+    visibility: hidden;
+    overflow-y: hidden;
+}
+
+[data-booting='true'] [data-boot-withheld] {
+    display: none;
+}
+
+/* * The annex's loading ring (§11), the initial-load ring's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
 @utility loading-ring {
     animation: loading-ring 1.4s linear infinite;
 }

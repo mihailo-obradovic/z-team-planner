@@ -14,60 +14,66 @@
       </template>
 
       <template #right>
-        <BudgetCounters />
+        <!-- * Feature 023. One wrapper so the whole cluster is withheld or shown as a unit,
+             * and so `main.css` has a single element to key off rather than eight.
+             ! Withheld by CSS rather than `v-if`: these controls are in the prerendered HTML
+             ! and stay there. What the boot flag takes away is their paint, never the markup. -->
+        <div data-boot-withheld class="flex items-center gap-2">
+          <BudgetCounters />
 
-        <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
+          <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
 
-        <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-        <ClientOnly>
-          <BuildManager class="hidden lg:flex" tier="labelled" />
-          <BuildManager
-            class="hidden md:flex lg:hidden"
-            :labelled="false"
-            tier="icon"
-          />
-        </ClientOnly>
+          <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
+          <ClientOnly>
+            <BuildManager class="hidden lg:flex" tier="labelled" />
+            <BuildManager
+              class="hidden md:flex lg:hidden"
+              :labelled="false"
+              tier="icon"
+            />
+          </ClientOnly>
 
-        <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
+          <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
              * the first client render alike, so both draw the same reserved slot and the
              * prerendered page never shows the wrong button (feature 004). -->
-        <AuthMenu tier="labelled" />
+          <AuthMenu tier="labelled" />
 
-        <AuthMenu tier="icon" />
+          <AuthMenu tier="icon" />
 
-        <AuthMenu tier="bare" />
+          <AuthMenu tier="bare" />
 
-        <u-button
-          class="hidden lg:inline-flex"
-          size="md"
-          variant="subtle"
-          color="neutral"
-          icon="i-lucide-sliders-horizontal"
-          label="Story setup"
-          @click="openStorySetup"
-        />
-
-        <u-tooltip text="Story setup">
           <u-button
-            class="hidden md:inline-flex lg:hidden"
+            class="hidden lg:inline-flex"
             size="md"
             variant="subtle"
             color="neutral"
             icon="i-lucide-sliders-horizontal"
-            aria-label="Story setup"
+            label="Story setup"
             @click="openStorySetup"
           />
-        </u-tooltip>
 
-        <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is right on the amber and gold solids and unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
-        <button
-          type="button"
-          class="flex size-11 touch-manipulation items-center justify-center text-neutral-100 md:hidden"
-          aria-label="Story setup"
-          @click="openStorySetup"
-        >
-          <u-icon name="i-lucide-sliders-horizontal" class="size-5" />
-        </button>
+          <u-tooltip text="Story setup">
+            <u-button
+              class="hidden md:inline-flex lg:hidden"
+              size="md"
+              variant="subtle"
+              color="neutral"
+              icon="i-lucide-sliders-horizontal"
+              aria-label="Story setup"
+              @click="openStorySetup"
+            />
+          </u-tooltip>
+
+          <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is right on the amber and gold solids and unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
+          <button
+            type="button"
+            class="flex size-11 touch-manipulation items-center justify-center text-neutral-100 md:hidden"
+            aria-label="Story setup"
+            @click="openStorySetup"
+          >
+            <u-icon name="i-lucide-sliders-horizontal" class="size-5" />
+          </button>
+        </div>
       </template>
     </u-header>
 
@@ -80,35 +86,35 @@
       alt=""
     />
 
-    <!-- * Feature 023. All three are true on the server, in the prerender and on the first
-         * client render alike, and all three drop together once the build is loaded.
-         * ! `covered || undefined`, not `covered`: Vue only removes an attribute when the value
-         * ! is null or undefined, and `inert="false"` still makes an element inert. -->
-    <u-main
-      class="relative z-10"
-      :class="{ 'overflow-hidden': covered }"
-      :inert="covered || undefined"
-      :aria-busy="covered || undefined"
-    >
+    <!-- * Feature 023. Nothing here reads the boot state: `main.css` hides this region while the
+         * flag is on, which keeps the decision in one place and off the hydrated tree. Hiding it
+         * also takes it out of the tab order and the accessibility tree, so `inert` and
+         * `aria-busy` would add nothing the hiding does not already do. -->
+    <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
 
-    <!-- * Leave-only: the cover is already there when the app mounts, so it has no enter to play. -->
+    <!-- * Leave-only: the ring is already there when the app mounts, so it has no enter to play. -->
     <Transition
       leave-active-class="transition-opacity duration-(--duration-baseline) ease-in"
       leave-to-class="opacity-0"
     >
-      <LoadingCover v-if="covered" />
+      <LoadingRing v-if="booting" />
     </Transition>
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
+    <!-- * Feature 023. `v-if` here, where the header's cluster takes CSS: these two are already
+         * client-only, so they render nothing on the server and nothing for a visitor without
+         * JavaScript. There is no prerendered markup to preserve, and so nothing for the head
+         * block to restore either. -->
     <ClientOnly>
-      <FirstRunBanners />
+      <FirstRunBanners v-if="!booting" />
     </ClientOnly>
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
     <ClientOnly>
       <div
+        v-if="!booting"
         class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
       >
         <BuildManager block size="lg" tier="bare" />
@@ -142,14 +148,13 @@ const { setupBeforeUnload } = useUnsavedChanges();
 
 const storySetupOpen = ref(false);
 
-// * Feature 023. Read once, not reactively: the cover belongs to the boot of `/`, never to a
+// * Feature 023. Read once, not reactively: the wait belongs to the boot of `/`, never to a
 // * later navigation that happens to land there. The value is the same on the server, in the
-// * prerendered HTML and on the first client render, which is what keeps the cover out of the
-// * hydration diff — it is removed only after mount, below.
+// * prerendered HTML and on the first client render, and it is cleared only after mount, below.
 // * A plain ref rather than the query layer's `isPending` (stacks/frontend/nuxt/nuxt.md): what
 // * this waits on is local planner state read from localStorage, not a request, so there is no
 // * query whose state could stand in for it.
-const covered = ref(useRoute().path === '/');
+const booting = ref(useRoute().path === '/');
 
 function openStorySetup() {
   storySetupOpen.value = true;
@@ -169,7 +174,7 @@ onMounted(async () => {
 
     return;
   } finally {
-    covered.value = false;
+    booting.value = false;
   }
 
   setupBeforeUnload();
@@ -193,15 +198,35 @@ useHead({
     { rel: 'manifest', href: '/site.webmanifest' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'en',
+
+    // * Feature 023. The flag every boot rule keys off. On `<html>` via unhead rather than in the
+    // * template, so it is written outside the tree Vue hydrates and can never be part of a
+    // * mismatch.
+    // ! Two values, never an absent attribute. Resolving this to `undefined` leaves the
+    // ! server-rendered `data-booting="true"` on the element for good — unhead drops the key from
+    // ! its own state but does not remove an attribute it inherited from the SSR markup, so the
+    // ! app stayed hidden behind rules that never stopped matching. Flipping a value is an
+    // ! update, which does reach the DOM.
+    'data-booting': computed(() => (booting.value ? 'true' : 'false'))
   },
 
-  // * Feature 023. The cover is in `/`'s prerendered HTML and only JavaScript ever lifts it, so
-  // * with scripting off it would sit there for good over a planner that is perfectly readable.
+  // * Without JavaScript nothing ever clears the flag, so the app would sit half-drawn behind a
+  // * ring that never stops. One block undoes every boot rule at once — partially undoing them
+  // * would be worse than either end state.
   // ! In <head>, not the template: with scripting *on*, a browser parses the contents of a
-  // ! <noscript> element as plain text, while Vue's virtual DOM holds a <style> element — and
+  // ! <noscript> element as plain text, while Vue's virtual DOM holds a <style> element, and
   // ! hydrating one against the other is the exact mismatch this feature exists to avoid.
-  noscript: [{ innerHTML: '<style>[data-loading-cover]{display:none}</style>' }]
+  // ! `!important` because these rules and the ones they undo have equal specificity, and the
+  // ! stylesheet's position relative to this block is not something to depend on.
+  noscript: [
+    {
+      innerHTML:
+        "<style>[data-booting='true'] main{visibility:visible!important;overflow-y:auto!important}" +
+        "[data-booting='true'] [data-boot-withheld]{display:flex!important}" +
+        '[data-loading-ring]{display:none!important}</style>'
+    }
+  ]
 });
 
 // ! No ogImage or twitterImage on purpose. Both pointed at a Nuxt UI template screenshot left over from the starter, and decision 003 removed them rather than ship a picture of someone else's product — twitterCard dropped to `summary` at the same time, so cards render as text instead of a broken image.
