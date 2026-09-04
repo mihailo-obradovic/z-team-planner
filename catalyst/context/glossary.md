@@ -56,3 +56,9 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 **Estimated success** — the simulator's percentage for the active mission template: radar coverage plus the synergy boost, adjusted by reattempt powers, zeroed by a tripped fail threshold.
 
 **Synergy level** — the 0–3 setting standing for how practiced a synergy pair is, worth +5% success per level. One global level, applied once; meaningful only while the mission team holds a synergy pair. Named in code around `SynergyLevel`.
+
+## Roster imagery
+
+**Portrait** — the square hero image the app shows wherever a hero is pictured: card, dialog, roster rail, synergy pair, mission slot. One per hero, except Sonar, whose portrait follows the shared monster form. Named in code around `heroPortraitSrc`.
+
+**Bust** — the game's own head-and-shoulders roster art for a hero, as published unedited. A portrait is a bust cropped square; the bust itself never appears in the app.
