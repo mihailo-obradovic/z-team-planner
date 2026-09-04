@@ -86,7 +86,7 @@ Not role-specific. The cover is identical signed in and signed out — deliberat
 
 ## Edge Cases
 
-- **`loadInitialBuild` throws.** The cover still lifts. Its `finally` is what clears the state, so a corrupt local build reveals the planner rather than trapping the visitor behind a permanent ring.
+- **`loadInitialBuild` throws.** The cover still lifts. Its `finally` is what clears the state, so a corrupt local build reveals the planner rather than trapping the visitor behind a permanent ring. The accompanying `catch` exists for the test: an unhandled rejection fails the suite, and provoking one to prove the lift would have meant leaving a real one in the shell.
 - **A wheel scroll while covered.** `inert` blocks pointer and keyboard input but not scrolling the region underneath, so `u-main` also carries `overflow-hidden` while covered; it would otherwise lift onto a page scrolled somewhere the visitor never chose.
 - **Development mode.** Nuxt serves styles through JavaScript in dev, so the cover paints unstyled for an instant there. In production the prerendered page carries a render-blocking stylesheet link and does not. The manual walk needs to expect that difference rather than read it as a defect.
 - **The background wash.** It is `fixed inset-0` behind everything; the cover paints over it and reveals it at lift. That reveal is part of the transition, not a flash to fix.
@@ -99,7 +99,7 @@ Not role-specific. The cover is identical signed in and signed out — deliberat
 
 ## Error Handling
 
-- A failed `loadInitialBuild` lifts the cover and leaves the existing behaviour untouched — this feature adds no error surface of its own.
+- A failed `loadInitialBuild` lifts the cover and leaves the existing behaviour untouched: the leave-site prompt stays unarmed, because there is no loaded build to lose. The throw is caught and logged rather than left to become an unhandled rejection — which is what it already was, silently, before this cover existed. A log, not a surface: nothing is shown to the visitor.
 - No timeout, no retry, no fallback copy. See Non-Goals.
 
 ## Entry Points

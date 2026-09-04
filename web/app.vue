@@ -157,9 +157,17 @@ function openStorySetup() {
 
 onMounted(async () => {
   // * `finally`, so a build that will not deserialize reveals the planner instead of leaving the
-  // * visitor behind a ring that never stops. What happens after the throw is unchanged.
+  // * visitor behind a ring that never stops. What happens after the throw is unchanged: the
+  // * leave-site prompt is still not armed, because there is no loaded build to lose.
+  // ! The `catch` is what keeps that throw from becoming an unhandled rejection — it was one
+  // ! before this cover existed too, silent and unattributable. Reported the way the Firebase
+  // ! plugin reports its own failure, and nowhere else: this is a log, not a surface.
   try {
     await loadInitialBuild();
+  } catch (error) {
+    console.error('The initial build could not be loaded.', error);
+
+    return;
   } finally {
     covered.value = false;
   }
