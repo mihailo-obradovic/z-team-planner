@@ -166,4 +166,103 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect();
   mutationObserver?.disconnect();
 });
+
+// * The caller decides when something must be seen; the region owns how far it has to move (feature 013).
+// ! Never `Element.scrollIntoView`: it walks the ancestor chain, so bringing a tile into a ribbon would
+// ! also scroll the dialog body it sits in. This moves the region and nothing above it.
+function bringIntoView(target: HTMLElement) {
+  const element = region.value;
+
+  if (!element || target === element || !element.contains(target)) {
+    return;
+  }
+
+  const scrollable = scrollableAxis(element);
+  const start = contentOffset(element, target);
+  const gaps = scrollGaps(element);
+
+  const left = scrollOffsetIntoView({
+    scrollable: scrollable === 'horizontal' || scrollable === 'both',
+    offset: element.scrollLeft,
+    viewport: element.clientWidth,
+    content: element.scrollWidth,
+    targetStart: start.left,
+    targetSize: target.offsetWidth,
+    clearance: gaps.column
+  });
+
+  const top = scrollOffsetIntoView({
+    scrollable: scrollable === 'vertical' || scrollable === 'both',
+    offset: element.scrollTop,
+    viewport: element.clientHeight,
+    content: element.scrollHeight,
+    targetStart: start.top,
+    targetSize: target.offsetHeight,
+    clearance: gaps.row
+  });
+
+  if (left === element.scrollLeft && top === element.scrollTop) {
+    return;
+  }
+
+  // * Past the baseline, so it snaps under reduced motion — but it still runs: it corrects what is visible
+  // * rather than decorating it (annex §14.4).
+  element.scrollTo({
+    left,
+    top,
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+  });
+}
+
+// ! Read from the layout tree, never from `getBoundingClientRect`. A dialog mid enter-animation is scaled,
+// ! and a scaled rect delta compared against an unscaled `scrollLeft` aims the scroll wrong. Offsets are
+// ! layout positions: unaffected by transforms, and already relative to the content rather than the viewport.
+function contentOffset(
+  element: HTMLElement,
+  target: HTMLElement
+): { left: number; top: number } {
+  let left = 0;
+  let top = 0;
+
+  for (
+    let node: HTMLElement | null = target;
+    node;
+    node = node.offsetParent as HTMLElement | null
+  ) {
+    if (node === element) {
+      return { left, top };
+    }
+
+    left += node.offsetLeft;
+    top += node.offsetTop;
+
+    if (!element.contains(node.offsetParent as Node | null)) {
+      break;
+    }
+  }
+
+  // * The region is not itself an offset parent, so it and the target are measured from the same ancestor.
+  // * Its border sits outside the padding box `scrollLeft` counts from, hence `clientLeft`.
+  return {
+    left: left - element.offsetLeft - element.clientLeft,
+    top: top - element.offsetTop - element.clientTop
+  };
+}
+
+// * The clearance is the region's own gap, so a tile lands beside its neighbour rather than flush against
+// * the clipping edge and under the 1px rule. A region with no gap gets none — there is nothing to sit beside.
+function scrollGaps(element: HTMLElement): { column: number; row: number } {
+  const style = getComputedStyle(element);
+
+  return {
+    column: Number.parseFloat(style.columnGap) || 0,
+    row: Number.parseFloat(style.rowGap) || 0
+  };
+}
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+defineExpose({ bringIntoView });
 </script>

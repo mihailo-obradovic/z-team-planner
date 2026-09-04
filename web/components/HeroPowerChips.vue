@@ -6,6 +6,13 @@
       :icon="sonarFormIcon"
       :color="monsterForm ? 'primary' : 'neutral'"
       :active="monsterForm"
+      :confirmation="
+        () =>
+          confirmationText({
+            kind: 'monster-form',
+            form: monsterForm ? 'mega-bat' : 'hybrid'
+          })
+      "
       @click="toggleMonsterForm"
     />
 
@@ -14,6 +21,14 @@
       :icon="POWER_ICONS[0]"
       :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
       :active="powerStates.startingRevealed"
+      :confirmation="
+        () =>
+          confirmationText({
+            kind: 'starting',
+            name: powers![0]!.name,
+            revealed: powerStates.startingRevealed
+          })
+      "
       @click="toggleStartingPower(heroId)"
     />
 
@@ -25,6 +40,14 @@
       :color="trainablePowerColor(i)"
       :active="trainablePowerActive(i)"
       :disabled="isTrainableDisabled(i)"
+      :confirmation="
+        () =>
+          confirmationText({
+            kind: 'upgrade',
+            name: power.name,
+            trained: trainablePowerActive(i)
+          })
+      "
       @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
     />
 
@@ -34,6 +57,9 @@
       icon="i-lucide-flame"
       :color="specialPowerState ? 'primary' : 'neutral'"
       :active="specialPowerState > 0"
+      :confirmation="
+        () => confirmationText({ kind: 'supernova', on: specialPowerState > 0 })
+      "
       @click="toggleSpecialPower(heroId)"
     />
 
@@ -43,6 +69,14 @@
       :icon="coupeIcon"
       :color="specialPowerState ? 'primary' : 'neutral'"
       :active="specialPowerState > 0"
+      :confirmation="
+        () =>
+          confirmationText({
+            kind: 'en-pointe',
+            state: specialPowerState as 0 | 1 | 2,
+            bonus: coupeBonus
+          })
+      "
       @click="toggleSpecialPower(heroId)"
     />
 
@@ -52,12 +86,20 @@
       icon="i-lucide-expand"
       :color="specialPowerState ? 'primary' : 'neutral'"
       :active="specialPowerState > 0"
+      :confirmation="
+        () =>
+          confirmationText({
+            kind: 'spread-thin',
+            slots: specialPowerState as 0 | 1 | 2 | 3
+          })
+      "
       @click="toggleSpecialPower(heroId)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { confirmationText } from '@/utils/confirmationText';
 import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
@@ -127,9 +169,12 @@ const showCoupeEnPointe = computed(() => {
   return props.heroId === 'coupe' && powerStates.value.startingRevealed;
 });
 
+const coupeBonus = computed(() =>
+  powerStates.value.trainableSelected === 2 ? 3 : 1
+);
+
 const coupeTooltip = computed(() => {
-  const isUpgraded = powerStates.value.trainableSelected === 2;
-  const bonus = isUpgraded ? '+3' : '+1';
+  const bonus = `+${coupeBonus.value}`;
 
   if (specialPowerState.value === 1) {
     return `En Pointe: ${bonus} Combat (active)`;

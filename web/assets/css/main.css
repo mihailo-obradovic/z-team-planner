@@ -169,6 +169,8 @@
     --duration-baseline: 150ms;
     --duration-slow: 250ms;
     --duration-slowest: 400ms;
+    /* * Added: how long a confirmation holds before it closes (feature 018). A hold, not motion, so no reduced-motion guard. */
+    --duration-linger: 1500ms;
 
     /* * Scrollbars (annex §1). Two pairs — thumb then track — because the app scrolls on two grounds: the dark page and the paper surfaces. Written as one variable each so the value is a single decision applied at several roots, not repeated. */
     --scrollbar-ground: var(--ui-color-secondary-300)
@@ -205,6 +207,13 @@
 /* * The paper scrollbar on a paper surface that is not a panel — the select menu and the mobile slideover's body. Every other paper scroll region inherits it from `panel`. */
 @utility scroll-paper {
     scrollbar-color: var(--scrollbar-paper);
+}
+
+/* * Feature 010: the inline text link. A 1px underline and nothing else, so the affordance is the rule and not a colour — every amber step that clears 4.5:1 on paper is a text-only step, and a link should look like a link at a glance. The hover colour is the surface's to set: one step dimmer on paper, cream on the ground (annex §13). */
+@utility text-link {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
 }
 
 /* * Feature 015: a tab fades its content in on a switch, at the slow duration.

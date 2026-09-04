@@ -57,6 +57,16 @@ describe('FirstRunBanners', () => {
     expect(labels(page)).toEqual(['Browser storage notice']);
   });
 
+  it('links the storage notice, and only it, to /privacy', async () => {
+    const page = await mountSuspended(FirstRunBanners);
+    const links = page.findAll('a[href="/privacy"]');
+
+    expect(links).toHaveLength(1);
+    expect(links[0]?.text()).toBe('Privacy');
+    expect(page.findAll('[role="region"]')[1]?.find('a').exists()).toBe(true);
+    expect(page.findAll('[role="region"]')[0]?.find('a').exists()).toBe(false);
+  });
+
   it('shows only the banner whose key is missing', async () => {
     storage.set(STORAGE_KEY, '1');
 
@@ -81,6 +91,48 @@ describe('FirstRunBanners', () => {
     const page = await mountSuspended(FirstRunBanners);
 
     expect(labels(page)).toEqual(['Spoiler warning', 'Browser storage notice']);
+  });
+
+  it('writes the key once when the same banner is confirmed twice', async () => {
+    // ! The confirm button outlives the banner: it stays in the DOM for the exit animation (feature 017).
+    const page = await mountSuspended(FirstRunBanners);
+    const confirm = page.get('button');
+
+    await confirm.trigger('click');
+    storage.set(SPOILER_KEY, 'stale');
+    await confirm.trigger('click');
+
+    expect(storage.get(SPOILER_KEY)).toBe('stale');
+  });
+
+  it('hands focus to the banner still up', async () => {
+    const page = await mountSuspended(FirstRunBanners, {
+      attachTo: document.body
+    });
+
+    await page.get('button').trigger('click');
+    await nextTick();
+
+    const remaining = page.get('[data-notice="' + STORAGE_KEY + '"] button');
+
+    expect(document.activeElement).toBe(remaining.element);
+  });
+
+  it('releases focus when no banner is left', async () => {
+    storage.set(SPOILER_KEY, '1');
+
+    const page = await mountSuspended(FirstRunBanners, {
+      attachTo: document.body
+    });
+    const confirm = page.get('button').element as HTMLElement;
+
+    confirm.focus();
+    expect(document.activeElement).toBe(confirm);
+
+    await page.get('button').trigger('click');
+    await nextTick();
+
+    expect(document.activeElement).not.toBe(confirm);
   });
 
   it('never names a hero in the spoiler warning', async () => {

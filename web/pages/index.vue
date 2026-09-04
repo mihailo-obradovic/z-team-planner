@@ -18,7 +18,8 @@
     </template>
 
     <template #overview>
-      <div class="flex tab-fade flex-col gap-4 p-4">
+      <!-- * `min-h-full` + `mt-auto` on the line: it sits at the bottom of the panel while the content is shorter than it, and follows the content down once it is not (feature 010). Same shape in the other two tabs. -->
+      <div class="flex min-h-full tab-fade flex-col gap-4 p-4">
         <div
           class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
         >
@@ -66,18 +67,24 @@
             />
           </div>
         </div>
+
+        <PrivacyLink class="mt-auto" />
       </div>
     </template>
 
     <template #synergy-pairs>
-      <div class="@container flex tab-fade flex-wrap justify-center gap-4 p-4">
-        <SynergyPairCard
-          v-for="pair in synergyPairColumns"
-          :key="pair.topId"
-          :top="pair.top"
-          :bottom="pair.bottom"
-          @viewDetail="handleViewDetail"
-        />
+      <div class="@container flex min-h-full tab-fade flex-col gap-4 p-4">
+        <div class="flex flex-wrap justify-center gap-4">
+          <SynergyPairCard
+            v-for="pair in synergyPairColumns"
+            :key="pair.topId"
+            :top="pair.top"
+            :bottom="pair.bottom"
+            @viewDetail="handleViewDetail"
+          />
+        </div>
+
+        <PrivacyLink class="mt-auto" />
       </div>
     </template>
 
@@ -92,7 +99,7 @@
            a single column — the point where the two tracks and their gap (454 + 316 + 16)
            stop fitting, not a round number. The two thresholds below that — 35rem for the team, 28.5rem for
            the templates and the requirements check — live in those components. -->
-      <div class="@container tab-fade p-4">
+      <div class="@container flex min-h-full tab-fade flex-col gap-4 p-4">
         <!-- * A grid, not a wrapping flex row: the team has to take a row of its own at
              every width while staying its own natural width above 77rem, and only grid
              separates those two — `col-span-full` breaks the row, `justify-self` decides
@@ -120,6 +127,8 @@
             @viewDetail="handleViewDetail"
           />
         </div>
+
+        <PrivacyLink class="mt-auto" />
       </div>
     </template>
   </UTabs>

@@ -16,12 +16,14 @@
       <div v-if="hero" class="flex h-full min-h-0 gap-4">
         <!-- * Roster rail: square portraits, every one bordered, so the open hero differs by colour rather than by gaining an outline and nudging its neighbours. -->
         <ScrollRegion
+          ref="rosterRail"
           as="nav"
           class="hidden w-24 shrink-0 flex-col gap-2 lg:flex"
           aria-label="Roster"
         >
           <button
             v-for="rosterHero in rosterOrder"
+            ref="railTile"
             :key="rosterHero.id"
             type="button"
             class="aspect-square shrink-0 border-2 select-none"
@@ -32,7 +34,7 @@
             "
             :aria-current="rosterHero.id === heroId ? 'true' : undefined"
             :aria-label="rosterHero.name"
-            @click="emit('select', rosterHero.id)"
+            @click="handleRosterSelect(rosterHero.id, $event)"
           >
             <NuxtImg
               :src="portraitSrcFor(rosterHero.id)"
@@ -45,6 +47,7 @@
         <ScrollRegion class="flex min-w-0 flex-1 flex-col gap-4">
           <!-- * Below `lg` the rail becomes a ribbon: the same shortcut, in the one direction a phone has room for. -->
           <ScrollRegion
+            ref="rosterRibbon"
             as="nav"
             axis="horizontal"
             class="flex shrink-0 gap-2 lg:hidden"
@@ -52,6 +55,7 @@
           >
             <button
               v-for="rosterHero in rosterOrder"
+              ref="ribbonTile"
               :key="rosterHero.id"
               type="button"
               class="size-14 shrink-0 border-2 select-none"
@@ -62,7 +66,7 @@
               "
               :aria-current="rosterHero.id === heroId ? 'true' : undefined"
               :aria-label="rosterHero.name"
-              @click="emit('select', rosterHero.id)"
+              @click="handleRosterSelect(rosterHero.id, $event)"
             >
               <NuxtImg
                 :src="portraitSrcFor(rosterHero.id)"
@@ -461,6 +465,10 @@ const POWER_ICONS = [
   'i-lucide-swords'
 ] as const;
 
+// * What this component needs of a `ScrollRegion`: the one method it calls. Structural rather than the
+// * component's own instance type, so the dialog does not import a component it renders by auto-import.
+type RosterStrip = { bringIntoView: (target: HTMLElement) => void };
+
 const props = defineProps<{
   heroId: HeroId | null;
 }>();
@@ -469,6 +477,13 @@ const emit = defineEmits<{
   close: [];
   select: [heroId: HeroId];
 }>();
+
+// * Both rails are mounted at every width — one is `display: none` — so both are asked to follow and the
+// * hidden one measures zero and no-ops. Nothing here has to know which tier is on screen.
+const rosterRail = useTemplateRef<RosterStrip>('rosterRail');
+const rosterRibbon = useTemplateRef<RosterStrip>('rosterRibbon');
+const railTiles = useTemplateRef<HTMLElement[]>('railTile');
+const ribbonTiles = useTemplateRef<HTMLElement[]>('ribbonTile');
 
 const {
   visibleHeroes,
@@ -500,6 +515,59 @@ const rosterOrder = computed(() => {
   ]);
 
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
+});
+
+// * A tile the user reached for is followed on the click itself, not through the watcher: clicking the
+// * hero already open changes nothing to watch, and a half-clipped tile should still come whole (feature 019).
+function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
+  const tile = event.currentTarget;
+
+  if (tile instanceof HTMLElement) {
+    rosterRail.value?.bringIntoView(tile);
+    rosterRibbon.value?.bringIntoView(tile);
+  }
+
+  emit('select', heroId);
+}
+
+// * The roster control is the only thing in the dialog saying where you are in the roster, so the marked
+// * tile is brought into view whenever the open hero moves — including the moves the app makes for the user.
+function followMarkedHero() {
+  const index = rosterOrder.value.findIndex(
+    (rosterHero) => rosterHero.id === props.heroId
+  );
+
+  if (index < 0) {
+    return;
+  }
+
+  followTile(rosterRail.value, railTiles.value?.[index]);
+  followTile(rosterRibbon.value, ribbonTiles.value?.[index]);
+}
+
+function followTile(strip: RosterStrip | null, tile: HTMLElement | undefined) {
+  if (!strip || !tile) {
+    return;
+  }
+
+  strip.bringIntoView(tile);
+}
+
+// ! Deferred a frame past the DOM patch: on open the dialog is still laying out, and feature 013 reads a
+// ! not-yet-laid-out region as zeroes — harmless, but it would leave the tile where it was.
+watch(
+  () => props.heroId,
+  () => {
+    requestAnimationFrame(followMarkedHero);
+  },
+  { flush: 'post' }
+);
+
+// ! Opening is itself a trigger, and a watcher only fires on a change — so a dialog mounted with a hero
+// ! already set needs this. It belongs in a lifecycle hook rather than an `immediate` watcher because
+// ! `/` is prerendered: an immediate callback runs in setup, on the server, where there is no rAF.
+onMounted(() => {
+  requestAnimationFrame(followMarkedHero);
 });
 
 const synergyPartner = computed(() => {

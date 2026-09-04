@@ -142,6 +142,7 @@ _None — resolved in the grilling session of 2026-08-31._
 ## Dependencies
 
 - Feature 003 (episode setup, roster, budgets), feature 012 (trained-power gating, effective stats, Sonar's form), features 001 and 005 (the serialized format and its server validation, both touched additively), feature 014 (the derived pairs; synergy levels leave "reserved" status).
+- [020_team-swap-travel](020_team-swap-travel.md): animates the arrow swap; changes no rule here.
 - `context/game-mechanics.md`: the power texts the derivations transcribe.
 
 ## Tests

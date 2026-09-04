@@ -10,10 +10,15 @@
          `min-w-0` and no `flex-wrap`, not a fluid width: the slots keep their design width
          as the flex basis and shrink out of it only once the row would not fit, so the
          widest tier measures exactly what it did before. -->
-    <div class="flex justify-center gap-3 p-2 @max-[35rem]:gap-2">
+    <TransitionGroup
+      tag="div"
+      name="slot"
+      class="flex justify-center gap-3 p-2 @max-[35rem]:gap-2"
+    >
       <div
-        v-for="(slot, index) in missionSlots"
-        :key="index"
+        v-for="{ slot, index, key } in teamSlots"
+        :key="key"
+        :data-team-slot="index"
         class="relative flex h-40 w-32 min-w-0 flex-col items-center gap-1 border-2 p-2 @max-[35rem]:h-auto @max-[35rem]:gap-0 @max-[35rem]:p-0.5"
         :class="
           slot === null ? 'border-dashed border-default' : 'border-accented'
@@ -41,15 +46,17 @@
                 icon="i-lucide-chevron-left"
                 :label="`Move ${slotName(slot)} left`"
                 :disabled="index === 0"
+                data-move="-1"
                 class="@max-[35rem]:absolute @max-[35rem]:bottom-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
-                @click="moveMissionSlot(index, -1)"
+                @click="moveSlot(index, -1, $event)"
               />
               <IconButton
                 icon="i-lucide-chevron-right"
                 :label="`Move ${slotName(slot)} right`"
                 :disabled="index === missionSlots.length - 1"
+                data-move="1"
                 class="@max-[35rem]:absolute @max-[35rem]:right-0 @max-[35rem]:bottom-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
-                @click="moveMissionSlot(index, 1)"
+                @click="moveSlot(index, 1, $event)"
               />
             </template>
 
@@ -122,7 +129,7 @@
           <span class="@max-[35rem]:hidden">Add hero</span>
         </button>
       </div>
-    </div>
+    </TransitionGroup>
 
     <u-modal v-model:open="pickerOpen" title="Pick a hero">
       <template #body>
@@ -183,6 +190,18 @@ const pickerSlot = ref<number | null>(null);
 // * Three portraits in this panel follow Sonar's shared form (feature 012); the state converts here, once.
 const sonarForm = computed(() => (monsterForm.value ? 'monster' : 'hybrid'));
 
+// * Identity for the swap travel (feature 020). A hero is the same card wherever it lands, so it is keyed
+// * by hero id and the row moves it. Empty slots, Golem copies and Prism illusions have no identity of
+// * their own — a copy is interchangeable with any other, and there are commonly several — so they are
+// * keyed by position and change where they stand instead of travelling.
+const teamSlots = computed(() =>
+  missionSlots.value.map((slot, index) => ({
+    slot,
+    index,
+    key: slot !== null && isHero(slot) ? `hero:${slot}` : `at:${index}`
+  }))
+);
+
 function openPicker(index: number) {
   pickerSlot.value = index;
   pickerOpen.value = true;
@@ -195,6 +214,26 @@ function pick(heroId: HeroId) {
 
   pickerOpen.value = false;
   pickerSlot.value = null;
+}
+
+// * The pressed arrow travels with its card, so focus follows the hero on its own — until the card lands
+// * where that arrow is disabled and the browser drops focus to the document. Handing it to the card's
+// * other arrow keeps the keyboard on the slot the hero now occupies (feature 020).
+async function moveSlot(index: number, direction: -1 | 1, event: MouseEvent) {
+  // ! `data-team-slot`, not `data-slot`: Nuxt UI puts its own `data-slot` on the button, so `closest`
+  // ! would stop at the control instead of reaching the card that travels with the hero.
+  const card = (event.currentTarget as HTMLElement).closest('[data-team-slot]');
+
+  moveMissionSlot(index, direction);
+
+  await nextTick();
+
+  const arrow =
+    card?.querySelector<HTMLElement>(
+      `[data-move="${direction}"]:not([disabled])`
+    ) ?? card?.querySelector<HTMLElement>('[data-move]:not([disabled])');
+
+  arrow?.focus();
 }
 
 function isHero(slot: Exclude<MissionSlot, null>): slot is HeroId {
@@ -237,3 +276,26 @@ function slotPortrait(slot: Exclude<MissionSlot, null>): string {
   return heroPortraitSrc(id ?? 'prism', sonarForm.value);
 }
 </script>
+
+<style scoped>
+/* * Annex §11 list-move: the two swapped cards travel into each other's positions rather than exchanging
+ * contents in place, so which two slots swapped is legible. Transform only — the row's geometry is fixed. */
+.slot-move {
+  transition: transform var(--duration-slow) ease-in-out;
+}
+
+/* ! A leaving card is dropped from layout at once. Empty slots, copies and illusions are keyed by position,
+ * so swapping a hero with an empty changes which positional keys exist: one card leaves while another
+ * enters, and for the length of the travel the row would otherwise hold five 128px cards in space for
+ * four — measured, and plainly visible. There is no leave animation to preserve, so `display: none` is
+ * the whole fix; the card the user is watching is the one travelling, and it is never the one leaving. */
+.slot-leave-active {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot-move {
+    transition: none;
+  }
+}
+</style>

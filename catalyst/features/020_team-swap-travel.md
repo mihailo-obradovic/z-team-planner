@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -37,7 +37,7 @@ No state is written. Nothing here is serialized, and `missionSlots` gains no fie
 
 In scope:
 
-- The travel itself, and which occupants travel rather than cross-fade.
+- The travel itself, and which occupants travel rather than change in place.
 - The derived identity that makes travel possible.
 - Where keyboard focus goes when the pressed control arrives disabled.
 
@@ -53,7 +53,8 @@ Non-goals:
 
 - **An arrow press makes the two slot cards travel** into each other's positions rather than exchanging contents in place — annex §11 _list move_: `--duration-slow`, `ease-in-out`, `transform` only.
 - **The whole card travels**, controls included. The arrows belong to the occupant — the left one is disabled in slot 1, the label names that hero — so a card wearing its neighbour's buttons mid-flight would be a lie.
-- **Only heroes travel.** Empty slots, Golem copies and Prism illusions are keyed by position and cross-fade where they stand. They have no identity of their own: a copy is interchangeable with any other and there are commonly several, and an empty slot is a gap rather than a thing. So a swap that also spawns or dissolves them shows the two heroes trading places while the derived occupants re-form in their new slots.
+- **Only heroes travel.** Empty slots, Golem copies and Prism illusions are keyed by position and change where they stand. They have no identity of their own: a copy is interchangeable with any other and there are commonly several, and an empty slot is a gap rather than a thing. So a swap that also spawns or dissolves them shows the two heroes trading places while the derived occupants re-form in their new slots, instantly.
+- **Nothing fades in or out**, and **a leaving card leaves the layout at once**. Positional keys change when a hero swaps with an empty slot — one card leaves as another enters — so for the length of the travel the row would otherwise hold five cards in space for four, which is measurably and visibly wrong. There is no leave animation to preserve, so the leaving card is dropped from layout immediately; the card the user is watching is the one travelling, never the one leaving.
 - **A second press mid-travel re-aims** the animation at the new position rather than queueing behind it. There is no frame in which the cards on screen disagree with the totals in the math panel.
 - **When the pressed arrow arrives disabled** — moving right into slot 4, or left into slot 1 — focus moves to that card's other arrow, so a keyboard user stays on the slot the hero now occupies instead of being dropped to the document.
 - Travel is horizontal at every width. The team row never wraps: feature 016 takes four slots down to 59px square at 320 in one row.
@@ -69,8 +70,8 @@ Not role-specific.
 | ---------------------------------------- | ------------------------------------- | ----------------------------------- |
 | arrow-swap two filled slots              | both cards travel into place          | 250ms, transform only               |
 | swap a hero with an empty slot           | the hero travels; the gap does not    | empties are keyed by position       |
-| swap Golem, his copies re-forming        | Golem travels, the copies cross-fade  | derived occupants never travel      |
-| swap past Prism, her illusion dissolving | the heroes travel, the illusion fades | the lifecycle is feature 015's      |
+| swap Golem, his copies re-forming        | Golem travels, the copies re-form     | derived occupants never travel      |
+| swap past Prism, her illusion dissolving | the heroes travel, the illusion goes  | the lifecycle is feature 015's      |
 | press the arrow again mid-travel         | the travel re-aims; nothing queues    | cards and totals never disagree     |
 | move right into slot 4                   | focus lands on that card's left arrow | the pressed control is now disabled |
 | the slot state after any swap            | identical to before this feature      | presentation only                   |
@@ -89,6 +90,7 @@ Not role-specific.
 - **A swap that also rewrites other slots.** `withSpawns` runs in the same tick as the swap and the sanitizing watcher may write again on the next flush. Positional keying means those writes change what is drawn in a slot without claiming anything travelled.
 - **The anatomy changing mid-travel** — a resize across feature 016's 35rem threshold. The travel is abandoned at its current position and the new layout is correct; a half-animated card is never left behind.
 - **A swap whose two cards are both derived** cannot occur: `moveMissionSlot` requires the moved slot to hold a hero.
+- **A hero swapping with an empty slot** is the common case and the one that churns positional keys. The row's width must not change while it runs.
 - **A hero leaving the team mid-travel** (an episode change cutting them). The card is removed rather than landed; the row is correct on the next frame.
 - **Arrows on slots 1 and 4** have one direction only, so the disabled-on-arrival case is reachable from both ends.
 
@@ -97,6 +99,7 @@ Not role-specific.
 - The animation never changes what is in a slot, in what order, or when — only how the change is drawn.
 - No animation state is serialized, shared, or readable by another feature.
 - Every occupant is drawn exactly once per render; a travelling card is never duplicated at its origin and its destination.
+- The row's laid-out card count is four at every moment of a swap, and its width does not change.
 - Feature 015's success estimate and totals are never observed mid-travel in a state that disagrees with `missionSlots`.
 
 ## Error Handling
@@ -125,6 +128,14 @@ _None._
 - Live browser walk of the Examples at desktop and 320px, including a Golem swap, a Prism swap, an interrupted press, and a reduced-motion pass.
 
 ## Verification
+
+`test/nuxt/mission-team.test.ts` — 5 new cases (27 in the file): the hero's own DOM node is the one that ends up in the new slot; an empty slot is rebuilt where the gap now is rather than following it; the slots after a swap are exactly what the action alone produces; focus moves to the card's other arrow when the pressed one lands disabled, and stays put when it does not. Full suite 318 passed / 38 files; lint, format and typecheck clean.
+
+Live in Chrome at 1440×900, mission tab. Mid-travel the two cards carry `slot-move` with `transform 0.25s ease-in-out` and mirrored transforms (∓127.7px), and settle swapped as the same DOM nodes. Walking a hero right into slot 4 disables the arrow being pressed and focus lands on that card's left arrow, not the document. With Prism beside a hero, moving her left dissolved her illusion while only the two heroes carried a transform — the derived slots read 0 throughout — and an interrupted press re-aimed the travel (`-128.8 → -63.6`) rather than queueing. At 320×640@2× the slots are 61px, the row holds at 284, the travel runs `-67 → 0`, and the page never scrolls sideways.
+
+One defect found by the walk and fixed here: a hero swapping with an **empty** slot churns positional keys, and the leaving card was staying in the flex row for the full 250ms — five 128px cards measured in space for four, widening the row on the most common swap of all. Leaving cards are now dropped from layout at once; re-measured, the row holds at 564 (desktop) and 284 (320px) with four cards laid out throughout.
+
+Not covered: a `prefers-reduced-motion: reduce` machine — Chrome DevTools has no media emulation for it. The guard is confirmed in the shipped CSSOM as `.slot-move { transition: none }` inside the reduce query.
 
 ## Agent Change Rules
 
