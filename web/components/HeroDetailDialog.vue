@@ -115,168 +115,169 @@
               <ScrollRegion
                 class="flex flex-col p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
               >
-                <Transition name="state-fade" mode="out-in">
-                  <div :key="hero.id" class="flex flex-col gap-3">
-                    <div
-                      class="flex items-center gap-4 border-b-2 border-default pb-3"
+                <!-- * Feature 025. No transition and no `:key`: this panel's structure is the same for every
+                     * hero, so re-creating it faded the word "Combat" out and back in identically. The DOM
+                     * persists and only the figures change, counting under the annex's value count. -->
+                <div class="flex flex-col gap-3">
+                  <div
+                    class="flex items-center gap-4 border-b-2 border-default pb-3"
+                  >
+                    <span
+                      class="font-heading tracking-label text-toned uppercase"
+                    >
+                      Level
+                      <span
+                        class="text-lg font-bold text-highlighted select-none"
+                      >
+                        {{ shownLevel }}
+                      </span>
+                    </span>
+
+                    <span
+                      class="font-heading tracking-label text-toned uppercase"
+                    >
+                      Bonus
+                      <span
+                        class="text-lg font-bold text-highlighted select-none"
+                      >
+                        {{ shownBonus }}
+                      </span>
+                    </span>
+
+                    <div class="ml-auto flex items-center gap-2">
+                      <IconButton
+                        icon="i-lucide-plus"
+                        color="neutral"
+                        size="sm"
+                        :disabled="bonusFull || !canLevelUp"
+                        label="Add a bonus level"
+                        @click="addBonusLevel(heroId!)"
+                      />
+
+                      <IconButton
+                        icon="i-lucide-rotate-ccw"
+                        color="neutral"
+                        size="sm"
+                        :disabled="!canLevelUp"
+                        label="Reset this hero"
+                        @click="resetHero(heroId!)"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
+                  <ul class="flex flex-col gap-1 px-3">
+                    <li
+                      v-for="stat in STAT_NAMES"
+                      :key="stat"
+                      class="flex items-center justify-between"
                     >
                       <span
-                        class="font-heading tracking-label text-toned uppercase"
+                        class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
                       >
-                        Level
-                        <span
-                          class="text-lg font-bold text-highlighted select-none"
-                        >
-                          {{ heroLevel }}
-                        </span>
+                        <u-icon
+                          :name="STAT_ICONS[stat]"
+                          class="size-5 shrink-0"
+                        />
+                        {{ stat }}
                       </span>
 
-                      <span
+                      <div class="ml-2 flex items-center gap-1">
+                        <div class="flex w-7 items-center justify-center">
+                          <IconButton
+                            v-if="canLevelUp"
+                            icon="i-lucide-minus"
+                            color="neutral"
+                            size="sm"
+                            :disabled="statBonuses[resolvedStat(stat)] <= 0"
+                            :label="`Remove a ${stat} point`"
+                            @click="statDown(heroId!, resolvedStat(stat))"
+                          />
+                        </div>
+
+                        <span class="w-7 text-center text-xl font-bold">
+                          {{ shownStat(stat) }}
+                        </span>
+
+                        <div class="flex w-7 items-center justify-center">
+                          <IconButton
+                            v-if="canLevelUp"
+                            icon="i-lucide-plus"
+                            color="neutral"
+                            size="sm"
+                            :disabled="isStatCapped(stat)"
+                            :label="`Add a ${stat} point`"
+                            @click="statUp(heroId!, resolvedStat(stat))"
+                          />
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+
+                  <template v-if="synergyPartner">
+                    <button
+                      type="button"
+                      class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
+                      @click="emit('select', synergyPartner.id)"
+                    >
+                      <u-icon name="i-lucide-link" class="size-4 shrink-0" />
+                      Synergy partner: {{ synergyPartner.name }}
+                    </button>
+
+                    <div class="flex flex-col gap-1 bg-muted p-3">
+                      <p
                         class="font-heading tracking-label text-toned uppercase"
                       >
-                        Bonus
-                        <span
-                          class="text-lg font-bold text-highlighted select-none"
+                        Pair total
+                      </p>
+
+                      <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
+                      <div aria-label="Pair total description" class="grid">
+                        <p
+                          v-for="variant in pairTotalDescriptionVariants"
+                          :key="variant"
+                          class="invisible col-start-1 row-start-1 text-sm text-muted"
+                          aria-hidden="true"
                         >
-                          {{ bonusLevel }}
-                        </span>
-                      </span>
+                          {{ variant }}
+                        </p>
 
-                      <div class="ml-auto flex items-center gap-2">
-                        <IconButton
-                          icon="i-lucide-plus"
-                          color="neutral"
-                          size="sm"
-                          :disabled="bonusFull || !canLevelUp"
-                          label="Add a bonus level"
-                          @click="addBonusLevel(heroId!)"
-                        />
-
-                        <IconButton
-                          icon="i-lucide-rotate-ccw"
-                          color="neutral"
-                          size="sm"
-                          :disabled="!canLevelUp"
-                          label="Reset this hero"
-                          @click="resetHero(heroId!)"
-                        />
+                        <p class="col-start-1 row-start-1 text-sm text-muted">
+                          {{ pairTotalDescription }}
+                        </p>
                       </div>
                     </div>
 
-                    <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
-                    <ul class="flex flex-col gap-1 px-3">
+                    <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
+                    <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
                       <li
-                        v-for="stat in STAT_NAMES"
-                        :key="stat"
+                        v-for="entry in shownCombinedStats"
+                        :key="entry.stat"
                         class="flex items-center justify-between"
                       >
                         <span
                           class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
                         >
                           <u-icon
-                            :name="STAT_ICONS[stat]"
+                            :name="STAT_ICONS[entry.stat]"
                             class="size-5 shrink-0"
                           />
-                          {{ stat }}
+                          {{ entry.stat }}
                         </span>
 
                         <div class="ml-2 flex items-center gap-1">
-                          <div class="flex w-7 items-center justify-center">
-                            <IconButton
-                              v-if="canLevelUp"
-                              icon="i-lucide-minus"
-                              color="neutral"
-                              size="sm"
-                              :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                              :label="`Remove a ${stat} point`"
-                              @click="statDown(heroId!, resolvedStat(stat))"
-                            />
-                          </div>
+                          <div class="w-7" />
 
                           <span class="w-7 text-center text-xl font-bold">
-                            {{ computedStat(stat) }}
+                            {{ entry.value }}
                           </span>
 
-                          <div class="flex w-7 items-center justify-center">
-                            <IconButton
-                              v-if="canLevelUp"
-                              icon="i-lucide-plus"
-                              color="neutral"
-                              size="sm"
-                              :disabled="isStatCapped(stat)"
-                              :label="`Add a ${stat} point`"
-                              @click="statUp(heroId!, resolvedStat(stat))"
-                            />
-                          </div>
+                          <div class="w-7" />
                         </div>
                       </li>
                     </ul>
-
-                    <template v-if="synergyPartner">
-                      <button
-                        type="button"
-                        class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-                        @click="emit('select', synergyPartner.id)"
-                      >
-                        <u-icon name="i-lucide-link" class="size-4 shrink-0" />
-                        Synergy partner: {{ synergyPartner.name }}
-                      </button>
-
-                      <div class="flex flex-col gap-1 bg-muted p-3">
-                        <p
-                          class="font-heading tracking-label text-toned uppercase"
-                        >
-                          Pair total
-                        </p>
-
-                        <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
-                        <div aria-label="Pair total description" class="grid">
-                          <p
-                            v-for="variant in pairTotalDescriptionVariants"
-                            :key="variant"
-                            class="invisible col-start-1 row-start-1 text-sm text-muted"
-                            aria-hidden="true"
-                          >
-                            {{ variant }}
-                          </p>
-
-                          <p class="col-start-1 row-start-1 text-sm text-muted">
-                            {{ pairTotalDescription }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
-                      <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
-                        <li
-                          v-for="entry in combinedStats"
-                          :key="entry.stat"
-                          class="flex items-center justify-between"
-                        >
-                          <span
-                            class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                          >
-                            <u-icon
-                              :name="STAT_ICONS[entry.stat]"
-                              class="size-5 shrink-0"
-                            />
-                            {{ entry.stat }}
-                          </span>
-
-                          <div class="ml-2 flex items-center gap-1">
-                            <div class="w-7" />
-
-                            <span class="w-7 text-center text-xl font-bold">
-                              {{ entry.value }}
-                            </span>
-
-                            <div class="w-7" />
-                          </div>
-                        </li>
-                      </ul>
-                    </template>
-                  </div>
-                </Transition>
+                  </template>
+                </div>
               </ScrollRegion>
             </div>
 
@@ -850,17 +851,56 @@ function handleTogglePower(power: HeroPowerDefinition) {
   }
 }
 // * The pair's combined effective stats — the planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014). Read-only: the dialog edits one hero.
-const combinedStats = computed(() => {
+// ! Declared above the tween below, not beside the other pair helpers: `useTweenedValues` reads its
+// ! source once at setup, so a source referencing a `const` declared later throws on the first render.
+const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
   const partner = synergyPartner.value;
 
   if (!props.heroId || !partner) {
-    return [];
+    return {};
   }
 
-  const totals = getPairCombinedStats(props.heroId, partner.id);
-
-  return STAT_NAMES.map((stat) => ({ stat, value: totals[stat] }));
+  return getPairCombinedStats(props.heroId, partner.id);
 });
+
+// * Feature 025. One tween for every figure the dialog shows, so they travel together and with the
+// * radar beside them, which shares this composable (decision 008). A single fixed-length array is
+// * what keeps it one rAF loop and, more importantly, keeps the length stable: `useTweenedValues`
+// * lands instantly when the length changes, and a hero without a synergy partner would otherwise
+// * make every figure on the panel jump. Its pair slots simply hold zero, unread behind a block
+// * that has faded out.
+const LEVEL_INDEX = STAT_NAMES.length;
+const BONUS_INDEX = LEVEL_INDEX + 1;
+const PAIR_OFFSET = BONUS_INDEX + 1;
+
+const figureTargets = computed(() => [
+  ...STAT_NAMES.map((stat) => computedStat(stat)),
+  heroLevel.value,
+  bonusLevel.value,
+  ...STAT_NAMES.map((stat) => pairTotals.value[stat] ?? 0)
+]);
+
+const figures = useTweenedValues(figureTargets);
+
+// * Rounded off the travelling value; anything deciding state (a capped stepper, the disabled minus)
+// * reads the settled one, so it cannot flicker mid-count.
+function shownFigure(index: number): number {
+  return Math.round(figures.value[index] ?? 0);
+}
+
+function shownStat(stat: StatName): number {
+  return shownFigure(STAT_NAMES.indexOf(stat));
+}
+
+const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
+const shownBonus = computed(() => shownFigure(BONUS_INDEX));
+
+const shownCombinedStats = computed(() =>
+  STAT_NAMES.map((stat, index) => ({
+    stat,
+    value: shownFigure(PAIR_OFFSET + index)
+  }))
+);
 
 // * The note only earns its line where a slot-filling power is actually in play — feature 012's deduction is invisible on every other pair.
 // * Only while the power is actually contributing. The line explains a subtraction from the pair total, and with Spread Thin untrained there is no bonus to subtract from — the sentence would be describing arithmetic the reader cannot see, on the panel where the copy is tightest.
