@@ -207,6 +207,17 @@
     scrollbar-color: var(--scrollbar-paper);
 }
 
+/* * Feature 010: the one inline text link the product has, on paper. Ink with a 1px underline, so the affordance is the rule and not a colour — every amber step that clears 4.5:1 on paper is a text-only step, and a link should look like a link at a glance (annex §13). */
+@utility text-link {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+
+    &:hover {
+        color: var(--ui-text-muted);
+    }
+}
+
 /* * Feature 015: a tab fades its content in on a switch, at the slow duration.
  * ! On the panel element itself this breaks the tabs: the panel keeps a running animation,
  * ! and the presence logic that hides an inactive panel waits for that animation to end, so

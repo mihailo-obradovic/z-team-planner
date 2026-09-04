@@ -6,7 +6,7 @@ Paths below are relative to the repo root. The `catalyst/` documents are normati
 
 ## Structure
 
-- `pages/index.vue` — the planner (`/` is prerendered via `routeRules`); `pages/b/[id].vue` — the read-only view of a shared account build (`/b/**` is `ssr: false`).
+- `pages/index.vue` — the planner (`/` is prerendered via `routeRules`); `pages/b/[id].vue` — the read-only view of a shared account build (`/b/**` is `ssr: false`). `pages/privacy.vue` — the privacy policy (`/privacy` is prerendered like `/`, so it reads without the API or JavaScript; every fact on it traces to a feature document, feature 010).
 - `services/` — one pure `*.api.ts` per resource (no store, toast, or cache access) plus `services/queries/` for the Pinia Colada composables that wrap them, alongside `chainOnSettled.ts`, the helper that lets a caller's callbacks run after the query layer's own; imported explicitly, never auto-imported.
 - `stores/` — `useAuthStore`, the only Pinia store: identity and the active account build id, never server data.
 - `components/` — planner components (`HeroCard`, `HeroDetailDialog`); `_shared/` is the auto-import dir (`nuxt.config.ts` `components.dirs`) for generic pieces (`BuildManager`, `BuildDialogs`, `BuildAccountDialogs`, `BuildConflictDialog`, `AuthMenu`, `AccountDialogs`, `FirstLoginOffer`, `FirstRunBanners`, `BudgetCounters`, `StorySetupDrawer`, `IconButton`, `TooltipButton`, `StatRadar` — the hand-drawn stat radar, decision 008).

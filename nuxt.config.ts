@@ -104,6 +104,9 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true },
 
+    // * Reachable without the API, without JavaScript, and before sign-in exists: the consent screen links here (feature 010).
+    '/privacy': { prerender: true },
+
     // * The shared-build page reads a per-request id from an API that needs a token-less fetch at view time; prerendering or SSRing it would serve one user's build to the next (feature 007).
     '/b/**': { ssr: false }
   },
