@@ -441,6 +441,8 @@ The scales above, resolved per element. Every value here was measured from the b
 
 A card is fluid below its maximum (`w-full max-w-92`) and its column is capped with it. A fixed width there is what breaks the reflow floor in §14.3, since 368px cannot fit a 320px viewport.
 
+Each power chip's tooltip text is a **hint** (feature 018): hover-only, on a device that can hover. Tapping a chip on one that cannot shows a **confirmation** instead — a short line naming the resulting state, held for `--duration-linger` (§11) — never the hint's own text, and never on deactivation.
+
 **Header tier ladder.** Every header action is a 32px button (`md`, the button step — `xs` is the stepper step and was never a button height); the bare glyphs below `md` are 44. The 32px step also costs horizontal room: `md`'s `px-3` is 8px per labelled button more than `xs`'s `px-2`, so the labelled row is ~24px wider than the ~1120px it was measured at. It still cannot hold one shape across the range. What gives way, in order:
 
 | From | Wordmark             | Budget readout   | Actions                                                                                                                                                               |
@@ -506,7 +508,7 @@ Re-measure after any token change. A brand colour that fails as text is constrai
 
 The 24 × 24 floor (WCAG 2.5.8) is the reason `--control-h-xs` is 24 and not smaller. Measured: steppers 24 × 24, power chips and the per-hero header glyphs 24 × 24, the drawer's budget-reset glyphs 28 × 28, buttons and selects 32 (the Story Setup drawer's selects 40), the switch track 44 × 24, primary touch actions 44. A checkbox is the one control whose box is under the floor at every size the library offers: `xl` is the largest and paints at 20, in a 24 row. It is used with a label, which is part of the target, so the row is what clears the floor — a bare checkbox with no label would not, and does not belong in this design.
 
-The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there.
+The hero card's chips and glyphs sit **exactly on** the floor rather than above it, a deliberate trade against §13's 108px box — there is no step below them, so any future control in that row is 24 or it does not go there. Their tooltip text is hover-only for the same reason a mobile-first design never adds a second interaction to reach it: a hint stays a hint, and the chip's own tap confirms the action instead (§13, feature 018).
 
 The mission team's slot controls make the same trade harder. Below 35rem they leave the row above the portrait and sit in its corners; at a 320 viewport the slot is 61px and the portrait 53, so three 24 × 24 targets cover most of the art. They stay at 24 because the floor is the floor — the portrait shrinks around them, they do not shrink with it — and the same rule governs the mission templates' steppers, where the gaps, the value slot and the label's type size absorb a narrowing row while the buttons hold — and each carries its own `bg-default/85` scrim, because the button variant alone left a _disabled_ control indistinguishable from the art, and an arrow that reads as absent reads as a bug. Measured at 320: the two bottom arrows occupy x 2–26 and 35–59 of a 61px slot, so they never overlap.
 

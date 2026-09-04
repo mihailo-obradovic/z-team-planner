@@ -21,11 +21,12 @@ The display-only stat effects a hero's power grants once it is trained — Flamb
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type           | Description                                                  |
-| -------------------- | -------------- | ------------------------------------------------------------ |
-| `heroSpecialPowers`  | `useState` ref | one integer per hero — feature 001 serializes it as `sp`     |
-| effective stats      | rendered       | `startingStats + allocations + specialPowerBonus`, per stat  |
-| chip state           | rendered       | the chip's colour, active flag and label at the current step |
+| Output / Side Effect     | Type           | Description                                                                                                                                                                               |
+| ------------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `heroSpecialPowers`      | `useState` ref | one integer per hero — feature 001 serializes it as `sp`                                                                                                                                  |
+| effective stats          | rendered       | `startingStats + allocations + specialPowerBonus`, per stat                                                                                                                               |
+| chip state               | rendered       | the chip's colour, active flag and label at the current step                                                                                                                              |
+| chip hint / confirmation | rendered       | the tooltip text here is a hint (feature 018): hover-only, shown on a hover-capable device; a no-hover tap shows a confirmation naming the resulting state instead, never the hint's text |
 
 ## Scope And Non-Goals
 
@@ -106,6 +107,7 @@ Not role-specific.
 
 - Feature 003 (planner mechanics): owns the power training these effects gate on, and the resets that clear them.
 - Feature 002 (hero data), feature 001 (build persistence), feature 011 (the dialog surfaces).
+- Feature 018 (hints and confirmations): owns the hint/confirmation split on every chip's tooltip text, including the wording of each chip's confirmation.
 
 ## Open Questions
 

@@ -55,7 +55,7 @@ The first row's tracks are `minmax(454px, 1fr) 1fr`, not two equal `1fr`: below 
 
 The math panel does **not** revert here: below 77rem it spans the whole tab whether the tab is one column or three, so its split outlives the layout's. Its own bound is **a 768px viewport** (a 726px container) — a judgement about where the split still reads well, since two columns measurably hold to a 510px panel.
 
-**35rem (≈602px viewport) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — each on its own scrim, since this is the tier with no hover. The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
+**35rem (≈602px viewport) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — each on its own scrim, always visible rather than hover-revealed: this width is where phones live, and a control that only appeared on hover (feature 018) would be invisible to them regardless of what a resized desktop window happens to report. The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
 
 **28.5rem (≈498px viewport) — the templates panel.** It shows one condition column set at a time behind a `Requirements` / `Conditions` toggle. The row goes **compact** rather than dropping its wordmarks: the label steps down a type size and its icon with it, the stepper tightens its gaps and narrows its value slot, and the column gap halves. The **+/- buttons do not shrink** — they are on the 24 × 24 touch floor (annex §14.2), so the space comes from everything around them. Stat names stay on screen at every width worth designing for, an iPhone SE included.
 
@@ -90,6 +90,7 @@ Not role-specific.
 - Above 28.5rem the toggle is not rendered at all — nothing is hidden at that width.
 - Disabled slot controls keep rendering in the overlay anatomy, dimmed rather than absent.
 - Every control keeps the 24 × 24 touch-target floor (annex §14.2) at every tier. Where a row gives up width, the floor fixes which parts give: gaps, value slots and type sizes, never the controls.
+- The team panel's Copy marker is a common symbol (feature 018): its label carries the copy's +25% for assistive technology, but it gets no hint and no tap confirmation, because the value it names is the user's own entry in the templates panel a few centimetres away.
 
 ## Edge Cases
 
@@ -122,6 +123,7 @@ Not applicable — layout only, no failure modes of its own.
 - Feature 015, whose layout is this feature's widest tier and whose panels it reflows.
 - Feature 014's `SynergyPairCard`, the precedent for container queries over viewport breakpoints here.
 - Design-system annex §14.2 and §14.3.
+- Feature 018 (hints and confirmations): the Copy marker's common-symbol status, and the reason this feature's width tiers keep their behaviour rather than switching to input-capability detection — they decide by room, not by device.
 
 ## Open Questions
 
