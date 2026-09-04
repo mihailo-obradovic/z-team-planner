@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -125,9 +125,13 @@ _None._
 
 ## Verification
 
-_Empty while this document is a draft._
+`test/unit/scrollEdges.test.ts` passes (8 cases, whole suite 81/81), alongside `pnpm typecheck`, `pnpm lint` and `pnpm format:check`.
 
-Planned evidence: the unit suite; and a device walk at 320px and on the iOS device covering each region at the top, the middle and the end — the mobile ribbon included, where a 1px vertical rule beside `size-14` tiles may not read and would send the treatment back to a fade.
+Walked in Chromium at 320×640@2×, 768×700, 1024×700 and 1280×620, reading the four computed border colours per region at the top, mid-scroll and the end. Every scrolling region gave trailing-only, both, then leading-only, and at `end - 0.6px` still read as the end — the 1px tolerance holds. The mobile ribbon mirrors it horizontally and its rules read at 2× beside the `size-14` tiles, with portraits clipping under them, so the deferred fade is not needed. Regions that do not overflow, and regions below the width where their `overflow` applies, carry no rules.
+
+Two notes. The stats panel does not overflow at any width for any of the eight heroes (range 0 throughout), so its rules stay clear — correct, but its scrolling path is covered by the unit suite and by the four regions sharing the component, not by a live rule. The `UModal` body is confirmed untouched: it keeps its own 2px accented border and none of the 1px treatment.
+
+The iOS device check is outstanding — no local WebKit — and is the user's at `localhost:3001`.
 
 ## Agent Change Rules
 
