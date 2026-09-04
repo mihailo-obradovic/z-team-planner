@@ -214,69 +214,97 @@
                     </li>
                   </ul>
 
-                  <template v-if="synergyPartner">
-                    <button
-                      type="button"
-                      class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-                      @click="emit('select', synergyPartner.id)"
-                    >
-                      <u-icon name="i-lucide-link" class="size-4 shrink-0" />
-                      Synergy partner: {{ synergyPartner.name }}
-                    </button>
-
-                    <div class="flex flex-col gap-1 bg-muted p-3">
-                      <p
-                        class="font-heading tracking-label text-toned uppercase"
+                  <!-- * Feature 025. The block comes and goes with the hero's partner, so it takes the state
+                       * fade; the control inside it never moves while one exists. -->
+                  <Transition name="state-fade">
+                    <div v-if="synergyPartner" class="flex flex-col gap-3">
+                      <button
+                        type="button"
+                        class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
+                        @click="emit('select', synergyPartner.id)"
                       >
-                        Pair total
-                      </p>
+                        <u-icon name="i-lucide-link" class="size-4 shrink-0" />
+                        <span>Synergy partner:</span>
 
-                      <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
-                      <div aria-label="Pair total description" class="grid">
-                        <p
-                          v-for="variant in pairTotalDescriptionVariants"
-                          :key="variant"
-                          class="invisible col-start-1 row-start-1 text-sm text-muted"
-                          aria-hidden="true"
-                        >
-                          {{ variant }}
-                        </p>
-
-                        <p class="col-start-1 row-start-1 text-sm text-muted">
-                          {{ pairTotalDescription }}
-                        </p>
-                      </div>
-                    </div>
-
-                    <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
-                    <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
-                      <li
-                        v-for="entry in shownCombinedStats"
-                        :key="entry.stat"
-                        class="flex items-center justify-between"
-                      >
-                        <span
-                          class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                        >
-                          <u-icon
-                            :name="STAT_ICONS[entry.stat]"
-                            class="size-5 shrink-0"
-                          />
-                          {{ entry.stat }}
-                        </span>
-
-                        <div class="ml-2 flex items-center gap-1">
-                          <div class="w-7" />
-
-                          <span class="w-7 text-center text-xl font-bold">
-                            {{ entry.value }}
+                        <!-- * Only the name changes, so only the name fades, and the two names overlap in one
+                             * grid cell rather than following each other — the label beside them would otherwise
+                             * shift as the cell emptied and refilled.
+                             ! The invisible longest name is what reserves the cell. Without it the cell is as
+                             ! wide as whichever name is showing, and this row re-centres on every switch, which
+                             ! is the movement the whole panel is holding still to avoid. -->
+                        <span class="grid">
+                          <span
+                            class="invisible col-start-1 row-start-1"
+                            aria-hidden="true"
+                          >
+                            {{ longestHeroName }}
                           </span>
 
-                          <div class="w-7" />
+                          <Transition name="state-fade">
+                            <span
+                              :key="synergyPartner.id"
+                              class="col-start-1 row-start-1"
+                            >
+                              {{ synergyPartner.name }}
+                            </span>
+                          </Transition>
+                        </span>
+                      </button>
+
+                      <div class="flex flex-col gap-1 bg-muted p-3">
+                        <p
+                          class="font-heading tracking-label text-toned uppercase"
+                        >
+                          Pair total
+                        </p>
+
+                        <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
+                        <div aria-label="Pair total description" class="grid">
+                          <p
+                            v-for="variant in pairTotalDescriptionVariants"
+                            :key="variant"
+                            class="invisible col-start-1 row-start-1 text-sm text-muted"
+                            aria-hidden="true"
+                          >
+                            {{ variant }}
+                          </p>
+
+                          <p class="col-start-1 row-start-1 text-sm text-muted">
+                            {{ pairTotalDescription }}
+                          </p>
                         </div>
-                      </li>
-                    </ul>
-                  </template>
+                      </div>
+
+                      <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
+                      <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
+                        <li
+                          v-for="entry in shownCombinedStats"
+                          :key="entry.stat"
+                          class="flex items-center justify-between"
+                        >
+                          <span
+                            class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
+                          >
+                            <u-icon
+                              :name="STAT_ICONS[entry.stat]"
+                              class="size-5 shrink-0"
+                            />
+                            {{ entry.stat }}
+                          </span>
+
+                          <div class="ml-2 flex items-center gap-1">
+                            <div class="w-7" />
+
+                            <span class="w-7 text-center text-xl font-bold">
+                              {{ entry.value }}
+                            </span>
+
+                            <div class="w-7" />
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </Transition>
                 </div>
               </ScrollRegion>
             </div>
@@ -894,6 +922,16 @@ function shownStat(stat: StatName): number {
 
 const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
 const shownBonus = computed(() => shownFigure(BONUS_INDEX));
+
+// * Reserves the synergy control's name cell (annex §13, layout stability): the widest name any
+// * partner can carry, so the label beside it never re-centres when the partner changes.
+const longestHeroName = computed(() =>
+  rosterOrder.value.reduce(
+    (longest: string, rosterHero) =>
+      rosterHero.name.length > longest.length ? rosterHero.name : longest,
+    ''
+  )
+);
 
 const shownCombinedStats = computed(() =>
   STAT_NAMES.map((stat, index) => ({

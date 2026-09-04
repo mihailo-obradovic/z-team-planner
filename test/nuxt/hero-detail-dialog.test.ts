@@ -251,7 +251,21 @@ describe('hero detail dialog', () => {
       (line) => line.textContent
     );
 
-    expect(dialogText()).toContain('Synergy partner: Waterboy');
+    // * Read from the control rather than the dialog's whole text: the partner's name sits in a grid
+    // * cell beside an invisible longest-name span that reserves its width (feature 025), so the two
+    // * are no longer adjacent in `textContent` even though only one of them is visible.
+    const partnerControl = [
+      ...document.querySelectorAll('[role="dialog"] button')
+    ].find((control) => control.textContent?.includes('Synergy partner'));
+
+    expect(partnerControl).toBeTruthy();
+    expect(
+      [...partnerControl!.querySelectorAll('span')].some(
+        (part) =>
+          part.textContent?.trim() === 'Waterboy' &&
+          !part.getAttribute('aria-hidden')
+      )
+    ).toBe(true);
     expect(dialogText()).toContain('Pair total');
     expect(lines.some((line) => line?.includes('Charisma'))).toBe(false);
   });

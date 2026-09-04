@@ -26,12 +26,12 @@ This feature says what the dialog does instead. Three motions, each matched to w
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type | Description                                                       |
-| -------------------- | ---- | ----------------------------------------------------------------- |
-| panel fade           | UI   | the portrait, name and notes panel fade out and back in           |
-| value count          | UI   | every figure travels to its new value instead of cutting          |
-| section collapse     | UI   | the powers and effects lists close to nothing and reopen          |
-| heading travel       | UI   | the Effects heading makes one journey to its new resting position |
+| Output / Side Effect | Type | Description                                                        |
+| -------------------- | ---- | ------------------------------------------------------------------ |
+| panel fade           | UI   | the portrait, name and notes panel fade; so does the partner block |
+| value count          | UI   | every figure travels to its new value instead of cutting           |
+| section collapse     | UI   | the powers and effects lists close to nothing and reopen           |
+| heading travel       | UI   | the Effects heading makes one journey to its new resting position  |
 
 No state is written. Nothing here is serialized.
 
@@ -55,7 +55,7 @@ Non-goals:
 **Fade** — opacity only, `--duration-baseline`, `ease-out` in and `ease-in` out (annex §11, State fade).
 
 - Applies where two heroes genuinely show different things: the toolbar thumbnail and name, the large portrait, and the notes panel (feature 022), whose advisories take the same fade as they come and go inside a fixed-height scroll region.
-- The stats panel, the synergy control and the pair totals never fade. Their structure is identical for every hero, so the labels, captions, steppers, synergy button and pair-total rows all hold still. Inside the synergy control only the partner's own name and portrait cross-fade, in a button that never moves.
+- The stats panel, the synergy control and the pair totals never fade. Their structure is identical for every hero, so the labels, captions, steppers, synergy button and pair-total rows all hold still. Inside the synergy control only the partner's own name cross-fades — the control carries no portrait — in a button that never moves. Its cell reserves the width of the longest name any partner can have, so the label beside it cannot re-centre.
 
 **Value count** — a changing number travels to its new value over 200ms on an ease-out cubic, the tween the radar and the mission panel already use. It lands instantly under reduced motion.
 
@@ -111,7 +111,7 @@ Not role-specific.
 ## Invariants
 
 - No motion changes what a control does, what it shows once settled, or when state changes.
-- Nothing in the stats column changes size or position on a switch. Only figures and the partner's own name and portrait change at all.
+- Nothing in the stats column changes size or position on a switch. Only figures and the partner's own name change at all.
 - The Powers heading is at the same offset before, during and after a switch.
 - Feature 011's fixed rows never resize, and the dialog's outer geometry is identical throughout.
 - No animation state is serialized or readable by another feature.
