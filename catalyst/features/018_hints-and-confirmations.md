@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -140,7 +140,7 @@ _None._
 
 `test/unit/confirmationText.test.ts` (7 cases), `test/nuxt/tooltip-button.test.ts` (5 cases) and `test/nuxt/input-mode.test.ts` (1 case) pass, alongside the whole suite (40 files, 310 tests), `pnpm typecheck`, `pnpm lint` and `pnpm format:check`.
 
-The live walk (Chromium, no-hover emulation, every Examples row) did not run: the chrome-devtools MCP browser instance was held by a concurrent session throughout this work and could not be reached. This is a remaining risk, not a claim of working UI — retry once the browser is free. The iOS device check stays the user's, as it is for every feature here (no local WebKit).
+The automated Chromium walk did not run: the chrome-devtools MCP browser instance was held by a concurrent session throughout this work. In its place, the user tested manually against a dev server started from this worktree (`localhost:3055`), on 2026-09-04, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit, and the manual check covered the general behaviour rather than the full row-by-row table.
 
 ## Agent Change Rules
 
