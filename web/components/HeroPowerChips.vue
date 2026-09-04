@@ -1,11 +1,13 @@
 <template>
-  <!-- * A chip comes and goes with the state fade, and its neighbours travel under the list move (annex §11, feature 024). The row is centre-justified, so an arriving chip shifts every other one; `chip-leaving` takes a departing chip out of flow so the travel and the fade run together instead of one after the other, and `relative` is what it is then positioned against. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
+  <!-- * A chip comes and goes with the state fade, and its neighbours travel under the list move (annex §11, feature 024). The row is centre-justified, so an arriving chip shifts every other one; `chip-leaving` takes a departing chip out of flow so its neighbours travel while it fades rather than after, and `relative` is what it is then positioned against. A chip arriving or leaving only fades, in place: the travel belongs to the chips that stay. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
   <TransitionGroup
     v-if="powers"
     tag="div"
     name="state-fade"
     move-class="chip-move"
-    leave-active-class="state-fade-leave-active chip-leaving"
+    enter-active-class="chip-entering"
+    leave-active-class="chip-leaving"
+    @beforeLeave="pinLeaving"
     class="relative flex h-6 items-center justify-center gap-1"
   >
     <span v-if="heroId === 'sonar'" key="sonar-form" class="flex">
@@ -120,6 +122,18 @@
 </template>
 
 <script setup lang="ts">
+// * A leaving chip is taken out of flow so its neighbours can travel while it fades rather than after.
+// ! Its offsets have to be pinned first. An absolutely positioned child of a centred flex row is placed
+// ! by that centring, not by where it stood, so without this the chip jumps to the middle of the row,
+// ! overlaps the chips that remain, and fades out there. Read in `beforeLeave`, which runs while the
+// ! chip is still in flow — one frame later `chip-leaving` has already moved it.
+function pinLeaving(element: Element) {
+  const chip = element as HTMLElement;
+
+  chip.style.left = `${chip.offsetLeft}px`;
+  chip.style.top = `${chip.offsetTop}px`;
+}
+
 import { confirmationText } from '@/utils/confirmationText';
 import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
 

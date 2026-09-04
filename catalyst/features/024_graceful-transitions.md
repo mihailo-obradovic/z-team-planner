@@ -70,18 +70,18 @@ Not role-specific.
 
 ## Examples
 
-| Input                                     | Expected Output                                  | Notes                                |
-| ----------------------------------------- | ------------------------------------------------ | ------------------------------------ |
-| reveal a hero's starting power            | the reset icon fades in                          | 150ms opacity                        |
-| select Flambae's trainable 2              | the Supernova chip fades in, neighbours travel   | no jump; the row re-centres          |
-| switch Flambae's trainable 2 → 1          | the chip fades out of flow while the rest travel | fade and move run together           |
-| switch a hero's trainable 1 → 2           | the active colour moves, no swap and no fade     | colour-only, non-goal                |
-| press bonus `+` at bonus 0                | the plus shrinks away, `+1` grows in             | glyph swap, 150ms each leg           |
-| press bonus `+` twice quickly             | the swap re-targets to `+2`                      | never shows `+1` once the state is 2 |
-| reset at bonus 2 with a trained power     | bonus swaps to plus; the reset icon fades out    | both motions on one click            |
-| load a share link with Coupé at En Pointe | the chip renders settled, no swap                | change only, never first render      |
-| planner state after any of the above      | identical to before this feature                 | presentation only                    |
-| `prefers-reduced-motion: reduce`          | glyphs land instantly; the fades still run       | annex §14.4                          |
+| Input                                     | Expected Output                                     | Notes                                |
+| ----------------------------------------- | --------------------------------------------------- | ------------------------------------ |
+| reveal a hero's starting power            | the reset icon fades in                             | 150ms opacity                        |
+| select Flambae's trainable 2              | the chip fades in where it lands; neighbours travel | it never slides                      |
+| switch Flambae's trainable 2 → 1          | the chip fades out where it stands; the rest travel | out of flow, but it does not move    |
+| switch a hero's trainable 1 → 2           | the active colour moves, no swap and no fade        | colour-only, non-goal                |
+| press bonus `+` at bonus 0                | the plus shrinks away, `+1` grows in                | glyph swap, 150ms each leg           |
+| press bonus `+` twice quickly             | the swap re-targets to `+2`                         | never shows `+1` once the state is 2 |
+| reset at bonus 2 with a trained power     | bonus swaps to plus; the reset icon fades out       | both motions on one click            |
+| load a share link with Coupé at En Pointe | the chip renders settled, no swap                   | change only, never first render      |
+| planner state after any of the above      | identical to before this feature                    | presentation only                    |
+| `prefers-reduced-motion: reduce`          | glyphs land instantly; the fades still run          | annex §14.4                          |
 
 ## Business Rules
 

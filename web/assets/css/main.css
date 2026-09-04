@@ -273,22 +273,20 @@
     transition: transform var(--duration-slow) ease-in-out;
 }
 
-/* ! Declares both legs, and must stay after `.chip-move`. Vue puts the move class on the leaving element too, and two `transition` shorthands on one element do not merge — the later one wins outright, so `chip-move` alone silently replaced the fade with a transform and departing chips blinked out. */
-.chip-leaving {
-    position: absolute;
-    transition:
-        opacity var(--duration-baseline) ease-in,
-        transform var(--duration-slow) ease-in-out;
+/* ! Both of these must stay after `.chip-move`, and both exist to take the travel away from the chip that is arriving or leaving. Vue puts the move class on those too, and two `transition` shorthands on one element do not merge — the later one wins outright. So `chip-move` alone replaced their fade with a transform, which both blinked them out and slid them across the row. A chip that comes or goes only fades, in place; travelling is for the chips that stay. */
+.chip-entering {
+    transition: opacity var(--duration-baseline) ease-out;
 }
 
-/* * Transform-based and past the baseline, so the travel short-circuits (annex §11). The fade is opacity at the baseline and stays. */
+.chip-leaving {
+    position: absolute;
+    transition: opacity var(--duration-baseline) ease-in;
+}
+
+/* * Transform-based and past the baseline, so the travel short-circuits (annex §11). The fades are opacity at the baseline and stay. */
 @media (prefers-reduced-motion: reduce) {
     .chip-move {
         transition: none;
-    }
-
-    .chip-leaving {
-        transition: opacity var(--duration-baseline) ease-in;
     }
 }
 
