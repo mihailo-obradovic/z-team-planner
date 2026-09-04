@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Active
 
 ## Task Weight
 
@@ -134,7 +134,15 @@ _None._
 
 ## Verification
 
-Empty while this document is a draft. The panel fades this feature narrows were verified under feature 024 on 2026-09-04; that evidence does not carry, because what they applied to is what changes here.
+Suite 387 passing across 49 files, typecheck, lint and format clean. Walked in Chrome on the dev server at 1500x1100.
+
+**Stats panel.** Across a roster switch the "Combat" label is the same DOM node before, during and after, at an unchanged position; the figures count monotonically and the rendered text matches the tween exactly (intellect 2.00 → 1.62 → 1.22 → 1.00 while vigor 2.00 → 2.77 → 3.57 → 4.00). An earlier report of a figure dipping below both endpoints was a measurement sampled across two overlapping switches, not a defect.
+
+**Synergy control.** The label holds x=527 through a switch, with both names present in one grid cell mid-transition and only the new one after. The block fades as a whole where a hero has no partner.
+
+**Powers panel.** Unchanged from feature 024, which verified its fade.
+
+Not walked: a `prefers-reduced-motion` machine, and a hero with no synergy partner (the ep8 recruits are hidden by default). The first is read from the shipped stylesheet; the second is a `v-if` inside the fade.
 
 ## Agent Change Rules
 

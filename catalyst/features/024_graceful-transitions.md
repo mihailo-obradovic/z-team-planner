@@ -2,7 +2,7 @@
 
 ## Status
 
-Changing
+Active
 
 ## Task Weight
 
@@ -135,7 +135,7 @@ _None._
 
 **Card motions (2026-09-04).** Lint, typecheck and suite clean; walked in headless Chrome at 1905px and 375px. The reset icon, Supernova's chip, the bonus swap (two fast presses re-targeting to `+3`), a reset running both motions at once, and Coupé's glyph swap all behaved; a share link loaded with no motion. The walk found both button components rendering fragments, which `Transition` cannot animate, so every transitioned element now sits in a plain span. Sonar's chip and a reduced-motion machine were not covered.
 
-**Chip movement.** Empty: unbuilt. What prompted it: revealing Coupé's En Pointe moved three chips 14px left in one frame at full opacity, while only the arriving chip faded.
+**Chip movement (2026-09-04).** Suite 387 passing across 49 files, typecheck, lint and format clean. Walked in Chrome on the dev server, measuring positions frame by frame on Coupé revealing and hiding En Pointe. Before: the three existing chips jumped 14px left in a single frame at full opacity. After: they travel under the move while the fourth fades, and the chip that comes or goes holds its own x throughout — the arriving one at 231 as its opacity climbs, the leaving one at 231 as it falls, where the row centre it would otherwise snap to is 201. Two defects the walk caught and fixed: the move class lands on the entering and leaving elements too, so both slid while fading until each was given a fade-only rule after the move rule; and taking the leaver out of flow put it under the row's centring, which is why its offsets are pinned in `beforeLeave`.
 
 ## Agent Change Rules
 
