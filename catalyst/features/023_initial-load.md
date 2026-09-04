@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -132,7 +132,13 @@ Vitest's Nuxt environment mounts client-side and never performs a real hydration
 
 ## Verification
 
-Empty while the document is a draft.
+Suite 383 passing across 48 files (5 new), `nuxt typecheck` clean, `oxlint` and `oxfmt` clean, production build clean. In the built `/`, the served HTML carries the cover, `inert` and `aria-busy="true"`; `/privacy` carries the head rule but no cover and an untouched `main`.
+
+Walked live in Chrome against both a dev server and the production preview. Dev `/` loads with **no console warning of any kind**, which is where Vue reports a hydration mismatch — the one risk the unit tests cannot reach. Measured on the rendered cover: `position: fixed`, top exactly the header's bottom edge, bottom exactly the viewport's, `rgb(23, 28, 25)` at full opacity, `z-index: 30`; ring 32×32 with a 4px stroke, `oklab(… / 0.25)` track under an `rgb(223, 138, 32)` arc, `loading-ring 1.4s linear infinite`. After the lift the cover, `inert` and `aria-busy` are all gone and `overflow-y` is back to `auto`. A stored build was revealed already applied; `/privacy` and `/b/{id}` drew no cover, and neither did a client-side navigation into `/`.
+
+Two limits. Reduced motion was confirmed from the shipped stylesheet, not emulated — the browser tool exposes no `prefers-reduced-motion` override. Scripting-disabled was confirmed from the served HTML's head rule, not by switching scripting off in the browser.
+
+Remaining risk, and a non-goal working as documented: the header's **Save** and **Share** controls are `ClientOnly` and absent from the prerendered header, so they still appear at hydration above the cover's top edge. The cover starts below the header by decision, so it does not hide them.
 
 ## Agent Change Rules
 
