@@ -134,7 +134,18 @@ export default defineNuxtConfig({
     '/privacy': { prerender: true },
 
     // * The shared-build page reads a per-request id from an API that needs a token-less fetch at view time; prerendering or SSRing it would serve one user's build to the next (feature 007).
-    '/b/**': { ssr: false }
+    // * `robots: false` sets `X-Robots-Tag: noindex, nofollow` on the actual response (verified: `curl -I /b/test123`) — but it does NOT add a `robots.txt` Disallow line, since that file is generated from concrete/prerendered routes and `/b/[id]` is neither. The `robots.disallow` entry below is what actually keeps `/b/` out of `robots.txt`; this stays too as the per-request belt to that suspenders.
+    '/b/**': { ssr: false, robots: false }
+  },
+
+  // * Feature 027. `/b/**` is excluded explicitly rather than relying on the sitemap module's default dynamic-route omission — the invariant ("never in the sitemap") should hold even if a dynamic-URL source is added here later.
+  sitemap: {
+    exclude: ['/b/**']
+  },
+
+  // * Feature 027. `disallow` is the actual source of `robots.txt`'s `Disallow: /b/` line — a wildcard `routeRules` entry alone (above) cannot produce it, since `/b/[id]` has no enumerable concrete routes for the static file generator to list.
+  robots: {
+    disallow: ['/b/']
   },
 
   site: {
