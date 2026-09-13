@@ -31,7 +31,7 @@ import type { HeroId } from '../web/types/hero.ts';
  * fresh export disagree, so the two cannot drift apart unnoticed.
  */
 
-// * Runs as `node scripts/export-game-data.ts` — Node 26 strips the types itself, so this needs no bundler and no dependency. That mode is what the explicit `.ts` import extensions above are for.
+// * Runs as `node scripts/export-game-data.ts` — Node 24 strips the types itself, so this needs no bundler and no dependency. That mode is what the explicit `.ts` import extensions above are for.
 
 export type GameData = {
   stat_names: readonly string[];
