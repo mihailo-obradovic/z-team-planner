@@ -18,7 +18,7 @@ Decision 001 deferred the Maintenance layer with a condition: "a committed lockf
 
 Meanwhile a `renovate.json` has sat at the root since the original Nuxt scaffold (`35105bf`), predating Catalyst adoption, and it is **inert**: the GitHub App was never installed, so the bot has never run — no PRs, no branches. The repository looks configured for a bot it does not have while `architecture.md` calls the layer deferred; adopting it resolves both halves.
 
-The project already runs `preinstall: npx only-allow pnpm` and pnpm's `minimumReleaseAge: 1440`, so a 24-hour cooldown applies at install time independent of any bot.
+The project already runs `preinstall: npx only-allow pnpm` and pnpm's `minimumReleaseAge: 1440` in `pnpm-workspace.yaml` (pnpm 10 silently ignores it under `package.json`'s `pnpm` field), so a 24-hour cooldown applies at install time independent of any bot.
 
 ## Decision
 
