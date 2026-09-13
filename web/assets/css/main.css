@@ -311,6 +311,77 @@
     }
 }
 
+/* * Slide: text that swaps on a state change travels about half a line while it fades — the leaving text one way, the arriving text in from the other, both at once, so the two must overlap in one grid cell and the cell must clip (feature 025). The distance and the axis come from the four variables, defaulted to the vertical, forward case: old up and out, new in from below. A wrapper overrides them to turn the slide around or sideways. */
+.slide-enter-active {
+    transition:
+        opacity var(--duration-baseline) ease-out,
+        transform var(--duration-baseline) ease-out;
+}
+
+.slide-leave-active {
+    transition:
+        opacity var(--duration-baseline) ease-in,
+        transform var(--duration-baseline) ease-in;
+}
+
+.slide-enter-from {
+    opacity: 0;
+    transform: translate(var(--slide-enter-x, 0), var(--slide-enter-y, 0.5lh));
+}
+
+.slide-leave-to {
+    opacity: 0;
+    transform: translate(var(--slide-leave-x, 0), var(--slide-leave-y, -0.5lh));
+}
+
+/* * Direction overrides for a slide. `slide-backward` turns it round (in from the start, out toward the end); `slide-sideways` puts it on the x axis, and the two combine. */
+.slide-backward {
+    --slide-enter-y: -0.5lh;
+    --slide-leave-y: 0.5lh;
+}
+
+.slide-sideways {
+    --slide-enter-x: 0.5lh;
+    --slide-enter-y: 0;
+    --slide-leave-x: -0.5lh;
+    --slide-leave-y: 0;
+}
+
+.slide-sideways.slide-backward {
+    --slide-enter-x: -0.5lh;
+    --slide-leave-x: 0.5lh;
+}
+
+/* * The notes list's move and its out-of-flow leave, the chip row's arrangement again (feature 025): an advisory that clears is taken out of flow as it slides away so the lines below travel at once, and the lines that stay travel under the list move. `notes-entering` restates the slide so the move class is not put on the arriving line too — as with the chips, two `transition` shorthands on one element do not merge. */
+.notes-move {
+    transition: transform var(--duration-slow) ease-in-out;
+}
+
+.notes-entering {
+    transition:
+        opacity var(--duration-baseline) ease-out,
+        transform var(--duration-baseline) ease-out;
+}
+
+.notes-leaving {
+    position: absolute;
+    transition:
+        opacity var(--duration-baseline) ease-in,
+        transform var(--duration-baseline) ease-in;
+}
+
+/* * Transform-based, so the travel goes under reduced motion; the slide keeps its opacity leg and degrades to the state fade rather than to a cut (feature 025). */
+@media (prefers-reduced-motion: reduce) {
+    .slide-enter-from,
+    .slide-leave-to {
+        transform: none;
+    }
+
+    .notes-move {
+        transition: none;
+    }
+}
+
 /* * The annex's loading ring (§11), the initial-load ring's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
 @utility loading-ring {
     animation: loading-ring 1.4s linear infinite;
