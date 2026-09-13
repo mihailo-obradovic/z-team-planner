@@ -181,6 +181,9 @@ onMounted(async () => {
 });
 
 useHead({
+  // * Feature 027. `@nuxtjs/seo`'s SEO Utils otherwise applies `'%s %separator %siteName'` to every title at low tag-priority, on the assumption that a page's own title is a bare segment. Every title here is already complete (this file: "Z-Team Planner"; `web/pages/privacy.vue`: "Privacy — Z-Team Planner"), so left alone the default duplicated the site name — verified as `<title>Z-Team Planner | Z-Team Planner</title>`. This call's normal priority out-ranks that low-priority default (`node_modules/nuxt-seo-utils/dist/runtime/app/logic/applyDefaults.js`).
+  titleTemplate: '%s',
+
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     // * The chrome the header already paints, so the browser's own bar continues the page rather than framing it (annex §1, lagoon 600).
@@ -229,13 +232,13 @@ useHead({
   ]
 });
 
-// ! No ogImage or twitterImage on purpose. Both pointed at a Nuxt UI template screenshot left over from the starter, and decision 003 removed them rather than ship a picture of someone else's product — twitterCard dropped to `summary` at the same time, so cards render as text instead of a broken image.
-// TODO: Add a real share image, then restore ogImage/twitterImage here and set twitterCard back to `summary_large_image`.
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  twitterCard: 'summary'
+  ogImage: '/images/og/build-now.png',
+  twitterCard: 'summary_large_image',
+  twitterImage: '/images/og/build-now.png'
 });
 </script>

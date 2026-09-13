@@ -36,3 +36,6 @@ __pycache__/
 .claude/settings.local.json
 # catalyst:end
 .vercel
+
+# Skilld references (recreated by `skilld install`)
+.skilld

@@ -232,6 +232,7 @@ Packages this project runs that the adopted stack modules' Approved Libraries do
 | `@regle/rules`       | runtime | Frontend | The rule set for the above.                                                                                                                                                           | feature 006      |
 | `@regle/nuxt`        | runtime | Frontend | Nuxt integration for the above.                                                                                                                                                       | feature 006      |
 | `temporal-polyfill`  | runtime | Frontend | `Date` is banned outright (`catalyst/conventions/code-style.md`), and `Temporal` is not Baseline yet; the ponyfill is what the one timestamp-formatting boundary runs on until it is. | user, 2026-08-30 |
+| `@nuxtjs/seo`        | runtime | Frontend | Site config, robots, sitemap, Open Graph image and Schema.org meta-module — the Nuxt UI stack module names no SEO tooling of its own.                                                 | feature 027      |
 
 `@vueuse/core` was considered and deliberately not added (feature 006).
 

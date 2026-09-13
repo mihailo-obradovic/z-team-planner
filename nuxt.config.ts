@@ -1,5 +1,20 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
+// * Feature 006's build guard (below) walks this object by reference rather than `nuxt.options.runtimeConfig.public`: modules write their own internal state into that tree at setup time (feature 027's `@nuxtjs/seo` sub-modules add ~30 keys of their own), and the guard must only require an env var for what this project itself declares.
+const ownPublicRuntimeConfig = {
+  apiBaseUrl: '',
+
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    appId: '',
+
+    // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
+    authEmulatorHost: ''
+  }
+};
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/ui',
@@ -7,7 +22,8 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
-    '@regle/nuxt'
+    '@regle/nuxt',
+    '@nuxtjs/seo'
   ],
 
   srcDir: 'web/',
@@ -81,19 +97,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    public: {
-      apiBaseUrl: '',
-
-      firebase: {
-        apiKey: '',
-        authDomain: '',
-        projectId: '',
-        appId: '',
-
-        // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
-        authEmulatorHost: ''
-      }
-    }
+    public: ownPublicRuntimeConfig
   },
 
   hooks: {
@@ -104,12 +108,16 @@ export default defineNuxtConfig({
       }
 
       // * Only a deployable build gates on these (feature 006). `dev` is `nuxt dev`; `test` is vitest's Nuxt environment, which also builds, without .env, and is not an artifact. The two flags replace the earlier NODE_ENV check, which said the same thing one step removed.
-      // * The required list is the declared public config itself, so a key added above is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
+      // * The required list is the declared public config itself (`ownPublicRuntimeConfig`, not `nuxt.options.runtimeConfig.public` — see its own comment), so a key added there is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
       const optional = new Set(['apiBaseUrl', 'firebase.authEmulatorHost']);
-      const missing = publicConfigPaths(nuxt.options.runtimeConfig.public)
-        .filter((path) => !optional.has(path))
-        .map(publicEnvName)
-        .filter((name) => !process.env[name]);
+      // * NUXT_SITE_URL/NUXT_SITE_ENV sit outside `runtimeConfig.public` (feature 027) — nuxt-site-config reads them straight off `process.env`, so they join the same required-key mechanism by name instead of through `publicConfigPaths`.
+      const missing = [
+        ...publicConfigPaths(ownPublicRuntimeConfig)
+          .filter((path) => !optional.has(path))
+          .map(publicEnvName),
+        'NUXT_SITE_URL',
+        'NUXT_SITE_ENV'
+      ].filter((name) => !process.env[name]);
 
       if (missing.length > 0) {
         throw new Error(
@@ -126,7 +134,32 @@ export default defineNuxtConfig({
     '/privacy': { prerender: true },
 
     // * The shared-build page reads a per-request id from an API that needs a token-less fetch at view time; prerendering or SSRing it would serve one user's build to the next (feature 007).
-    '/b/**': { ssr: false }
+    // * `robots: false` sets `X-Robots-Tag: noindex, nofollow` on the actual response (verified: `curl -I /b/test123`) — but it does NOT add a `robots.txt` Disallow line, since that file is generated from concrete/prerendered routes and `/b/[id]` is neither. The `robots.disallow` entry below is what actually keeps `/b/` out of `robots.txt`; this stays too as the per-request belt to that suspenders.
+    '/b/**': { ssr: false, robots: false }
+  },
+
+  // * Feature 027. `/b/**` is excluded explicitly rather than relying on the sitemap module's default dynamic-route omission — the invariant ("never in the sitemap") should hold even if a dynamic-URL source is added here later.
+  sitemap: {
+    exclude: ['/b/**']
+  },
+
+  // * Feature 027. `disallow` is the actual source of `robots.txt`'s `Disallow: /b/` line — a wildcard `routeRules` entry alone (above) cannot produce it, since `/b/[id]` has no enumerable concrete routes for the static file generator to list.
+  robots: {
+    disallow: ['/b/']
+  },
+
+  site: {
+    // TODO: Replace when deployed to a proper domain
+    url: 'https://z-team-planner.vercel.app',
+    name: 'Z-Team Planner',
+
+    // * Matches `web/app.vue`'s `useSeoMeta` description verbatim — that call wins on every actual page render (component-level meta out-ranks Site Config's fallback), so this exists for what reads `site.description` directly instead (Schema.org's default identity, feature 027 step 4).
+    description:
+      'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.'
+  },
+
+  ogImage: {
+    enabled: false
   },
 
   compatibilityDate: '2026-08-25'
