@@ -18,7 +18,7 @@ export default defineConfig({
           }
         }
       }),
-      // * Plan node unit tests (no DOM)
+      // * Plain Node unit tests (no DOM)
       {
         resolve: {
           alias: {
