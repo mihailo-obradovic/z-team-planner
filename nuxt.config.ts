@@ -1,7 +1,30 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
+// * Feature 006's build guard (below) walks this object by reference rather than `nuxt.options.runtimeConfig.public`: modules write their own internal state into that tree at setup time (feature 027's `@nuxtjs/seo` sub-modules add ~30 keys of their own), and the guard must only require an env var for what this project itself declares.
+const ownPublicRuntimeConfig = {
+  apiBaseUrl: '',
+
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    appId: '',
+
+    // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
+    authEmulatorHost: ''
+  }
+};
+
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui', '@nuxt/image', '@nuxt/test-utils', '@pinia/nuxt', '@pinia/colada-nuxt', '@regle/nuxt', '@nuxtjs/seo'],
+  modules: [
+    '@nuxt/ui',
+    '@nuxt/image',
+    '@nuxt/test-utils',
+    '@pinia/nuxt',
+    '@pinia/colada-nuxt',
+    '@regle/nuxt',
+    '@nuxtjs/seo'
+  ],
 
   srcDir: 'web/',
 
@@ -74,19 +97,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    public: {
-      apiBaseUrl: '',
-
-      firebase: {
-        apiKey: '',
-        authDomain: '',
-        projectId: '',
-        appId: '',
-
-        // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
-        authEmulatorHost: ''
-      }
-    }
+    public: ownPublicRuntimeConfig
   },
 
   hooks: {
@@ -97,12 +108,16 @@ export default defineNuxtConfig({
       }
 
       // * Only a deployable build gates on these (feature 006). `dev` is `nuxt dev`; `test` is vitest's Nuxt environment, which also builds, without .env, and is not an artifact. The two flags replace the earlier NODE_ENV check, which said the same thing one step removed.
-      // * The required list is the declared public config itself, so a key added above is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
+      // * The required list is the declared public config itself (`ownPublicRuntimeConfig`, not `nuxt.options.runtimeConfig.public` — see its own comment), so a key added there is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
       const optional = new Set(['apiBaseUrl', 'firebase.authEmulatorHost']);
-      const missing = publicConfigPaths(nuxt.options.runtimeConfig.public)
-        .filter((path) => !optional.has(path))
-        .map(publicEnvName)
-        .filter((name) => !process.env[name]);
+      // * NUXT_SITE_URL/NUXT_SITE_ENV sit outside `runtimeConfig.public` (feature 027) — nuxt-site-config reads them straight off `process.env`, so they join the same required-key mechanism by name instead of through `publicConfigPaths`.
+      const missing = [
+        ...publicConfigPaths(ownPublicRuntimeConfig)
+          .filter((path) => !optional.has(path))
+          .map(publicEnvName),
+        'NUXT_SITE_URL',
+        'NUXT_SITE_ENV'
+      ].filter((name) => !process.env[name]);
 
       if (missing.length > 0) {
         throw new Error(
@@ -120,6 +135,14 @@ export default defineNuxtConfig({
 
     // * The shared-build page reads a per-request id from an API that needs a token-less fetch at view time; prerendering or SSRing it would serve one user's build to the next (feature 007).
     '/b/**': { ssr: false }
+  },
+
+  site: {
+    // TODO: Replace when deployed to a proper domain
+    url: 'https://z-team-planner.vercel.app',
+    name: 'Z-Team Planner',
+    description:
+      'Plan your Dispatch build ahead of time — level heroes, train powers and flight, and pick synergy pairs before you commit in-game.'
   },
 
   compatibilityDate: '2026-08-25'
