@@ -96,22 +96,17 @@ export default defineNuxtConfig({
   hooks: {
     // ! `ready`, not `build:before`, and it takes the nuxt instance for one reason: `nuxt prepare` runs the build hooks too, and it sets NODE_ENV=production itself. Gating on NODE_ENV alone therefore failed every `pnpm install` that had no .env beside it — CI's install step, and any fresh clone — while passing locally because .env was there. `_prepare` is the flag that separates generating types from producing an artifact.
     ready(nuxt) {
-      if (nuxt.options._prepare) {
+      if (nuxt.options._prepare || nuxt.options.dev || nuxt.options.test) {
         return;
       }
 
-      // * Only a real production build gates on these (feature 006): `nuxt build` sets NODE_ENV=production, while vitest's Nuxt environment also builds, without .env, and is not a deployable artifact.
-      if (process.env.NODE_ENV !== 'production') {
-        return;
-      }
-
-      // * NUXT_PUBLIC_API_BASE_URL is deliberately absent: an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007).
-      const missing = [
-        'NUXT_PUBLIC_FIREBASE_API_KEY',
-        'NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-        'NUXT_PUBLIC_FIREBASE_PROJECT_ID',
-        'NUXT_PUBLIC_FIREBASE_APP_ID'
-      ].filter((key) => !process.env[key]);
+      // * Only a deployable build gates on these (feature 006). `dev` is `nuxt dev`; `test` is vitest's Nuxt environment, which also builds, without .env, and is not an artifact. The two flags replace the earlier NODE_ENV check, which said the same thing one step removed.
+      // * The required list is the declared public config itself, so a key added above is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
+      const optional = new Set(['apiBaseUrl', 'firebase.authEmulatorHost']);
+      const missing = publicConfigPaths(nuxt.options.runtimeConfig.public)
+        .filter((path) => !optional.has(path))
+        .map(publicEnvName)
+        .filter((name) => !process.env[name]);
 
       if (missing.length > 0) {
         throw new Error(
@@ -133,3 +128,29 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2026-08-25'
 });
+
+// * Dotted paths of every leaf under `runtimeConfig.public`, in declaration order.
+function publicConfigPaths(
+  config: Record<string, unknown>,
+  prefix = ''
+): string[] {
+  return Object.entries(config).flatMap(([key, value]) => {
+    const path = prefix ? `${prefix}.${key}` : key;
+
+    if (value !== null && typeof value === 'object') {
+      return publicConfigPaths(value as Record<string, unknown>, path);
+    }
+
+    return [path];
+  });
+}
+
+// * The environment variable Nuxt reads a public key from: `firebase.apiKey` → NUXT_PUBLIC_FIREBASE_API_KEY.
+function publicEnvName(path: string): string {
+  const snake = path
+    .replace(/\./g, '_')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toUpperCase();
+
+  return `NUXT_PUBLIC_${snake}`;
+}
