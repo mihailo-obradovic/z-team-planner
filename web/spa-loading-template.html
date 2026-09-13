@@ -1,0 +1,39 @@
+<!-- * Feature 026. Inlined by Nuxt into every `ssr: false` page (`/b/**`) beside the app root and removed by Nuxt on mount, so the share page has a ground and the annex's loading ring from its first paint instead of a blank until the bundle runs. No text: the ring is annex §11's mark, and that mark carries none. -->
+<div id="boot-splash">
+  <div id="boot-splash-ring" role="progressbar" aria-label="Loading"></div>
+</div>
+<style>
+  /* ! Literals, not the tokens they restate: this markup is inlined ahead of the stylesheet, and on the dev server the sheet arrives by script, so at paint time the tokens do not exist. Change the token in main.css, change the literal here. */
+  #boot-splash {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* * The app's ground: `body`'s --ui-color-secondary-900, lagoon-900. */
+    background: #171c19;
+  }
+
+  /* * Annex §11 loading ring: 32px, a 4px stroke, the primary (--color-ember-500) at full strength for the leading arc over the same colour at 25%, one turn per 1.4s, linear. Same values as LoadingRing.vue and the `loading-ring` utility (feature 023). */
+  #boot-splash-ring {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 4px solid rgba(223, 138, 32, 0.25);
+    border-top-color: #df8a20;
+    animation: boot-splash-turn 1.4s linear infinite;
+  }
+
+  @keyframes boot-splash-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* * Transform-based, so it short-circuits (annex §11): the ring stays drawn and stops turning. Its presence is the information. */
+  @media (prefers-reduced-motion: reduce) {
+    #boot-splash-ring {
+      animation: none;
+    }
+  }
+</style>

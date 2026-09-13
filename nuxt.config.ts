@@ -12,6 +12,9 @@ export default defineNuxtConfig({
 
   srcDir: 'web/',
 
+  // * Feature 026: the ground and the annex's loading ring that every `ssr: false` page (`/b/**`) paints until the app mounts. Nuxt would find the file by name in srcDir on its own; naming it says the file is deliberate and not a leftover.
+  spaLoadingTemplate: 'spa-loading-template.html',
+
   // * Nuxt's generated tsconfigs cover neither test/unit/ (app context, for the `@/` alias) nor scripts/ (node context); paths are relative to .nuxt/. The extension flag: scripts/export-game-data.ts runs under bare `node`, so its imports spell `.ts`, and test/unit imports it the same way.
   typescript: {
     tsConfig: {
