@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -12,7 +12,7 @@ Medium
 
 Split from [024_graceful-transitions](024_graceful-transitions.md), which keeps the hero card. That feature faded every hero-bound panel on a roster switch. Use showed the rule was wrong here: the stats panel's structure is identical for every hero, so fading it re-drew the word "Combat" identically, motion carrying no information.
 
-This feature says what the dialog does instead. Three motions, each matched to what changes: pictures **fade**, figures **count** to their new value, and the two blocks of text the eye reads on a switch — the toolbar name and the notes — **slide**. The first version faded those too; in use that was too much fading once the rest of the dialog went still (amended 2026-09-13).
+Three motions instead, each matched to what changes: pictures **fade**, figures **count**, and the two blocks of text the eye reads on a switch — the toolbar name and the notes — **slide**. The first version faded those too; in use that was too much fading once the rest went still (amended 2026-09-13).
 
 ## Inputs
 
@@ -46,8 +46,6 @@ Non-goals:
 - **The hero card.** Feature 024 owns it, including the chip row's fade and move.
 - **The roster rail and the radar.** The rail is stable across a switch; the radar keeps decision 008's tween, which this feature borrows for the figures rather than changes.
 - **The large portrait.** Keeps the fade; sliding it is deferred until the name's slide has been seen in use.
-- **Counting outside this dialog.** The card's figures and the synergy-pair markers still change in place.
-- **Feature 011's layout.** Every fixed row and reserved height is read, never altered.
 
 ## User / System Behavior
 
@@ -75,7 +73,7 @@ Non-goals:
 
 - Its headings are the same for every hero but its cards are different text, so the panel fades out and in as one, keyed by the hero (annex §11, State fade).
 - A collapse that closed the lists and reopened them was built and rejected in use: it bought nothing the fade does not, and the Effects heading below the powers list was pushed up while that list closed and came back to the offset it already had (measured 1063 to 816 and back). Holding it still needed the whole panel in one clipped region, which reads no better than the fade.
-- The Effects section comes and goes with the hero, inside that fade. Nothing about it is animated separately.
+- The Effects section comes and goes inside that fade, never on its own.
 
 ## Roles And Access
 
@@ -88,7 +86,6 @@ Not role-specific.
 | click a hero in the rail                    | thumbnail and portrait fade; the stats panel holds still                  | labels never move                        |
 | the same switch, stats                      | every figure counts to the new hero's value                               | the radar tweens alongside               |
 | the same switch, name                       | the old name slides up and out, the new slides in from below              | rail direction; the thumbnail only fades |
-| the same switch, to an earlier hero         | down and out, in from above                                               | reversed                                 |
 | the same switch below `lg`                  | sideways: left out, in from the right for a later hero                    | follows the ribbon                       |
 | the same switch, notes                      | the whole notes block slides up and out, the new block in from below      | fixed direction, whichever hero          |
 | press `+` on Combat until an advisory fires | the new line slides in from below; the lines after it travel to make room | nothing jumps                            |
@@ -98,13 +95,12 @@ Not role-specific.
 | open the dialog from a card                 | name and notes are simply there                                           | no arrival motion                        |
 | click the synergy partner control           | the name slides by the rail rule                                          | same as a rail click                     |
 | a second rail click mid-motion              | everything re-targets to the hero clicked last                            | direction from the arriving hero         |
-| planner state after any of the above        | identical to before this feature                                          | presentation only                        |
 | `prefers-reduced-motion: reduce`            | counts land instantly; the slides fall back to fades; fades still run     | annex §14.4                              |
 
 ## Business Rules
 
 - **Presentation only.** The motions read state; none delays, batches or suppresses a write.
-- **Durations come from the token scale**, except the value count, which is no CSS transition at all: a JavaScript tween whose 200ms is the radar's, kept so the two agree (annex §11).
+- **Durations come from the token scale**, except the value count: a JavaScript tween whose 200ms is the radar's, kept so the two agree (annex §11).
 - **Easing follows the annex:** `ease-out` entering or growing, `ease-in` leaving or closing.
 - **Properties are named**, never `transition: all`.
 - **A slide is transform-based**, so it carries the annex's reduced-motion guard, degrading to the fade rather than a cut.
@@ -113,7 +109,7 @@ Not role-specific.
 
 - **A switch mid-motion** re-targets every leg from wherever it has reached, to the hero clicked last. The name's direction is computed from the hero that was arriving: that is the name the user saw.
 - **A partnerless hero** has no pair totals; that block fades out instead of counting.
-- **The notes region is scrolled when the switch happens.** The new block arrives at the top; the region is left at the top rather than at an offset that no longer means anything.
+- **The notes region is scrolled when the switch happens.** The new block arrives at the top and the region is left there.
 - **The notes block is taller than its region.** The slide is clipped by the region's box; only the visible part moves.
 - **Feature 023's first load** replaces state after hydration: a load, not a change, and the dialog is not open anyway.
 
@@ -156,7 +152,13 @@ _None._
 
 ## Verification
 
-Empty while this document is a draft. The 2026-09-04 walk (stats panel stillness and counts, synergy control, powers fade) stands for what this amendment leaves alone; the name and the notes are re-walked once they slide.
+Suite 387 passing across 49 files, typecheck, lint and format clean. Walked 2026-09-13 in headless Chromium at 1500x1100 and 375x800, sampling computed transforms every 40ms.
+
+**Name.** Later hero: old 0 to -11px fading, new from +11px, both in the one cell mid-slide; earlier hero reversed; at 375px both run on x. The partner control obeys the rule both ways; a click interrupted 60ms later measures from the arriving hero. The 24px thumbnail fades beside the text.
+
+**Notes.** Old list to -12px, new from +12px. Two advisories firing before Golem's second line enter from +12px while it travels from -64px over 250ms; clearing them, each holds its row (pinned — unpinned, the second flew 44px through its neighbour) and slides to -12px while the survivor travels back.
+
+**Reduced motion.** Every transform reads `none` while the opacities still cross. Stats, synergy and powers unchanged from 2026-09-04.
 
 ## Agent Change Rules
 

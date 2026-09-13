@@ -1,21 +1,28 @@
 <template>
   <u-modal :open="!!heroId" fullscreen @update:open="emit('close')">
     <!-- * The thumbnail rides in the toolbar so the hero is named even below `lg`, where the large portrait is not drawn. -->
-    <!-- * Every hero-bound panel below is keyed by the hero and fades out, then in, on a roster switch — annex §11 state fade, out-in (feature 024). The roster rail and the radar stay outside: the rail is stable and the radar keeps its own tween. -->
+    <!-- * The thumbnail, the portrait and the powers panel are keyed by the hero and fade on a roster switch — annex §11 state fade (feature 024). The name and the notes slide instead (feature 025). The roster rail and the radar stay outside: the rail is stable and the radar keeps its own tween. -->
     <template #title>
       <span class="flex items-center gap-2">
         <Transition name="state-fade" mode="out-in">
-          <span :key="heroId ?? ''" class="flex items-center gap-2">
-            <HeroPortrait
-              v-if="heroId"
-              :hero-id="heroId"
-              usage="header"
-              :alt="hero?.name ?? ''"
-              class="size-6 shrink-0 object-cover object-top"
-            />
-            {{ hero?.name }}
-          </span>
+          <HeroPortrait
+            v-if="heroId"
+            :key="heroId"
+            :hero-id="heroId"
+            usage="header"
+            :alt="hero?.name ?? ''"
+            class="size-6 shrink-0 object-cover object-top"
+          />
         </Transition>
+
+        <!-- * The name slides in the roster's own direction (feature 025): old and new overlap in one grid cell while the cell clips the half-line of travel, and the direction classes are set from where the two heroes sit in the strip on screen. The thumbnail beside it only fades, in its own slot, so one thing moves. -->
+        <span class="grid overflow-hidden" :class="nameSlideClass">
+          <Transition name="slide">
+            <span :key="heroId ?? ''" class="col-start-1 row-start-1">
+              {{ hero?.name }}
+            </span>
+          </Transition>
+        </span>
       </span>
     </template>
 
@@ -507,15 +514,19 @@
                 </span>
               </div>
 
-              <!-- * The list is a transition group inside the keyed fade: the whole list fades out-in on a hero switch, and within a hero an advisory that fires or clears fades on its own, holding its place while it leaves (feature 024). -->
-              <ScrollRegion class="flex flex-col p-4 lg:min-h-0 lg:flex-1">
-                <Transition name="state-fade" mode="out-in">
+              <!-- * The list is a transition group inside a keyed slide (feature 025): on a hero switch the whole list slides up and out while the new one slides in from below, the two overlapping in one grid cell that the region clips. Within a hero an advisory that fires or clears slides on its own line — `notes-leaving` takes a clearing line out of flow, pinned where it stood, so the lines below travel at once under `notes-move`, and `relative` is what it is then positioned against. -->
+              <ScrollRegion class="grid p-4 lg:min-h-0 lg:flex-1">
+                <Transition name="slide">
                   <TransitionGroup
                     :key="hero.id"
                     tag="ul"
-                    name="state-fade"
+                    name="slide"
+                    move-class="notes-move"
+                    enter-active-class="notes-entering"
+                    leave-active-class="notes-leaving"
                     aria-label="Notes"
-                    class="flex list-inside list-disc flex-col gap-2 text-base marker:text-muted"
+                    @beforeLeave="pinLeaving"
+                    class="relative col-start-1 row-start-1 flex list-inside list-disc flex-col gap-2 self-start text-base marker:text-muted"
                   >
                     <li v-if="heroNote" key="note" class="text-muted">
                       {{ heroNote }}
@@ -540,6 +551,7 @@
 
 <script setup lang="ts">
 import HeroPortrait from '@/components/HeroPortrait.vue';
+import { pinLeaving } from '@/utils/pinLeaving';
 
 import {
   STAT_NAMES,
@@ -653,6 +665,27 @@ watch(
     requestAnimationFrame(followMarkedHero);
   },
   { flush: 'post' }
+);
+
+// * Which way the toolbar name slides (feature 025): forward when the new hero sits later in the roster than the one it replaces, and sideways when the ribbon rather than the rail is the strip on screen — read from the rail's own tiles, which measure no rect while the rail is `display: none`, so the name follows whichever strip the user sees rather than a breakpoint of its own. Set before the DOM patches, so the classes are on the wrapper when the transition starts. A switch mid-slide measures from the hero that was arriving, since that is the name the user saw; opening the dialog has nothing to measure from and leaves the classes as they were, with nothing on screen to slide.
+const nameSlideClass = ref<string[]>([]);
+
+watch(
+  () => props.heroId,
+  (heroId, previousHeroId) => {
+    if (!heroId || !previousHeroId) {
+      return;
+    }
+
+    const order = rosterOrder.value.map((rosterHero) => rosterHero.id);
+    const backward = order.indexOf(heroId) < order.indexOf(previousHeroId);
+    const sideways = railTiles.value?.[0]?.getClientRects().length === 0;
+
+    nameSlideClass.value = [
+      ...(backward ? ['slide-backward'] : []),
+      ...(sideways ? ['slide-sideways'] : [])
+    ];
+  }
 );
 
 // ! Opening is itself a trigger, and a watcher only fires on a change — so a dialog mounted with a hero

@@ -122,19 +122,8 @@
 </template>
 
 <script setup lang="ts">
-// * A leaving chip is taken out of flow so its neighbours can travel while it fades rather than after.
-// ! Its offsets have to be pinned first. An absolutely positioned child of a centred flex row is placed
-// ! by that centring, not by where it stood, so without this the chip jumps to the middle of the row,
-// ! overlaps the chips that remain, and fades out there. Read in `beforeLeave`, which runs while the
-// ! chip is still in flow — one frame later `chip-leaving` has already moved it.
-function pinLeaving(element: Element) {
-  const chip = element as HTMLElement;
-
-  chip.style.left = `${chip.offsetLeft}px`;
-  chip.style.top = `${chip.offsetTop}px`;
-}
-
 import { confirmationText } from '@/utils/confirmationText';
+import { pinLeaving } from '@/utils/pinLeaving';
 import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
