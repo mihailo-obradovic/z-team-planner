@@ -1,8 +1,8 @@
 # Z-Team Planner
 
-A build calculator for [Dispatch](https://store.steampowered.com/app/2429620/Dispatch/) (AdHoc Studio). Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices (who was cut in episode 3, who was hired in episode 4). Builds persist in your browser and are shareable as URLs — no account needed.
+A fan-made build calculator for the game [Dispatch](https://store.steampowered.com/app/2429620/Dispatch/) by AdHoc Studio. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices (who was cut in episode 3, who was hired in episode 4). Builds persist in your browser and are shareable as URLs — no account needed.
 
-Built with Nuxt 4, Nuxt UI 4, and Tailwind CSS 4. Builds live in the browser and share by URL; signing in with Google saves them to a FastAPI backend on Neon Postgres instead (Catalyst decision 004).
+Built with Nuxt 4, Nuxt UI 4, and Tailwind CSS 4. Builds live in the browser and share by URL; signing in with Google saves them to a FastAPI backend on Neon Postgres instead.
 
 ## Running it from a fresh clone
 
@@ -58,7 +58,7 @@ pnpm dev                                                             # the app, 
 
 To sign in against the emulator rather than a real Google account, also set `NUXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost:9099`; the web SDK then talks to it instead of Google, and the API accepts the tokens it mints.
 
-`--project` is not optional, and it must match `FIREBASE_PROJECT_ID`. Without it the emulator mints tokens for `demo-no-project`, and the API refuses every one of them with a `401` — it checks the audience, so a token for another project never passes (feature 004).
+`--project` is not optional, and it must match `FIREBASE_PROJECT_ID`. Without it the emulator mints tokens for `demo-no-project`, and the API refuses every one of them with a `401` — it checks the audience, so a token for another project never passes.
 
 Check the API is alive with `curl localhost:8000/healthz` and that it can reach the database with `curl localhost:8000/readyz`. A suspended Neon compute makes the first `/readyz` take about a second while it wakes — that is normal, not a fault.
 
