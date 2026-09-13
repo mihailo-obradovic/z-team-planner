@@ -152,8 +152,14 @@ export default defineNuxtConfig({
     // TODO: Replace when deployed to a proper domain
     url: 'https://z-team-planner.vercel.app',
     name: 'Z-Team Planner',
+
+    // * Matches `web/app.vue`'s `useSeoMeta` description verbatim — that call wins on every actual page render (component-level meta out-ranks Site Config's fallback), so this exists for what reads `site.description` directly instead (Schema.org's default identity, feature 027 step 4).
     description:
-      'Plan your Dispatch build ahead of time — level heroes, train powers and flight, and pick synergy pairs before you commit in-game.'
+      'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.'
+  },
+
+  ogImage: {
+    enabled: false
   },
 
   compatibilityDate: '2026-08-25'
