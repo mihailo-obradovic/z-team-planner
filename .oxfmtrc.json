@@ -21,6 +21,7 @@
     }
   ],
   "sortTailwindcss": {
-    "stylesheet": "./web/assets/css/main.css"
+    "stylesheet": "./web/assets/css/main.css",
+    "attributes": [":ui", "ui"]
   }
 }
