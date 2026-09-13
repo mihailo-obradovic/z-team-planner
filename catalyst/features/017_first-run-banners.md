@@ -144,7 +144,7 @@ Live walk at 1280 and 320 (mobile, touch): both stacked and in-flow, spoiler abo
 
 **Motion, measured in Chrome (2026-09-04).** Enter, from a pre-navigation rAF probe: the row opens `0 → 68px` as the body runs `translateY(68px) → none` and `opacity 0 → 1`, settling together over 250ms. Exit sampled 110ms in: the banner is still in the DOM carrying `inert` and `aria-hidden="true"`, unreachable by tab, row `41.25px`, body `translateY(15px)`/`opacity 0.78`, `<main>` at `702` of `687 → 755` — height and travel as one. Focus lands on the remaining confirm button, the key reads `'1'`, the element is gone after. At 320 the shell is header 64 / main 206 / region 300 / bar 70, and across the exit (region `300 → 269 → 129`) the bar's top stays at 570: nothing below the leaving banner moves.
 
-Not covered: a `prefers-reduced-motion: reduce` machine — the guard is confirmed present in the shipped CSSOM, but Chrome DevTools has no media emulation to exercise the branch. The `inert` seal is browser-only evidence for the reason a component test cannot see it: happy-dom runs no CSS transition, so the leaving element is gone by the next tick.
+**Reduced motion, walked 2026-09-13** in Chromium with the query emulated: both banners read `transition-duration: 0s` and sit at their final offsets on the first sample; confirming the spoiler warning removes it by the next 50ms sample with the notice and the build bar unmoved and focus on its button; with the preference off the same run shows the 250ms exit.
 
 Remaining risk: at 320 the two banners occupy roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Acceptable for a one-time notice; shortening the copy is the lever if it annoys.
 

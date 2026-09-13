@@ -135,7 +135,7 @@ Live in Chrome at 1440×900, mission tab. Mid-travel the two cards carry `slot-m
 
 One defect found by the walk and fixed here: a hero swapping with an **empty** slot churns positional keys, and the leaving card was staying in the flex row for the full 250ms — five 128px cards measured in space for four, widening the row on the most common swap of all. Leaving cards are now dropped from layout at once; re-measured, the row holds at 564 (desktop) and 284 (320px) with four cards laid out throughout.
 
-Not covered: a `prefers-reduced-motion: reduce` machine — Chrome DevTools has no media emulation for it. The guard is confirmed in the shipped CSSOM as `.slot-move { transition: none }` inside the reduce query.
+**Reduced motion, walked 2026-09-13** in headless Chromium with the media feature emulated, mission tab at 1400×1000: pressing Move Coupé right exchanges the two cards in place — every 40ms sample reads `transform: none` with the row at 564 — and walking the hero on into slot 4 still lands focus on that card's left arrow. With the preference off the same press carries transforms on both cards across six samples and settles at 400ms.
 
 ## Agent Change Rules
 

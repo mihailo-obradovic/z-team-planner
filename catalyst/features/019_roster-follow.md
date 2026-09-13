@@ -131,7 +131,7 @@ Live in Chrome. **Rail at 1440×520** (8 heroes, 426 visible of 728): opening on
 
 One bug found by the walk and fixed in this change: the open trigger was first written as an `immediate` watcher, which runs in setup — on the server, where there is no `requestAnimationFrame`. `/` is prerendered, so the page 500'd. It is an `onMounted` hook instead, which never runs server-side. No test could have caught it; the component tests run client-only.
 
-Not covered: a `prefers-reduced-motion: reduce` machine — Chrome DevTools offers no media emulation for it, so the `behavior: 'auto'` branch is unexercised.
+**Reduced motion, walked 2026-09-13** in headless Chromium with the media feature emulated, rail at 1400×520: opening on Golem and clicking the last tile puts the rail at `382`, its maximum, on the first 40ms sample and it stays there — the scroll still happens, and it jumps. With the preference off the same click glides `0 → 12 → 164 → 295 → 345 → 369 → 377 → 382`.
 
 ## Agent Change Rules
 
