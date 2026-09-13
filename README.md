@@ -38,7 +38,7 @@ cp .env.example .env
 Fill in:
 
 - **`DATABASE_URL` and `DATABASE_URL_DIRECT`.** From [Neon](https://neon.tech) (`neon connection-string dev --pooled` and `neon connection-string dev`), or from any local PostgreSQL — point both at it. **They are not interchangeable:** the pooled endpoint is PgBouncer in transaction mode, where the advisory locks Alembic takes fail _silently_, so migrations must only ever see the direct one. Spell the driver: `postgresql+psycopg://`, never a bare `postgresql://`.
-- **`FIREBASE_PROJECT_ID`**, plus either `FIREBASE_SERVICE_ACCOUNT_FILE` (a service-account key, kept outside this repository — it is public) or `FIREBASE_AUTH_EMULATOR_HOST` for local work. The API refuses to start with neither, and refuses to start with the emulator variable set outside development, because emulator tokens are unsigned.
+- **`FIREBASE_PROJECT_ID`**, plus either `FIREBASE_SERVICE_ACCOUNT_FILE` (a service-account key, kept outside this repository — it is public) or `FIREBASE_AUTH_EMULATOR_HOST` for local work. A deployed host has no file to point at, so it sets `FIREBASE_SERVICE_ACCOUNT_JSON` to the key's contents instead; the file and the JSON are mutually exclusive. The API refuses to start with no credential and no emulator, and refuses to start with the emulator variable set outside development, because emulator tokens are unsigned.
 - **`CORS_ALLOW_ORIGINS`** must list `http://localhost:3000`. It is deny-by-default: an empty list admits no browser at all.
 - **`NUXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1`**, and the four `NUXT_PUBLIC_FIREBASE_*` values from `firebase apps:sdkconfig` (public — they ship in the browser bundle).
 
@@ -73,7 +73,18 @@ pnpm typecheck   # vue-tsc via nuxt  uv run pyright
 pnpm test        # vitest            uv run pytest
 ```
 
-`uv run pytest -m "not integration"` skips the tests that need Docker. `pnpm run game-data:export` regenerates `shared/game-data.json` from `web/types/hero.ts` — the fixture the API validates saved builds against; a test fails if the committed copy has drifted.
+```bash
+pnpm lint:fix        # oxlint with its safe fixes applied
+pnpm format:check    # oxfmt without writing — what CI runs
+pnpm test:unit       # plain Node unit tests only (test/unit/)
+pnpm test:nuxt       # Nuxt runtime tests only (test/nuxt/)
+pnpm test:watch      # vitest in watch mode; every other test script runs once
+pnpm test:coverage   # the whole suite with a V8 coverage report in coverage/
+```
+
+CI (`.github/workflows/ci.yml`) runs lint, format check, typecheck and tests for both applications on every push and pull request, Renovate opens dependency PRs on Mondays, and security fixes as soon as an advisory lands; none of them merges without a person.
+
+`uv run pytest -m "not integration"` skips the tests that need Docker. `uv run python -m scripts.reset_db --yes` drops the development database schema and migrates it back up; it refuses unless `APP_ENV` is `development`. `pnpm run game-data:export` regenerates `shared/game-data.json` from `web/types/hero.ts` — the fixture the API validates saved builds against; a test fails if the committed copy has drifted.
 
 `app/CLAUDE.md` is the orientation map for the service, and `web/CLAUDE.md` for the app.
 
@@ -92,9 +103,9 @@ pnpm build
 pnpm preview
 ```
 
-Unlike `pnpm dev`, a production build **fails** unless `NUXT_PUBLIC_API_BASE_URL` and the four `NUXT_PUBLIC_FIREBASE_*` values are set — they are baked into the bundle, and a build with none of them would ship an app silently pointed at nothing. Development is deliberately exempt so the anonymous planner needs no setup at all.
+Unlike `pnpm dev`, a production build **fails** unless the four `NUXT_PUBLIC_FIREBASE_*` values, `NUXT_SITE_URL` (the absolute origin, no trailing slash) and `NUXT_SITE_ENV` are set — they are baked into the bundle, and a build with none of them would ship an app silently pointed at nothing. `NUXT_SITE_ENV` must be `production` for search engines to index the site; any other value keeps every page out. `NUXT_PUBLIC_API_BASE_URL` is the one exception: left empty, the build succeeds as the planner alone, with sign-in unavailable. Development is deliberately exempt so the anonymous planner needs no setup at all.
 
-See the [Nuxt deployment documentation](https://nuxt.com/docs/getting-started/deployment) for hosting options. Nothing is deployed yet, and no host has been chosen for the API.
+The planner is live on Vercel at <https://z-team-planner.vercel.app>, deployed from `master` — the frontend alone, with sign-in unavailable. The API is not deployed yet: it goes to a second Vercel project once nightly backups exist and a restore has been rehearsed. `catalyst/operations.md` is the runbook.
 
 ## The catalyst/ Directory
 
