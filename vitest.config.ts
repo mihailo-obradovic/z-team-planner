@@ -5,20 +5,7 @@ import { defineVitestProject } from '@nuxt/test-utils/config';
 export default defineConfig({
   test: {
     projects: [
-      {
-        // * The unit project runs outside Nuxt, so it needs the srcDir alias spelled out;
-        // * inside the nuxt project Nuxt resolves @/ itself.
-        resolve: {
-          alias: {
-            '@': fileURLToPath(new URL('./web', import.meta.url))
-          }
-        },
-        test: {
-          name: 'unit',
-          include: ['test/unit/*.{test,spec}.ts'],
-          environment: 'node'
-        }
-      },
+      // * Nuxt runtime tests
       await defineVitestProject({
         test: {
           name: 'nuxt',
@@ -30,7 +17,20 @@ export default defineConfig({
             }
           }
         }
-      })
+      }),
+      // * Plan node unit tests (no DOM)
+      {
+        resolve: {
+          alias: {
+            '@': fileURLToPath(new URL('./web', import.meta.url))
+          }
+        },
+        test: {
+          name: 'unit',
+          include: ['test/unit/*.{test,spec}.ts'],
+          environment: 'node'
+        }
+      }
     ]
   }
 });
