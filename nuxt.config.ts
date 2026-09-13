@@ -1,14 +1,7 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/ui',
-    '@nuxt/image',
-    '@nuxt/test-utils',
-    '@pinia/nuxt',
-    '@pinia/colada-nuxt',
-    '@regle/nuxt'
-  ],
+  modules: ['@nuxt/ui', '@nuxt/image', '@nuxt/test-utils', '@pinia/nuxt', '@pinia/colada-nuxt', '@regle/nuxt', '@nuxtjs/seo'],
 
   srcDir: 'web/',
 
