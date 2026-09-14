@@ -13,8 +13,6 @@ export default defineNuxtConfig({
 
   srcDir: 'web/',
 
-  spaLoadingTemplate: 'spa-loading-template.html',
-
   typescript: {
     tsConfig: {
       include: ['../test/unit/**/*'],
@@ -32,10 +30,6 @@ export default defineNuxtConfig({
 
   components: {
     dirs: ['@/components/_shared']
-  },
-
-  devtools: {
-    enabled: true
   },
 
   css: ['@/assets/css/main.css'],
