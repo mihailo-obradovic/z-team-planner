@@ -33,7 +33,7 @@
        ! so the header does not reflow when the SDK reports (feature 004). When there is no
        ! backend to sign in to at all it renders nothing: an unreachable control is not worth
        ! a gap in the row, and that gap is what stage 1 shipped. -->
-  <template v-if="!isSignInUnavailable">
+  <template v-else-if="!isSignInUnavailable">
     <button
       v-if="tier === 'bare'"
       type="button"

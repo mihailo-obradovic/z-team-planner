@@ -102,6 +102,21 @@ describe('AuthMenu', () => {
     ]);
   });
 
+  it('offers no sign-in once signed in', async () => {
+    const page = await mountSuspended(
+      withStore(() => {
+        const store = useAuthStore();
+
+        store.setSignInAvailability('available');
+        store.setUser(ALICE);
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    expect(page.text()).toContain('Alice');
+    expect(page.text()).not.toContain('Sign in');
+  });
+
   it('falls back to the email local part when Google has no display name', async () => {
     const page = await mountSuspended(
       withStore(() => useAuthStore().setUser({ ...ALICE, displayName: null })),
