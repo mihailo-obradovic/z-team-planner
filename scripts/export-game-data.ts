@@ -23,13 +23,7 @@ import {
 
 import type { HeroId } from '../web/types/hero.ts';
 
-/**
- * Derives `shared/game-data.json` — the fixture the API validates saved builds against.
- *
- * Game data has one source, `web/types/hero.ts` (feature 005, Invariants): the server never
- * holds a hand copy. `test/unit/game-data.test.ts` fails whenever the committed fixture and a
- * fresh export disagree, so the two cannot drift apart unnoticed.
- */
+// * Derives `shared/game-data.json` from `web/types/hero.ts`; `test/unit/game-data.test.ts` fails on drift.
 
 // * Runs as `node scripts/export-game-data.ts` — Node 24 strips the types itself, so this needs no bundler and no dependency. That mode is what the explicit `.ts` import extensions above are for.
 
