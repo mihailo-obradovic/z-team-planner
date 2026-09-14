@@ -1,6 +1,12 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["pyproject.toml", "uv.lock", "shared/game-data.json"],
+  "ignorePatterns": [
+    "pyproject.toml",
+    "uv.lock",
+    "shared/game-data.json",
+    ".claude/skills/nuxtjs-seo-skilld/**",
+    ".claude/skills/skilld-lock.yaml"
+  ],
   "singleQuote": true,
   "trailingComma": "none",
   "semi": true,
