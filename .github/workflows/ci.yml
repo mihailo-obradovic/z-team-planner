@@ -2,11 +2,9 @@ name: ci
 
 on:
   push:
-  # * Fork pull requests never fire `push` in this repository, so without this they would
-  # * merge unchecked.
+  # * Fork pull requests never fire `push` here, so without this they would merge unchecked.
   pull_request:
 
-# * Least privilege, stated rather than inherited: nothing here writes to the repository.
 permissions:
   contents: read
 
@@ -19,37 +17,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # * mise.toml is the only Node pin (stacks/_lang/typescript/typescript.md, Node Version),
-      # * and setup-node cannot read it — it takes .nvmrc, .node-version, .tool-versions or
-      # * package.json. Changes: replaces actions/setup-node, whose node-version-file pointed
-      # * at the .nvmrc this repo deleted when mise took over the pin, failing the whole job.
+      # * mise.toml is the only Node pin, and setup-node cannot read it.
       - name: Install tools
         uses: jdx/mise-action@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-
-      # * setup-node's `cache: pnpm` left with the step above, so the store is cached here
-      # * instead, keyed to the lockfile.
-      - name: Locate the pnpm store
-        run: echo "PNPM_STORE=$(pnpm store path --silent)" >> "$GITHUB_ENV"
-
-      - name: Cache the pnpm store
-        uses: actions/cache@v4
         with:
-          path: ${{ env.PNPM_STORE }}
-          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-store-${{ runner.os }}-
+          cache: true
 
       - name: Install dependencies
-        # * --frozen-lockfile written out even though pnpm infers it wherever CI is set: the
-        # * gate belongs in the file, and a runner that sets no such variable still gets it.
         run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm run lint
 
-      # * Was missing, and master drifted out of format while CI stayed green.
       - name: Format check
         run: pnpm run format:check
 
@@ -72,9 +54,7 @@ jobs:
         with:
           enable-cache: true
 
-      # * uv provisions the interpreter from .python-version; no setup-python step is needed.
       - name: Install dependencies
-        # * --locked fails on a stale lockfile instead of silently resolving other versions.
         run: uv sync --locked
 
       - name: Lint
@@ -86,9 +66,6 @@ jobs:
       - name: Typecheck
         run: uv run pyright
 
-      # * No DATABASE_URL here on purpose: the suite builds its own settings and gets a real
-      # * PostgreSQL from testcontainers. Verified by running it with no .env and no env vars.
-      # * ubuntu-latest ships a running Docker daemon, so the integration tests really run
-      # * here rather than skipping.
+      # * No DATABASE_URL on purpose: the suite gets a real PostgreSQL from testcontainers, on the runner's own Docker daemon.
       - name: Test
         run: uv run pytest
