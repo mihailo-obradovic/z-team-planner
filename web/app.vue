@@ -139,8 +139,7 @@
 </template>
 
 <script setup lang="ts">
-const title = 'Z-Team Planner';
-const { description } = useSiteConfig();
+const { name: title, description } = useSiteConfig();
 
 const { loadInitialBuild } = useInitialBuild();
 const { setupBeforeUnload } = useUnsavedChanges();

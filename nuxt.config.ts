@@ -1,76 +1,13 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/ui',
-    '@nuxt/image',
-    '@nuxt/test-utils',
-    '@pinia/nuxt',
-    '@pinia/colada-nuxt',
-    '@regle/nuxt',
-    '@nuxtjs/seo'
-  ],
-
   srcDir: 'web/',
-
-  typescript: {
-    tsConfig: {
-      include: ['../test/unit/**/*'],
-      compilerOptions: {
-        allowImportingTsExtensions: true
-      }
-    },
-    nodeTsConfig: {
-      include: ['../scripts/**/*'],
-      compilerOptions: {
-        allowImportingTsExtensions: true
-      }
-    }
-  },
 
   components: {
     dirs: ['@/components/_shared']
   },
 
   css: ['@/assets/css/main.css'],
-
-  image: {
-    quality: 90,
-    densities: PORTRAIT_DENSITIES,
-    screens: { ...portraitScreens(), background: 2560 }
-  },
-
-  nitro: {
-    vercel: {
-      config: {
-        images: {
-          // ! The image provider has no TTL option and writes 300s itself; this block overrides it.
-          minimumCacheTTL: 31536000
-        }
-      }
-    }
-  },
-
-  ui: {
-    colorMode: false
-  },
-
-  fonts: {
-    families: [
-      {
-        name: 'Barlow',
-        provider: 'google',
-        weights: [400, 500, 600, 700],
-        styles: ['normal']
-      },
-      {
-        name: 'Barlow Condensed',
-        provider: 'google',
-        weights: [600, 700, 800],
-        styles: ['normal']
-      }
-    ]
-  },
 
   runtimeConfig: {
     public: {
@@ -113,20 +50,64 @@ export default defineNuxtConfig({
     }
   },
 
+  modules: [
+    '@nuxt/ui',
+    '@nuxt/image',
+    '@nuxt/test-utils',
+    '@pinia/nuxt',
+    '@pinia/colada-nuxt',
+    '@regle/nuxt',
+    '@nuxtjs/seo'
+  ],
+
+  ui: {
+    colorMode: false
+  },
+
+  fonts: {
+    families: [
+      {
+        name: 'Barlow',
+        provider: 'google',
+        weights: [400, 500, 600, 700],
+        styles: ['normal']
+      },
+      {
+        name: 'Barlow Condensed',
+        provider: 'google',
+        weights: [600, 700, 800],
+        styles: ['normal']
+      }
+    ]
+  },
+
+  image: {
+    quality: 90,
+    densities: PORTRAIT_DENSITIES,
+    screens: { ...portraitScreens(), background: 2560 }
+  },
+
+  typescript: {
+    tsConfig: {
+      include: ['../test/unit/**/*'],
+      compilerOptions: {
+        allowImportingTsExtensions: true
+      }
+    },
+    nodeTsConfig: {
+      include: ['../scripts/**/*'],
+      compilerOptions: {
+        allowImportingTsExtensions: true
+      }
+    }
+  },
+
   routeRules: {
     '/': { prerender: true },
     '/privacy': { prerender: true },
 
     // * Served per request from the API; prerender or SSR would leak one user's build to the next (feature 007).
     '/b/**': { ssr: false, robots: false }
-  },
-
-  sitemap: {
-    exclude: ['/b/**']
-  },
-
-  robots: {
-    disallow: ['/b/']
   },
 
   site: {
@@ -138,9 +119,28 @@ export default defineNuxtConfig({
       'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.'
   },
 
+  sitemap: {
+    exclude: ['/b/**']
+  },
+
+  robots: {
+    disallow: ['/b/']
+  },
+
   ogImage: {
     enabled: false
   },
 
-  compatibilityDate: '2026-08-25'
+  nitro: {
+    vercel: {
+      config: {
+        images: {
+          // ! The image provider has no TTL option and writes 300s itself; this block overrides it.
+          minimumCacheTTL: 31536000
+        }
+      }
+    }
+  },
+
+  compatibilityDate: '2026-09-14'
 });
