@@ -140,8 +140,7 @@
 
 <script setup lang="ts">
 const title = 'Z-Team Planner';
-const description =
-  'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.';
+const { description } = useSiteConfig();
 
 const { loadInitialBuild } = useInitialBuild();
 const { setupBeforeUnload } = useUnsavedChanges();
