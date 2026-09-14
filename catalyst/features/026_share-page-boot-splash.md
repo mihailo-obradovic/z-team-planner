@@ -32,7 +32,7 @@ No state is written. Nothing here is serialized.
 
 In scope:
 
-- `web/spa-loading-template.html`, the markup and inline style Nuxt inlines into every `ssr: false` page, and the `spaLoadingTemplate` setting that points at it.
+- `web/spa-loading-template.html`, the markup and inline style Nuxt inlines into every `ssr: false` page, found by Nuxt's default lookup in `web/` with no config setting.
 - Its values, restated as literals from the annex.
 
 Non-goals:
@@ -89,7 +89,6 @@ None reaches the user. A broken template is a build-time error in Nuxt, not a ru
 ## Entry Points
 
 - `web/spa-loading-template.html`: the template.
-- `nuxt.config.ts`: `spaLoadingTemplate` pointing at it.
 
 ## Dependencies
 

@@ -15,11 +15,11 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "typecheck": "nuxt typecheck",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "test:unit": "vitest --project unit",
-    "test:nuxt": "vitest --project nuxt"
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --project unit",
+    "test:nuxt": "vitest run --project nuxt"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.87",
@@ -53,8 +53,5 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@10.30.1",
-  "pnpm": {
-    "minimumReleaseAge": 1440
-  }
+  "packageManager": "pnpm@10.30.1"
 }

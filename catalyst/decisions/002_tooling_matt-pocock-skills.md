@@ -22,7 +22,7 @@ Every one of those paths collides with a bundle directory that already owns the 
 
 Adopt the pipeline for its **procedures**, and refuse its **bookkeeping**.
 
-The three config documents live inside the bundle at `agents/` — `agents/issue-tracker.md`, `agents/triage-labels.md`, `agents/domain.md`. No `docs/` directory is created, no root `CONTEXT.md`, no `docs/adr/`. A redirect table in the root `AGENTS.md`, outside the `catalyst:` markers (project-owned, never rewritten by the upgrader), maps every path a skill hardcodes onto the bundle artifact that actually governs it, and closes with the rule that Catalyst discipline wins on conflict.
+The three config documents live inside the bundle at `agents/` — `agents/issue-tracker.md`, `agents/triage-labels.md`, `agents/domain.md`. No `docs/` directory is created, no root `CONTEXT.md`, no `docs/adr/`. A redirect table in `agents/domain.md` maps every path a skill hardcodes onto the bundle artifact that actually governs it; an `## Agent skills` block in the root `AGENTS.md`, outside the `catalyst:` markers (project-owned, never rewritten by the upgrader), points at the three documents and closes with the rule that Catalyst discipline wins on conflict.
 
 The issue tracker is **Workflowy**, `Home → Work → Z-Team Planner`, reached through the `workflowy` MCP server — not GitHub Issues, despite the GitHub remote. The five canonical triage roles map onto Workflowy `#tags` under their default names.
 
@@ -44,7 +44,7 @@ Cost: the redirect table is a maintenance point — a plugin upgrade that adds a
 
 ## Contracts Touched
 
-- `AGENTS.md` and `CLAUDE.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block, mirrored in both because each harness reads only one of them; `CLAUDE.md` imports `catalyst/AGENTS.md`, not the root `AGENTS.md`.
+- `AGENTS.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block, written once: the root `CLAUDE.md` imports the root `AGENTS.md`, so both harnesses read it.
 - `project-summary.md` — this record's ADR index row.
 
 ## Open Questions

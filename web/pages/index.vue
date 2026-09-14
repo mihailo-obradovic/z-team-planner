@@ -152,7 +152,7 @@ import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 import type { HeroId } from '@/types/hero';
 import type { TabValue } from '@/composables/useActiveTab';
 
-// * Feature 027. `WebApplication`, not the factory's `SoftwareApplication` default: nuxt-schema-org has no `defineWebApplication`, so the type is set explicitly here and the resolver merges it with its own default into `["SoftwareApplication", "WebApplication"]` rather than replacing it — both are valid, and `WebApplication` is what the feature document calls for. Name/description read off Site Config rather than a third hardcoded copy (`nuxt.config.ts`'s `site` block, `web/app.vue`'s `useSeoMeta`).
+// * Feature 027. `WebApplication`, not the factory's `SoftwareApplication` default: nuxt-schema-org has no `defineWebApplication`, so the type is set explicitly here and the resolver merges it with its own default into `["SoftwareApplication", "WebApplication"]` rather than replacing it — both are valid, and `WebApplication` is what the feature document calls for. Name/description read off Site Config (`nuxt.config.ts`'s `site` block) rather than a hardcoded copy.
 const site = useSiteConfig();
 
 useSchemaOrg([

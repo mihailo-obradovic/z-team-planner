@@ -1,7 +1,7 @@
 {
   "name": "Z-Team Planner",
   "short_name": "Z-Team",
-  "description": "Build calculator for Dispatch — plan your Z-Team's stats, powers and synergy pairs.",
+  "description": "A build calculator for Dispatch: plan your Z-Team's levels, powers and flight, including synergy pair stats and bonuses.",
   "icons": [
     { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
     { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
