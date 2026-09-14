@@ -1,20 +1,5 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
-// * Feature 006's build guard (below) walks this object by reference rather than `nuxt.options.runtimeConfig.public`: modules write their own internal state into that tree at setup time (feature 027's `@nuxtjs/seo` sub-modules add ~30 keys of their own), and the guard must only require an env var for what this project itself declares.
-const ownPublicRuntimeConfig = {
-  apiBaseUrl: '',
-
-  firebase: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    appId: '',
-
-    // * Development only, and empty everywhere else: with this set the web SDK talks to a local Auth emulator whose tokens are unsigned. The API refuses to start with its own emulator variable set outside development, which is the matching guard.
-    authEmulatorHost: ''
-  }
-};
-
 export default defineNuxtConfig({
   modules: [
     '@nuxt/ui',
@@ -97,7 +82,19 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    public: ownPublicRuntimeConfig
+    public: {
+      apiBaseUrl: '',
+
+      firebase: {
+        apiKey: '',
+        authDomain: '',
+        projectId: '',
+        appId: '',
+
+        // * Dev-only, for local auth emulator
+        authEmulatorHost: ''
+      }
+    }
   },
 
   hooks: {
@@ -108,13 +105,12 @@ export default defineNuxtConfig({
       }
 
       // * Only a deployable build gates on these (feature 006). `dev` is `nuxt dev`; `test` is vitest's Nuxt environment, which also builds, without .env, and is not an artifact. The two flags replace the earlier NODE_ENV check, which said the same thing one step removed.
-      // * The required list is the declared public config itself (`ownPublicRuntimeConfig`, not `nuxt.options.runtimeConfig.public` — see its own comment), so a key added there is required below without a second list to keep. Two are left out on purpose: NUXT_PUBLIC_API_BASE_URL, because an empty value is a valid deployment — the frontend with no API behind it — and means sign-in is unavailable rather than a broken build (decision 007); and the auth emulator host, which must be empty outside development.
-      const optional = new Set(['apiBaseUrl', 'firebase.authEmulatorHost']);
-      // * NUXT_SITE_URL/NUXT_SITE_ENV sit outside `runtimeConfig.public` (feature 027) — nuxt-site-config reads them straight off `process.env`, so they join the same required-key mechanism by name instead of through `publicConfigPaths`.
+      // * API base URL is optional (decision 007); the emulator host must be empty outside dev.
       const missing = [
-        ...publicConfigPaths(ownPublicRuntimeConfig)
-          .filter((path) => !optional.has(path))
-          .map(publicEnvName),
+        'NUXT_PUBLIC_FIREBASE_API_KEY',
+        'NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+        'NUXT_PUBLIC_FIREBASE_PROJECT_ID',
+        'NUXT_PUBLIC_FIREBASE_APP_ID',
         'NUXT_SITE_URL',
         'NUXT_SITE_ENV'
       ].filter((name) => !process.env[name]);
@@ -164,29 +160,3 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2026-08-25'
 });
-
-// * Dotted paths of every leaf under `runtimeConfig.public`, in declaration order.
-function publicConfigPaths(
-  config: Record<string, unknown>,
-  prefix = ''
-): string[] {
-  return Object.entries(config).flatMap(([key, value]) => {
-    const path = prefix ? `${prefix}.${key}` : key;
-
-    if (value !== null && typeof value === 'object') {
-      return publicConfigPaths(value as Record<string, unknown>, path);
-    }
-
-    return [path];
-  });
-}
-
-// * The environment variable Nuxt reads a public key from: `firebase.apiKey` → NUXT_PUBLIC_FIREBASE_API_KEY.
-function publicEnvName(path: string): string {
-  const snake = path
-    .replace(/\./g, '_')
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .toUpperCase();
-
-  return `NUXT_PUBLIC_${snake}`;
-}
