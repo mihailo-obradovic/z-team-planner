@@ -116,7 +116,7 @@ export default defineNuxtConfig({
     name: 'Z-Team Planner',
 
     description:
-      'A build calculator for Dispatch. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices. Builds save in your browser and share as a link.'
+      "A build calculator for Dispatch: plan your Z-Team's levels, powers and flight, including synergy pair stats and bonuses."
   },
 
   sitemap: {

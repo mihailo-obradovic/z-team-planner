@@ -1,6 +1,6 @@
 # Z-Team Planner
 
-A fan-made build calculator for the game [Dispatch](https://store.steampowered.com/app/2429620/Dispatch/) by AdHoc Studio. Plan your Z-Team ahead of time: level heroes, train powers and flight, pick synergy pairs, and mirror your story choices (who was cut in episode 3, who was hired in episode 4). Builds persist in your browser and are shareable as URLs — no account needed.
+A fan-made build calculator for the game [Dispatch](https://store.steampowered.com/app/2429620/Dispatch/) by AdHoc Studio. Plan your Z-Team ahead of time: level heroes, train powers and flight, and mirror your story choices (who was cut in episode 3, who was hired in episode 4), which decide your synergy pairs. Builds persist in your browser and are shareable as URLs — no account needed.
 
 Built with Nuxt 4, Nuxt UI 4, and Tailwind CSS 4. Builds live in the browser and share by URL; signing in with Google saves them to a FastAPI backend on Neon Postgres instead.
 
