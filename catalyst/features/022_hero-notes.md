@@ -10,7 +10,7 @@ Medium
 
 ## Purpose
 
-The hero detail dialog's notes panel (feature 011) has stood reserved and empty since it shipped. This feature fills it with two kinds of authored guidance: a **hero note**, one always-shown line of non-obvious characterization per hero, and an **advisory**, a line that appears or disappears as the player allocates, warning about a wasted spend or flagging a build worth doing. Both are read-only and display-only, sourced from `context/game-mechanics.md`, never persisted, never player-authored.
+The hero detail dialog reserves a notes panel (feature 011). This feature fills it with two kinds of authored guidance: a **hero note**, one always-shown line of non-obvious characterization per hero, and an **advisory**, a line that appears or disappears as the player allocates, warning about a wasted spend or flagging a build worth doing. Both are read-only and display-only, sourced from `context/game-mechanics.md`, never persisted, never player-authored.
 
 ## Inputs
 
@@ -33,17 +33,16 @@ In scope:
 
 - The `HERO_NOTES` copy — one entry per hero, plus Waterboy's episode-8 variant.
 - The `HERO_ADVISORIES` catalogue — ten entries, each a predicate over planner state plus its copy.
-- Rendering order inside the panel feature 011 already reserved.
-- Amendments to `context/game-mechanics.md` recording the sourced facts these notes assert.
+- Rendering order inside the panel feature 011 reserves.
 
 Non-goals:
 
-- Player-authored or persisted notes — still out of scope, as feature 011 already states; nothing here touches the serialized build format (feature 001, protected).
+- Player-authored or persisted notes (feature 011's non-goal); nothing here touches the serialized build format.
 - New planner state, new budgets, or any change to allocation rules — every predicate reads state feature 003/012 already owns.
 - A card-level indicator that a hero has advisories — the card is already at its four-chip limit (feature 012); discovery is by opening the dialog.
 - Severity ranking or filtering. All applicable advisories always show; declaration order is the only ordering.
-- A synergy-pair build recommendation as strict advice (e.g. "take À la Seconde") — the community guides themselves disagree on it; only the arithmetic once the choice is already made ships (advisory 9).
-- An invented level cap on a late-hired Waterboy — unsourced; the note states only sourced mechanical facts.
+- A synergy-pair build recommendation as strict advice ("take À la Seconde") — the community guides disagree; only the arithmetic once the choice is made ships (advisory 9).
+- An invented level cap on a late-hired Waterboy — unsourced.
 
 ## User / System Behavior
 
@@ -113,7 +112,7 @@ Notes: #1 excludes the 4 dispatcher points (forced, not chosen). #3 is allocatio
 
 - A hero note is unconditional except Waterboy's, which is conditional on episode setup only, never on allocation.
 - Panel order: hero note, warnings 1–7 in table order (only the true ones), suggestions 8–10 in table order (only the true ones). Order never depends on stat values, only on which are true.
-- No advisory hardcodes a hero name into a threshold; the Phenomaman/Malevola and monster-form-Sonar exemptions fall out of "no allocation, no advisory" (#3/#4's gate), not an exclusion list.
+- No advisory hardcodes a hero name into a threshold; the fixed-level and monster-form exemptions fall out of "no allocation, no advisory" (#3/#4's gate), not an exclusion list.
 - Every fact asserted in a note or advisory not already in `context/game-mechanics.md` is added there in this change (Honest Inputs).
 
 ## Edge Cases
@@ -123,7 +122,7 @@ Notes: #1 excludes the 4 dispatcher points (forced, not chosen). #3 is allocatio
 
 ## Invariants
 
-- The dialog's geometry does not change with which hero is open or how many advisories apply (feature 011's existing invariant; this is the first feature to exercise it under variable content).
+- The dialog's geometry does not change with which hero is open or how many advisories apply (feature 011's invariant).
 - No advisory or note writes planner state.
 - Declaration order, not value order, decides render order within each group.
 
@@ -139,24 +138,22 @@ No error states; a predicate that can never be satisfied under the current episo
 
 ## Dependencies
 
-- Feature 011: owns the panel, its fixed height, the geometry invariant; amended here (its notes-area non-goal now points here for content) and its pair-total reserved-height bug fixed alongside.
+- Feature 011: owns the panel, its fixed height, the geometry invariant.
 - Feature 013: `ScrollRegion`, the fixed-height scroll and edge affordance.
 - Feature 003: allocation state and budgets every predicate reads.
 - Feature 012: `SPECIAL_POWER_MECHANICS`, `heroSpecialPowers`, the effective-stat/pair-total math advisories 2–5, 9–10 reuse.
-- `context/game-mechanics.md`, `context/glossary.md`: amended for the sourced facts and the two new terms.
+- `context/game-mechanics.md`, `context/glossary.md`: the sourced facts and the two terms.
 
 ## Open Questions
 
 ## Tests
 
-- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary, incl. #4 suppressed exactly where #3 fires on the same stat and #3 silent with nothing allocated; Waterboy's two notes stay mutually exclusive; declaration order holds regardless of which subset is true.
+- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary, #4's deferral to #3 included; Waterboy's two notes mutually exclusive; declaration order regardless of which subset is true.
 - `test/nuxt/hero-detail-dialog.test.ts` (extended): a fixture build renders the note + advisory set in order; panel height matches between zero and several advisories.
 
 ## Verification
 
-`test/unit/hero-notes.test.ts` (16 cases): every advisory boundary, declaration order, Waterboy's two exclusive notes. `test/nuxt/hero-detail-dialog.test.ts` (+2) and `test/nuxt/spread-thin.test.ts` (reserved-height selector): a fixture Golem render matches the exact 5-line order; panel class is identical at zero vs. several advisories. Suite: 47 files, 377 tests, `nuxt typecheck` clean.
-
-Live in Chrome: bullets, `text-base`, `text-muted` (`text-dimmed` is label-only per the annex); a 4-advisory Golem scrolls with the edge affordance, geometry unchanged from none. Also fixed a latent 011 bug this surfaced — see 011's Verification.
+`test/unit/hero-notes.test.ts`: every advisory boundary, declaration order, Waterboy's two exclusive notes. `test/nuxt/hero-detail-dialog.test.ts`: a fixture Golem render matches the exact 5-line order; the panel class is identical at zero vs. several advisories. `nuxt typecheck` clean. Live in Chrome: a 4-advisory Golem scrolls with the edge affordance, geometry unchanged from a hero with none.
 
 ## Agent Change Rules
 
