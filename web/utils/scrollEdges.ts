@@ -1,7 +1,6 @@
 export type ScrollAxis = 'vertical' | 'horizontal' | 'both';
 
-// * What the element can actually scroll right now, which is not the same as the axis it was asked for:
-// * a region with `lg:overflow-y-auto` is asked for 'vertical' at every width and scrolls on none below `lg`.
+// * What the element scrolls right now, not the axis it was asked for: `lg:overflow-y-auto` asks for 'vertical' at every width and scrolls on none below `lg`.
 export type ScrollableAxis = ScrollAxis | 'none';
 
 export type ScrollMetrics = {
@@ -21,13 +20,10 @@ export type HiddenEdges = {
   right: boolean;
 };
 
-// ! Fractional device pixel ratios round scrollTop, clientHeight and scrollHeight independently, so a region
-// ! scrolled fully to the end lands a fraction short of its own scrollHeight. Comparing exactly leaves the
-// ! trailing rule painted at the end of every scroll — on a phone, and never on the machine this was written on.
+// ! Fractional device pixel ratios round scrollTop, clientHeight and scrollHeight independently, so a region scrolled to the end lands a fraction short of its scrollHeight. Comparing exactly leaves the trailing rule painted there on phones.
 const EDGE_TOLERANCE_PX = 1;
 
-// * An edge carries a rule only while content is hidden past it — not merely because the region overflows.
-// * Drawing both edges off one overflow check claims there is more above while the user sits at the top.
+// * An edge carries a rule only while content is hidden past it; one overflow check for both edges would claim more above while the user sits at the top.
 export function hiddenScrollEdges(metrics: ScrollMetrics): HiddenEdges {
   const vertical = scrollsOn(metrics.scrollable, 'vertical');
   const horizontal = scrollsOn(metrics.scrollable, 'horizontal');
@@ -77,9 +73,7 @@ export type ViewportSpan = {
   clearance: number;
 };
 
-// * The minimum offset that leaves the target fully visible on one axis — the other half of the affordance
-// * above (feature 013): the rules say content is hidden, this brings a named child back.
-// * Returns the current offset unchanged when there is nothing to do, so a caller can compare and skip.
+// * The minimum offset that leaves the target fully visible on one axis, or the current offset unchanged so a caller can compare and skip.
 export function scrollOffsetIntoView(span: ViewportSpan): number {
   if (!span.scrollable) {
     return span.offset;
@@ -95,8 +89,7 @@ export function scrollOffsetIntoView(span: ViewportSpan): number {
     return span.offset;
   }
 
-  // ! Clamping is what makes the clearance give way first: a target near the end of the range still lands
-  // ! fully visible, just without the gap beside it. Visibility is the contract; the clearance is manners.
+  // ! Clamping makes the clearance give way first: a target near the end of the range still lands fully visible, just without the gap beside it.
   const wanted =
     span.targetStart < span.offset
       ? span.targetStart - span.clearance

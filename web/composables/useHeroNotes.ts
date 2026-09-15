@@ -48,10 +48,8 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
     return null;
   });
 
-  const isEp8Waterboy = computed(() => ep8RecruitIds.value.has('waterboy'));
-
   const note = computed(() =>
-    id.value ? getHeroNote(id.value, isEp8Waterboy.value) : null
+    id.value ? getHeroNote(id.value, ep8RecruitIds.value) : null
   );
 
   const pairStats = computed<PairStat[]>(() => {

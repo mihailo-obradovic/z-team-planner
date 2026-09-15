@@ -78,7 +78,7 @@ export function handleApiError(
   }
 
   if (status === 422) {
-    // ! Never a toast when the form renders it inline; `validation` is narrower than `all` on purpose, so a 500 during the same submit still surfaces.
+    // ! Never a toast when the form renders it inline.
     if (!options.suppressToasts) {
       toast(extractMessage(error));
     }

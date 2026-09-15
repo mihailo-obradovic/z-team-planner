@@ -1,6 +1,12 @@
-// * A `TransitionGroup` `beforeLeave` hook for a list whose leaving element is taken out of flow so its neighbours can travel while it fades, rather than after (annex §11, features 024 and 025).
-// ! Its offsets have to be pinned first. An absolutely positioned child of a flex container is placed by the container's alignment, not by where it stood — a chip jumps to the middle of its centred row, a notes line to the top of its column — and Vue's move then drags it from that spot. The width is pinned with them so a line that wrapped does not re-wrap once it no longer has the column's width.
-// ! Measured for the whole list on the first call of a batch, not per element: Vue runs the hooks for every element leaving in one change back to back, and the first one pinned is already out of flow when the second is asked where it stood, which would put the second a line too high. The measurements last a microtask — long enough for that synchronous run, gone before the next change.
+// * Measurements last a microtask: long enough for Vue's synchronous run of every leave hook in one change, gone before the next change.
+const measuredLists = new WeakMap<
+  Element,
+  Map<Element, { left: number; top: number; width: number }>
+>();
+
+// * A `TransitionGroup` `beforeLeave` hook that takes the leaving element out of flow, so its neighbours travel while it fades rather than after (annex §11, features 024 and 025).
+// ! Offsets are pinned first because an absolutely positioned flex child is placed by the container's alignment, not where it stood, and Vue's move would drag it from there. The width is pinned too, so a wrapped line does not re-wrap outside its column.
+// ! The whole list is measured on a batch's first call: the first element pinned is already out of flow when the second is measured, which would put the second a line too high.
 export function pinLeaving(element: Element) {
   const leaving = element as HTMLElement;
   const list = leaving.parentElement;
@@ -40,8 +46,3 @@ export function pinLeaving(element: Element) {
   leaving.style.top = `${offset.top}px`;
   leaving.style.width = `${offset.width}px`;
 }
-
-const measuredLists = new WeakMap<
-  Element,
-  Map<Element, { left: number; top: number; width: number }>
->();
