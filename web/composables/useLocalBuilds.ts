@@ -16,7 +16,7 @@ export function useLocalBuilds() {
   );
 
   const activeBuildName = computed(
-    () => findBuild(activeBuildId.value)?.name ?? 'Untitled'
+    () => findLocalBuild(activeBuildId.value)?.name ?? 'Untitled'
   );
 
   function settleOnOwnBuild() {
@@ -25,16 +25,16 @@ export function useLocalBuilds() {
     updateSavedSnapshot();
   }
 
-  function findBuild(id: string | null): LocalBuild | undefined {
+  function findLocalBuild(id: string | null): LocalBuild | undefined {
     if (!id) {
       return undefined;
     }
 
-    return localBuilds.value.find((build) => build.id === id);
+    return localBuilds.value.find((localBuild) => localBuild.id === id);
   }
 
   function getActiveBuild(): LocalBuild | undefined {
-    return findBuild(activeBuildId.value);
+    return findLocalBuild(activeBuildId.value);
   }
 
   function saveLocalBuild(name?: string) {
@@ -56,28 +56,28 @@ export function useLocalBuilds() {
   }
 
   function saveAsNewLocalBuild(name: string) {
-    const build: LocalBuild = {
+    const localBuild: LocalBuild = {
       id: crypto.randomUUID(),
       name,
       data: serializeBuild(state)
     };
 
-    localBuilds.value.push(build);
-    activeBuildId.value = build.id;
+    localBuilds.value.push(localBuild);
+    activeBuildId.value = localBuild.id;
 
     settleOnOwnBuild();
   }
 
   async function loadLocalBuild(id: string) {
-    const build = findBuild(id);
+    const localBuild = findLocalBuild(id);
 
-    if (!build) {
+    if (!localBuild) {
       return;
     }
 
     activeBuildId.value = id;
 
-    await deserializeBuild(build.data, state);
+    await deserializeBuild(localBuild.data, state);
     settleOnOwnBuild();
   }
 
@@ -92,7 +92,9 @@ export function useLocalBuilds() {
   }
 
   function deleteLocalBuild(id: string) {
-    const index = localBuilds.value.findIndex((build) => build.id === id);
+    const index = localBuilds.value.findIndex(
+      (localBuild) => localBuild.id === id
+    );
 
     if (index === -1) {
       return;
@@ -106,10 +108,10 @@ export function useLocalBuilds() {
   }
 
   function renameLocalBuild(id: string, name: string) {
-    const build = findBuild(id);
+    const localBuild = findLocalBuild(id);
 
-    if (build) {
-      build.name = name;
+    if (localBuild) {
+      localBuild.name = name;
     }
   }
 

@@ -8,16 +8,16 @@ export function useBuildMode() {
     () => false
   );
 
-  async function loadSharedBuild(build: SerializedBuild) {
+  async function loadSharedBuild(buildDocument: SerializedBuild) {
     isViewingSharedBuild.value = true;
 
-    await deserializeBuild(build, state);
+    await deserializeBuild(buildDocument, state);
   }
 
-  async function loadAccountBuild(build: SerializedBuild) {
+  async function loadAccountBuild(buildDocument: SerializedBuild) {
     isViewingSharedBuild.value = false;
 
-    await deserializeBuild(build, state);
+    await deserializeBuild(buildDocument, state);
   }
 
   return {

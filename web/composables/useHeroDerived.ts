@@ -18,8 +18,8 @@ const NO_ALLOCATIONS: HeroStats = {
   mobility: 0
 };
 
-// * One hero read out of planner state, for the two surfaces that show the same hero: the card in the overview grid and the detail dialog. Both used to derive these fourteen values separately, and a hero read one way on the card and another in the dialog is the failure that duplication invites — the level and the bonus disagreed here once already.
-// * Takes `HeroId | null` because the dialog's hero is only set while it is open. Every value has a defined answer for `null`, so a caller that always has a hero can read them without guarding; only `hero` itself comes back null, and a caller holding a real id may narrow it.
+// * The one read of a hero for both surfaces that show it, the card and the detail dialog, so the two can never disagree.
+// * Every value has an answer for a `null` id, the closed dialog, so only `hero` itself needs narrowing.
 export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
   const {
     heroes,
@@ -36,7 +36,7 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
   const id = computed(() => toValue(heroId));
 
   const hero = computed<Hero | null>(
-    () => heroes.value?.find((h: Hero) => h.id === id.value) ?? null
+    () => heroes.value.find((candidate) => candidate.id === id.value) ?? null
   );
 
   const statBonuses = computed(() =>
@@ -71,7 +71,7 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
       return fixedLevel;
     }
 
-    // * A bonus level raises the per-hero cap; it does not itself raise the level. Counting it made the level jump the moment the bonus was granted, before the extra point was spent — and disagreed with the detail dialog.
+    // * A bonus level raises the cap, not the level; counting it would jump the level before the extra point is spent.
     return 1 + levelUpPointsUsed.value;
   });
 

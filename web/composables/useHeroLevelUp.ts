@@ -1,6 +1,7 @@
 import {
   EP4_HIRE_OPTIONS,
   FIXED_LEVEL_HEROES,
+  HERO_STARTING_STATS,
   MAX_LEVEL_UPS,
   MAX_STAT_VALUE,
   MAX_BONUS_POINTS,
@@ -8,15 +9,13 @@ import {
   STAT_NAMES
 } from '@/types/hero';
 
-import type { Hero, HeroId, HeroStats, StatName } from '@/types/hero';
+import type { HeroId, HeroStats, StatName } from '@/types/hero';
 
 const ZERO_STATS: HeroStats = Object.fromEntries(
-  STAT_NAMES.map((s) => [s, 0])
+  STAT_NAMES.map((stat) => [stat, 0])
 ) as HeroStats;
 
-// * Composable for managing hero level-ups and bonus levels. Handles stat allocation, point tracking, and bonus level system.
 export function useHeroLevelUp(
-  heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>
 ) {
   const heroLevelUps = useState<Partial<Record<HeroId, HeroStats>>>(
@@ -36,43 +35,32 @@ export function useHeroLevelUp(
   function getLevelUpPointsUsed(id: HeroId): number {
     const allocations = getStatAllocations(id);
 
-    return STAT_NAMES.reduce((sum, s) => sum + allocations[s], 0);
+    return STAT_NAMES.reduce((sum, stat) => sum + allocations[stat], 0);
   }
 
   function getBonusLevel(id: HeroId): number {
     return heroBonusLevels.value[id] ?? 0;
   }
 
-  const bonusLevelsUsed = computed(() => {
-    return Object.values(heroBonusLevels.value).reduce(
-      (sum, v) => sum + (v ?? 0),
+  const bonusLevelsUsed = computed(() =>
+    Object.values(heroBonusLevels.value).reduce(
+      (sum, level) => sum + (level ?? 0),
       0
-    );
-  });
+    )
+  );
 
   function statUp(id: HeroId, stat: StatName) {
     if (id in FIXED_LEVEL_HEROES) {
       return;
     }
 
-    const hero = heroes.value?.find((h) => h.id === id);
-    if (!hero) {
+    const allocations = (heroLevelUps.value[id] ??= { ...ZERO_STATS });
+
+    if (getLevelUpPointsUsed(id) >= MAX_LEVEL_UPS + getBonusLevel(id)) {
       return;
     }
 
-    if (!heroLevelUps.value[id]) {
-      heroLevelUps.value[id] = { ...ZERO_STATS };
-    }
-
-    const allocations = heroLevelUps.value[id]!;
-
-    const effectiveLevelCap = MAX_LEVEL_UPS + getBonusLevel(id);
-
-    if (getLevelUpPointsUsed(id) >= effectiveLevelCap) {
-      return;
-    }
-
-    if (hero.startingStats[stat] + allocations[stat] >= MAX_STAT_VALUE) {
+    if (HERO_STARTING_STATS[id][stat] + allocations[stat] >= MAX_STAT_VALUE) {
       return;
     }
 
@@ -84,13 +72,9 @@ export function useHeroLevelUp(
       return;
     }
 
-    if (!heroLevelUps.value[id]) {
-      return;
-    }
+    const allocations = heroLevelUps.value[id];
 
-    const allocations = heroLevelUps.value[id]!;
-
-    if (allocations[stat] <= 0) {
+    if (!allocations || allocations[stat] <= 0) {
       return;
     }
 
@@ -153,7 +137,6 @@ export function useHeroLevelUp(
     delete heroBonusLevels.value[id];
   }
 
-  // * Watch episode choices and clear data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, resetHeroLevelUp);
 
   watch(episodeSetup.ep4Hire, (newHire) => {

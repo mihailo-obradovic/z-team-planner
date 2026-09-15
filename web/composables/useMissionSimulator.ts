@@ -16,20 +16,16 @@ import { radarCoverage } from '@/utils/radarCoverage';
 
 import type { HeroId, HeroStats, StatName, SynergyLevel } from '@/types/hero';
 import type { MissionSlot } from '@/types/mission';
-import type { useHeroEpisodeSetup } from '@/composables/useHeroEpisodeSetup';
-import type { useHeroLevelUp } from '@/composables/useHeroLevelUp';
-import type { useHeroPowerTraining } from '@/composables/useHeroPowerTraining';
 
-// * The effects the simulator derives, listed for the math panel so every number is
-// * explainable (feature 015).
+type SpreadThinTraining = 'trained' | 'untrained';
+
+// * Listed for the math panel, so every number it shows is explainable (feature 015).
 export type MissionDerivedEffect =
   | { type: 'en-pointe'; stat: StatName; bonus: number }
   | { type: 'spread-thin'; copies: number }
   | { type: 'illusion'; source: HeroId; ratio: 0.5 | 1 };
 
-// * Feature 015 — the mission team and template state actions. Slots are positional: some
-// * powers pay by slot, so order is part of the state, and every write is guarded the way
-// * the planner's other actions are (an ineligible call is a silent no-op).
+// * Slots are positional because some powers pay by slot, and every write is guarded like the planner's other actions: an ineligible call is a silent no-op (feature 015).
 export function useMissionSimulator(
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
   levelUp: ReturnType<typeof useHeroLevelUp>,
@@ -47,13 +43,11 @@ export function useMissionSimulator(
     () => new Set(missionSlots.value.filter(isHeroSlot))
   );
 
-  // * What the slot picker offers: the current roster, minus heroes already on the team.
   const missionCandidates = computed(() =>
     visibleHeroes.value.filter((hero) => !missionHeroIds.value.has(hero.id))
   );
 
-  // * The synergy switch is meaningful only while the team holds a derived pair; the stored
-  // * level survives losing it and re-applies when a pair returns (feature 015).
+  // * The stored synergy level survives losing the pair and re-applies when one returns (feature 015).
   const missionTeamHasPair = computed(() =>
     synergyPairs.value.some(
       ([a, b]) => missionHeroIds.value.has(a) && missionHeroIds.value.has(b)
@@ -64,13 +58,13 @@ export function useMissionSimulator(
     () => missionSlots.value.filter((slot) => slot === GOLEM_COPY_SLOT).length
   );
 
-  function spreadThinTrained(): boolean {
-    return powerTraining.getPowerState('golem').trainableSelected === 1;
+  function spreadThinTraining(): SpreadThinTraining {
+    return powerTraining.getPowerState('golem').trainableSelected === 1
+      ? 'trained'
+      : 'untrained';
   }
 
-  // * En Pointe and Spread Thin are derived from the real team here — the manual what-if
-  // * chips the other tabs show are ignored and never written. Everything else (Supernova,
-  // * Sonar's form) flows in through the shared effective stats.
+  // * En Pointe and Spread Thin come from the real team, ignoring the other tabs' what-if chips; Supernova and Sonar's form flow in through the shared effective stats.
   function derivedBonuses(heroId: HeroId, index: number): HeroStats {
     if (heroId === 'coupe') {
       const mechanics = SPECIAL_POWER_MECHANICS.coupe;
@@ -85,7 +79,7 @@ export function useMissionSimulator(
     }
 
     if (heroId === 'golem') {
-      // * The copies are the mechanism now: +25% per copy standing on the team.
+      // * +25% per copy standing on the team.
       const factor =
         SPECIAL_POWER_MECHANICS.golem.percentPerSlot * missionCopyCount.value;
       const allocations = levelUp.getStatAllocations('golem');
@@ -105,9 +99,7 @@ export function useMissionSimulator(
 
   const prismIndex = computed(() => missionSlots.value.indexOf('prism'));
 
-  // * Each slot's contribution to the team: a hero's simulator-effective stats (per-hero
-  // * clamp included), or the illusion's — its source's stats at half, floored per stat,
-  // * full once Perfect Copy is trained. It mirrors the source live, never a snapshot.
+  // * An illusion mirrors its source live, never as a snapshot: half its stats floored per stat, or full once Perfect Copy is trained.
   const missionSlotStats = computed<(HeroStats | null)[]>(() => {
     const heroStats = missionSlots.value.map((slot, index) =>
       isHeroSlot(slot)
@@ -146,8 +138,7 @@ export function useMissionSimulator(
     powerTraining.getPowerState('prism').trainableSelected === 1 ? 1 : 0.5
   );
 
-  // * The five totals the radar and the checks read: contributions summed, then the team
-  // * total clamped at the per-stat maximum — points past 10 are wasted (feature 015).
+  // * The team total is clamped per stat, because points past 10 are wasted (feature 015).
   const missionTeamTotals = computed<HeroStats>(
     () =>
       Object.fromEntries(
@@ -168,9 +159,7 @@ export function useMissionSimulator(
     () => missionTemplates.value?.[missionActiveTemplate.value] ?? null
   );
 
-  // * The estimate, with every step it is built from — the math panel renders these rows.
-  // * Coverage and synergy make the single-attempt chance (capped at 100%), reattempt
-  // * powers retry it, and a tripped fail threshold overrides everything to 0%.
+  // * Returns every step as well as the estimate, because the math panel renders each one.
   const missionSuccess = computed(() => {
     const template = missionActiveTemplateData.value;
     const totals = missionTeamTotals.value;
@@ -194,8 +183,7 @@ export function useMissionSimulator(
     return { coverage, synergyBonus, reattempters, failedStat, estimate };
   });
 
-  // * Pirouette is Coupé's first trainable, Talk Shit Sonar's second — and Talk Shit works
-  // * only in Hybrid form, which is the shared monster toggle being off (feature 012).
+  // * Talk Shit works only in Hybrid form, which is the shared monster toggle being off (feature 012).
   const missionReattempters = computed<HeroId[]>(() => {
     const reattempters: HeroId[] = [];
 
@@ -217,7 +205,6 @@ export function useMissionSimulator(
     return reattempters;
   });
 
-  // * The first FAIL ≥ stat whose clamped team total meets its threshold — at-or-above.
   const missionFailedStat = computed<StatName | null>(() => {
     const fail = missionActiveTemplateData.value?.fail ?? {};
 
@@ -232,8 +219,7 @@ export function useMissionSimulator(
     );
   });
 
-  // * The 2×XP light: null while the active template carries no thresholds, otherwise
-  // * whether every set threshold is met. Independent of the success estimate (feature 015).
+  // * Null while the active template carries no 2×XP threshold, and independent of the success estimate (feature 015).
   const missionXpFulfilled = computed<boolean | null>(() => {
     const xp = missionActiveTemplateData.value?.xp ?? {};
     const thresholds = Object.entries(xp) as [StatName, number][];
@@ -247,9 +233,7 @@ export function useMissionSimulator(
     );
   });
 
-  // * Who the illusion mirrors: the hero to Prism's left, or nobody. The sanitize watcher
-  // * below keeps an illusion from standing without one, so this returns null only for the
-  // * frame-less instant before it runs — and every reader gets a hero id or nothing.
+  // * Null only for the instant before the sanitize watcher removes an illusion without a source.
   const missionIllusionSource = computed<HeroId | null>(() => {
     if (!missionSlots.value.includes(ILLUSION_SLOT) || prismIndex.value <= 0) {
       return null;
@@ -265,7 +249,7 @@ export function useMissionSimulator(
     const slots = missionSlots.value;
     const coupe = slots.indexOf('coupe');
 
-    if ((coupe === 0 || coupe === 1) && isHeroSlot(slots[coupe]!)) {
+    if (coupe === 0 || coupe === 1) {
       const bonuses = derivedBonuses('coupe', coupe);
       const stat = coupe === 0 ? 'combat' : 'mobility';
 
@@ -307,12 +291,10 @@ export function useMissionSimulator(
     const slots = [...missionSlots.value];
 
     slots[index] = heroId;
-    missionSlots.value = withSpawns(slots, heroId, index, spreadThinTrained());
+    missionSlots.value = withSpawns(slots, heroId, index, spreadThinTraining());
   }
 
-  // * Removal is the same for a hero and the spawned occupants — and for those it is
-  // * sticky: creation happens only on their owner's placement, so nothing recreates them
-  // * here. Golem's copies dissolve right-to-left only.
+  // * Removing a spawned occupant is sticky: only its owner's placement creates one, so nothing recreates it here.
   function removeMissionSlot(index: number) {
     if (!isSlotIndex(index) || missionSlots.value[index] === null) {
       return;
@@ -345,7 +327,7 @@ export function useMissionSimulator(
     slots[target] = moved;
 
     // * Moving a hero is placing them again — the passive partner of a swap is not placed.
-    missionSlots.value = withSpawns(slots, moved, target, spreadThinTrained());
+    missionSlots.value = withSpawns(slots, moved, target, spreadThinTraining());
   }
 
   function setMissionReq(template: number, stat: StatName, value: number) {
@@ -376,8 +358,7 @@ export function useMissionSimulator(
 
     updateTemplate(template, (entry) => ({
       ...entry,
-      // * At most one threshold per column: setting a stat's value replaces any other;
-      // * unsetting clears only a value that stat actually holds.
+      // * At most one threshold per column; unsetting clears only a value that stat actually holds.
       [kind]:
         value === null
           ? entry[kind][stat] === undefined
@@ -414,10 +395,7 @@ export function useMissionSimulator(
     }
   }
 
-  // * Slot validity is enforced continuously, creation only on placement: a hidden hero
-  // * (episode change, or a stale document) leaves the team, and the illusion survives only
-  // * in its exact context — directly to Prism's right, with a hero to her left. This same
-  // * watcher is what drops contextless entries after deserialization.
+  // * Validity is enforced continuously but creation only on placement, so this same watcher drops a hidden hero or a contextless spawn after an episode change or a load.
   watch(
     [
       missionSlots,
@@ -428,7 +406,7 @@ export function useMissionSimulator(
       const cleaned = sanitize(
         missionSlots.value,
         visibleHeroes.value,
-        spreadThinTrained()
+        spreadThinTraining()
       );
 
       if (cleaned.some((slot, index) => slot !== missionSlots.value[index])) {
@@ -483,14 +461,12 @@ function isHeroSlot(slot: MissionSlot): slot is HeroId {
   return slot !== null && slot !== ILLUSION_SLOT && slot !== GOLEM_COPY_SLOT;
 }
 
-// * Placement spawns (feature 015). Prism placed: the illusion of her left neighbor
-// * appears in the slot to her right when that slot is free. Golem placed with Spread Thin
-// * trained: a copy of him fills every free slot to his right.
+// * Placing Prism spawns her left neighbor's illusion in a free slot to her right; placing Golem with Spread Thin trained fills every free slot to his right with copies (feature 015).
 function withSpawns(
   slots: MissionSlot[],
   placed: HeroId,
   index: number,
-  golemTrained: boolean
+  spreadThin: SpreadThinTraining
 ): MissionSlot[] {
   if (placed === 'prism') {
     const right = index + 1;
@@ -510,7 +486,7 @@ function withSpawns(
     return slots;
   }
 
-  if (placed === 'golem' && golemTrained) {
+  if (placed === 'golem' && spreadThin === 'trained') {
     return slots.map((slot, at) =>
       at > index && slot === null ? GOLEM_COPY_SLOT : slot
     );
@@ -526,7 +502,7 @@ function isRightmostCopy(slots: MissionSlot[], index: number): boolean {
 function sanitize(
   slots: MissionSlot[],
   visible: { id: HeroId }[],
-  golemTrained: boolean
+  spreadThin: SpreadThinTraining
 ): MissionSlot[] {
   const visibleIds = new Set(visible.map((hero) => hero.id));
   const heroesOnly = slots.map((slot) =>
@@ -550,7 +526,7 @@ function sanitize(
     // * A copy stands only to Golem's right, and only while Spread Thin is trained.
     if (
       slot === GOLEM_COPY_SLOT &&
-      !(golemTrained && golem >= 0 && index > golem)
+      !(spreadThin === 'trained' && golem >= 0 && index > golem)
     ) {
       return null;
     }

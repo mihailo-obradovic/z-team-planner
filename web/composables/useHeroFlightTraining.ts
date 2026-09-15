@@ -7,7 +7,6 @@ import {
 
 import type { HeroId } from '@/types/hero';
 
-// * Composable for managing flight training. Handles flight state, training limits, and conditional flight logic.
 export function useHeroFlightTraining(
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
   powerTraining: ReturnType<typeof useHeroPowerTraining>
@@ -17,19 +16,17 @@ export function useHeroFlightTraining(
     () => ({})
   );
 
-  const flightTrainingsUsed = computed(() => {
-    return FLIGHT_SCHOOL_HEROES.filter((id) => heroFlights.value[id]).length;
-  });
+  const flightTrainingsUsed = computed(
+    () => FLIGHT_SCHOOL_HEROES.filter((id) => heroFlights.value[id]).length
+  );
 
   const flyingHeroIds = computed<Set<HeroId>>(() => {
     const result = new Set<HeroId>();
 
-    for (const key in HERO_FLIGHT_CAPABILITY) {
+    for (const [key, capability] of Object.entries(HERO_FLIGHT_CAPABILITY)) {
       const id = key as HeroId;
-      const capability =
-        HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
 
-      // * A hero who arrives in episode 8 brings no trainable power with them, so nothing on the card can train or untrain them and a flier among them flies unconditionally. That is why Phenomaman's flight is conditional only while he is the episode 4 hire: Heavily Medicated is a power he can take just in that case.
+      // * An episode 8 recruit brings no trainable power, so nothing can untrain a flier among them; that is also why Phenomaman's flight is conditional only as the episode 4 hire.
       if (episodeSetup.ep8RecruitIds.value.has(id)) {
         result.add(id);
         continue;
@@ -41,9 +38,9 @@ export function useHeroFlightTraining(
           break;
 
         case 'conditional-power': {
-          // * Phenomaman loses flight if "Heavily Medicated" (trainable-1) is selected
-          const powerState = powerTraining.getPowerState(id);
-          const hasPower = powerState.trainableSelected === 1;
+          const hasPower =
+            powerTraining.getPowerState(id).trainableSelected === 1;
+
           if (capability.inverted ? !hasPower : hasPower) {
             result.add(id);
           }
@@ -64,12 +61,11 @@ export function useHeroFlightTraining(
   function toggleFlight(id: HeroId) {
     const capability =
       HERO_FLIGHT_CAPABILITY[id as keyof typeof HERO_FLIGHT_CAPABILITY];
-    // * Only trainable heroes can toggle flight
-    if (!capability || capability.type !== 'trainable') {
+
+    if (capability?.type !== 'trainable') {
       return;
     }
 
-    // * Check training limit
     if (
       !heroFlights.value[id] &&
       flightTrainingsUsed.value >= MAX_FLIGHT_TRAININGS
@@ -77,7 +73,7 @@ export function useHeroFlightTraining(
       return;
     }
 
-    heroFlights.value[id] = !(heroFlights.value[id] ?? false);
+    heroFlights.value[id] = !heroFlights.value[id];
   }
 
   function resetAllFlightTrainings() {
@@ -88,7 +84,6 @@ export function useHeroFlightTraining(
     delete heroFlights.value[id];
   }
 
-  // * Watch episode choices and clear flight data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, (newCut) => {
     delete heroFlights.value[newCut];
   });

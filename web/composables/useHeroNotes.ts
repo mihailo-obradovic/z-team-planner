@@ -7,11 +7,9 @@ import {
   type PairStat
 } from '@/utils/heroNotes';
 
-import type { HeroId } from '@/types/hero';
+import type { HeroId, HeroStats } from '@/types/hero';
 
-// * Coverage for catalyst/features/022_hero-notes.md. Reduces live planner state to the
-// * plain HeroNoteContext heroNotes.ts's pure evaluator reads — the panel's rendering and
-// * ordering live in HeroDetailDialog.vue, this composable only supplies the two lists.
+// * Reduces live planner state to the plain values the hero-notes evaluator reads (feature 022).
 export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
   const {
     heroes,
@@ -26,10 +24,7 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
 
   const id = computed(() => toValue(heroId));
 
-  // * Mirrors HeroDetailDialog's own synergyPartner: synergyPairColumns is already resolved
-  // * against the visible roster, unlike the raw synergyPairs tuples, which still carry a
-  // * cut hero's base pair (e.g. Malevola-Sonar) alongside the conditional replacement that
-  // * actually applies — reading the raw list here once picked the wrong, stale partner.
+  // * Read from the resolved columns, not the raw pairs, which still carry a cut hero's base pair beside its replacement.
   const partnerId = computed<HeroId | null>(() => {
     if (!id.value) {
       return null;
@@ -98,7 +93,7 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
       return [];
     }
 
-    const hero = heroes.value?.find((h) => h.id === id.value);
+    const hero = heroes.value.find((candidate) => candidate.id === id.value);
 
     if (!hero) {
       return [];
@@ -107,8 +102,8 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
     const ownAllocations = getStatAllocations(id.value);
     const flambaeAllocations = getStatAllocations('flambae');
 
-    const rosterAllocatedCombat = (heroes.value ?? []).reduce(
-      (sum, h) => sum + getStatAllocations(h.id).combat,
+    const rosterAllocatedCombat = heroes.value.reduce(
+      (sum, rosterHero) => sum + getStatAllocations(rosterHero.id).combat,
       0
     );
 
@@ -119,7 +114,7 @@ export function useHeroNotes(heroId: MaybeRefOrGetter<HeroId | null>) {
           stat,
           hero.startingStats[stat] + ownAllocations[stat]
         ])
-      ) as (typeof hero)['startingStats'],
+      ) as HeroStats,
       rosterAllocatedCombat,
       ownAllocatedCombat: ownAllocations.combat,
       supernovaTrained: getPowerState('flambae').trainableSelected === 2,
