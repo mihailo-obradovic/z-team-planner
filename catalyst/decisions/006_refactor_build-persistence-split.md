@@ -14,15 +14,15 @@ Medium
 
 ## Context
 
-`web/composables/useBuildPersistence.ts` is 584 lines, but length is the symptom. Three defects sit under it.
+`web/composables/useBuildPersistence.ts` was 584 lines, but length was the symptom. Three defects sat under it.
 
-**Eight refs are threaded as a positional argument list.** `serializeCurrentState(a,…,h)` appears five times and `deserializeIntoState(build,a,…,h)` four. Adding a ninth piece of planner state means editing eleven call sites, and a transposed pair of same-typed refs type-checks.
+**Eight refs were threaded as a positional argument list.** `serializeCurrentState(a,…,h)` appeared five times and `deserializeIntoState(build,a,…,h)` four. Adding a ninth piece of planner state meant editing eleven call sites, and a transposed pair of same-typed refs type-checked.
 
-**The protected format has almost no direct test coverage.** `SerializedBuild` and its serialiser are a protected area under feature 001 with a backward-compatibility contract, yet `test/nuxt/build-persistence.test.ts` covers three cases, all `initialize()`. The serialiser, the URL codec, the CRUD and the dirty tracking have none — because none can be called without first constructing eight refs.
+**The protected format had almost no direct test coverage.** `SerializedBuild` and its serialiser are a protected area under feature 001, yet the one test file covered three cases, all `initialize()`. The serialiser, the URL codec, the CRUD and the dirty tracking had none — because none could be called without first constructing eight refs.
 
-**"Build" names four things:** the portable snapshot (`SerializedBuild`), the localStorage record (`SavedBuild`), the server record (`Build`), its public read (`PublicBuild`). `BuildManager.vue` imports a `deleteBuild` from the composable and a `useDeleteBuild` from the query layer; `saveSharedAsMyBuild` exists only as an alias for `saveAsNewBuild`, because the vocabulary was too thin to say what the call site meant.
+**"Build" named four things:** the portable snapshot (`SerializedBuild`), the localStorage record (`SavedBuild`), the server record (`Build`), its public read (`PublicBuild`). `BuildManager.vue` imported a `deleteBuild` from the composable and a `useDeleteBuild` from the query layer; `saveSharedAsMyBuild` existed only as an alias for `saveAsNewBuild`, because the vocabulary was too thin to say what the call site meant.
 
-`savedAt` is also dead — written in three places, read nowhere — and holds the file's last `Date.now()`, which the code-style convention now bans.
+`savedAt` was also dead — written in three places, read nowhere — and held a `Date.now()`, which the code-style convention bans.
 
 ## Decision
 
@@ -40,7 +40,7 @@ Vocabulary is settled in `catalyst/context/glossary.md`, then applied: **build d
 
 `web/composables/useBuildPersistence.ts` and the seven modules split out of it; `web/types/build.ts` and `web/types/api.ts` for the renames and the `savedAt` deletion; `web/services/builds.api.ts`, `web/services/shared.api.ts` and the two query modules for the renamed types; two test files for the `savedAt` fixture field.
 
-The serialized-build format itself is untouched — same keys, same omission rules, same `v: 1`. Only where the code lives and what the types are called changes. `savedAt` is a field of `SavedBuild`, not of `SerializedBuild`, so no share link or stored document changes shape.
+The serialized-build format itself is untouched — same keys, same omission rules, same `v: 1`. `savedAt` is a field of the local record, not of `SerializedBuild`, so no share link or stored document changes shape.
 
 ## Consequences
 
@@ -48,15 +48,13 @@ The protected format gains its first direct tests and a boundary that makes it v
 
 Riskier: eight modules where there was one, and a reader now follows a facade to find behaviour.
 
-Follow-up created, deliberately not done here: dropping the facade so the six components name the concern they reach into.
+Follow-up, deliberately not done here: dropping the facade so the six components name the concern they reach into.
 
 ## Contracts Touched
 
 `catalyst/context/glossary.md` (new), `web/CLAUDE.md` (the `composables/`, `utils/` and `types/` entries, and the invariant naming the protected format's location), `catalyst/features/001_build-persistence.md` (its protected-area pointer moves with the code).
 
 ## Open Questions
-
-None.
 
 ## Verification
 

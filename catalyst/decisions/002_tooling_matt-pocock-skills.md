@@ -14,7 +14,7 @@ Easy
 
 ## Context
 
-The `mattpocock-skills` plugin is installed in this environment: a pipeline of engineering skills (`to-spec` → `to-tickets` → `triage` → `implement` → `code-review`, plus `tdd`, `diagnosing-bugs`, `research`, `domain-modeling`, `grilling`) that hand work to each other. Its setup step (`/setup-matt-pocock-skills`) scaffolds a document layout of its own — `docs/agents/*.md` for config, `docs/adr/` for decisions, a root `CONTEXT.md` for the glossary — and its skills read those paths directly (`domain-modeling` and `improve-codebase-architecture` read `docs/adr/`; seven skills read `CONTEXT.md`; `code-review` and `triage` read `docs/agents/`).
+The `mattpocock-skills` plugin is installed in this environment: a pipeline of engineering skills (`to-spec` → `to-tickets` → `triage` → `implement` → `code-review`, plus `tdd`, `diagnosing-bugs`, `research`, `domain-modeling`, `grilling`) that hand work to each other. Its setup step scaffolds a document layout of its own — `docs/agents/*.md` for config, `docs/adr/` for decisions, a root `CONTEXT.md` for the glossary — and its skills read those paths directly.
 
 Every one of those paths collides with a bundle directory that already owns the same artifact type. `references/agent-skills.md` (Third-party skill pipelines) governs the case directly and forbids creating them.
 
@@ -44,11 +44,11 @@ Cost: the redirect table is a maintenance point — a plugin upgrade that adds a
 
 ## Contracts Touched
 
-- `AGENTS.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block, written once: the root `CLAUDE.md` imports the root `AGENTS.md`, so both harnesses read it.
+- `AGENTS.md` (root, outside the `catalyst:` markers) — the `## Agent skills` block: the root `CLAUDE.md` imports the root `AGENTS.md`, so both harnesses read it.
 - `project-summary.md` — this record's ADR index row.
 
 ## Open Questions
 
 ## Verification
 
-`catalyst/agents/` carries the three documents; no `docs/`, no root `CONTEXT.md`, no `.scratch/` was created. The redirect table was built from a grep of what each installed skill actually hardcodes, so every assumed path has a row. `merge_marked` in the scaffolder was read to confirm an upgrade replaces only what sits between the `catalyst:` markers, leaving the appended block intact — so the redirect survives the next `upgrade_project.py --apply`. `python3 catalyst/tools/validate.py .` passes with 0 errors.
+`catalyst/agents/` carries the three documents; no `docs/`, no root `CONTEXT.md`, no `.scratch/` exists. The redirect table was built from a grep of what each installed skill hardcodes, so every assumed path has a row. The upgrader's `merge_marked` replaces only what sits between the `catalyst:` markers, so the appended block survives `upgrade_project.py --apply`. `python3 catalyst/tools/validate.py .` passes with 0 errors.

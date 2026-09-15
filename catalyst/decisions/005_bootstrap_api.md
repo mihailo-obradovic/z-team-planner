@@ -14,7 +14,7 @@ Medium
 
 ## Context
 
-Decision 004 adopted FastAPI, Neon Postgres and Firebase identity, and moved the Nuxt app to `web/` to free the root `app/`. Nothing was built: there is no `pyproject.toml`, no lockfile, no interpreter pin, no migrations, no test harness — that record's own Verification reads "nothing runs yet". Features 004 and 005 are `Approved` and cannot start against an empty directory. This record is the scaffold, and it carries no product behavior.
+Decision 004 adopted FastAPI, Neon Postgres and Firebase identity, and moved the Nuxt app to `web/` to free the root `app/`, but built nothing: no `pyproject.toml`, no lockfile, no interpreter pin, no migrations, no test harness. Features 004 and 005 cannot start against an empty directory. This record is the scaffold, and it carries no product behavior.
 
 ## Decision
 
@@ -24,13 +24,13 @@ A synchronous engine with Neon's `pool_pre_ping`, `pool_recycle=240` and `connec
 
 Two things land early on purpose. The shared log line format, with an `X-Request-ID` contextvar accepted-or-generated at the edge and echoed on every response — including from the 500 handler, which Starlette runs outside the middleware stack and which would otherwise answer without it. And feature 005's error envelope in full: the code vocabulary, and `details` paths on `422` only. Neither feature then invents its own shape.
 
-`/healthz` and `/readyz` mount at the root, outside `/api/v1` and therefore outside the auth seam features 004 and 005 add. `/metrics` ships behind `METRICS_ENABLED`, default off. Alembic reads `DATABASE_URL_DIRECT` and starts with zero revisions.
+`/healthz` and `/readyz` mount at the root, outside `/api/v1` and therefore outside the auth seam features 004 and 005 add. `/metrics` ships behind `METRICS_ENABLED`, default off. Alembic reads `DATABASE_URL_DIRECT`.
 
 ## Scope
 
 `app/` (`core`, `middleware`, `exceptions`, `routes`, and a `models` package holding only the declarative base), `alembic/`, `tests/`, `scripts/reset_db.py`, `pyproject.toml`, `.python-version`, `uv.lock`, `.env.example`, `.editorconfig`, `.gitignore`, `app/CLAUDE.md`, `README.md`, `operations.md`, `.github/workflows/ci.yml`, and `architecture.md` for the dependency rows.
 
-Untouched: `web/`, and every behavior contract. Not created: `shared/` (feature 005 needs an export script that does not exist yet), a `Dockerfile` (Deployment is declined, no host chosen), the `users` and `builds` tables, the seed script.
+Untouched: `web/`, and every behavior contract. Not created: the `users` and `builds` tables and the seed script (feature 004's, since the rules for what may enter a non-production database arrive with its personal-data declaration), and a `Dockerfile` (Deployment is declined).
 
 ## Consequences
 
@@ -38,21 +38,17 @@ A second language and toolchain in one repository, and a second CI job. Three pa
 
 `requires-python = ">=3.14"` also sets Ruff's `target-version`, so `UP` rewrites to syntax older interpreters reject. Testcontainers needs a Docker daemon; without one the database tests skip loudly rather than fall back to a SQLite lookalike.
 
-Metrics ship with the mechanism but no destination — the numbers go nowhere until a host and a scrape target exist. The bootstrap flow's seed script is deliberately deferred to feature 004: there are no tables yet, and the rules governing what may enter a non-production database arrive with that feature's personal-data declaration. A Dockerfile arrives with the hosting decision, not before.
+Metrics ship with the mechanism but no destination — the numbers go nowhere until a scrape target exists.
 
 ## Contracts Touched
 
 - `project-summary.md` — an ADR index row; no feature row.
 - `architecture.md` — the three approved dependencies.
-- `operations.md` — a new API service section, and the Neon section's "adopted but not yet built" note corrected.
+- `operations.md` — a new API service section.
 - `app/CLAUDE.md` — new folder document.
 
 ## Open Questions
 
 ## Verification
 
-Thirteen steps on `decision/005-bootstrap-api`, each verified before its commit. The four verbs exit 0, `pyright` at 0 errors, `pytest` **68 passed** — 62 unit plus 6 integration against a real PostgreSQL 17 via testcontainers.
-
-Against the running API: `/healthz` → `200`; `/readyz` → `200 {"status":"ready","database":"ok"}` on the real Neon `dev` branch, 1.12 s while the suspended compute woke; an unknown route → `404` in the envelope; every response carries `X-Request-ID` and the access line logs the same id. `alembic upgrade head` succeeds on the direct endpoint with zero revisions; `reset_db.py` refused twice before rebuilding the dev schema.
-
-Two guards were proven by firing them: the emulator variable with `APP_ENV=staging` aborts startup, and `/readyz` answers `503` against a dead database while `/healthz` still answers `200`. `validate.py .` reports 0 errors. Nothing is deployed; CI's first real run comes with the push.
+The four verbs exit 0, `pyright` at 0 errors, `pytest` green with unit tests plus integration tests against a real PostgreSQL 17 via testcontainers. Against the running API: `/healthz` and `/readyz` answer `200` on the real Neon `dev` branch, an unknown route answers `404` in the envelope, and every response carries the `X-Request-ID` the access line logs. `alembic upgrade head` succeeds on the direct endpoint. Two guards were proven by firing them: the emulator variable with `APP_ENV=staging` aborts startup, and `/readyz` answers `503` against a dead database while `/healthz` still answers `200`.

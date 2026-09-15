@@ -14,7 +14,7 @@ Medium
 
 ## Context
 
-Decision 004 declined deployment and left it as its own effort; `operations.md` still opens with "nothing is deployed anywhere". The planner is useful on its own, while the API, Neon and Firebase are built but have only ever run locally. The constraint from 004 is unchanged: hobby project, free or very low cost.
+Decision 004 declined deployment and left it as its own effort. The planner is useful on its own, while the API, Neon and Firebase were built but had only ever run locally. The constraint from 004 is unchanged: hobby project, free or very low cost.
 
 ## Decision
 
@@ -37,29 +37,25 @@ Google Cloud Run was the genuine alternative: a container preserves single-proce
 
 ## Scope
 
-This record and the ADR index row in `project-summary.md`. On approval: `app/asgi.py` and the `[tool.vercel]` block; `Settings` gains `FIREBASE_SERVICE_ACCOUNT_JSON` carrying the credential as env contents, mutually exclusive with the existing file path and validated at startup exactly as `FIREBASE_AUTH_EMULATOR_HOST` already is; the `firebase.client.ts` plugin and feature 006's build guard (see Consequences); a Vercel section in `operations.md`; feature 004's privacy-policy section.
+This record, `app/asgi.py` and the `[tool.vercel]` block, `Settings` gaining `FIREBASE_SERVICE_ACCOUNT_JSON` (the credential as env contents, mutually exclusive with the file path, validated at startup), the `firebase.client.ts` plugin and feature 006's build guard (see Consequences), a Vercel section in `operations.md`, and feature 004's privacy-policy section.
 
 ## Consequences
 
-Two things in the code become decorative and must be read as such: feature 007's `/shared/*` token bucket is **inert in production**, since serverless instances each hold their own, and `/metrics` under-reports for the same reason. The risk is not the missing ceiling on a hobby app with unguessable ids — it is a future reader believing the ceiling works. Alembic never runs on Vercel; migrations stay manual against the direct `main` endpoint, and become a dispatched workflow once the backup workflow exists to share its secret.
+Two things in the code become decorative and must be read as such: feature 007's `/shared/*` token bucket is **inert in production**, since serverless instances each hold their own, and `/metrics` under-reports for the same reason. The risk is not the missing ceiling on a hobby app with unguessable ids — it is a future reader believing the ceiling works. Alembic never runs on Vercel; migrations stay manual against the direct `main` endpoint.
 
-Neon needs nothing new: `main` is production, pooled for the API and direct for Alembic. The 5-minute suspend becomes user-visible as the recorded ~1.1s first request. Vercel's Neon integration is **not** used — it injects one `DATABASE_URL` and this project needs two. Firebase's three additions sit inside stage 2's gate; sign-in is `signInWithPopup`, so redirect-flow cookie breakage does not apply, and only basic scopes are requested, so publishing the consent screen needs no Google verification review.
+Neon needs nothing new: `main` is production, pooled for the API and direct for Alembic. Vercel's Neon integration is **not** used — it injects one `DATABASE_URL` and this project needs two. Sign-in is `signInWithPopup`, so redirect-flow cookie breakage does not apply, and only basic scopes are requested, so publishing the consent screen needs no Google verification review.
 
-**Stage 1 needs one behavior change to be honest.** `markSignInUnavailable()` fires only when Firebase fails to initialise, and in stage 1 the five `NUXT_PUBLIC_FIREBASE_*` values are real — so the sign-in button would stay enabled and a visitor would complete a Google sign-in before the app called an API that does not exist. An empty `NUXT_PUBLIC_API_BASE_URL` therefore comes to mean sign-in unavailable: it leaves feature 006's required-variables build guard, and the plugin calls `markSignInUnavailable()` when it is empty. This reuses state `useAuthStore` and `AuthMenu` already model, adds no flag whose only future is deletion, and self-heals in stage 2 when the variable is set. Because `/` is prerendered, the value is baked into the payload at build time: stage 2 is a redeploy, never an environment-variable edit alone.
-
-A purchased domain is a stated future, not decided here: apex `A 76.76.21.21` and `www` `CNAME cname.vercel-dns-0.com`, or Vercel's nameservers. It touches authorized domains and `CORS_ALLOW_ORIGINS` again, so it gets its own effort.
+**Stage 1 needs one behavior change to be honest.** With real Firebase variables and no API, the sign-in button would stay enabled and a visitor would complete a Google sign-in before the app called an API that does not exist. An empty `NUXT_PUBLIC_API_BASE_URL` therefore means sign-in unavailable (feature 006 carries the rule): it reuses state the auth store already models, adds no flag whose only future is deletion, and self-heals in stage 2 when the variable is set. Because `/` is prerendered, the value is baked into the payload at build time: stage 2 is a redeploy, never an environment-variable edit alone.
 
 ## Contracts Touched
 
 - `project-summary.md` — ADR index row.
-- `operations.md` — new Vercel section; the `/shared/*` quirk amended from "protects nothing behind a proxy" to inert in production.
-- `features/004_accounts.md` — privacy-policy section (the page itself is a backlog item).
+- `operations.md` — new Vercel section; the `/shared/*` quirk reads as inert in production.
+- `features/004_accounts.md` — privacy-policy section.
 - `features/006_frontend-data-layer.md` — `NUXT_PUBLIC_API_BASE_URL` leaves the required-variables build guard and gains its sign-in-unavailable meaning.
 
 ## Open Questions
 
 ## Verification
 
-Five steps on `decision/007-hosting-vercel`, each verified before commit: 183 frontend and 121 API tests green, oxfmt, oxlint, vue-tsc, ruff and pyright clean, `validate.py` 0 errors, and a production build passing the `build:before` guard with `NUXT_PUBLIC_API_BASE_URL` empty.
-
-**Stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026), and the first deploy was broken: it rendered but hydrated nothing, because local build output reached the deployment and its stale `index.html` asked for chunk hashes the remote build had never emitted. `.vercelignore` was the fix; `operations.md` carries the trap and the way to recognise it. Verified on the live site afterwards: `apiBaseUrl` empty in the served payload, the referenced entry chunk 200, three `/_vercel/image` sizes 200 as webp, and the sign-in control shipping `aria-hidden="true"` with `tabindex="-1"` — unavailable, not merely untested.
+Frontend and API suites green, oxfmt, oxlint, vue-tsc, ruff and pyright clean, `validate.py` 0 errors, and a production build passing the `build:before` guard with `NUXT_PUBLIC_API_BASE_URL` empty. **Stage 1 is live at <https://z-team-planner.vercel.app>**, verified on the live site: `apiBaseUrl` empty in the served payload, the entry chunk and three `/_vercel/image` sizes answering 200, and the sign-in control shipping `aria-hidden="true"` with `tabindex="-1"` — unavailable, not merely untested. The `.vercelignore` trap the first deploy hit is `operations.md`'s.
