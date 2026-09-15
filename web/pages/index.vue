@@ -1,7 +1,7 @@
 <template>
   <u-tabs
+    v-model="activeTabModel"
     :items="tabs"
-    :model-value="activeTab"
     class="flex h-full w-full flex-col"
     variant="link"
     :unmount-on-hide="false"
@@ -10,7 +10,6 @@
       list: 'shrink-0',
       content: 'min-h-0 flex-1 overflow-y-auto'
     }"
-    @update:model-value="handleTabChange"
   >
     <template #default="{ item }">
       <span class="sm:hidden">{{ item.shortLabel }}</span>
@@ -131,7 +130,6 @@ import MissionMathPanel from '@/components/mission/MissionMathPanel.vue';
 import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 
 import type { HeroId } from '@/types/hero';
-import type { TabValue } from '@/composables/useActiveTab';
 
 const tabs = [
   {
@@ -156,7 +154,7 @@ const tabs = [
 
 const site = useSiteConfig();
 
-const { activeTab, initTabFromUrl, setActiveTab } = useActiveTab();
+const { activeTabModel, initTabFromUrl } = useActiveTab();
 
 const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
 
@@ -172,11 +170,6 @@ useSchemaOrg([
     applicationCategory: 'UtilitiesApplication'
   })
 ]);
-
-// * UTabs models its value as string | number; the tab union is ours, so it is narrowed here rather than cast in the template.
-function handleTabChange(value: string | number) {
-  setActiveTab(value as TabValue);
-}
 
 function handleViewDetail(id: HeroId) {
   selectedHeroId.value = id;
