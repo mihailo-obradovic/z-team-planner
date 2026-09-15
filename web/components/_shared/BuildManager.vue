@@ -113,8 +113,9 @@ const props = withDefaults(
 
 const toast = useToast();
 
-const { isSignedIn, activeAccountBuildId } = storeToRefs(useAuthStore());
-const { setActiveAccountBuildId } = useAuthStore();
+const authStore = useAuthStore();
+const { isSignedIn, activeAccountBuildId } = storeToRefs(authStore);
+const { setActiveAccountBuildId } = authStore;
 
 const plannerState = usePlannerState();
 
@@ -155,7 +156,7 @@ const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
 
 const activeAccountBuild = computed(() =>
   accountBuilds.value?.items.find(
-    (build) => build.id === activeAccountBuildId.value
+    (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
   )
 );
 
@@ -186,15 +187,13 @@ const saveLabel = computed(() =>
 const saveLabelled = computed(() => props.labelled && !props.block);
 
 const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
-  const builds = localBuilds.value.map(
-    (build: { id: string; name: string }) => ({
-      label: build.name,
-      icon: build.id === activeBuildId.value ? 'i-lucide-check' : undefined,
-      onSelect: () => {
-        loadLocalBuild(build.id);
-      }
-    })
-  );
+  const localBuildItems = localBuilds.value.map((localBuild) => ({
+    label: localBuild.name,
+    icon: localBuild.id === activeBuildId.value ? 'i-lucide-check' : undefined,
+    onSelect: () => {
+      loadLocalBuild(localBuild.id);
+    }
+  }));
 
   const management: DropdownMenuItem[] = [
     {
@@ -233,7 +232,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       }
     ];
 
-    return [builds, management, hint];
+    return [localBuildItems, management, hint];
   }
 
   const account: DropdownMenuItem[] = accountBuildsPending.value
@@ -244,14 +243,14 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
           disabled: true
         }
       ]
-    : (accountBuilds.value?.items ?? []).map((build) => ({
-        label: build.name,
+    : (accountBuilds.value?.items ?? []).map((cloudBuild) => ({
+        label: cloudBuild.name,
         icon:
-          build.id === activeAccountBuildId.value
+          cloudBuild.id === activeAccountBuildId.value
             ? 'i-lucide-check'
             : 'i-lucide-cloud',
         onSelect: () => {
-          void openAccountBuild(build.id);
+          void openAccountBuild(cloudBuild.id);
         }
       }));
 
@@ -276,7 +275,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
     });
   }
 
-  return [builds, account, accountActions, management];
+  return [localBuildItems, account, accountActions, management];
 });
 
 async function openAccountBuild(id: string) {
@@ -310,6 +309,7 @@ function handleSave() {
 
   if (localBuilds.value.length === 0) {
     openNewBuild('Build 1');
+
     return;
   }
 
@@ -365,9 +365,9 @@ async function copyAccountBuildLink(id: string): Promise<boolean> {
   }
 }
 
-watch(openedAccountBuild, async (build) => {
-  if (build) {
-    await loadAccountBuild(build.data);
+watch(openedAccountBuild, async (cloudBuild) => {
+  if (cloudBuild) {
+    await loadAccountBuild(cloudBuild.data);
     updateSavedSnapshot();
   }
 });

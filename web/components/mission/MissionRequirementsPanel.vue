@@ -5,10 +5,7 @@
     </div>
 
     <div class="flex flex-col items-center gap-4 p-3">
-      <!-- * The frame is the panel's design width exactly, so it is the first thing to run
-           out of room: `max-w-full` lets it give up width rather than bleed over the
-           panel's padding and border (feature 016). Not tied to a threshold — it is a
-           no-op at every width where the panel can still hold 288px. -->
+      <!-- * The frame is exactly the panel's design width, so `max-w-full` lets it give up width rather than bleed over the panel's padding and border (feature 016). -->
       <div class="w-72 max-w-full border-2 border-accented bg-default">
         <div class="mx-auto aspect-square w-full">
           <StatRadar
@@ -16,13 +13,12 @@
             :reference="requiredValues"
             :fail-at="failValues"
             :xp-at="xpValues"
-            :title="`Team totals against template #${activeIndex + 1}`"
+            :title="`Team totals against template #${missionActiveTemplate + 1}`"
           />
         </div>
       </div>
 
-      <!-- * The legend carries every series and marker the chart can draw, always — a fixed
-           block, so a threshold appearing changes the chart, never the layout (feature 015). -->
+      <!-- * The legend always lists every series and marker, so a threshold appearing changes the chart, never the layout (feature 015). -->
       <ul class="grid grid-cols-2 gap-x-10 gap-y-2">
         <li
           class="flex items-center gap-3 font-heading text-label text-toned uppercase"
@@ -60,10 +56,7 @@
       </ul>
 
       <p class="flex items-center gap-3">
-        <!-- * A fixed width, not a minimum: every value from 0% to 100% and both certainty
-             markers render in the same box, so the panel never breathes as the estimate moves — and the number tweens to its new value. The
-             two certain outcomes carry the state in the box itself, with a marker beside
-             the number so colour is never the only signal (annex §14). -->
+        <!-- * A fixed width, so the panel never breathes as the estimate moves; the certain outcomes carry a marker beside the number, so colour is never the only signal (annex §14). -->
         <span
           class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-0.5 text-center font-heading text-2xl font-bold transition-colors duration-150"
           :class="outcomeClass"
@@ -91,8 +84,6 @@
 </template>
 
 <script setup lang="ts">
-// * Feature 015's middle column: the required-vs-team radar with its threshold markers and
-// * the headline estimate. Numbers come from the planner's missionSuccess — no recomputing.
 import { STAT_ICONS, RADAR_STAT_ORDER } from '@/utils/statIcons';
 
 const {
@@ -101,8 +92,6 @@ const {
   missionTeamTotals,
   missionSuccess
 } = useHeroPlanner();
-
-const activeIndex = computed(() => missionActiveTemplate.value);
 
 const radarAxes = computed(() =>
   RADAR_STAT_ORDER.map((stat) => ({

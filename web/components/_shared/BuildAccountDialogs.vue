@@ -69,8 +69,9 @@ const plannerState = usePlannerState();
 
 const { updateSavedSnapshot } = useUnsavedChanges();
 
-const { activeAccountBuildId } = storeToRefs(useAuthStore());
-const { setActiveAccountBuildId } = useAuthStore();
+const authStore = useAuthStore();
+const { activeAccountBuildId } = storeToRefs(authStore);
+const { setActiveAccountBuildId } = authStore;
 
 const { data: accountBuilds } = useFetchBuilds();
 
@@ -105,7 +106,7 @@ const nameError = computed(() => nameForm.$errors.name?.[0]);
 const activeBuildLabel = computed(
   () =>
     accountBuilds.value?.items.find(
-      (build) => build.id === activeAccountBuildId.value
+      (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
     )?.name ?? 'this build'
 );
 

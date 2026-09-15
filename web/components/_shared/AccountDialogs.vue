@@ -50,6 +50,14 @@ const { data: me, isPending } = useFetchMe({
   enabled: () => isSignedIn.value && deleteAccountOpen.value
 });
 
+const { mutate: deleteAccount, isLoading: isDeleting } = useDeleteMe({
+  onSuccess: async () => {
+    deleteAccountOpen.value = false;
+    await signOut();
+    toast.add({ title: 'Your account has been deleted', color: 'success' });
+  }
+});
+
 const buildCount = computed(() => me.value?.build_count ?? 0);
 
 const hasBuilds = computed(() => buildCount.value > 0);
@@ -62,14 +70,6 @@ const summary = computed(() => {
   return hasBuilds.value
     ? `Deleting your account removes it and the ${buildCount.value} build${buildCount.value === 1 ? '' : 's'} saved to it.`
     : 'Deleting your account removes it. There are no builds saved to it.';
-});
-
-const { mutate: deleteAccount, isLoading: isDeleting } = useDeleteMe({
-  onSuccess: async () => {
-    deleteAccountOpen.value = false;
-    await signOut();
-    toast.add({ title: 'Your account has been deleted', color: 'success' });
-  }
 });
 
 function handleCancel() {

@@ -52,21 +52,15 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 const displayedText = computed(() =>
   mode.value === 'no-hover' ? (shownText.value ?? props.text) : props.text
 );
+
 // * `undefined` leaves `UTooltip` uncontrolled in hover mode, so the library's own hover-open behaviour is untouched.
 const controlledOpen = computed(() =>
   mode.value === 'no-hover' ? isOpen.value : undefined
 );
+
 const delayDuration = computed(() =>
   mode.value === 'no-hover' ? 0 : undefined
 );
-
-watch(activeHolder, (holder) => {
-  if (holder !== holderId) {
-    isOpen.value = false;
-  }
-});
-
-onUnmounted(() => clearTimeout(timer));
 
 async function handleClick() {
   if (mode.value !== 'no-hover' || !props.confirmation) {
@@ -110,4 +104,12 @@ function lingerMs(): number {
 
   return raw.endsWith('ms') ? parsed : parsed * 1000;
 }
+
+watch(activeHolder, (holder) => {
+  if (holder !== holderId) {
+    isOpen.value = false;
+  }
+});
+
+onUnmounted(() => clearTimeout(timer));
 </script>

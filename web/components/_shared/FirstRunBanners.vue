@@ -91,8 +91,7 @@ function isAcknowledged(key: string): boolean {
 }
 
 async function handleConfirm(key: string) {
-  // ! A banner is only live while it is pending. Its button survives the exit animation, so without this
-  // ! guard a second press would rewrite the key and re-run the focus move against a banner already gone.
+  // ! The button survives the exit animation, so without this guard a second press would rewrite the key and move focus against a banner already gone.
   if (!pending.value.some((notice) => notice.key === key)) {
     return;
   }
@@ -109,8 +108,7 @@ async function handleConfirm(key: string) {
   focusFirstPending();
 }
 
-// * Focus is on the button that just left. Hand it to the banner still up, or release it to the document
-// * rather than leave it on an element mid-exit.
+// * Focus is on the button that just left: hand it to the banner still up rather than leave it on an element mid-exit.
 function focusFirstPending() {
   const next = pending.value[0];
 
@@ -123,8 +121,7 @@ function focusFirstPending() {
     ?.focus();
 }
 
-// * The element stays in the DOM for the length of its exit. Sealing it keeps a dismissed notice out of
-// * the tab order and away from assistive technology while it is still on screen (feature 017).
+// * Keeps a dismissed notice out of the tab order and away from assistive technology while its exit is still on screen (feature 017).
 function sealLeaving(element: Element) {
   element.setAttribute('inert', '');
   element.setAttribute('aria-hidden', 'true');
@@ -132,8 +129,7 @@ function sealLeaving(element: Element) {
 </script>
 
 <style scoped>
-/* * Two halves of one motion: the row's height opens the space, the body travels through it. Sharing the
- * duration keeps the scrolling main and the banner settling together rather than in two beats (feature 017). */
+/* * The row's height opens the space and the body travels through it, on one shared duration so the main and the banner settle together (feature 017). */
 .banner {
   grid-template-rows: 1fr;
   transition: grid-template-rows var(--duration-slow) ease-out;
@@ -161,8 +157,7 @@ function sealLeaving(element: Element) {
   transition-timing-function: ease-in;
 }
 
-/* ! Transform-based and past the baseline, so it short-circuits (annex §11). The inert-and-focus handling
- * above is behaviour rather than decoration and is deliberately not guarded. */
+/* ! Past the baseline, so it short-circuits under reduced motion (annex §11); the inert-and-focus handling is behaviour and deliberately not guarded. */
 @media (prefers-reduced-motion: reduce) {
   .banner,
   .banner-body {

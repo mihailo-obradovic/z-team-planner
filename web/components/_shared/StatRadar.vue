@@ -13,12 +13,12 @@
 
     <!-- * Rings every 2 points on the 0-10 scale, drawn outermost first so the axis spokes and the data sit above them. -->
     <polygon
-      v-for="ring in RINGS"
+      v-for="ring in rings"
       :key="ring"
       :points="ringPoints(ring)"
       fill="none"
-      :stroke="ring === MAX ? 'var(--ui-border)' : 'var(--ui-border-muted)'"
-      :stroke-width="ring === MAX ? 2 : 1"
+      :stroke="ring === max ? 'var(--ui-border)' : 'var(--ui-border-muted)'"
+      :stroke-width="ring === max ? 2 : 1"
     />
 
     <line
@@ -126,8 +126,6 @@
 </template>
 
 <script setup lang="ts">
-// * The radar the planner draws its stats on. Hand-rolled rather than charted by a library: decision 008 records why — axis orientation, an icon before each label, and a tween on value change are all absent from what was here before.
-
 type RadarAxis = {
   key: string;
   label: string;
@@ -143,17 +141,13 @@ const props = withDefaults(
     durationMs?: number;
     // * A second series in axis order (feature 015's required shape), tweened like the data.
     reference?: number[];
-    // * Per-axis thresholds in axis order, 0 or absent = none (feature 015): `failAt`
-    // * marks where the mission auto-fails, `xpAt` where the 2×XP bonus lands.
+    // * Per-axis thresholds in axis order, 0 meaning none (feature 015).
     failAt?: number[];
     xpAt?: number[];
   }>(),
   {
     max: 10,
-    durationMs: 200,
-    reference: undefined,
-    failAt: undefined,
-    xpAt: undefined
+    durationMs: 200
   }
 );
 
@@ -167,17 +161,15 @@ const ICON_RADIUS = 17;
 // * How far past the outer ring a disc's centre sits — enough clearance that the disc reads as separate from the pentagon rather than stuck to it.
 const ICON_OFFSET = 28;
 
-const MAX = computed(() => props.max);
+// * Every 2 points, per the design brief.
+const rings = computed(() => {
+  const values: number[] = [];
 
-// * Every 2 points, per the design brief — the array is the rule.
-const RINGS = computed(() => {
-  const rings: number[] = [];
-
-  for (let value = 2; value <= MAX.value; value += 2) {
-    rings.push(value);
+  for (let value = 2; value <= props.max; value += 2) {
+    values.push(value);
   }
 
-  return rings;
+  return values;
 });
 
 const uid = useId();
@@ -219,25 +211,25 @@ function vertex(index: number, radius: number) {
 function ringPoints(ring: number): string {
   return props.axes
     .map((_, index) => {
-      const point = vertex(index, (RADIUS * ring) / MAX.value);
+      const point = vertex(index, (RADIUS * ring) / props.max);
 
       return `${point.x},${point.y}`;
     })
     .join(' ');
 }
 
+function valuePoint(index: number, value: number) {
+  return vertex(index, (RADIUS * Math.min(value, props.max)) / props.max);
+}
+
 const dataVertices = computed(() =>
-  displayedValues.value.map((value, index) =>
-    vertex(index, (RADIUS * Math.min(value, MAX.value)) / MAX.value)
-  )
+  displayedValues.value.map((value, index) => valuePoint(index, value))
 );
 
 const dataPoints = computed(() =>
   dataVertices.value.map((point) => `${point.x},${point.y}`).join(' ')
 );
 
-// * The reference tweens exactly like the data series, so switching mission templates (or
-// * stepping a REQ) animates the required shape rather than snapping it.
 const referenceTargets = computed(() => props.reference ?? []);
 
 const displayedReference = useTweenedValues(referenceTargets, props.durationMs);
@@ -249,10 +241,7 @@ const referencePoints = computed(() => {
 
   return displayedReference.value
     .map((value, index) => {
-      const point = vertex(
-        index,
-        (RADIUS * Math.min(value, MAX.value)) / MAX.value
-      );
+      const point = valuePoint(index, value);
 
       return `${point.x},${point.y}`;
     })
@@ -269,8 +258,7 @@ const displayedXpAt = useTweenedValues(
   props.durationMs
 );
 
-// * A marker renders only while its target is set; its position follows the tween, so an
-// * edited threshold slides along its axis.
+// * A marker renders only while its target is set, and follows the tween, so an edited threshold slides along its axis.
 const thresholdMarkers = computed(() => {
   const markers: {
     kind: 'fail' | 'xp';
@@ -287,10 +275,7 @@ const thresholdMarkers = computed(() => {
     targets?.forEach((target, index) => {
       if (target > 0) {
         const value = displayed[index] ?? target;
-        const point = vertex(
-          index,
-          (RADIUS * Math.min(value, MAX.value)) / MAX.value
-        );
+        const point = valuePoint(index, value);
         const axis = props.axes[index];
         const tooltip =
           kind === 'fail'

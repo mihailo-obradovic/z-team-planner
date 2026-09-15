@@ -1,5 +1,6 @@
 <template>
-  <!-- * A chip comes and goes with the state fade, and its neighbours travel under the list move (annex §11, feature 024). The row is centre-justified, so an arriving chip shifts every other one; `chip-leaving` takes a departing chip out of flow so its neighbours travel while it fades rather than after, and `relative` is what it is then positioned against. A chip arriving or leaving only fades, in place: the travel belongs to the chips that stay. Each chip's span is the group's keyed element: `TooltipButton` renders a fragment (the tooltip's renderless root), which a transition cannot animate. -->
+  <!-- * A chip arriving or leaving only fades in place, while the chips that stay travel under the list move (annex §11, feature 024); `chip-leaving` takes a departing chip out of flow, positioned against the `relative` row. -->
+  <!-- * Each chip's span is the group's keyed element, because `TooltipButton` renders a fragment a transition cannot animate. -->
   <TransitionGroup
     v-if="powers"
     tag="div"
@@ -47,25 +48,25 @@
     </span>
 
     <span
-      v-for="(power, i) in upgradePowers"
-      :key="`trainable-${i}`"
+      v-for="(power, index) in upgradePowers"
+      :key="`trainable-${index}`"
       class="flex"
     >
       <TooltipButton
         :text="`${power.name}: ${power.description}`"
-        :icon="POWER_ICONS[i + 1]!"
-        :color="trainablePowerColor(i)"
-        :active="trainablePowerActive(i)"
-        :disabled="isTrainableDisabled(i)"
+        :icon="POWER_ICONS[index + 1]!"
+        :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
+        :active="trainablePowerActive(index)"
+        :disabled="isTrainableDisabled(index)"
         :confirmation="
           () =>
             confirmationText({
               kind: 'upgrade',
               name: power.name,
-              trained: trainablePowerActive(i)
+              trained: trainablePowerActive(index)
             })
         "
-        @click="toggleTrainablePower(heroId, (i + 1) as 1 | 2)"
+        @click="toggleTrainablePower(heroId, (index + 1) as 1 | 2)"
       />
     </span>
 
@@ -124,7 +125,11 @@
 <script setup lang="ts">
 import { confirmationText } from '@/utils/confirmationText';
 import { pinLeaving } from '@/utils/pinLeaving';
-import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
+import {
+  HERO_POWERS,
+  MAX_POWER_TRAININGS,
+  SPECIAL_POWER_MECHANICS
+} from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
@@ -165,36 +170,33 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
   if (!powers.value || ep8RecruitIds.value.has(props.heroId)) {
     return [];
   }
+
   return powers.value.slice(1);
 });
 
-function trainablePowerColor(i: number) {
-  return trainablePowerActive(i) ? 'primary' : 'neutral';
+function trainablePowerActive(index: number) {
+  return powerStates.value.trainableSelected === index + 1;
 }
 
-function trainablePowerActive(i: number) {
-  return powerStates.value.trainableSelected === i + 1;
-}
-
-function isTrainableDisabled(i: number) {
+function isTrainableDisabled(index: number) {
   return (
     !powerStates.value.startingRevealed ||
-    (powerStates.value.trainableSelected !== i + 1 && trainingsFull.value)
+    (powerStates.value.trainableSelected !== index + 1 && trainingsFull.value)
   );
 }
 
-const showFlambaeSupernova = computed(() => {
-  return (
-    props.heroId === 'flambae' && powerStates.value.trainableSelected === 2
-  );
-});
+const showFlambaeSupernova = computed(
+  () => props.heroId === 'flambae' && powerStates.value.trainableSelected === 2
+);
 
-const showCoupeEnPointe = computed(() => {
-  return props.heroId === 'coupe' && powerStates.value.startingRevealed;
-});
+const showCoupeEnPointe = computed(
+  () => props.heroId === 'coupe' && powerStates.value.startingRevealed
+);
 
 const coupeBonus = computed(() =>
-  powerStates.value.trainableSelected === 2 ? 3 : 1
+  powerStates.value.trainableSelected === 2
+    ? SPECIAL_POWER_MECHANICS.coupe.upgradeBonus
+    : SPECIAL_POWER_MECHANICS.coupe.baseBonus
 );
 
 const coupeTooltip = computed(() => {
@@ -203,15 +205,17 @@ const coupeTooltip = computed(() => {
   if (specialPowerState.value === 1) {
     return `En Pointe: ${bonus} Combat (active)`;
   }
+
   if (specialPowerState.value === 2) {
     return `En Pointe: ${bonus} Mobility (active)`;
   }
+
   return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
 });
 
-const showGolemSpreadThin = computed(() => {
-  return props.heroId === 'golem' && powerStates.value.trainableSelected === 1;
-});
+const showGolemSpreadThin = computed(
+  () => props.heroId === 'golem' && powerStates.value.trainableSelected === 1
+);
 
 // * Labelled by slot count rather than percentage: slots are what the player picks at the dispatch screen, the percentage is only the mechanism.
 const golemTooltip = computed(() => {
@@ -221,24 +225,28 @@ const golemTooltip = computed(() => {
     return 'Spread Thin: Click to fill 1–3 empty slots';
   }
 
-  return `Spread Thin: +${slots} slot${slots > 1 ? 's' : ''} (+${slots * 25}%)`;
+  const percent = slots * SPECIAL_POWER_MECHANICS.golem.percentPerSlot * 100;
+
+  return `Spread Thin: +${slots} slot${slots > 1 ? 's' : ''} (+${percent}%)`;
 });
 
 const coupeIcon = computed(() => {
   if (specialPowerState.value === 1) {
     return 'i-lucide-sword';
   }
+
   if (specialPowerState.value === 2) {
     return 'i-lucide-footprints';
   }
+
   return 'i-lucide-sparkles';
 });
 
-const sonarFormIcon = computed(() => {
-  return monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user';
-});
+const sonarFormIcon = computed(() =>
+  monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user'
+);
 
-const sonarFormTooltip = computed(() => {
-  return monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form';
-});
+const sonarFormTooltip = computed(() =>
+  monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form'
+);
 </script>
