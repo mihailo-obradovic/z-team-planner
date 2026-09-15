@@ -1,7 +1,5 @@
 # Feature: Hero data and domain model
 
-Retro-documented (brownfield): written from the shipped code, verified against `context/game-mechanics.md`.
-
 ## Status
 
 Active
@@ -34,7 +32,7 @@ In scope:
 - The `HeroId` union (11 ids) and `Hero`/`HeroStats` shapes; `STAT_NAMES` order (combat, intellect, vigor, charisma, mobility).
 - Starting stats in the `HEROES` constant, and `HERO_STARTING_STATS` keyed by hero id.
 - `HERO_POWERS`: a starting power plus the two trainable options, or a starting power alone for a hero who arrived in episode 8 (Blonde Blazer). `HeroPowerSet` is the union of those two shapes; some trainables override the starting power.
-- `SPECIAL_POWER_MECHANICS` (Flambae supernova, Coupé en-pointe), `HERO_FLIGHT` + `HERO_FLIGHT_CAPABILITY` (innate / conditional-power / trainable), `FLIGHT_SCHOOL_HEROES`.
+- `SPECIAL_POWER_MECHANICS` (Supernova, En Pointe, Spread Thin), `HERO_FLIGHT` + `HERO_FLIGHT_CAPABILITY` (innate / conditional-power / trainable), `FLIGHT_SCHOOL_HEROES`.
 - `BASE_SYNERGY_PAIRS` (4) and `CONDITIONAL_SYNERGY_PAIRS` (4, keyed `<ep3Cut>-cut-<ep4Hire>-hired`).
 - Episode options (`EP3_CUT_OPTIONS`: coupe/sonar; `EP4_HIRE_OPTIONS`: phenomaman/waterboy), `FIXED_LEVEL_HEROES` (phenomaman 12, blonde-blazer 20).
 - Budget constants: `MAX_STAT_VALUE` 10, `MAX_LEVEL_UPS` 9, `MAX_BONUS_POINTS` 4, `MAX_BONUS_LEVEL_PER_HERO` 4, `MAX_POWER_TRAININGS` 7, `MAX_FLIGHT_TRAININGS` 2.
@@ -47,8 +45,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- `HEROES` is the same 11 heroes with the same stats on every load; it is imported, not fetched (feature 006 retired the Nitro route and the `server/` directory with it).
-- All other domain data is imported directly from `web/types/hero.ts` — no request involved.
+- `HEROES` is the same 11 heroes with the same stats on every load; it and every other domain constant are imported from `web/types/hero.ts` — no request involved.
 
 ## Roles And Access
 
@@ -69,6 +66,7 @@ Not role-specific.
 - Data is transcribed from `context/game-mechanics.md`; the game is the upstream source of truth. Never change data from memory — when in-game observation disagrees, the reference is corrected first, the data with it.
 - Every hero has exactly 3 power slots; only one trainable can ever be selected (enforced by feature 003, encoded in the types here).
 - Synergy pairing: 4 base pairs always; exactly one conditional pair per (ep3Cut, ep4Hire) combination.
+- `MAX_LEVEL_UPS = 9` and `MAX_POWER_TRAININGS = 7` are playthrough-derived where the reference is loose ("9 bonus points … for each level up" is ambiguous; 7 trainings is observed, not written). In-game observation that contradicts either corrects the reference first, then the constant.
 
 ## Edge Cases
 
@@ -79,16 +77,14 @@ Not role-specific.
 
 - **Protected area — hero ids and game data**: `HeroId` values are persisted in saved/shared builds (feature 001); renaming or removing an id breaks builds in the wild. Stats, powers, and pairs change only to track the game or its reference.
 - `STAT_NAMES` order is load-bearing: build serialization stores stats as arrays in this order (feature 001).
-- The heroes endpoint is static and side-effect-free.
 
 ## Error Handling
 
-- None to speak of: the endpoint cannot fail on input (it takes none), and the constants are compile-time.
+- None: the constants are compile-time.
 
 ## Entry Points
 
-- `web/types/hero.ts`: the roster (`HEROES`), starting stats (`HERO_STARTING_STATS`), and every domain constant.
-- `web/types/hero.ts`: every other domain constant and type.
+- `web/types/hero.ts`: the roster (`HEROES`), starting stats (`HERO_STARTING_STATS`), and every other domain constant and type.
 
 ## Dependencies
 
@@ -96,17 +92,14 @@ Not role-specific.
 
 ## Open Questions
 
-Deliberate long-horizon items kept past approval (brownfield exception, `workflows/brownfield.md`):
-
-- `MAX_LEVEL_UPS = 9` and `MAX_POWER_TRAININGS = 7` encode playthrough-derived budgets the reference states loosely ("9 bonus points … for each level up" is ambiguous; 7 trainings is observed, not written). If in-game observation contradicts either, correct the reference first, then the constant.
-
 ## Tests
 
-- Honest gap: no automated test pins the stats to the reference table. Wanted: a unit test comparing `HEROES` against the documented table (the check exists as a one-off script run during this documentation pass). Feature 005 adds `test/unit/game-data.test.ts`, which compares the committed server fixture against a fresh export of this constant.
+- `test/unit/game-data.test.ts` (feature 005): the committed server fixture equals a fresh export of these constants.
+- No automated test pins the stats to the reference table itself; the comparison below was scripted once.
 
 ## Verification
 
-Retro-documented from code; all 11 heroes' starting stats programmatically compared against the `context/game-mechanics.md` table — exact match, no extra ids (2026-08-21). Power names/descriptions and synergy pairs spot-checked against the reference's Hero Training and Synergy sections. oxlint and vue-tsc pass.
+All 11 heroes' starting stats programmatically compared against the `context/game-mechanics.md` table — exact match, no extra ids. Power names, descriptions and synergy pairs spot-checked against the reference's Hero Training and Synergy sections. oxlint and vue-tsc pass.
 
 ## Agent Change Rules
 

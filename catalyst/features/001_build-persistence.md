@@ -1,7 +1,5 @@
 # Feature: Build persistence and sharing
 
-Retro-documented (brownfield): written from the shipped code and observed behavior, not from a plan.
-
 ## Status
 
 Active
@@ -12,7 +10,7 @@ Medium
 
 ## Purpose
 
-A build is worthless if it evaporates on refresh or cannot be shown to another player. This feature keeps builds across sessions on the same browser (localStorage, no accounts by design) and makes any build shareable as a URL that reproduces it exactly on another device.
+A build is worthless if it evaporates on refresh or cannot be shown to another player. This feature keeps builds across sessions on the same browser (localStorage, no account needed) and makes any build shareable as a URL that reproduces it exactly on another device.
 
 ## Inputs
 
@@ -46,7 +44,6 @@ Non-goals:
 
 - Server-side storage and accounts — features 004 and 005. This document owns the browser's copy of a build, and every behavior in it works with no account.
 - Cross-browser/device sync other than by sharing a URL; signing in adds that (feature 008) without changing anything here.
-- Migration of hypothetical future format versions; `v: 1` is the only version, and an unknown version is ignored, not migrated.
 
 ## User / System Behavior
 
@@ -85,12 +82,12 @@ Not role-specific.
 
 - Corrupt localStorage JSON → silently ignored, defaults used (never a crash).
 - localStorage quota errors on write → silently ignored (state lives on in memory).
-- A serialized build referencing an unknown hero id — or a valid id where the field does not apply (e.g. flight for a non-flying hero) — deserializes without validation; the extra entries are carried in state but render nothing (verified live with `fl:["golem"]`).
+- A serialized build referencing an unknown hero id — or a valid id where the field does not apply (e.g. flight for a non-flying hero) — deserializes without validation; the extra entries are carried in state but render nothing.
 - Clipboard write failure (permissions, insecure context) → error toast, no crash.
 
 ## Invariants
 
-- **The `SerializedBuild` v1 format is a protected area**: its keys, their meanings, the `STAT_NAMES` order, and hero ids (`web/types/hero.ts`) change only deliberately, together with the client gate and the server schema. Before the first public release no build exists in the wild, so a change needs no new `v` and earlier shapes are not decoded (Domain Decisions, `project-summary.md`). From release on, a breaking change requires a new `v` plus decode support for v1.
+- **The `SerializedBuild` v1 format is a protected area**: its keys, their meanings, the `STAT_NAMES` order, and hero ids (`web/types/hero.ts`) change only deliberately, together with the client gate and the server schema. Until the first public release a change needs no new `v` and earlier shapes are not decoded (Domain Decisions, `project-summary.md`).
 - serialize → deserialize round-trips to identical planner state.
 - Deserializing `{"v":1}` resets every hero to defaults (empty maps overwrite, never merge).
 - All persistence is client-only; the server renders nothing build-specific.
@@ -102,7 +99,7 @@ Not role-specific.
 
 ## Entry Points
 
-- `web/utils/buildDocument.ts`: the format and its omission rules — the protected part. `buildUrlCodec.ts` does `?build=`; `useLocalBuilds`/`useBuildMode`/`useInitialBuild` drive it (decision 006).
+- `web/utils/buildDocument.ts`: the format and its omission rules — the protected part. `buildUrlCodec.ts` does `?build=`; `useLocalBuilds`/`useBuildMode`/`useInitialBuild` drive it.
 - `web/types/build.ts`: the serialization contract (`SerializedBuild`, `SavedBuild`).
 - `web/components/_shared/BuildManager.vue`: all user-facing controls and dialogs.
 - `web/app.vue`: calls `initialize()` and `setupBeforeUnload()` on mount.
@@ -114,23 +111,15 @@ Not role-specific.
 
 ## Open Questions
 
-Deliberate long-horizon items kept past approval (brownfield exception, `workflows/brownfield.md`):
-
-- No format versioning/migration story beyond "reject non-v1" — acceptable until a breaking change is actually wanted.
-
 ## Tests
 
-- `test/nuxt/build-persistence.test.ts`: `initialize()` falls back to the active build on a garbage or unknown-version `?build=` param (regression for the invalid-param fallback fix); a valid param enters shared mode without touching local builds.
-
-Honest gap — wanted but not yet written:
-
-- `test/unit/` serialization round-trip: default state → `{"v":1}`; each field family serializes and round-trips; unknown version and malformed input return `null`.
-- `test/unit/` URL codec: base64url encode/decode round-trip, padding/charset edge cases.
-- Build CRUD and shared-mode behavior are covered by the live browser walk per the stack's testing rule until component tests exist.
+- `test/nuxt/build-persistence.test.ts`: `initialize()` falls back to the active build on a garbage or unknown-version `?build=` param; a valid param enters shared mode without touching local builds.
+- `test/nuxt/build-document.test.ts`: what the format omits, how each group is shaped, the round trip, and the URL codec's alphabet and padding. `test/unit/isSerializedBuild.test.ts`: the client gate.
+- Build CRUD and shared-mode behavior are covered by the live browser walk per the stack's testing rule.
 
 ## Verification
 
-Retro-documented from code review of the entry points above, then the Examples table walked live in Chrome (dev server, 2026-08-21): shared-mode open of `{"v":1,"fl":["flambae"],"ec":"coupe"}` restored flight + episode cut with localStorage untouched; "Save as mine" persisted byte-identical data (round-trip proven), stripped the URL param, and exited shared mode; reload restored the active build; a stat edit raised the "Unsaved changes" badge and the beforeunload prompt fired on navigation away; garbage and `v:2` params were rejected without error — surfacing the fallback bug fixed the same day (`initialize()` now falls back to the active build and strips the dead param; regression tests in `test/nuxt/build-persistence.test.ts` fail on the old code and pass on the fix). oxlint, vue-tsc, and vitest pass; the remaining coverage gap is listed under Tests.
+The Examples table walked live in Chrome: shared-mode open restored flight and episode cut with localStorage untouched; "Save as mine" persisted byte-identical data, stripped the URL param and exited shared mode; reload restored the active build; a stat edit raised the unsaved-changes badge and the beforeunload prompt; garbage and `v:2` params were rejected without error. Format omission, shaping, round trip and the URL codec are pinned by test. oxlint, vue-tsc and vitest pass.
 
 ## Agent Change Rules
 

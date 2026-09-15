@@ -10,9 +10,7 @@ Easy
 
 ## Purpose
 
-The app has no `error.vue`, so every fatal error renders **Nuxt's** default error page. Feature 007's `/b/{id}` contract is satisfied by it — it is a page, not a toast, and it never says the build existed — but it is the framework's page: Nuxt's type, Nuxt's palette, and a heading that repeats its own body line. It is also the page an unknown route gets, where the share-link wording feature 006 supplies would be wrong.
-
-This feature gives the app its own fatal-error page: one screen, in the project's design system, that says what went wrong at the level the caller specified and offers exactly one way out.
+The app's own fatal-error page, replacing Nuxt's default: one screen, in the project's design system, that says what went wrong at the level the caller specified and offers exactly one way out. It serves both a dead share link (feature 007, with the wording feature 006 supplies) and an unknown route, where that wording would be wrong.
 
 ## Inputs
 
@@ -109,19 +107,13 @@ The page is itself the error path, so it has none of its own: it takes no input 
 
 ## Open Questions
 
-_None._
-
 ## Tests
 
 - `test/nuxt/error-page.test.ts`: renders the caller's opted-in heading on a `404`; falls back to "Page not found" when there is none; ignores `statusMessage` so an unmatched route's path cannot reach the heading; renders the generic wording for a `500`; renders no code and the generic wording when `statusCode` is absent; the heading and the supporting line are never the same string; the action calls `clearError` with a redirect to `/`.
 
 ## Verification
 
-`vitest --run`: 144 passing, six of them `test/nuxt/error-page.test.ts` — the opted-in heading, both fallbacks, the ignored `statusMessage`, the no-status case, heading-never-equals-supporting-line, and `clearError({ redirect: '/' })`. oxlint, `nuxt typecheck` and oxfmt clean.
-
-In a browser on 2026-08-29 against a **production build** (served on :3001) and the real API: `/b/<unknown id>` gave `404` / "Build not found" with the URL still on the share link; `/nonsense` gave `404` / "Page not found" with `/nonsense` nowhere on the page; the card measured 588px against the annex's 65ch; **Back to the planner** landed on `/` with the planner mounted.
-
-Three defects only the walk could catch: `panel` carries no background (the paper surface is `bg-default`, without which the ink heading sat unreadable on the dark ground); the `title` role's uppercase is a separate class, not part of the token; and Nuxt sets `statusMessage` itself on an unmatched route as `Page not found: <path>`, which is why the heading travels in `data`. Remaining risk: the `500` and no-status branches are proven by test only — nothing in the app raises them today.
+By test (`test/nuxt/error-page.test.ts`): the opted-in heading, both fallbacks, the ignored `statusMessage`, the no-status case, heading-never-equals-supporting-line, and `clearError({ redirect: '/' })`. oxlint, `nuxt typecheck` and oxfmt clean. In a browser against a production build and the real API: `/b/<unknown id>` gave `404` / "Build not found" with the URL still on the share link; `/nonsense` gave `404` / "Page not found" with `/nonsense` nowhere on the page; **Back to the planner** landed on `/` with the planner mounted. Remaining risk: the `500` and no-status branches are proven by test only — nothing in the app raises them today.
 
 ## Agent Change Rules
 

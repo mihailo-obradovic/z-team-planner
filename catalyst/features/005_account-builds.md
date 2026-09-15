@@ -44,7 +44,6 @@ In scope:
 Non-goals:
 
 - Any query into a build's contents (search by hero, by power) — the document is opaque to the database.
-- Server-side migration of stored format versions — the client decodes every version it supports.
 - Anonymous server-side saves.
 - The public read, the share link and its page — feature 007.
 - Everything a player sees: the account list, the save paths, the conflict and name dialogs — feature 008.
@@ -134,9 +133,7 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 
 ## Verification
 
-Ten steps on `feature/005-account-builds`, each verified before its commit; the commit messages carry what each proved. All verbs exit 0: **251 API tests** against real PostgreSQL, **114 web tests**. Some forty mutations were run against the rules; six survived as real gaps, now closed. The endpoints were walked live against the Neon dev branch and the Auth emulator.
-
-Remaining risks: no sign-in through Google itself, and nothing is deployed. Step 9's public read and its limiter are now feature 007, which carries that evidence.
+All verbs exit 0; the API suite runs against real PostgreSQL and the Examples table is covered row by row. Some forty mutations were run against the validation rules; the six that survived became tests. The endpoints were walked live against the Neon dev branch and the Auth emulator. Remaining risk: no sign-in through Google itself. The public read is feature 007's evidence.
 
 ## Agent Change Rules
 
