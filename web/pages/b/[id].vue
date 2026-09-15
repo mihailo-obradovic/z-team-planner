@@ -13,19 +13,19 @@
     </div>
   </div>
 
-  <!-- * `min-h-full` against the scrolling main, `mt-auto` on the line: bottom of the viewport while the build is short, after it once it is not (feature 010). -->
-  <div v-else-if="build" class="flex min-h-full flex-col gap-4 p-4">
+  <!-- * `min-h-full` with `mt-auto` on the line keeps it at the bottom until the build is taller (feature 010). -->
+  <div v-else-if="sharedBuild" class="flex min-h-full flex-col gap-4 p-4">
     <div
       class="flex flex-col items-start justify-between gap-3 bg-default p-4 panel sm:flex-row sm:items-center"
     >
       <div class="flex flex-col gap-1">
-        <!-- * `text-muted` (ink-soft), not the `secondary-300` this once carried: that pair is 7.68:1 on the ground and 1.78:1 on paper, and this band is paper (annex §14.1). -->
+        <!-- ! `text-muted`, not `secondary-300`: this band is paper, where `secondary-300` measures 1.78:1 (annex §14.1). -->
         <span class="font-heading text-label text-muted uppercase">
           Shared build
         </span>
 
         <span class="text-lg font-semibold text-highlighted">{{
-          build.name
+          sharedBuild.name
         }}</span>
       </div>
 
@@ -39,7 +39,7 @@
       </u-button>
     </div>
 
-    <!-- * Read-only at one boundary rather than a disabled prop on forty controls: `inert` takes the whole region out of the tab order and blocks pointer and keyboard input. It does not stop a scripted `.click()`, which still reaches a handler — but the guarantee that matters is structural: this page has no write path to the owner's build, only "Save a copy", which creates a new one. -->
+    <!-- * Read-only at one boundary rather than a disabled prop on forty controls. `inert` does not stop a scripted `.click()`; the real guarantee is that this page has no write path to the owner's build. -->
     <div
       class="pointer-events-none select-none"
       inert
@@ -54,7 +54,7 @@
           :key="pair.topId"
           class="flex w-full max-w-92 flex-col gap-2"
         >
-          <HeroCard :hero-id="pair.top.id as HeroId" />
+          <HeroCard :hero-id="pair.top.id" />
 
           <u-separator color="secondary" decorative>
             <u-badge color="warning" variant="outline" icon="i-lucide-link-2">
@@ -62,7 +62,7 @@
             </u-badge>
           </u-separator>
 
-          <HeroCard :hero-id="pair.bottom.id as HeroId" />
+          <HeroCard :hero-id="pair.bottom.id" />
         </div>
       </div>
     </div>
@@ -77,15 +77,13 @@ import HeroCard from '@/components/HeroCard.vue';
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 import { useFetchSharedBuild } from '@/services/queries/useSharedQueries';
 
-import type { HeroId } from '@/types/hero';
-
 const route = useRoute();
 const toast = useToast();
 
 const id = computed(() => route.params.id as string);
 
 // * A 404 becomes the error page rather than a toast — the central policy routes it that way for `/b/…` because a dead share link is a page-level outcome (feature 007).
-const { data: build, isPending } = useFetchSharedBuild(id);
+const { data: sharedBuild, isPending } = useFetchSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 const { synergyPairColumns } = useHeroPlanner();
@@ -99,7 +97,7 @@ const { mutate: createBuild, isLoading: isSaving } = useCreateBuild({
 });
 
 watch(
-  build,
+  sharedBuild,
   async (next) => {
     if (next) {
       await loadSharedBuild(next.data);
@@ -109,24 +107,26 @@ watch(
 );
 
 function handleSaveCopy() {
-  if (!build.value) {
+  if (!sharedBuild.value) {
     return;
   }
 
   // * Signed in it becomes an account build; signed out it falls back to feature 001's local save, so the link is useful without an account (feature 007).
   if (isSignedIn.value) {
-    createBuild({ name: build.value.name, data: build.value.data });
+    createBuild({ name: sharedBuild.value.name, data: sharedBuild.value.data });
 
     return;
   }
 
-  saveAsNewLocalBuild(build.value.name);
+  saveAsNewLocalBuild(sharedBuild.value.name);
   toast.add({ title: 'Saved to this browser', color: 'success' });
 }
 
 useSeoMeta({
   title: () =>
-    build.value ? `${build.value.name} — Z-Team Planner` : 'Z-Team Planner',
+    sharedBuild.value
+      ? `${sharedBuild.value.name} — Z-Team Planner`
+      : 'Z-Team Planner',
   // * Unlisted-by-id is the only access control on a share link, so it must never be indexed.
   robots: 'noindex, nofollow'
 });
