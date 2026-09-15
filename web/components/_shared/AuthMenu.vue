@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
-import type { HeaderTier } from '@/types/ui';
+import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
   tier: 'labelled'

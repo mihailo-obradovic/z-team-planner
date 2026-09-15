@@ -99,7 +99,7 @@ import {
 } from '@/services/queries/useBuildQueries';
 
 import type { DropdownMenuItem } from '@nuxt/ui';
-import type { HeaderTier } from '@/types/ui';
+import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(
   defineProps<{
