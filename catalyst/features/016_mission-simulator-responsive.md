@@ -10,14 +10,14 @@ Medium
 
 ## Purpose
 
-Feature 015 designed the mission simulator at desktop width and named the responsive layout a non-goal. This is that non-goal: the ladder the tab reflows through, from the desktop design down to a 320px viewport, with no horizontal scrolling and nothing wider than the screen at any width.
+The ladder the mission simulator tab reflows through, from feature 015's desktop design down to a 320px viewport, with no horizontal scrolling and nothing wider than the screen at any width.
 
 ## Inputs
 
-| Input                 | Type     | Source                                                     | Constraints                                                                                                                                                                        |
-| --------------------- | -------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| tab content width     | layout   | `@container` on the mission tab wrapper                    | the wrapper's **content** box: `p-4` is outside it and the scrolling main takes 10px more when its scrollbar is up, so a threshold fires 32–42px below the viewport width it names |
-| condition-column view | UI event | the templates panel's `Requirements` / `Conditions` toggle | rendered below 28.5rem only                                                                                                                                                        |
+| Input                 | Type     | Source                                                     | Constraints                                                                                                                                          |
+| --------------------- | -------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| tab content width     | layout   | `@container` on the mission tab wrapper                    | the wrapper's **content** box, so a threshold fires 32–42px below the viewport width it names (padding, plus the scrolling main's scrollbar when up) |
+| condition-column view | UI event | the templates panel's `Requirements` / `Conditions` toggle | rendered below 28.5rem only                                                                                                                          |
 
 ## Outputs And Side Effects
 
@@ -43,23 +43,19 @@ Non-goals:
 
 ## User / System Behavior
 
-Container queries on the tab's own wrapper drive everything — not viewport breakpoints — so the rules survive any future page chrome. Each threshold is a subtraction from feature 015's layout, which is the widest tier and is reached unchanged. Thresholds are container widths; the viewport figures are approximations, because the scrolling main's scrollbar comes and goes with content height. The measurements behind each number are in annex §14.3.
+Container queries on the tab's own wrapper drive everything — not viewport breakpoints — so the rules survive any future page chrome. Each threshold is a subtraction from feature 015's layout, the widest tier. Thresholds are container widths; the viewport figures are approximations. The measurements behind each number are in annex §14.3.
 
 **77rem — the top row splits.** Templates and the requirements check take the first row, the team the second, the math the third. All three fill the tab, capped at the width feature 015's three panels occupy above the threshold so nothing jumps across it. The math panel splits into two columns: the per-stat rows left, the success calculation and the special conditions right.
 
-77rem rather than the 78 a 1280px viewport suggests: there the queried box is 1238 or 1248 depending on the scrollbar, and 78rem would put the widest tier's own width inside the split tier.
-
-The first row's tracks are `minmax(454px, 1fr) 1fr`, not two equal `1fr`: below a ~876 container half of it stops holding the templates panel's four columns. Equal while there is room, floored at the templates panel's width when there is not, with the requirements check giving up width first down to the 316 it needs.
+77rem rather than 78: at a 1280px viewport the queried box is 1238 or 1248 depending on the scrollbar, and 78rem would put the widest tier's own width inside the split tier. The first row's tracks are `minmax(454px, 1fr) 1fr`: equal while there is room, floored at the templates panel's width when there is not, with the requirements check giving up width first down to the 316 it needs.
 
 **49.5rem (≈834px viewport) — one column.** Every panel takes a full row, in the order templates, requirements, team, math. The threshold is where the first row's two tracks and their gap (454 + 316 + 16 = 786) stop fitting, not a round number.
 
-The math panel does **not** revert here: below 77rem it spans the whole tab whether the tab is one column or three, so its split outlives the layout's. Its own bound is **a 768px viewport** (a 726px container) — a judgement about where the split still reads well, since two columns measurably hold to a 510px panel.
+The math panel does **not** revert here: below 77rem it spans the whole tab whatever the column count, so its split outlives the layout's. Its own bound is **a 768px viewport** (a 726px container) — a judgement about where the split still reads well.
 
-**35rem (≈602px viewport) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — each on its own scrim, always visible rather than hover-revealed: this width is where phones live, and a control that only appeared on hover (feature 018) would be invisible to them regardless of what a resized desktop window happens to report. The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
+**35rem (≈602px viewport) — the team panel alone,** because its four slots stop fitting before any other panel breaks. The slots turn fluid under their existing width, then flip anatomy: the control row leaves the top of the card and its three controls overlay the portrait — remove top-right, the two move arrows in the bottom corners, the slot index top-left — each on its own scrim, always visible, never hover-revealed (this width is where phones live). The hero name drops to the portrait's accessible name, the empty slot keeps only its plus glyph, and the copy and illusion markers become badges on the portrait.
 
-**28.5rem (≈498px viewport) — the templates panel.** It shows one condition column set at a time behind a `Requirements` / `Conditions` toggle. The row goes **compact** rather than dropping its wordmarks: the label steps down a type size and its icon with it, the stepper tightens its gaps and narrows its value slot, and the column gap halves. The **+/- buttons do not shrink** — they are on the 24 × 24 touch floor (annex §14.2), so the space comes from everything around them. Stat names stay on screen at every width worth designing for, an iPhone SE included.
-
-Only the Conditions view runs out of room even so, and only below **20rem** — past every width worth designing for, but short of the 320px reflow floor, where the icon carries the stat alone. The Requirements view never reaches it: one stepper leaves a label room at every width measured. Each stat row is `1fr` for the icon-and-wordmark cell and `auto` for the rest, so the label sits left and the steppers group right, as at the widest tier.
+**28.5rem (≈498px viewport) — the templates panel.** It shows one condition column set at a time behind a `Requirements` / `Conditions` toggle. The row goes **compact** rather than dropping its wordmarks: the label and its icon step down a type size, the stepper tightens its gaps and narrows its value slot, and the column gap halves. The **+/- buttons do not shrink** — they are on the 24 × 24 touch floor (annex §14.2). Only the Conditions view runs out of room even so, and only below **20rem**, where the icon carries the stat alone; the Requirements view never reaches it. Each stat row is `1fr` for the icon-and-wordmark cell and `auto` for the rest, so the label sits left and the steppers group right.
 
 The requirements panel is untouched here — its legend fits at 320 unaided. Its radar frame instead carries `max-w-full` at every width: the frame is the panel's design width exactly, so it is the first thing to run out of room and gives up width rather than bleed over the panel's padding, below ~348px rather than at a threshold.
 
@@ -90,13 +86,13 @@ Not role-specific.
 - Above 28.5rem the toggle is not rendered at all — nothing is hidden at that width.
 - Disabled slot controls keep rendering in the overlay anatomy, dimmed rather than absent.
 - Every control keeps the 24 × 24 touch-target floor (annex §14.2) at every tier. Where a row gives up width, the floor fixes which parts give: gaps, value slots and type sizes, never the controls.
-- The team panel's Copy marker is a common symbol (feature 018): its label carries the copy's +25% for assistive technology, but it gets no hint and no tap confirmation, because the value it names is the user's own entry in the templates panel a few centimetres away.
+- The team panel's Copy marker is a common symbol (feature 018): its label carries the copy's +25% for assistive technology, but it gets no hint and no tap confirmation.
 
 ## Edge Cases
 
-- The team's threshold (35rem) deliberately does not coincide with the templates panel's (28.5rem): four slots carrying the classic control row need a 552px viewport at best, so a shared one would leave a band where they wrap out of their single row. Each panel changes where its own constraint bites.
+- The team's threshold (35rem) deliberately does not coincide with the templates panel's (28.5rem): each panel changes where its own constraint bites, and a shared threshold would leave a band where the four slots wrap out of their single row.
 - Below 35rem the overlay controls sit on a ~52px portrait: on the touch floor, not above it, the same trade the hero card makes.
-- The templates panel (454px) is the widest and the only one with a hard floor in the two-column row. It has no honest `min-content` — its inner grid overflows rather than pushing back — so the floor must be that measured width.
+- The templates panel has no honest `min-content` — its inner grid overflows rather than pushing back — so its floor is a measured width, 454px.
 
 ## Invariants
 
@@ -123,11 +119,9 @@ Not applicable — layout only, no failure modes of its own.
 - Feature 015, whose layout is this feature's widest tier and whose panels it reflows.
 - Feature 014's `SynergyPairCard`, the precedent for container queries over viewport breakpoints here.
 - Design-system annex §14.2 and §14.3.
-- Feature 018 (hints and confirmations): the Copy marker's common-symbol status, and the reason this feature's width tiers keep their behaviour rather than switching to input-capability detection — they decide by room, not by device.
+- Feature 018 (hints and confirmations): the Copy marker's common-symbol status. Width tiers decide by room, not by device, and are not input-capability detection.
 
 ## Open Questions
-
-_None — resolved in the grilling session of 2026-08-31._
 
 ## Tests
 
@@ -136,13 +130,7 @@ _None — resolved in the grilling session of 2026-08-31._
 
 ## Verification
 
-Measured 2026-08-31, dev server, Chromium.
-
-**Six real viewports** — 1280 / 1000 / 819 / 600 / 490 / 320: `scrollWidth === clientWidth` on the tab container and the document, nothing wider than the viewport, nothing inside a panel past that panel's border box, and layout per tier as the Examples state.
-
-**Container sweep, 483 widths × both toggle views** — 1240 down to 276 in 2px steps: no panel overflow, no grid wider than its container, no label cell squeezed under its own text, no control under 24 × 24. Boundaries: the math two columns at a 726 container and one at 725; the Conditions wordmarks present at 320, gone at 318.
-
-Both probes are needed — one against the viewport misses a panel clipping its own content, one against the border box misses a `1fr` cell crushing its text. The offset ran 32px without the scrolling main's scrollbar and 42 with it, which is why 77rem carries margin.
+Measured in Chromium against the dev server. **Six real viewports** — 1280 / 1000 / 819 / 600 / 490 / 320: `scrollWidth === clientWidth` on the tab container and the document, nothing wider than the viewport, nothing inside a panel past that panel's border box, and layout per tier as the Examples state. **A container sweep** from 1240 down to 276 in 2px steps, both toggle views: no panel overflow, no grid wider than its container, no label cell squeezed under its own text, no control under 24 × 24; the math panel splits at a 726 container and not at 725, the Conditions wordmarks hold at 320 and go at 318. Both probes are needed — one against the viewport misses a panel clipping its own content, one against the border box misses a `1fr` cell crushing its text.
 
 ## Agent Change Rules
 

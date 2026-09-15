@@ -45,16 +45,16 @@ Non-goals:
 
 - Consent, or anything gated on acknowledgement. Both banners are informational; the planner is fully usable behind them.
 - Cookies of any kind. Acknowledgement lives in `localStorage`, which keeps feature 010's "the app sets no cookies" true.
-- Per-episode or per-hero spoiler gating. `showEp8Recruits` already defaults off; this feature neither extends nor replaces that.
+- Per-episode or per-hero spoiler gating. `showEp8Recruits` already defaults off.
 - Re-prompting when the app later gains content for newer episodes. Acknowledgement is unversioned.
 - Translation. The app has no i18n layer and this feature does not add one.
 
 ## User / System Behavior
 
 - On a first visit, both banners are present, in one column at the bottom of the app shell: the spoiler warning above, the storage notice below it. They sit in the layout rather than over it — nothing is covered, and the page's scroll area shrinks by their height.
-- **They arrive by sliding up** from below the shell's edge and fading in, the region's height expanding over the same `--duration-slow` and `ease-out`, so the scrolling main is squeezed in one motion rather than jumping first and being decorated after. A returning visitor with both keys set has no region at all and nothing animates.
+- **They arrive by sliding up** from below the shell's edge and fading in, the region's height expanding over the same `--duration-slow` and `ease-out`, so the scrolling main is squeezed in one motion. A returning visitor with both keys set has no region at all and nothing animates.
 - Each banner carries its copy and one confirm button. Confirming removes that banner and persists its key; the other banner stays. When one remains, it takes the bottom of the shell on its own.
-- **They leave by sliding down** and fading, the height collapsing over the same duration and `ease-in`. Sharing one duration is deliberate: the region is anchored to the bottom of a viewport-height column, and a height that snapped shut would jolt the remaining banner — the jolt this exists to remove.
+- **They leave by sliding down** and fading, the height collapsing over the same duration and `ease-in` — a height that snapped shut would jolt the remaining banner.
 - **A leaving banner is sealed while it leaves**: `inert` and `aria-hidden` for its exit, so neither keyboard nor assistive technology reaches a notice just dismissed. Focus moves to the remaining banner's confirm button, or is released when none is left.
 - A returning visitor with both keys set sees no banner, and no banner markup renders on the way to that state — nothing flashes on the first frame.
 - The spoiler banner's copy names roster changes first — that heroes are cut, hired, and joined later than the visitor may have played — then powers and upgrades. It warns; it never names which hero.
@@ -88,13 +88,13 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 - Acknowledgement is per banner; one key never stands for the other.
 - The spoiler warning never spoils: no hero name, no episode outcome, no power name in its copy.
 - The storage notice states only what the app actually does, and stays consistent with features 001 and 004; on a conflict those documents win and this copy is corrected.
-- No cookie is set for either banner, now or later. A future need for one is a decision record, not an edit here.
+- No cookie is set for either banner; a future need for one is a decision record.
 - Both keys are UI flags, not personal data, and never serialized.
 
 ## Edge Cases
 
 - Prerender: `/` is prerendered and `localStorage` does not exist at build time, so the region is client-only and the prerendered HTML carries none.
-- A visitor who acknowledges on one device or browser is warned again on another. Per-browser is the contract; there is no server-side record and signing in does not create one.
+- A visitor who acknowledges on one device or browser is warned again on another; there is no server-side record and signing in does not create one.
 - Clearing site data restores both banners, along with the local builds they describe.
 - **Both confirmed in quick succession**, the second while the first is still leaving: both exits run, and the region collapses to zero once rather than in two steps.
 - **A failed write** still animates the exit; the animation follows the state, which already returns the banner next load.
@@ -107,14 +107,12 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 - Dismissing one never leaves focus on the document while another banner is up.
 - Neither key ever appears in a serialized build, a share link, or an account payload.
 - The spoiler banner's copy contains no hero name and no episode outcome.
-- The app sets no cookies (feature 010's promise stays true).
 - The banner region never overlaps app chrome: shown or hidden, the header, the mobile build bar, and the page's own scroll area stay intact.
 
 ## Error Handling
 
 - Unreadable storage is not an error state: the banner shows, and the visitor can still acknowledge it for the session.
 - A failed write is swallowed, matching `useLocalStorageRef`. The banner returns on the next load, which is the safe direction for a warning.
-- Neither banner has a network path, so neither has a failure mode that needs a toast.
 
 ## Entry Points
 
@@ -133,18 +131,12 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Tests
 
-- `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; the storage notice alone links to `/privacy`; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`. Added: focus moves to the remaining banner's confirm button, and is released when none remains; confirming twice writes the key once. The `inert`/`aria-hidden` seal is **not** asserted in a component test — happy-dom runs no CSS transition, so the leaving element is gone by the next tick and the assertion would iterate an empty list and pass while proving nothing (the limit feature 013 records for its borders). It is verified on the live walk.
+- `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; the storage notice alone links to `/privacy`; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`; focus moves to the remaining banner's confirm button, and is released when none remains; confirming twice writes the key once. The `inert`/`aria-hidden` seal is **not** asserted in a component test — happy-dom runs no CSS transition, so the leaving element is gone by the next tick and the assertion would pass while proving nothing. It is verified on the live walk.
 - Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout; plus the enter and exit at both widths, and a reduced-motion pass.
 
 ## Verification
 
-`test/nuxt/first-run-banners.test.ts` — 9 cases: spoiler-first order, one acknowledged leaving the other, only the missing key's banner, nothing once both are set, both shown when `getItem` throws, no `HEROES` name in the spoiler copy, the key written once on a double confirm, focus handed on and released. Full suite 300 passed / 37 files; lint, format and typecheck clean.
-
-Live walk at 1280 and 320 (mobile, touch): both stacked and in-flow, spoiler above notice; confirming one writes its key and leaves the other; a reload with both keys renders no banner and no flash. At 320 the copy wraps, the buttons are full-width, `scrollWidth === innerWidth === 320`, and a hit test at the build bar's Save centre lands inside that 44px button with both banners up.
-
-**Motion, measured in Chrome (2026-09-04).** Enter, from a pre-navigation rAF probe: the row opens `0 → 68px` as the body runs `translateY(68px) → none` and `opacity 0 → 1`, settling together over 250ms. Exit sampled 110ms in: the banner is still in the DOM carrying `inert` and `aria-hidden="true"`, unreachable by tab, row `41.25px`, body `translateY(15px)`/`opacity 0.78`, `<main>` at `702` of `687 → 755` — height and travel as one. Focus lands on the remaining confirm button, the key reads `'1'`, the element is gone after. At 320 the shell is header 64 / main 206 / region 300 / bar 70, and across the exit (region `300 → 269 → 129`) the bar's top stays at 570: nothing below the leaving banner moves.
-
-**Reduced motion, walked 2026-09-13** in Chromium with the query emulated: both banners read `transition-duration: 0s` and sit at their final offsets on the first sample; confirming the spoiler warning removes it by the next 50ms sample with the notice and the build bar unmoved and focus on its button; with the preference off the same run shows the 250ms exit.
+By test: every case under Tests; lint, format and typecheck clean. Live walk at 1280 and 320 (mobile, touch): both stacked and in-flow, spoiler above notice; confirming one writes its key and leaves the other; a reload with both keys renders no banner and no flash; at 320 the copy wraps, the buttons are full-width, nothing scrolls sideways, and the build bar's Save stays hittable with both banners up. Motion measured in Chrome: enter opens the row and slides the body in together over 250ms; mid-exit the banner is still in the DOM carrying `inert` and `aria-hidden`, unreachable by tab, with height and travel moving as one and nothing below the leaving banner moving; focus lands on the remaining confirm button. Under emulated reduced motion both banners sit at their final offsets on the first sample and an exit completes within one frame, focus unchanged.
 
 Remaining risk: at 320 the two banners occupy roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Acceptable for a one-time notice; shortening the copy is the lever if it annoys.
 

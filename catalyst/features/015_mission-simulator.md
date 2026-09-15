@@ -10,7 +10,7 @@ Hard
 
 ## Purpose
 
-Fill the planner's empty "Mission simulator" tab (the last feature 003 placeholder): the player composes a team of up to four heroes, tunes three editable mission templates, and reads an estimated success chance computed the way the game scores calls — radar coverage plus synergy — with every slot-dependent power derived from the actual team instead of the manual what-if chips. The desktop layout is this document's; the reflow below it is feature 016's.
+The "Mission simulator" tab: the player composes a team of up to four heroes, tunes three editable mission templates, and reads an estimated success chance computed the way the game scores calls — radar coverage plus synergy — with every slot-dependent power derived from the actual team. The reflow below desktop is feature 016's.
 
 ## Inputs
 
@@ -37,7 +37,7 @@ Fill the planner's empty "Mission simulator" tab (the last feature 003 placehold
 
 In scope:
 
-- The tab's desktop layout, modelled on the concept board but not 1:1: no "guaranteed" label, and the team moved out of the right column.
+- The tab's desktop layout.
 - The tab-in-URL behavior for all three tabs.
 - The success model, the slot-derived power effects, and the new serialized keys with their server-side validation.
 
@@ -45,7 +45,7 @@ Non-goals:
 
 - Responsive layout below the desktop tier — feature 016.
 - Adding, deleting, naming, or re-typing templates; changing the 4-slot call size.
-- Waterboy's Eager (Super) Sponge, Invisigal's Wolf Pack, Squeeze In (never fires at 4 slots), and every streak/injury/heal/rest/time power — only the powers this document names are modelled.
+- Every power this document does not name — Eager Sponge, Wolf Pack, Squeeze In (never fires at 4 slots), and the streak/injury/heal/rest/time powers.
 - Rendering the simulator on the shared-build page `/b/{id}` (it has no tabs).
 - Absolute XP numbers — the 2×XP indicator is a condition light, nothing more.
 
@@ -53,22 +53,22 @@ Non-goals:
 
 **Templates.** Exactly three, unnamed ("Template #1/#2/#3"), always 4 slots. Each holds five editable REQ values plus two optional condition columns — `2×XP ≥` and `FAIL ≥` — configurable on **any** template, each holding **at most one** threshold (setting another stat's moves it). A fresh planner state rolls REQs uniformly in 3–8; as worked examples, #2 rolls one random stat's XP threshold in 6–9 and #3 gets a fixed fail threshold, combat at 8. All of it is editable afterwards and travels with the build. One template is active at a time and drives the requirements check and the math.
 
-**Motion and certainty.** Switching tabs fades the new content in; switching the active template animates the card heights; every number in the requirements check and the math travels to its new value rather than jumping. A fully covered mission reads 100% on a green field with a check; a 0% mission on a red field with a ✕.
+**Motion and certainty.** Tab content fades in, template card heights animate, and every number in the requirements check and the math counts to its new value. A fully covered mission reads 100% on a green field with a check; a 0% mission on a red field with a ✕.
 
-**Layout and stability.** The templates panel, the requirements check and the math panel form the top row (left, middle, right) at equal height; the team is a bottom row of four vertical slot cards — controls on top, avatar, then label. Only the active template renders expanded; the others collapse to a REQ summary, changing only with the selection (#1 by default). Space is otherwise reserved: every math row (synergy, reattempt, fail check, 2×XP) is always present, a dash when it has nothing to say, and value and team slots are fixed-size. The radar overlays the required shape (dashed ink) under the team shape, marks a set `FAIL ≥` (error ✕ disc) and `2×XP ≥` (gold 2× disc) on their axes with hover tooltips, and animates every change.
+**Layout and stability.** The templates panel, the requirements check and the math panel form the top row at equal height; the team is a bottom row of four vertical slot cards — controls, avatar, label. Only the active template renders expanded; the others collapse to a REQ summary. Space is reserved: every math row (synergy, reattempt, fail check, 2×XP) is always present, a dash when it has nothing to say, and value and team slots are fixed-size. The radar overlays the required shape (dashed ink) under the team shape, marks a set `FAIL ≥` (error ✕ disc) and `2×XP ≥` (gold 2× disc) on their axes, and animates every change.
 
 **Team.** Four positional slots, 0–4 filled. An empty slot opens the hero picker (roster minus the team); a filled portrait opens that hero's detail dialog (the illusion its source's) — replacing is remove-then-add; X removes; arrows swap with the neighbor. Team totals per stat = sum of occupants' effective stats (each hero clamped at 10 first), the sum clamped at 10.
 
 **Slot-derived powers** — computed from the real team, ignoring (and never writing) the manual chips on other tabs:
 
 - Coupé: +1 Combat in slot 1, +1 Mobility in slot 2 (+3 with À la Seconde trained), nothing in slots 3–4.
-- Golem (Spread Thin trained): placing him spawns a **copy of himself** in every free slot to his right, paying him `floor((starting + allocations) × 0.25 × copies)` in total (clamped at 10); a copy contributes no stats and is nobody for power or pair purposes. Copies dissolve **right-to-left only** — an inner copy's remove is inert until the outer ones are gone — vanish when Golem leaves or Spread Thin is untrained, and return when he is placed again.
+- Golem (Spread Thin trained): placing him spawns a **copy of himself** in every free slot to his right, paying him `floor((starting + allocations) × 0.25 × copies)` in total (clamped at 10); a copy contributes no stats and is nobody for power or pair purposes. Copies dissolve **right-to-left only**, vanish when Golem leaves or Spread Thin is untrained, and return when he is placed again.
 - Prism: placed into slot _k_ with a hero in _k−1_ and _k+1_ free, an illusion of that left neighbor appears in _k+1_ — stats at half, floored (full with Perfect Copy), no power effects. A real occupant: counts toward the 4 slots, removable and replaceable. Removal is sticky — it returns only when Prism is placed again; it vanishes when she or the source moves or leaves.
 - Supernova and Sonar's shared form flow in through effective stats exactly as elsewhere (they are assumptions, not slot facts).
 
 **Success calculation**, shown as labelled rows in the math panel:
 
-1. Coverage = area shared by the team's radar shape and the required shape ÷ the required shape's area (both drawn from the clamped totals and REQs on the five axes).
+1. Coverage = area shared by the team's radar shape and the required shape ÷ the required shape's area.
 2. Synergy level: switch level × 5%, one global bonus applied once regardless of how many pairs the team holds. The switch is disabled (contributing 0) while the team holds no derived synergy pair; its stored position survives and re-applies when a pair returns.
 3. Reattempt: Pirouette (Coupé, trained) or Talk Shit (Sonar, trained, shared form Hybrid — monster toggle off) each grant a retry: `estimate = 1 − (1 − p)^(1+n)` for `n` reattempting heroes, with an explanatory note in the panel when applied.
 4. Fail check: if any `FAIL ≥` stat's team total meets its value the mission fails — estimate 0%, reattempts do not rescue it.
@@ -80,23 +80,23 @@ The 2×XP indicator lights purely on its own per-stat check — team total for t
 
 ## Roles And Access
 
-Not role-specific. (Cloud saves require the API schema to accept the new keys; no permission changes.)
+Not role-specific.
 
 ## Examples
 
-The success model, the slot effects and the illusion lifecycle are exercised case by case in the two test files named under Tests. These rows pin a rendered state or a boundary rather than a number.
+The success model, the slot effects and the illusion lifecycle are exercised case by case under Tests; these rows pin a rendered state or a boundary.
 
-| Input                          | Expected Output               | Notes                                  |
-| ------------------------------ | ----------------------------- | -------------------------------------- |
-| all REQs 0                     | 100% regardless of team       | empty required area covers trivially   |
-| empty team, any REQ > 0        | 0%                            | nothing to cover with                  |
-| coverage 100%, nothing failing | 100% on green with a check    | the certain-success state              |
-| ep3 cut removes a team hero    | hero silently leaves the team | also on deserialization                |
-| document without `mt`          | loads with no templates       | never rolled; no migration pre-release |
+| Input                          | Expected Output               | Notes                                |
+| ------------------------------ | ----------------------------- | ------------------------------------ |
+| all REQs 0                     | 100% regardless of team       | empty required area covers trivially |
+| empty team, any REQ > 0        | 0%                            | nothing to cover with                |
+| coverage 100%, nothing failing | 100% on green with a check    | the certain-success state            |
+| ep3 cut removes a team hero    | hero silently leaves the team | also on deserialization              |
+| document without `mt`          | loads with no templates       | never rolled                         |
 
 ## Business Rules
 
-- The serialized-format change adds optional keys on v1, and unknown keys stay tolerated client-side. Templates roll only for a fresh planner with nothing to load; a loaded document supplies its own or has none. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) learn the keys in the same change; the 8KB document cap holds.
+- The simulator keys are optional v1 keys, and unknown keys stay tolerated client-side. Templates roll only for a fresh planner with nothing to load; a loaded document supplies its own or has none. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) both know the keys; the 8KB document cap holds.
 - Threshold checks (fail and 2×XP) compare the **clamped team total** of their stat, at-or-above. Each column holds at most one threshold — enforced by the setter, sanitized to the first on load, rejected by the server past one.
 - Derived slot effects are local to the simulator's totals and math panel; `heroSpecialPowers` state is never read for En Pointe/Spread Thin here and never written.
 - The illusion contributes stats only — it is nobody for power, synergy-pair, or roster purposes.
@@ -111,8 +111,7 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 - Arrows on slot 1/4 have one direction only; moving Prism or her source recomputes the illusion per its lifecycle.
 - Clearing a threshold (unset) removes that stat's check; a template may end with none.
 - Required area zero with team present is still 100%; both zero is 100%.
-- Loading a pre-simulator document rolls fresh templates and so counts, truthfully, as having unsaved changes — once per old build.
-- The template roll happens client-side only: `/` is prerendered, and a roll in shared state during prerender would bake one "random" set into the payload for every visitor.
+- The template roll happens client-side only: `/` is prerendered, and a roll during prerender would bake one "random" set into every visitor's payload.
 
 ## Invariants
 
@@ -128,8 +127,6 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 
 ## Open Questions
 
-_None — resolved in the grilling session of 2026-08-31._
-
 ## Entry Points
 
 - `web/pages/index.vue`: tab wiring, `?tab=` sync.
@@ -141,7 +138,7 @@ _None — resolved in the grilling session of 2026-08-31._
 
 ## Dependencies
 
-- Feature 003 (episode setup, roster, budgets), feature 012 (trained-power gating, effective stats, Sonar's form), features 001 and 005 (the serialized format and its server validation, both touched additively), feature 014 (the derived pairs; synergy levels leave "reserved" status).
+- Feature 003 (episode setup, roster, budgets), feature 012 (trained-power gating, effective stats, Sonar's form), features 001 and 005 (the serialized format and its server validation), feature 014 (the derived pairs).
 - [020_team-swap-travel](020_team-swap-travel.md): animates the arrow swap; changes no rule here.
 - `context/game-mechanics.md`: the power texts the derivations transcribe.
 

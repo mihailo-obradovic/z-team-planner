@@ -40,8 +40,7 @@ In scope:
 - One composable exposing the input mode as a reactive named union.
 - Confirmations on every card chip that changes state: Sonar's form, the starting power, the two upgrade powers, the special powers (Supernova, En Pointe, Spread Thin), and flight.
 - The wording table below, owned here.
-- A new `--duration-linger` token in the design-system annex §11.
-- Feature 012 amended where it describes the special chips' tooltips; feature 016 amended to name the Copy marker a common symbol; annex §13 and §14.2 noting the rule.
+- The `--duration-linger` token in the design-system annex §11, and the hint / confirmation / common-symbol rule in §13 and §14.2.
 
 Non-goals:
 
@@ -51,7 +50,7 @@ Non-goals:
 - **A line on a disabled chip.** A full training budget disables the upgrade chips and a tap does nothing; the budget is visible in the Story Setup drawer.
 - **Common symbols.** The mission team's Copy marker, the radar threshold markers (their values are the user's own entries in the templates panel), and the header's icon-only build actions on a wide touch device keep their accessible labels and get no hint and no confirmation.
 - **The hover tooltip's truncation of long descriptions.** Known, unrelated to input devices, and deliberately left.
-- **Feature 016's width tiers.** They decide layout by room, not by input, and keep their behaviour; only the phrase "the tier with no hover" is corrected.
+- **Feature 016's width tiers.** They decide layout by room, not by input, and keep their behaviour.
 
 ## User / System Behavior
 
@@ -121,14 +120,12 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 
 ## Dependencies
 
-- [012_special-powers](012_special-powers.md): the chip states and cycle order the wording is derived from; amended for its tooltip mentions.
-- [016_mission-simulator-responsive](016_mission-simulator-responsive.md): the Copy marker, named a common symbol; its "no hover" phrasing corrected.
+- [012_special-powers](012_special-powers.md): the chip states and cycle order the wording is derived from.
+- [016_mission-simulator-responsive](016_mission-simulator-responsive.md): the Copy marker, a common symbol.
 - [014_synergy-pairs-tab](014_synergy-pairs-tab.md): reuses the chip strip; no change, inherits the behaviour.
 - `catalyst/context/glossary.md`: hint, confirmation, common symbol.
 
 ## Open Questions
-
-_None._
 
 ## Tests
 
@@ -138,9 +135,7 @@ _None._
 
 ## Verification
 
-`test/unit/confirmationText.test.ts` (7 cases), `test/nuxt/tooltip-button.test.ts` (5 cases) and `test/nuxt/input-mode.test.ts` (1 case) pass, alongside the whole suite (40 files, 310 tests), `pnpm typecheck`, `pnpm lint` and `pnpm format:check`.
-
-The automated Chromium walk did not run: the chrome-devtools MCP browser instance was held by a concurrent session throughout this work. In its place, the user tested manually against a dev server started from this worktree (`localhost:3055`), on 2026-09-04, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit, and the manual check covered the general behaviour rather than the full row-by-row table.
+`test/unit/confirmationText.test.ts`, `test/nuxt/tooltip-button.test.ts` and `test/nuxt/input-mode.test.ts` pass, alongside the whole suite, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`. The user tested manually against a dev server, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit.
 
 ## Agent Change Rules
 
