@@ -47,7 +47,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- The panel (feature 011, `HeroDetailDialog.vue:432-447`) renders, in order: the open hero's **hero note**, then every **advisory** whose predicate is currently true — warnings before suggestions, each group in the catalogue's declaration order below.
+- The panel (feature 011, `HeroNotesPanel.vue`) renders, in order: the open hero's **hero note**, then every **advisory** whose predicate is currently true — warnings before suggestions, each group in the catalogue's declaration order below.
 - Order depends only on which entries are true, never on their values — a hero with three warnings always shows them in the same relative order regardless of which stat triggered which.
 - The panel stays the fixed-height `ScrollRegion` feature 011/013 already define; content beyond the visible height scrolls, with the existing edge affordance.
 - Hero note and advisory copy render identically — no color, icon, or weight distinguishes a warning from a suggestion.
@@ -135,7 +135,7 @@ No error states; a predicate that can never be satisfied under the current episo
 
 - `web/utils/heroNotes.ts` — the `HERO_NOTES` and `HERO_ADVISORIES` catalogues (copy + predicates).
 - `web/composables/useHeroNotes.ts` — `useHeroNotes(heroId)`, evaluating the catalogue against live planner state; follows the `useHeroDerived` precedent.
-- `web/components/HeroDetailDialog.vue` — renders the panel's content from `useHeroNotes`, replacing the placeholder at `:432-447`.
+- `web/components/HeroNotesPanel.vue` — renders the panel's content from `useHeroNotes`.
 
 ## Dependencies
 

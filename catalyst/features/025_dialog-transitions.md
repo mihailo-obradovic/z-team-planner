@@ -60,7 +60,7 @@ Non-goals:
 - **The thumbnail does not slide.** It cross-fades in a fixed slot beside the text, so the toolbar has one thing moving.
 - **The notes** slide as one block in a fixed direction whichever way the roster moved: old note and advisories leave upward, the new enter from below. The region's own motion is vertical; a paragraph flying sideways in it reads wrong.
 - **An advisory that fires or clears while the hero stays** takes the same vertical slide on its own line, and the lines around it travel rather than jump (annex §11, List move, feature 024's chip-row rule). A leaving line is taken out of flow as it goes, so the lines below do not wait.
-- **Opening the dialog** shows the name and the notes with no motion: nothing to arrive from.
+- **Opening the dialog** shows the name, the notes and the figures with no motion: nothing to arrive from, as the radar already behaved.
 - **The synergy partner control** switches hero like a rail click, so the name slides by the same rule from the two rail positions.
 
 **Value count** — a changing number travels to its new value over 200ms on an ease-out cubic, the tween the radar and the mission panel already use. It lands instantly under reduced motion.
@@ -92,7 +92,7 @@ Not role-specific.
 | undo that press                             | the line slides up and out; the lines after it travel back                | out of flow as it leaves                 |
 | switch to a hero with no effects            | the powers panel fades as one; the effects section is absent after        | inside the fade                          |
 | switch to Blonde Blazer                     | the partner block fades out entirely                                      | no partner to cross-fade to              |
-| open the dialog from a card                 | name and notes are simply there                                           | no arrival motion                        |
+| open the dialog from a card                 | name, notes and figures are simply there                                  | no arrival motion                        |
 | click the synergy partner control           | the name slides by the rail rule                                          | same as a rail click                     |
 | a second rail click mid-motion              | everything re-targets to the hero clicked last                            | direction from the arriving hero         |
 | `prefers-reduced-motion: reduce`            | counts land instantly; the slides fall back to fades; fades still run     | annex §14.4                              |
@@ -127,7 +127,7 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 ## Entry Points
 
-- `web/components/HeroDetailDialog.vue`: the name's directional slide and its rail-position lookup, the notes' slide and move, the fades that remain.
+- `web/components/HeroDetailDialog.vue`: the name's directional slide and its rail-position lookup, and the thumbnail and portrait fades; `HeroStatsPanel.vue`: the figure count and the partner fades; `HeroPowersPanel.vue`: the panel fade; `HeroNotesPanel.vue`: the notes' slide and move.
 - `web/assets/css/main.css`: the `slide` transition classes beside `state-fade` and `glyph-swap`.
 - `web/composables/useTweenedValues.ts`: the tween the figures share with the radar and the mission panel.
 - `annexes/design-system.md` §11: **Value count** and **Slide** as named patterns.

@@ -125,7 +125,7 @@ No failure mode reaches the user. A region whose observers never fire renders wi
 
 - `web/components/_shared/ScrollRegion.vue`: the component — scroll box, observers, scroll listener, border classes, exposed `bringIntoView`.
 - `web/utils/scrollEdges.ts`: the pure edge computation, unit-tested directly.
-- `web/components/HeroDetailDialog.vue`: the six call sites (`:19`, `:44`, `:47`, `:89`, `:237`, `:398` at time of writing), two of which restructure.
+- `web/components/HeroDetailDialog.vue`: the rail, ribbon and body call sites; `HeroStatsPanel.vue`, `HeroPowersPanel.vue` and `HeroNotesPanel.vue`: one each, the stats and powers panels being the two that restructure.
 - `catalyst/annexes/design-system.md` §5: the edge rule; §11: the bring-into-view pattern.
 
 ## Dependencies

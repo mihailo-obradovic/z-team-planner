@@ -100,7 +100,7 @@ Not role-specific.
 
 - `web/composables/useHeroPowerTraining.ts`: `toggleSpecialPower`, `getSpecialPowerBonus`, `allSpecialPowerBonuses`.
 - `web/types/hero.ts`: `SPECIAL_POWER_MECHANICS`.
-- `web/components/HeroCard.vue` (the chip), `web/components/HeroDetailDialog.vue` (the effect row and the pair total).
+- `web/components/HeroCard.vue` (the chip), `web/components/HeroPowersPanel.vue` (the effect row) and `web/components/HeroStatsPanel.vue` (the pair total).
 - `scripts/export-game-data.ts` → `shared/game-data.json` → `app/services/validation.py`.
 
 ## Dependencies
