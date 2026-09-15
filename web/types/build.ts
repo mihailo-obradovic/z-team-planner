@@ -1,44 +1,46 @@
 import type { HeroId } from '@/types/hero';
 
-// * Compact serialized format for URL sharing and localStorage. Only non-default values are included to keep URLs short.
-// * Field naming uses short keys to minimize URL length:
-// * - ec = episode 3 cut
-// * - eh = episode 4 hire
-// * - e8 = show episode 8 recruits
-// * - lu = level-ups (stat allocations per hero)
-// * - bl = bonus levels per hero
-// * - pw = power selections per hero [startingRevealed, trainableSelected]
-// * - sp = special power states per hero
-// * - fl = flight-trained hero IDs
-// * - mt = mission templates, always all 3 once rolled: r = REQs in STAT_NAMES order;
-// *        x (2×XP) / f (fail) = per-stat thresholds on any template, 0 = unset
-// * - mh = mission team slots, all 4 in order: hero id, "illusion", or null
-// * - ml = mission synergy level (1–3)
-// * - ma = active mission template index (1–2)
-export interface SerializedMissionTemplate {
+// * Every array follows `STAT_NAMES` order.
+export type SerializedMissionTemplate = {
+  // * REQ values
   r: number[];
+  // * 2×XP thresholds, 0 where unset
   x?: number[];
+  // * Fail thresholds, 0 where unset
   f?: number[];
-}
+};
 
-export interface SerializedBuild {
+// * Keys are short and non-default values are omitted, because the whole document travels in a share URL.
+export type SerializedBuild = {
   v: 1;
+  // * Episode 3 cut
   ec?: HeroId;
+  // * Episode 4 hire
   eh?: HeroId;
+  // * Episode 8 recruits shown
   e8?: 1;
+  // * Level-ups per hero, in `STAT_NAMES` order
   lu?: Record<string, number[]>;
+  // * Bonus levels per hero
   bl?: Record<string, number>;
+  // * Power selections per hero: [startingRevealed, trainableSelected]
   pw?: Record<string, [number, number]>;
+  // * Special power states per hero
   sp?: Record<string, number>;
+  // * Flight-trained hero ids
   fl?: string[];
+  // * All three mission templates, once rolled
   mt?: SerializedMissionTemplate[];
+  // * All four mission team slots in order: a hero id, `illusion`, `copy`, or null
   mh?: (string | null)[];
+  // * Mission synergy level, 1–3
   ml?: number;
+  // * Active mission template index, 1–2
   ma?: number;
-}
+};
 
-export interface LocalBuild {
+export type LocalBuild = {
   id: string;
   name: string;
   data: SerializedBuild;
-}
+};
