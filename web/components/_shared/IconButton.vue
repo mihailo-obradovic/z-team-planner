@@ -1,8 +1,5 @@
 <template>
-  <!-- * No `click` emit is declared, deliberately. An emit named after an input device is
-       * what the style guide rules out, and re-emitting one would also fire twice: with no
-       * declaration a parent's `@click` stays in attrs and falls through to the button
-       * itself, which is the native event the call sites already expect. -->
+  <!-- * No `click` emit is declared: re-emitting one would fire twice, while an undeclared `@click` falls through to the native button the call sites expect. -->
   <u-button
     :icon="swapKey === undefined ? icon : undefined"
     :color="color"

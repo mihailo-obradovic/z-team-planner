@@ -1,4 +1,4 @@
-// * The wording of a confirmation — the line a tapped chip shows on a no-hover device naming what the tap did (feature 018). Derived from the chip's state *after* the action; `null` means show nothing, which is every deactivation.
+// * Derived from the chip's state after the action (feature 018); `null` shows nothing, which is every deactivation.
 export type ChipOutcome =
   | { kind: 'starting'; name: string; revealed: boolean }
   | { kind: 'upgrade'; name: string; trained: boolean }
@@ -17,7 +17,7 @@ export function confirmationText(outcome: ChipOutcome): string | null {
       return outcome.trained ? `${outcome.name} trained` : null;
     }
     case 'flight': {
-      // * A flight the game never names (Blonde Blazer's, Sonar's) still trains as "Flight".
+      // * A flight the game never names still trains as "Flight".
       return outcome.trained ? `${outcome.name ?? 'Flight'} trained` : null;
     }
     case 'supernova': {
@@ -31,6 +31,7 @@ export function confirmationText(outcome: ChipOutcome): string | null {
       if (outcome.state === 0) {
         return null;
       }
+
       const stat = outcome.state === 1 ? 'Combat' : 'Mobility';
 
       return `En Pointe: ${stat} +${outcome.bonus}`;

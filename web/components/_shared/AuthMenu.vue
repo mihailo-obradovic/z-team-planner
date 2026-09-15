@@ -28,11 +28,7 @@
     />
   </u-dropdown-menu>
 
-  <!-- ! Two different absences, and only one of them reserves space. While the identity is
-       ! still `unknown` the control renders at its real geometry and is merely `invisible`,
-       ! so the header does not reflow when the SDK reports (feature 004). When there is no
-       ! backend to sign in to at all it renders nothing: an unreachable control is not worth
-       ! a gap in the row, and that gap is what stage 1 shipped. -->
+  <!-- ! Two absences, and only one reserves space: while the identity is `unknown` the control is merely `invisible`, so the header does not reflow when the SDK reports (feature 004); with no backend to sign in to it renders nothing. -->
   <template v-else-if="!isSignInUnavailable">
     <button
       v-if="tier === 'bare'"
@@ -67,7 +63,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
-import type { HeaderTier } from '@/types/ui';
+import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
   tier: 'labelled'

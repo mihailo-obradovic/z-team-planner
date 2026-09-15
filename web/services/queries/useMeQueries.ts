@@ -1,6 +1,7 @@
 import { useQueryCache } from '@pinia/colada';
 
 import { chainOnSettled } from '@/services/queries/chainOnSettled';
+import { BUILDS_ROOT } from '@/services/queries/useBuildQueries';
 import { deleteMe, fetchMe } from '@/services/me.api';
 
 import type { Me } from '@/types/api';
@@ -32,7 +33,7 @@ export function useDeleteMe(
     ...options,
     onSettled: chainOnSettled(async (_data, error) => {
       if (!error) {
-        await queryCache.invalidateQueries({ key: ['builds'] });
+        await queryCache.invalidateQueries({ key: BUILDS_ROOT });
         await queryCache.invalidateQueries({ key: meQueryKeys.fetchMe });
       }
     }, options.onSettled)

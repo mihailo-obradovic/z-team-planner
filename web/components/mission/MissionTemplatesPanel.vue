@@ -5,10 +5,7 @@
     </div>
 
     <div class="flex flex-col gap-2 p-3">
-      <!-- * Exactly one template is expanded — the active one; the others collapse to their
-           REQ summary. The collapse state changes only with the selection. -->
-      <!-- * The whole card selects — the header button stays as the accessible control;
-           a bubbled click from a stepper only re-selects the already-active card. -->
+      <!-- * Only the active template is expanded. The whole card selects, the header button stays the accessible control, and a click bubbling from a stepper only re-selects the active card. -->
       <section
         v-for="(template, index) in templates"
         :key="index"
@@ -36,20 +33,15 @@
           </span>
         </button>
 
-        <!-- * Both bodies stay mounted, each in a `0fr`/`1fr` grid row: switching the
-             selection animates the card's height instead of snapping it. Size animation,
-             so it short-circuits under reduced motion (annex §11). -->
-        <!-- ! `inert` on the collapsed half: both bodies stay mounted for the height
-             transition, and without it the hidden one keeps its controls focusable and in
-             the accessibility tree. -->
+        <!-- * Both bodies stay mounted in `0fr`/`1fr` grid rows, so a selection animates the card's height; a size animation, so it short-circuits under reduced motion (annex §11). -->
+        <!-- ! `inert` on the collapsed half, or its controls stay focusable and in the accessibility tree. -->
         <div
           class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
           :class="index === activeIndex ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'"
           :inert="index === activeIndex"
         >
           <div class="min-h-0 overflow-hidden">
-            <!-- * Collapsed: one badge per stat, so the five REQs read as separate fields
-             rather than one run of numbers. -->
+            <!-- * One badge per stat, so the five REQs read as separate fields rather than one run of numbers. -->
             <ul class="flex flex-wrap gap-2 border-t border-muted px-3 py-2">
               <li
                 v-for="stat in STAT_NAMES"
@@ -71,12 +63,7 @@
           :inert="index !== activeIndex"
         >
           <div class="min-h-0 overflow-hidden">
-            <!-- * Below 28.5rem the panel cannot carry both condition columns beside the
-                 requirements, so it shows one set at a time (feature 016). Showing one set
-                 is what buys the room — the stat wordmarks stay. The toggle exists only at
-                 that width — nothing is hidden above it — and its position is view state:
-                 a component ref, never planner state, so it cannot reach a serialized
-                 build, a share link, or dirty tracking. -->
+            <!-- * Below 28.5rem the panel shows one column set at a time, and the toggle exists only there (feature 016). -->
             <div
               class="hidden gap-1 border-t border-muted px-3 pt-2 @max-[28.5rem]:flex"
               role="group"
@@ -127,10 +114,7 @@
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The label goes down a type step with the row rather than out of it:
-                     the wordmark has to survive an iPhone SE, and only below 20rem — past
-                     every width worth designing for, but still short of the 320 the app
-                     is held to for reflow — does the icon carry the stat alone. -->
+                <!-- * The label steps down a type size rather than leaving, so the wordmark survives an iPhone SE; only below 20rem does the icon carry the stat alone. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase @max-[28.5rem]:gap-1 @max-[28.5rem]:text-sm"
                 >
@@ -173,8 +157,6 @@
 </template>
 
 <script setup lang="ts">
-// * Feature 015: three fixed templates, no add or delete, no names; both condition columns
-// * configurable on any template. Every write goes through the guarded planner setters.
 import MissionValueStepper from '@/components/mission/MissionValueStepper.vue';
 
 import { STAT_NAMES } from '@/types/hero';
@@ -191,9 +173,7 @@ const {
 const templates = computed(() => missionTemplates.value ?? []);
 const activeIndex = computed(() => missionActiveTemplate.value);
 
-// * Which column set the narrow tier shows (feature 016) — one per panel, not per template,
-// * so switching the active template keeps what you were reading. Deliberately a plain ref:
-// * planner state serializes, and the build document must never carry a layout choice.
+// * One per panel, so switching template keeps what you were reading, and a plain ref, because planner state serializes and the build document must never carry a layout choice (feature 016).
 const COLUMN_VIEWS = [
   { value: 'req', label: 'Requirements' },
   { value: 'conditions', label: 'Conditions' }
@@ -205,7 +185,6 @@ function setColumnView(value: (typeof COLUMN_VIEWS)[number]['value']) {
   columnView.value = value;
 }
 
-// * Hiding is scoped to the narrow tier: above it both sets render and the toggle is gone.
 const reqColumnClass = computed(() =>
   columnView.value === 'req' ? '' : '@max-[28.5rem]:hidden'
 );
@@ -213,8 +192,7 @@ const conditionColumnClass = computed(() =>
   columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
 );
 
-// * Only the Conditions view ever runs out of room for it, and only below 20rem — under
-// * every screen worth designing for, but the app is still held to 320 for reflow.
+// * Only the Conditions view runs out of room for the wordmark, and only below 20rem.
 const wordmarkClass = computed(() =>
   columnView.value === 'conditions' ? '@max-[20rem]:hidden' : ''
 );

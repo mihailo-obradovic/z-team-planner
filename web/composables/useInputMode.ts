@@ -1,4 +1,4 @@
-// * Whether the input device can hover — a property of the device, never of the viewport width (feature 018). A hint (a chip's hover tooltip) exists only in `hover` mode; a tapped chip shows a confirmation only in `no-hover` mode.
+// * A property of the device, never of the viewport width (feature 018).
 export type InputMode = 'hover' | 'no-hover';
 
 const HOVER_QUERY = '(hover: hover) and (pointer: fine)';

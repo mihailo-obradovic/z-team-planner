@@ -1,8 +1,6 @@
 import type { CheckboxConfig } from '../../types/nuxt-ui';
 
-// * Imported unmodified from @nuxt/ui 4.4.0. No deviations yet: the `rounded-*` classes
-// * here resolve flat on their own, because Nuxt UI derives Tailwind's radius steps from
-// * `--ui-radius`, which the design system pins at 0 (annex §5).
+// * Imported from @nuxt/ui 4.4.0. The `rounded-*` classes stay: they resolve flat on their own, because Nuxt UI derives Tailwind's radius steps from `--ui-radius`, which the design system pins at 0 (annex §5).
 export default {
   slots: {
     root: 'relative flex items-start',

@@ -1,6 +1,8 @@
 import {
   EP4_HIRE_OPTIONS,
+  HEROES,
   HERO_POWERS,
+  HERO_STARTING_STATS,
   MAX_POWER_TRAININGS,
   MAX_STAT_VALUE,
   SPECIAL_POWER_MECHANICS,
@@ -8,7 +10,6 @@ import {
 } from '@/types/hero';
 
 import type {
-  Hero,
   HeroId,
   HeroPowerSelection,
   HeroStats,
@@ -16,7 +17,7 @@ import type {
 } from '@/types/hero';
 
 const ZERO_STATS: HeroStats = Object.fromEntries(
-  STAT_NAMES.map((s) => [s, 0])
+  STAT_NAMES.map((stat) => [stat, 0])
 ) as HeroStats;
 
 const DEFAULT_POWER_STATE: HeroPowerSelection = {
@@ -31,9 +32,7 @@ const MONSTER_FORM_SWAPS: Partial<Record<StatName, StatName>> = {
   charisma: 'vigor'
 };
 
-// * Composable for managing power training and special power mechanics. Handles power selections, training limits, and the special powers of feature 012.
 export function useHeroPowerTraining(
-  heroes: Ref<Hero[] | null | undefined>,
   episodeSetup: ReturnType<typeof useHeroEpisodeSetup>,
   levelUp: ReturnType<typeof useHeroLevelUp>
 ) {
@@ -58,6 +57,7 @@ export function useHeroPowerTraining(
     if (id === 'sonar' && monsterForm.value) {
       return MONSTER_FORM_SWAPS[stat] ?? stat;
     }
+
     return stat;
   }
 
@@ -65,25 +65,21 @@ export function useHeroPowerTraining(
     return heroPowers.value[id] ?? DEFAULT_POWER_STATE;
   }
 
-  const trainingsUsed = computed(() => {
-    return Object.values(heroPowers.value).filter(
-      (p) => p && p.trainableSelected > 0
-    ).length;
-  });
+  const trainingsUsed = computed(
+    () =>
+      Object.values(heroPowers.value).filter(
+        (power) => power && power.trainableSelected > 0
+      ).length
+  );
 
   function toggleStartingPower(id: HeroId) {
-    const powerSet = HERO_POWERS[id];
-    if (!powerSet || !powerSet[0].name) {
+    if (!HERO_POWERS[id]) {
       return;
     }
 
-    if (!heroPowers.value[id]) {
-      heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
-    }
-    const powers = heroPowers.value[id]!;
+    const powers = (heroPowers.value[id] ??= { ...DEFAULT_POWER_STATE });
 
     if (powers.startingRevealed) {
-      // * Un-discovering: also untrain and reset any active special powers
       powers.trainableSelected = 0;
       delete heroSpecialPowers.value[id];
       powers.startingRevealed = false;
@@ -94,24 +90,19 @@ export function useHeroPowerTraining(
 
   function toggleTrainablePower(id: HeroId, index: 1 | 2) {
     const powerSet = HERO_POWERS[id];
-    if (!powerSet) {
+
+    // * A one-power hero (Blonde Blazer) has no slot to train.
+    if (!powerSet || index >= powerSet.length) {
       return;
     }
 
-    // * A one-power hero has no slot to train (Blonde Blazer): the set carries the starting power alone.
-    if (index >= powerSet.length) {
-      return;
-    }
-
-    if (!heroPowers.value[id]) {
-      heroPowers.value[id] = { ...DEFAULT_POWER_STATE };
-    }
-    const powers = heroPowers.value[id]!;
+    const powers = (heroPowers.value[id] ??= { ...DEFAULT_POWER_STATE });
 
     if (!powers.startingRevealed) {
       return;
     }
-    // * Arriving in episode 8 means there was never any training to do: whoever joins then keeps only their starting power. Level-ups are a separate question — an episode 8 Waterboy still levels up, which is why FIXED_LEVEL_HEROES is not consulted here.
+
+    // * Episode 8 recruits never train powers. Level-ups are a separate question, which is why FIXED_LEVEL_HEROES is not consulted: an episode 8 Waterboy still levels up.
     if (episodeSetup.ep8RecruitIds.value.has(id)) {
       return;
     }
@@ -119,24 +110,19 @@ export function useHeroPowerTraining(
     if (powers.trainableSelected === index) {
       powers.trainableSelected = 0;
     } else {
-      // * Only count as a new slot when switching from nothing
+      // * Switching between the two options spends no new training.
       if (
         powers.trainableSelected === 0 &&
         trainingsUsed.value >= MAX_POWER_TRAININGS
       ) {
         return;
       }
+
       powers.trainableSelected = index;
     }
 
-    // ! Clear a gated effect the selection no longer satisfies, on every path that changes it and not
-    // ! just deselection (feature 012, Clearing). Switching straight from one trainable to the other
-    // ! used to keep it: Flambae kept Supernova's Combat and Mobility 10 after Supernova itself was
-    // ! replaced by Comet, with no chip left on screen to turn it off. `getSpecialPowerBonus` does not
-    // ! re-check the gate, so a state left behind goes on paying out and serializes into a build the
-    // ! API rejects.
-    // * Asking the gate rather than clearing outright is what keeps Coupé's En Pointe: it hangs off her
-    // * starting power and is ungated, so her trainables only change the size of its bonus.
+    // ! Clears a gated effect the selection no longer satisfies on every path, not only deselection (feature 012, Clearing): `getSpecialPowerBonus` does not re-check the gate, so a leftover state keeps paying out and serializes into a build the API rejects.
+    // * Asking the gate rather than clearing outright keeps Coupé's ungated En Pointe, whose bonus her trainables only resize.
     const mechanics = specialPowerMechanics(id);
 
     if (mechanics && !hasRequiredPower(id, mechanics)) {
@@ -156,7 +142,8 @@ export function useHeroPowerTraining(
       return;
     }
 
-    const current = heroSpecialPowers.value[id] ?? 0;
+    const current = getSpecialPowerState(id);
+
     heroSpecialPowers.value[id] = (current + 1) % (mechanics.max + 1);
   }
 
@@ -172,55 +159,26 @@ export function useHeroPowerTraining(
     }
 
     const specialState = state ?? getSpecialPowerState(id);
+    const base =
+      HERO_STARTING_STATS[id][stat] + levelUp.getStatAllocations(id)[stat];
 
     if (mechanics.type === 'supernova' && specialState === 1) {
-      // * Flambae's Supernova: set combat and mobility to 10
-      if (
-        (stat === 'combat' || stat === 'mobility') &&
-        mechanics.affectedStats.includes(stat)
-      ) {
-        const hero = heroes.value?.find((h) => h.id === id);
-        if (!hero) {
-          return 0;
-        }
-
-        const normalBonus = levelUp.getStatAllocations(id)[stat];
-
-        return Math.max(
-          0,
-          MAX_STAT_VALUE - hero.startingStats[stat] - normalBonus
-        );
+      if ((mechanics.affectedStats as readonly StatName[]).includes(stat)) {
+        return Math.max(0, MAX_STAT_VALUE - base);
       }
     } else if (mechanics.type === 'en-pointe' && specialState > 0) {
-      // * Coupe's En Pointe: +1 or +3 combat/mobility based on slot
-      const isUpgraded = getPowerState(id).trainableSelected === 2; // À la Seconde
-      const bonus = isUpgraded ? mechanics.upgradeBonus : mechanics.baseBonus;
+      const alaSecondeTrained = getPowerState(id).trainableSelected === 2;
+      const bonus = alaSecondeTrained
+        ? mechanics.upgradeBonus
+        : mechanics.baseBonus;
       const boostedStat = specialState === 1 ? 'combat' : 'mobility';
 
       if (stat === boostedStat) {
-        const hero = heroes.value?.find((h) => h.id === id);
-
-        if (!hero) {
-          return 0;
-        }
-
         // * Clamped like Spread Thin: an allocation can already sit at 10, and the effective stat never passes it (feature 012).
-        const base =
-          hero.startingStats[stat] + levelUp.getStatAllocations(id)[stat];
-
         return Math.min(bonus, MAX_STAT_VALUE - base);
       }
     } else if (mechanics.type === 'spread-thin' && specialState > 0) {
-      // * Golem's Spread Thin: the slot count picks a percentage tier which is floored once against the whole stat — not a per-slot increment applied repeatedly, which would pay differently on any stat that is not a multiple of 4 (feature 012).
-      const hero = heroes.value?.find((h) => h.id === id);
-
-      if (!hero) {
-        return 0;
-      }
-
-      const base =
-        hero.startingStats[stat] + levelUp.getStatAllocations(id)[stat];
-
+      // * The slot count picks a percentage tier floored once against the whole stat, not a per-slot increment, which would pay differently on any stat that is not a multiple of 4 (feature 012).
       return Math.min(
         Math.floor(base * mechanics.percentPerSlot * specialState),
         MAX_STAT_VALUE - base
@@ -241,7 +199,7 @@ export function useHeroPowerTraining(
     const slots = Math.min(getSpecialPowerState(id), mechanics.max - 1);
 
     return Object.fromEntries(
-      STAT_NAMES.map((s) => [s, getSpecialPowerBonus(id, s, slots)])
+      STAT_NAMES.map((stat) => [stat, getSpecialPowerBonus(id, stat, slots)])
     ) as HeroStats;
   }
 
@@ -267,14 +225,12 @@ export function useHeroPowerTraining(
     );
   }
 
-  // * Memoized special power bonuses for all heroes to prevent unnecessary re-renders
   const allSpecialPowerBonuses = computed(() => {
     const result: Partial<Record<HeroId, HeroStats>> = {};
 
-    for (const hero of heroes.value ?? []) {
-      const id = hero.id as HeroId;
+    for (const { id } of HEROES) {
       result[id] = Object.fromEntries(
-        STAT_NAMES.map((s) => [s, getSpecialPowerBonus(id, s)])
+        STAT_NAMES.map((stat) => [stat, getSpecialPowerBonus(id, stat)])
       ) as HeroStats;
     }
 
@@ -306,12 +262,7 @@ export function useHeroPowerTraining(
   }
 
   function effectiveStats(id: HeroId, bonuses: HeroStats): HeroStats {
-    const hero = heroes.value?.find((h) => h.id === id);
-
-    if (!hero) {
-      return ZERO_STATS;
-    }
-
+    const startingStats = HERO_STARTING_STATS[id];
     const allocations = levelUp.getStatAllocations(id);
 
     return Object.fromEntries(
@@ -321,9 +272,7 @@ export function useHeroPowerTraining(
         return [
           stat,
           Math.min(
-            hero.startingStats[resolved] +
-              allocations[resolved] +
-              bonuses[resolved],
+            startingStats[resolved] + allocations[resolved] + bonuses[resolved],
             MAX_STAT_VALUE
           )
         ];
@@ -341,7 +290,6 @@ export function useHeroPowerTraining(
     delete heroSpecialPowers.value[id];
   }
 
-  // * Watch episode choices and reset power data when heroes are cut/not hired
   watch(episodeSetup.ep3Cut, resetHeroPowers);
 
   watch(episodeSetup.ep4Hire, (newHire) => {
@@ -365,9 +313,7 @@ export function useHeroPowerTraining(
     getEffectiveStats,
     getPairEffectiveStats,
     getPairCombinedStats,
-    // * The same computation with a caller-supplied bonus set — the mission simulator
-    // * (feature 015) derives En Pointe and Spread Thin from real slot context and must not
-    // * re-implement the clamp or Sonar's form resolution.
+    // * The mission simulator (feature 015) derives En Pointe and Spread Thin from real slots and must not re-implement the clamp or Sonar's form resolution.
     getEffectiveStatsWithBonuses: effectiveStats,
 
     monsterForm,

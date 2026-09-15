@@ -36,7 +36,6 @@ export function usePlannerState() {
       'heroFlights',
       () => ({})
     ),
-    // * Feature 015 — the mission simulator's share of the build document.
     missionTemplates: useState<MissionTemplates>(
       'missionTemplates',
       () => null

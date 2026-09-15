@@ -16,20 +16,15 @@ import type {
   ScrollAxis
 } from '@/utils/scrollEdges';
 
-// * The scroll box is the component's, so the edge rules run its full width and content passes under them
-// * rather than stopping short of an inset line.
+// * The scroll box is the component's own, so the edge rules run its full width and content passes under them.
 const OVERFLOW_CLASS: Record<ScrollAxis, string> = {
   vertical: 'overflow-y-auto',
   horizontal: 'overflow-x-auto',
   both: 'overflow-auto'
 };
 
-// * 1px at the divider tier (annex §5). `--ui-border` measures 3.13:1 on paper, clearing the 3:1 floor that
-// * applies because this rule carries information — it is the only sign that content is off-screen.
-// ! Every edge is always drawn and only its colour changes. Toggling the border itself would resize the
-// ! content box by 1px each time an edge is reached, jittering the content and feeding that 1px straight
-// ! back into the measurement it came from. Naming both states also keeps the pair one directional utility,
-// ! so which of them paints is not left to the order Tailwind happens to emit them in.
+// * `--ui-border` measures 3.13:1 on paper, clearing the 3:1 floor this rule needs because it carries information (annex §5).
+// ! Every edge is always drawn and only its colour changes: toggling the border would resize the content box by 1px and feed it back into the measurement. Naming both states keeps the pair one directional utility, independent of Tailwind's emit order.
 const EDGE_CLASS: Record<keyof HiddenEdges, { hidden: string; clear: string }> =
   {
     top: {
@@ -57,8 +52,7 @@ const NO_EDGES: HiddenEdges = {
   right: false
 };
 
-// * `as` keeps the region's own semantics: two of the hero dialog's scroll areas are `nav` landmarks, and a
-// * component that could only render a div would trade an aria landmark for a border.
+// * `as` keeps the region's own semantics, since two of the hero dialog's scroll areas are `nav` landmarks.
 const { as = 'div', axis = 'vertical' } = defineProps<{
   as?: string;
   axis?: ScrollAxis;
@@ -81,6 +75,7 @@ function measure() {
 
   if (!element) {
     edges.value = { ...NO_EDGES };
+
     return;
   }
 
@@ -95,9 +90,7 @@ function measure() {
   });
 }
 
-// ! Read from the computed style rather than trusted from the `axis` prop: a region carrying a responsive
-// ! overflow class does not scroll at every width, and an element with `overflow: visible` still reports
-// ! scrollHeight past clientHeight — which would rule an edge the user cannot reach.
+// ! Read from the computed style, not the `axis` prop: a responsive overflow class does not scroll at every width, and `overflow: visible` still reports scrollHeight past clientHeight.
 function scrollableAxis(element: HTMLElement): ScrollableAxis {
   const style = getComputedStyle(element);
   const vertical = scrolls(style.overflowY);
@@ -122,8 +115,7 @@ function scrolls(overflow: string): boolean {
   return overflow === 'auto' || overflow === 'scroll';
 }
 
-// * The container and its content are separate signals. Content growing inside a scroll box never resizes
-// * the box, so observing only the region misses slot content changing — the common case in a dialog.
+// * Content growing inside a scroll box never resizes the box, so observing only the region would miss slot content changing.
 function observedElements(element: HTMLElement): HTMLElement[] {
   return [element, ...(Array.from(element.children) as HTMLElement[])];
 }
@@ -167,9 +159,8 @@ onBeforeUnmount(() => {
   mutationObserver?.disconnect();
 });
 
-// * The caller decides when something must be seen; the region owns how far it has to move (feature 013).
-// ! Never `Element.scrollIntoView`: it walks the ancestor chain, so bringing a tile into a ribbon would
-// ! also scroll the dialog body it sits in. This moves the region and nothing above it.
+// * The caller decides when something must be seen; the region owns how far it moves (feature 013).
+// ! Never `Element.scrollIntoView`: it walks the ancestor chain, so bringing a tile into a ribbon would also scroll the dialog body it sits in.
 function bringIntoView(target: HTMLElement) {
   const element = region.value;
 
@@ -205,8 +196,7 @@ function bringIntoView(target: HTMLElement) {
     return;
   }
 
-  // * Past the baseline, so it snaps under reduced motion — but it still runs: it corrects what is visible
-  // * rather than decorating it (annex §14.4).
+  // * Snaps under reduced motion but still runs, because it corrects what is visible rather than decorating it (annex §14.4).
   element.scrollTo({
     left,
     top,
@@ -214,9 +204,7 @@ function bringIntoView(target: HTMLElement) {
   });
 }
 
-// ! Read from the layout tree, never from `getBoundingClientRect`. A dialog mid enter-animation is scaled,
-// ! and a scaled rect delta compared against an unscaled `scrollLeft` aims the scroll wrong. Offsets are
-// ! layout positions: unaffected by transforms, and already relative to the content rather than the viewport.
+// ! Read from the layout tree, never `getBoundingClientRect`: a dialog mid enter-animation is scaled, and a scaled rect compared against an unscaled `scrollLeft` aims the scroll wrong.
 function contentOffset(
   element: HTMLElement,
   target: HTMLElement
@@ -241,16 +229,14 @@ function contentOffset(
     }
   }
 
-  // * The region is not itself an offset parent, so it and the target are measured from the same ancestor.
-  // * Its border sits outside the padding box `scrollLeft` counts from, hence `clientLeft`.
+  // * The region is not an offset parent, so both are measured from the same ancestor; `clientLeft` removes the border outside the padding box `scrollLeft` counts from.
   return {
     left: left - element.offsetLeft - element.clientLeft,
     top: top - element.offsetTop - element.clientTop
   };
 }
 
-// * The clearance is the region's own gap, so a tile lands beside its neighbour rather than flush against
-// * the clipping edge and under the 1px rule. A region with no gap gets none — there is nothing to sit beside.
+// * The clearance is the region's own gap, so a tile lands beside its neighbour rather than flush under the edge rule.
 function scrollGaps(element: HTMLElement): { column: number; row: number } {
   const style = getComputedStyle(element);
 

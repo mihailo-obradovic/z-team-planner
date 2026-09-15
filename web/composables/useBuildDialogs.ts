@@ -1,6 +1,6 @@
 import { CloudBuildSchema, type CloudBuild } from '@/types/api';
 
-import type { HeaderTier } from '@/types/ui';
+import type { HeaderTier } from '@/types/header';
 
 export function useBuildDialogs() {
   const buildMenuTier = useState<HeaderTier | null>(

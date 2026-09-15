@@ -7,10 +7,7 @@
       @click="step(-1)"
     />
 
-    <!-- * A fixed slot, like the stat rows everywhere else: the value growing a digit (or
-         becoming the unset dash) shifts nothing. It narrows in the tier where the row is
-         tight (feature 016) — the buttons beside it cannot, being on the 24px touch floor
-         (annex §14.2), so the slot and the gaps are what give. -->
+    <!-- * A fixed slot, so a value growing a digit or becoming the dash shifts nothing; in the tight tier it and the gaps narrow, because the buttons sit on the 24px touch floor (feature 016, annex §14.2). -->
     <span
       class="w-7 text-center font-heading text-lg font-bold select-none @max-[28.5rem]:w-6"
     >
@@ -27,16 +24,13 @@
 </template>
 
 <script setup lang="ts">
-// * The mission templates' value control (feature 015): REQs step 0–10; a threshold column
-// * is unsettable — stepping below 1 clears it to the dash, stepping up from the dash
-// * starts at 1. The guarded planner setters have the same ranges; this control simply
-// * never offers a value they would refuse.
 import { MAX_STAT_VALUE } from '@/types/hero';
 
 const props = withDefaults(
   defineProps<{
     value: number | null;
     label: string;
+    // * Stepping below 1 clears the value to the dash, and stepping up from the dash starts at 1 (feature 015).
     unsettable?: boolean;
   }>(),
   { unsettable: false }

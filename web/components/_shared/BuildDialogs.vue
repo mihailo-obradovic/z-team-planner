@@ -16,6 +16,7 @@
         <u-button variant="ghost" color="neutral" @click="closeSaveShared">
           Cancel
         </u-button>
+
         <u-button :disabled="isNameInvalid" @click="confirmSaveShared">
           Save
         </u-button>
@@ -40,6 +41,7 @@
         <u-button variant="ghost" color="neutral" @click="closeNewBuild">
           Cancel
         </u-button>
+
         <u-button :disabled="isNameInvalid" @click="confirmNewBuild">
           Create
         </u-button>
@@ -59,6 +61,7 @@
         <u-button variant="ghost" color="neutral" @click="closeDelete">
           Cancel
         </u-button>
+
         <u-button color="error" @click="confirmDelete">Delete</u-button>
       </div>
     </template>
@@ -80,6 +83,7 @@
         <u-button variant="ghost" color="neutral" @click="closeRename">
           Cancel
         </u-button>
+
         <u-button @click="confirmRename">Rename</u-button>
       </div>
     </template>
@@ -179,6 +183,7 @@ function confirmRename() {
   }
 
   const name = renameBuildName.value.trim();
+
   if (!name) {
     return;
   }

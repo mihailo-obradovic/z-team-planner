@@ -31,6 +31,8 @@ type MutationOptions<TData, TVars> = Omit<
   'mutation'
 >;
 
+type UpdateBuildVars = { id: string; payload: UpdateBuildPayload };
+
 function newIdempotencyKey(): string {
   return crypto.randomUUID();
 }
@@ -78,17 +80,11 @@ export function useCreateBuild(
 }
 
 export function useUpdateBuild(
-  options: MutationOptions<
-    CloudBuild,
-    { id: string; payload: UpdateBuildPayload }
-  > = {}
+  options: MutationOptions<CloudBuild, UpdateBuildVars> = {}
 ) {
   const queryCache = useQueryCache();
 
-  return useAppMutation<
-    CloudBuild,
-    { id: string; payload: UpdateBuildPayload }
-  >({
+  return useAppMutation<CloudBuild, UpdateBuildVars>({
     mutation: ({ id, payload }) => {
       const cached = queryCache.getQueryData<CloudBuild>([
         ...buildsQueryKeys.fetchBuild,
@@ -107,15 +103,15 @@ export function useUpdateBuild(
 
 export function useDeleteBuild(options: MutationOptions<void, string> = {}) {
   const queryCache = useQueryCache();
-  const { activeAccountBuildId } = storeToRefs(useAuthStore());
-  const { setActiveAccountBuildId } = useAuthStore();
+  const authStore = useAuthStore();
+  const { activeAccountBuildId } = storeToRefs(authStore);
 
   return useAppMutation<void, string>({
     mutation: (id) => deleteBuild(id),
     ...options,
     onSettled: chainOnSettled(async (_data, error, id) => {
       if (!error && activeAccountBuildId.value === id) {
-        setActiveAccountBuildId(null);
+        authStore.setActiveAccountBuildId(null);
       }
 
       await queryCache.invalidateQueries({ key: BUILDS_ROOT });

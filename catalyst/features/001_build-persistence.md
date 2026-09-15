@@ -90,7 +90,7 @@ Not role-specific.
 
 ## Invariants
 
-- **The `SerializedBuild` v1 format is a protected area**: shared URLs and saved builds in the wild depend on it. Fields may be added optionally; existing keys, their meanings, the `STAT_NAMES` order, and hero ids (`web/types/hero.ts`) never change incompatibly. A breaking change requires a new `v` plus decode support for v1.
+- **The `SerializedBuild` v1 format is a protected area**: its keys, their meanings, the `STAT_NAMES` order, and hero ids (`web/types/hero.ts`) change only deliberately, together with the client gate and the server schema. Before the first public release no build exists in the wild, so a change needs no new `v` and earlier shapes are not decoded (Domain Decisions, `project-summary.md`). From release on, a breaking change requires a new `v` plus decode support for v1.
 - serialize → deserialize round-trips to identical planner state.
 - Deserializing `{"v":1}` resets every hero to defaults (empty maps overwrite, never merge).
 - All persistence is client-only; the server renders nothing build-specific.

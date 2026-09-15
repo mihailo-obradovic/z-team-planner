@@ -2,27 +2,24 @@ import { MAX_STAT_VALUE, STAT_NAMES } from '@/types/hero';
 
 import type { HeroId, HeroStats, StatName } from '@/types/hero';
 
-// * Coverage for catalyst/features/022_hero-notes.md: the hero note per hero, and the pure
-// * advisory predicates the composable feeds live planner state into. Kept framework-free so
-// * every boundary can be pinned without mounting Nuxt.
+// * Feature 022, kept framework-free so every advisory boundary can be pinned without mounting Nuxt.
 
 export type AdvisoryKind = 'warning' | 'suggestion';
 
-export interface AdvisoryLine {
+export type AdvisoryLine = {
   id: string;
   kind: AdvisoryKind;
   text: string;
-}
+};
 
-export interface PairStat {
+export type PairStat = {
   stat: StatName;
   pairTotal: number;
   allocatedInPair: number;
-}
+};
 
-// * Everything an advisory predicate needs, already reduced to plain values by the composable
-// * — no HeroId lookups or planner reads happen inside evaluateAdvisories itself.
-export interface HeroNoteContext {
+// * Already reduced to plain values by the composable, so the evaluator reads no planner state.
+export type HeroNoteContext = {
   heroId: HeroId;
   rawStats: HeroStats;
   rosterAllocatedCombat: number;
@@ -35,7 +32,7 @@ export interface HeroNoteContext {
   golemBonusAvailable: boolean;
   alaSecondeReady: boolean;
   pairStats: PairStat[];
-}
+};
 
 export const HERO_NOTES: Record<HeroId, string> = {
   coupe:
@@ -65,24 +62,21 @@ export const HERO_NOTES: Record<HeroId, string> = {
 export const WATERBOY_EP8_NOTE =
   'Hired in episode 8 he joins at rank 1 with only his starting power, for a marginally harder endgame.';
 
-export function getHeroNote(heroId: HeroId, isEp8Waterboy: boolean): string {
-  if (heroId === 'waterboy' && isEp8Waterboy) {
+export function getHeroNote(
+  heroId: HeroId,
+  ep8RecruitIds: ReadonlySet<HeroId>
+): string {
+  if (heroId === 'waterboy' && ep8RecruitIds.has('waterboy')) {
     return WATERBOY_EP8_NOTE;
   }
 
   return HERO_NOTES[heroId];
 }
 
-function capitalize(stat: StatName): string {
-  return stat[0]!.toUpperCase() + stat.slice(1);
-}
-
-// * Declaration order is the render order: warnings 1-7, then suggestions 8-10, only the
-// * true ones. Advisories 3 and 4 are per-stat and can each contribute more than one line.
+// * Declaration order is render order, warnings before suggestions.
 export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
   const lines: AdvisoryLine[] = [];
 
-  // * #1 — roster-wide allocated Combat, shown on every hero with an allocated point in it.
   if (ctx.rosterAllocatedCombat > 4 && ctx.ownAllocatedCombat > 0) {
     lines.push({
       id: 'roster-combat',
@@ -91,7 +85,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #2 — Supernova overwrites Combat/Mobility outright; any point spent there is wasted.
   if (
     ctx.heroId === 'flambae' &&
     ctx.supernovaTrained &&
@@ -104,7 +97,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #3 — per stat, per synergy pair: waste is what allocation contributed beyond 10.
   const pairWasteStats = new Set<StatName>();
 
   for (const pairStat of ctx.pairStats) {
@@ -122,7 +114,7 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     }
   }
 
-  // * #4 — a raw stat at the cap, deferring to #3 wherever it already quantifies the same waste.
+  // * Defers to the pair warning wherever that already quantifies the same waste.
   for (const stat of STAT_NAMES) {
     if (ctx.rawStats[stat] >= MAX_STAT_VALUE && !pairWasteStats.has(stat)) {
       lines.push({
@@ -133,7 +125,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     }
   }
 
-  // * #5 — past 8, Spread Thin's own bonus already reaches the cap.
   if (ctx.heroId === 'golem' && ctx.spreadThinTrained) {
     for (const stat of STAT_NAMES) {
       if (ctx.rawStats[stat] > 8) {
@@ -146,7 +137,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     }
   }
 
-  // * #6 — Wolf Pack rarely pays off; XP is usually maxed before it matters.
   if (ctx.heroId === 'invisigal' && ctx.wolfPackSelected) {
     lines.push({
       id: 'wolf-pack',
@@ -155,7 +145,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #7 — Harder Head needs him hurt to pay off; Squeeze In is the stronger pick.
   if (ctx.heroId === 'punch-up' && ctx.harderHeadSelected) {
     lines.push({
       id: 'harder-head',
@@ -164,7 +153,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #8 — Golem is a strong recipient for a spare bonus point.
   if (ctx.heroId === 'golem' && ctx.golemBonusAvailable) {
     lines.push({
       id: 'golem-bonus',
@@ -173,7 +161,7 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #9 — arithmetic only, once À la Seconde is already trained; never an argument for taking it.
+  // * Arithmetic only, once À la Seconde is already trained; never an argument for taking it.
   if (
     (ctx.heroId === 'coupe' || ctx.heroId === 'punch-up') &&
     ctx.alaSecondeReady
@@ -185,7 +173,6 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  // * #10 — with Spread Thin trained, Golem can solo multi-slot calls effectively.
   if (ctx.heroId === 'golem' && ctx.spreadThinTrained) {
     lines.push({
       id: 'spread-thin-solo',
@@ -195,4 +182,8 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
   }
 
   return lines;
+}
+
+function capitalize(stat: StatName): string {
+  return stat[0]!.toUpperCase() + stat.slice(1);
 }

@@ -4,12 +4,7 @@
       <h2 class="font-heading text-title uppercase">Your team</h2>
     </div>
 
-    <!-- * The bottom row: four positional slots side by side — controls on top, avatar in
-         the middle, label at the bottom — so filling, clearing or moving a hero reflows
-         nothing (feature 015). Keeping all four in one row at every tier (feature 016) is
-         `min-w-0` and no `flex-wrap`, not a fluid width: the slots keep their design width
-         as the flex basis and shrink out of it only once the row would not fit, so the
-         widest tier measures exactly what it did before. -->
+    <!-- * Four fixed slots, so filling, clearing or moving a hero reflows nothing (feature 015); `min-w-0` without `flex-wrap` keeps them in one row, shrinking from their design width only once it would not fit (feature 016). -->
     <TransitionGroup
       tag="div"
       name="slot"
@@ -24,13 +19,8 @@
           slot === null ? 'border-dashed border-default' : 'border-accented'
         "
       >
-        <!-- * The control row keeps its height in every state; ineligible controls are
-             disabled or invisible, never missing. Below 35rem there is no room for a row
-             above the portrait, so it becomes `contents` and its four children position
-             themselves into the portrait's corners instead — the arrows sit at the bottom
-             two, which a copy leaves free because it has none. Each carries its own scrim:
-             the button variant alone does not separate a disabled control from the art
-             behind it, and an arrow that reads as absent reads as a bug. -->
+        <!-- * The control row keeps its height, with ineligible controls disabled or invisible, never missing. -->
+        <!-- * Below 35rem the row becomes `contents` and its children sit in the portrait's corners, each on its own scrim so a disabled arrow does not read as absent against the art. -->
         <div class="flex h-6 w-full items-center gap-1 @max-[35rem]:contents">
           <span
             class="w-3 text-center font-heading text-label text-dimmed @max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:w-auto @max-[35rem]:bg-default/80 @max-[35rem]:px-1"
@@ -71,8 +61,7 @@
           </template>
         </div>
 
-        <!-- * A filled slot opens the hero's detail dialog (the illusion opens its
-             source's) — replacing a hero is remove-then-add (feature 015). -->
+        <!-- * A filled slot opens the detail dialog, the illusion its source's; replacing a hero is remove-then-add (feature 015). -->
         <button
           v-if="slot !== null && slot !== GOLEM_COPY_SLOT"
           type="button"
@@ -164,14 +153,16 @@
 </template>
 
 <script setup lang="ts">
-// * Feature 015's team row: four positional slots. All state changes go through the
-// * guarded planner actions; the picker offers only the current roster minus the team.
 import HeroPortrait from '@/components/HeroPortrait.vue';
 
 import { GOLEM_COPY_SLOT, ILLUSION_SLOT } from '@/types/mission';
 
 import type { HeroId } from '@/types/hero';
 import type { MissionSlot } from '@/types/mission';
+
+const emit = defineEmits<{
+  viewDetail: [heroId: HeroId];
+}>();
 
 const {
   heroes,
@@ -184,17 +175,10 @@ const {
   moveMissionSlot
 } = useHeroPlanner();
 
-const emit = defineEmits<{
-  viewDetail: [heroId: HeroId];
-}>();
-
 const pickerOpen = ref(false);
 const pickerSlot = ref<number | null>(null);
 
-// * Identity for the swap travel (feature 020). A hero is the same card wherever it lands, so it is keyed
-// * by hero id and the row moves it. Empty slots, Golem copies and Prism illusions have no identity of
-// * their own — a copy is interchangeable with any other, and there are commonly several — so they are
-// * keyed by position and change where they stand instead of travelling.
+// * A hero is keyed by id so the swap travels it (feature 020); empty slots, copies and illusions have no identity of their own, so they are keyed by position and change in place.
 const teamSlots = computed(() =>
   missionSlots.value.map((slot, index) => ({
     slot,
@@ -217,12 +201,9 @@ function pick(heroId: HeroId) {
   pickerSlot.value = null;
 }
 
-// * The pressed arrow travels with its card, so focus follows the hero on its own — until the card lands
-// * where that arrow is disabled and the browser drops focus to the document. Handing it to the card's
-// * other arrow keeps the keyboard on the slot the hero now occupies (feature 020).
+// * Focus travels with the card until it lands where the pressed arrow is disabled and the browser drops it; the card's other arrow then takes it (feature 020).
 async function moveSlot(index: number, direction: -1 | 1, event: MouseEvent) {
-  // ! `data-team-slot`, not `data-slot`: Nuxt UI puts its own `data-slot` on the button, so `closest`
-  // ! would stop at the control instead of reaching the card that travels with the hero.
+  // ! `data-team-slot`, not `data-slot`: Nuxt UI puts its own `data-slot` on the button, so `closest` would stop at the control.
   const card = (event.currentTarget as HTMLElement).closest('[data-team-slot]');
 
   moveMissionSlot(index, direction);
@@ -254,7 +235,7 @@ function viewSlotDetail(slot: Exclude<MissionSlot, null>) {
 }
 
 function heroName(id: HeroId): string {
-  return (heroes.value ?? []).find((hero) => hero.id === id)?.name ?? id;
+  return heroes.value.find((hero) => hero.id === id)?.name ?? id;
 }
 
 function slotName(slot: Exclude<MissionSlot, null>): string {
@@ -280,17 +261,12 @@ function slotHeroId(slot: Exclude<MissionSlot, null>): HeroId {
 </script>
 
 <style scoped>
-/* * Annex §11 list-move: the two swapped cards travel into each other's positions rather than exchanging
- * contents in place, so which two slots swapped is legible. Transform only — the row's geometry is fixed. */
+/* * The swapped cards travel into each other's positions, so which two slots swapped is legible (annex §11). */
 .slot-move {
   transition: transform var(--duration-slow) ease-in-out;
 }
 
-/* ! A leaving card is dropped from layout at once. Empty slots, copies and illusions are keyed by position,
- * so swapping a hero with an empty changes which positional keys exist: one card leaves while another
- * enters, and for the length of the travel the row would otherwise hold five 128px cards in space for
- * four — measured, and plainly visible. There is no leave animation to preserve, so `display: none` is
- * the whole fix; the card the user is watching is the one travelling, and it is never the one leaving. */
+/* ! Dropped from layout at once: swapping a hero with a positional slot makes one card leave as another enters, and the row would otherwise hold five cards in space for four for the length of the travel. */
 .slot-leave-active {
   display: none;
 }

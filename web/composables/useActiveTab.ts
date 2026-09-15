@@ -1,22 +1,15 @@
 export const TAB_URL_PARAM = 'tab';
 
-// * The planner's tabs, by their UTabs values. `overview` is the default and never appears
-// * in the URL; the param is written only for the other two.
+// * `overview` is the default and never appears in the URL.
 const TAB_VALUES = ['overview', 'synergy-pairs', 'mission-simulator'] as const;
 
 export type TabValue = (typeof TAB_VALUES)[number];
 
-function isTabValue(value: unknown): value is TabValue {
-  return TAB_VALUES.includes(value as TabValue);
-}
-
-// * Feature 015: the active tab lives in the URL but never in the build document — switching
-// * tabs must not mark the build dirty, so this composable touches no planner state.
+// * The tab lives in the URL but never in the build document, so switching tabs never marks the build dirty (feature 015).
 export function useActiveTab() {
   const activeTab = useState<TabValue>('activeTab', () => 'overview');
 
-  // * Called on mount, not during setup: `/` is prerendered with the overview active, and the
-  // * server cannot know the query, so the switch happens client-side — like `?build=`.
+  // * Called on mount, not during setup: `/` is prerendered with the overview active, and the server cannot know the query.
   function initTabFromUrl() {
     if (import.meta.server) {
       return;
@@ -50,13 +43,15 @@ export function useActiveTab() {
     window.history.replaceState({}, '', url.toString());
   }
 
-  // ! A writable computed, bound with `v-model`: with a one-way `:model-value` plus an
-  // ! update handler, the tabs component keeps its own copy of the selection and the two
-  // ! can drift — leaving two panels visible at once.
+  // ! Bind this with `v-model`: with a one-way `:model-value` plus an update handler, the tabs component keeps its own copy of the selection and two panels can show at once.
   const activeTabModel = computed({
     get: () => activeTab.value,
     set: (value: TabValue) => setActiveTab(value)
   });
 
   return { activeTab, activeTabModel, initTabFromUrl, setActiveTab };
+}
+
+function isTabValue(value: unknown): value is TabValue {
+  return TAB_VALUES.includes(value as TabValue);
 }

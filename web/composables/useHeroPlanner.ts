@@ -2,27 +2,19 @@ import { FIXED_LEVEL_HEROES, HEROES } from '@/types/hero';
 
 import type { Hero, HeroId } from '@/types/hero';
 
-// * Singleton composable for hero planning. Uses useNuxtApp to cache the instance and prevent duplicate computeds/watchers.
-export function useHeroPlanner() {
-  const nuxtApp = useNuxtApp();
+type HeroPlanner = ReturnType<typeof createHeroPlanner>;
 
-  // * Cache the composable instance to avoid duplicate computeds and watchers
-  if (!(nuxtApp as any)._heroPlanner) {
-    (nuxtApp as any)._heroPlanner = createHeroPlanner();
-  }
+// * Cached on the Nuxt app, so its computeds and watchers exist once however many components ask.
+export function useHeroPlanner(): HeroPlanner {
+  const nuxtApp = useNuxtApp() as { _heroPlanner?: HeroPlanner };
 
-  return (nuxtApp as any)._heroPlanner as ReturnType<typeof createHeroPlanner>;
+  return (nuxtApp._heroPlanner ??= createHeroPlanner());
 }
 
-// * Main hero planner composable that aggregates all hero management functionality. Acts as a unified interface for episode setup, level-ups, powers, and flight training.
 function createHeroPlanner() {
-  // * A constant, not a fetch: the roster ships with the app. Still a ref because every sub-composable takes one.
-  const heroes = ref<Hero[]>(HEROES);
-
-  // * Initialize all sub-composables with explicit dependencies
-  const episodeSetup = useHeroEpisodeSetup(heroes);
-  const levelUp = useHeroLevelUp(heroes, episodeSetup);
-  const powerTraining = useHeroPowerTraining(heroes, episodeSetup, levelUp);
+  const episodeSetup = useHeroEpisodeSetup();
+  const levelUp = useHeroLevelUp(episodeSetup);
+  const powerTraining = useHeroPowerTraining(episodeSetup, levelUp);
   const flightTraining = useHeroFlightTraining(episodeSetup, powerTraining);
   const missionSimulator = useMissionSimulator(
     episodeSetup,
@@ -47,7 +39,7 @@ function createHeroPlanner() {
   }
 
   return {
-    heroes,
+    heroes: ref<Hero[]>(HEROES),
     ...episodeSetup,
     ...levelUp,
     ...powerTraining,

@@ -1,5 +1,5 @@
 <template>
-  <UTabs
+  <u-tabs
     :items="tabs"
     :model-value="activeTab"
     class="flex h-full w-full flex-col"
@@ -18,7 +18,7 @@
     </template>
 
     <template #overview>
-      <!-- * `min-h-full` + `mt-auto` on the line: it sits at the bottom of the panel while the content is shorter than it, and follows the content down once it is not (feature 010). Same shape in the other two tabs. -->
+      <!-- * `min-h-full` with `mt-auto` on the line keeps it at the panel's bottom until the content is taller, in all three tabs (feature 010). -->
       <div class="flex min-h-full tab-fade flex-col gap-4 p-4">
         <div
           class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
@@ -29,7 +29,7 @@
             class="flex w-full max-w-92 flex-col gap-2"
           >
             <HeroCard
-              :hero-id="pair.top.id as HeroId"
+              :hero-id="pair.top.id"
               @viewDetail="handleViewDetail(pair.top.id)"
             />
 
@@ -40,7 +40,7 @@
             </u-separator>
 
             <HeroCard
-              :hero-id="pair.bottom.id as HeroId"
+              :hero-id="pair.bottom.id"
               @viewDetail="handleViewDetail(pair.bottom.id)"
             />
           </div>
@@ -62,7 +62,7 @@
             <HeroCard
               v-for="hero in ep8Recruits"
               :key="hero.id"
-              :hero-id="hero.id as HeroId"
+              :hero-id="hero.id"
               @viewDetail="handleViewDetail(hero.id)"
             />
           </div>
@@ -89,32 +89,13 @@
     </template>
 
     <template #mission-simulator>
-      <!-- * The responsive ladder (feature 015), written down in one place: container
-           queries on this wrapper, so the rules survive any future page chrome. What they
-           measure is this element's *content* box, which `p-4` sits outside of — and the
-           layout's scrolling main takes a further 10px for its scrollbar, so a threshold
-           fires 42px below the viewport width it names. 77rem is the first split, not 78:
-           at a 1280 viewport this box measures 1238, and 78rem would put the widest tier's
-           own width into the split tier. 49.5rem (≈834px viewport) then takes everything to
-           a single column — the point where the two tracks and their gap (454 + 316 + 16)
-           stop fitting, not a round number. The two thresholds below that — 35rem for the team, 28.5rem for
-           the templates and the requirements check — live in those components. -->
+      <!-- * The responsive ladder's container queries measure this wrapper's content box, which sits 42px under the viewport once `p-4` and main's scrollbar are taken (feature 015). -->
+      <!-- * 77rem is the first split because a 1280 viewport measures 1238 here; 49.5rem is where the two tracks and their gap (454 + 316 + 16) stop fitting. The team's and templates' own thresholds live in those components. -->
       <div class="@container flex min-h-full tab-fade flex-col gap-4 p-4">
-        <!-- * A grid, not a wrapping flex row: the team has to take a row of its own at
-             every width while staying its own natural width above 77rem, and only grid
-             separates those two — `col-span-full` breaks the row, `justify-self` decides
-             whether it fills it. Below 78rem it fills, matching the first row, which now
-             fills too; the whole stack is capped at the width the three panels occupy
-             above the threshold so nothing jumps across it. The math panel's `order-1` is
-             the ladder's only reordering: it slides past the team to the third row.
-             ! The first track's 454px floor is the templates panel's own width. Two equal
-             `1fr` tracks look right until the container drops under ~876, where half of it
-             stops holding the panel's four columns and the `Fail ≥` column spills out of
-             the card — silently, since it stays inside the tab. The floor keeps the tracks
-             equal while there is room and lets the requirements check give up width first
-             when there is not. -->
+        <!-- * A grid, because only grid lets the team take its own row at every width while keeping its natural width above 77rem: `col-span-full` breaks the row and `justify-self` decides whether it fills. The math panel's `order-1` is the ladder's only reordering. -->
+        <!-- ! The first track's 454px floor is the templates panel's own width: with two equal `1fr` tracks under ~876px, its `Fail ≥` column silently spills out of the card. -->
         <div
-          class="grid grid-cols-[auto_auto_auto] justify-center gap-4 @max-[77rem]:mx-auto @max-[77rem]:max-w-[74.5rem] @max-[77rem]:grid-cols-[minmax(454px,1fr)_1fr] @max-[49.5rem]:grid-cols-1"
+          class="grid grid-cols-[auto_auto_auto] justify-center gap-4 @max-[77rem]:mx-auto @max-[77rem]:max-w-298 @max-[77rem]:grid-cols-[minmax(454px,1fr)_1fr] @max-[49.5rem]:grid-cols-1"
         >
           <MissionTemplatesPanel />
           <MissionRequirementsPanel />
@@ -131,7 +112,7 @@
         <PrivacyLink class="mt-auto" />
       </div>
     </template>
-  </UTabs>
+  </u-tabs>
 
   <HeroDetailDialog
     :hero-id="selectedHeroId"
@@ -151,30 +132,6 @@ import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 
 import type { HeroId } from '@/types/hero';
 import type { TabValue } from '@/composables/useActiveTab';
-
-// * Feature 027. `WebApplication`, not the factory's `SoftwareApplication` default: nuxt-schema-org has no `defineWebApplication`, so the type is set explicitly here and the resolver merges it with its own default into `["SoftwareApplication", "WebApplication"]` rather than replacing it — both are valid, and `WebApplication` is what the feature document calls for. Name/description read off Site Config (`nuxt.config.ts`'s `site` block) rather than a hardcoded copy.
-const site = useSiteConfig();
-
-useSchemaOrg([
-  defineSoftwareApp({
-    '@type': 'WebApplication',
-    name: site.name,
-    description: site.description,
-    applicationCategory: 'UtilitiesApplication'
-  })
-]);
-
-const selectedHeroId = ref<HeroId | null>(null);
-
-const { activeTab, initTabFromUrl, setActiveTab } = useActiveTab();
-
-// * UTabs models its value as string | number; the tab union is ours, so the narrowing
-// * happens here rather than as a cast in the template.
-function handleTabChange(value: string | number) {
-  setActiveTab(value as TabValue);
-}
-
-onMounted(initTabFromUrl);
 
 const tabs = [
   {
@@ -197,7 +154,29 @@ const tabs = [
   }
 ];
 
+const site = useSiteConfig();
+
+const { activeTab, initTabFromUrl, setActiveTab } = useActiveTab();
+
 const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
+
+const selectedHeroId = ref<HeroId | null>(null);
+
+// * `WebApplication` is set explicitly because nuxt-schema-org has no `defineWebApplication`; the resolver merges it with its `SoftwareApplication` default (feature 027).
+
+useSchemaOrg([
+  defineSoftwareApp({
+    '@type': 'WebApplication',
+    name: site.name,
+    description: site.description,
+    applicationCategory: 'UtilitiesApplication'
+  })
+]);
+
+// * UTabs models its value as string | number; the tab union is ours, so it is narrowed here rather than cast in the template.
+function handleTabChange(value: string | number) {
+  setActiveTab(value as TabValue);
+}
 
 function handleViewDetail(id: HeroId) {
   selectedHeroId.value = id;
@@ -206,4 +185,6 @@ function handleViewDetail(id: HeroId) {
 function handleCloseDetail() {
   selectedHeroId.value = null;
 }
+
+onMounted(initTabFromUrl);
 </script>

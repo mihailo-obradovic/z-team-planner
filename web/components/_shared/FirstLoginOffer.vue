@@ -7,16 +7,14 @@
         </p>
 
         <div class="flex flex-col gap-2">
-          <!-- ! size xl, not the default md: it is the only step whose container clears the
-               ! 24px touch floor (annex §14.2). The box itself paints at 20 and the label is
-               ! part of the target, so the row is what a finger lands on. -->
+          <!-- ! Size xl, not the default md: it is the only step whose container clears the 24px touch floor, with the label part of the target (annex §14.2). -->
           <u-checkbox
-            v-for="build in candidates"
-            :key="build.id"
+            v-for="localBuild in candidates"
+            :key="localBuild.id"
             size="xl"
-            :model-value="selected.includes(build.id)"
-            :label="build.name"
-            @update:model-value="handleToggle(build.id, $event === true)"
+            :model-value="selected.includes(localBuild.id)"
+            :label="localBuild.name"
+            @update:model-value="handleToggle(localBuild.id, $event)"
           />
         </div>
 
@@ -125,17 +123,18 @@ function reportOutcome(report: ImportReport) {
   });
 }
 
-function handleToggle(id: string, checked: boolean) {
-  selected.value = checked
-    ? [...selected.value, id]
-    : selected.value.filter((selectedId) => selectedId !== id);
+function handleToggle(id: string, value: boolean | 'indeterminate') {
+  selected.value =
+    value === true
+      ? [...selected.value, id]
+      : selected.value.filter((selectedId) => selectedId !== id);
 }
 
 function handleKeep() {
   importBuilds({
     builds: candidates.value
-      .filter((build) => selected.value.includes(build.id))
-      .map((build) => ({ name: build.name, data: build.data }))
+      .filter((localBuild) => selected.value.includes(localBuild.id))
+      .map((localBuild) => ({ name: localBuild.name, data: localBuild.data }))
   });
 }
 
@@ -152,7 +151,7 @@ watch(isSignedIn, (signedIn, wasSignedIn) => {
     return;
   }
 
-  selected.value = candidates.value.map((build) => build.id);
+  selected.value = candidates.value.map((localBuild) => localBuild.id);
   isOpen.value = true;
 });
 

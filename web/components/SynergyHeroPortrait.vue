@@ -30,6 +30,6 @@ defineEmits<{
 const { heroes } = useHeroPlanner();
 
 const hero = computed(() =>
-  (heroes.value ?? []).find((h) => h.id === props.heroId)!
+  heroes.value.find((candidate) => candidate.id === props.heroId)!
 );
 </script>

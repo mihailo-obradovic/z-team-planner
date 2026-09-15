@@ -45,14 +45,16 @@ describe('getHeroNote', () => {
     for (const heroId of Object.keys(
       HERO_NOTES
     ) as (keyof typeof HERO_NOTES)[]) {
-      expect(getHeroNote(heroId, false)).toBe(HERO_NOTES[heroId]);
+      expect(getHeroNote(heroId, new Set())).toBe(HERO_NOTES[heroId]);
     }
   });
 
   it('swaps Waterboy to the episode-8 note only when hired then, never both', () => {
-    expect(getHeroNote('waterboy', false)).toBe(HERO_NOTES.waterboy);
-    expect(getHeroNote('waterboy', true)).toBe(WATERBOY_EP8_NOTE);
-    expect(getHeroNote('waterboy', true)).not.toBe(HERO_NOTES.waterboy);
+    const ep8Waterboy = new Set(['waterboy'] as const);
+
+    expect(getHeroNote('waterboy', new Set())).toBe(HERO_NOTES.waterboy);
+    expect(getHeroNote('waterboy', ep8Waterboy)).toBe(WATERBOY_EP8_NOTE);
+    expect(getHeroNote('waterboy', ep8Waterboy)).not.toBe(HERO_NOTES.waterboy);
   });
 });
 

@@ -122,9 +122,7 @@
               <ScrollRegion
                 class="flex flex-col p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
               >
-                <!-- * Feature 025. No transition and no `:key`: this panel's structure is the same for every
-                     * hero, so re-creating it faded the word "Combat" out and back in identically. The DOM
-                     * persists and only the figures change, counting under the annex's value count. -->
+                <!-- * No transition and no `:key`: the structure is the same for every hero, so the DOM persists and only the figures count to their new values (feature 025). -->
                 <div class="flex flex-col gap-3">
                   <div
                     class="flex items-center gap-4 border-b-2 border-default pb-3"
@@ -221,8 +219,7 @@
                     </li>
                   </ul>
 
-                  <!-- * Feature 025. The block comes and goes with the hero's partner, so it takes the state
-                       * fade; the control inside it never moves while one exists. -->
+                  <!-- * The block comes and goes with the hero's partner under the state fade; the control inside never moves while one exists (feature 025). -->
                   <Transition name="state-fade">
                     <div v-if="synergyPartner" class="flex flex-col gap-3">
                       <button
@@ -233,12 +230,8 @@
                         <u-icon name="i-lucide-link" class="size-4 shrink-0" />
                         <span>Synergy partner:</span>
 
-                        <!-- * Only the name changes, so only the name fades, and the two names overlap in one
-                             * grid cell rather than following each other — the label beside them would otherwise
-                             * shift as the cell emptied and refilled.
-                             ! The invisible longest name is what reserves the cell. Without it the cell is as
-                             ! wide as whichever name is showing, and this row re-centres on every switch, which
-                             ! is the movement the whole panel is holding still to avoid. -->
+                        <!-- * Only the name fades, with old and new overlapping in one grid cell so the label beside them does not shift. -->
+                        <!-- ! The invisible longest name reserves the cell; without it the row re-centres on every switch. -->
                         <span class="grid">
                           <span
                             class="invisible col-start-1 row-start-1"
@@ -569,8 +562,7 @@ const POWER_ICONS = [
   'i-lucide-swords'
 ] as const;
 
-// * What this component needs of a `ScrollRegion`: the one method it calls. Structural rather than the
-// * component's own instance type, so the dialog does not import a component it renders by auto-import.
+// * Structural rather than the component's instance type, so the dialog does not import a component it renders by auto-import.
 type RosterStrip = { bringIntoView: (target: HTMLElement) => void };
 
 const props = defineProps<{
@@ -582,15 +574,13 @@ const emit = defineEmits<{
   select: [heroId: HeroId];
 }>();
 
-// * Both rails are mounted at every width — one is `display: none` — so both are asked to follow and the
-// * hidden one measures zero and no-ops. Nothing here has to know which tier is on screen.
+// * Both rails are mounted at every width, so both are asked to follow and the hidden one measures zero and no-ops.
 const rosterRail = useTemplateRef<RosterStrip>('rosterRail');
 const rosterRibbon = useTemplateRef<RosterStrip>('rosterRibbon');
 const railTiles = useTemplateRef<HTMLElement[]>('railTile');
 const ribbonTiles = useTemplateRef<HTMLElement[]>('ribbonTile');
 
 const {
-  visibleHeroes,
   synergyPairColumns,
   ep8Recruits,
   showEp8Recruits,
@@ -621,8 +611,7 @@ const rosterOrder = computed(() => {
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
 
-// * A tile the user reached for is followed on the click itself, not through the watcher: clicking the
-// * hero already open changes nothing to watch, and a half-clipped tile should still come whole (feature 019).
+// * Followed on the click itself, not through the watcher: clicking the open hero changes nothing to watch, and a half-clipped tile should still come whole (feature 019).
 function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
   const tile = event.currentTarget;
 
@@ -634,8 +623,7 @@ function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
   emit('select', heroId);
 }
 
-// * The roster control is the only thing in the dialog saying where you are in the roster, so the marked
-// * tile is brought into view whenever the open hero moves — including the moves the app makes for the user.
+// * The marked tile is the dialog's only sign of where you are in the roster, so it follows every move of the open hero, the app's included.
 function followMarkedHero() {
   const index = rosterOrder.value.findIndex(
     (rosterHero) => rosterHero.id === props.heroId
@@ -657,8 +645,7 @@ function followTile(strip: RosterStrip | null, tile: HTMLElement | undefined) {
   strip.bringIntoView(tile);
 }
 
-// ! Deferred a frame past the DOM patch: on open the dialog is still laying out, and feature 013 reads a
-// ! not-yet-laid-out region as zeroes — harmless, but it would leave the tile where it was.
+// ! Deferred a frame past the DOM patch: on open the dialog is still laying out, and a region not yet laid out measures as zeroes.
 watch(
   () => props.heroId,
   () => {
@@ -688,9 +675,7 @@ watch(
   }
 );
 
-// ! Opening is itself a trigger, and a watcher only fires on a change — so a dialog mounted with a hero
-// ! already set needs this. It belongs in a lifecycle hook rather than an `immediate` watcher because
-// ! `/` is prerendered: an immediate callback runs in setup, on the server, where there is no rAF.
+// ! A dialog mounted with a hero already set needs this, and a hook rather than an `immediate` watcher because `/` is prerendered and the server has no rAF.
 onMounted(() => {
   requestAnimationFrame(followMarkedHero);
 });
@@ -716,7 +701,6 @@ const synergyPartner = computed(() => {
 const {
   hero,
   statBonuses,
-  levelUpPointsUsed,
   bonusLevel,
   pointsRemaining,
   bonusFull,
@@ -726,7 +710,6 @@ const {
   flightInfo,
   flightShown,
   flightLocked,
-  hasPowers,
   resolvedStat
 } = useHeroDerived(() => props.heroId);
 
@@ -734,37 +717,28 @@ const { note: heroNote, advisories: heroAdvisories } = useHeroNotes(
   () => props.heroId
 );
 
-const powers = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-  return HERO_POWERS[props.heroId];
-});
+const displayPowers = computed(() =>
+  props.heroId ? (HERO_POWERS[props.heroId] ?? []) : []
+);
 
-const powerState = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-  return getPowerState(props.heroId);
-});
+const powerState = computed(() =>
+  props.heroId ? getPowerState(props.heroId) : null
+);
 
-const displayPowers = computed(() => powers.value ?? []);
-
-const specialPowerStateValue = computed(() => {
-  if (!props.heroId) {
-    return 0;
-  }
-  return getSpecialPowerState(props.heroId);
-});
+const specialPowerStateValue = computed(() =>
+  props.heroId ? getSpecialPowerState(props.heroId) : 0
+);
 
 const specialAbility = computed(() => {
   if (!props.heroId) {
     return null;
   }
+
   const mechanics =
     SPECIAL_POWER_MECHANICS[
       props.heroId as keyof typeof SPECIAL_POWER_MECHANICS
     ];
+
   if (!mechanics) {
     return null;
   }
@@ -786,8 +760,8 @@ const specialAbility = computed(() => {
   }
 
   if (mechanics.type === 'en-pointe') {
-    const isUpgraded = powerState.value?.trainableSelected === 2;
-    const bonus = isUpgraded ? '+3' : '+1';
+    const alaSecondeTrained = powerState.value?.trainableSelected === 2;
+    const bonus = `+${alaSecondeTrained ? mechanics.upgradeBonus : mechanics.baseBonus}`;
 
     return {
       name: 'En Pointe',
@@ -831,7 +805,9 @@ function spreadThinDescription(state: number): string {
 
   const slots = state === 1 ? '1 slot' : `${state} slots`;
 
-  return `Expanded into ${slots} — every stat up ${state * 25}%.`;
+  const percent = state * SPECIAL_POWER_MECHANICS.golem.percentPerSlot * 100;
+
+  return `Expanded into ${slots} — every stat up ${percent}%.`;
 }
 
 function enPointeDescription(bonus: string, state: number): string {
@@ -859,61 +835,52 @@ function isPowerActive(power: HeroPowerDefinition): boolean {
   if (!powerState.value) {
     return false;
   }
+
   if (power.slot === 'starting') {
     return powerState.value.startingRevealed;
   }
-  if (power.slot === 'trainable-1') {
-    return powerState.value.trainableSelected === 1;
-  }
-  if (power.slot === 'trainable-2') {
-    return powerState.value.trainableSelected === 2;
-  }
-  return false;
+
+  return powerState.value.trainableSelected === trainableIndex(power.slot);
 }
 
 function isPowerDisabled(power: HeroPowerDefinition): boolean {
   if (!props.heroId || !powerState.value) {
     return true;
   }
+
   if (power.slot === 'starting') {
     return false;
   }
-  if (power.slot === 'trainable-1') {
-    return (
-      !powerState.value.startingRevealed ||
-      (powerState.value.trainableSelected !== 1 &&
-        trainingsUsed.value >= MAX_POWER_TRAININGS)
-    );
-  }
-  if (power.slot === 'trainable-2') {
-    return (
-      !powerState.value.startingRevealed ||
-      (powerState.value.trainableSelected !== 2 &&
-        trainingsUsed.value >= MAX_POWER_TRAININGS)
-    );
-  }
-  return false;
+
+  return (
+    !powerState.value.startingRevealed ||
+    (powerState.value.trainableSelected !== trainableIndex(power.slot) &&
+      trainingsUsed.value >= MAX_POWER_TRAININGS)
+  );
 }
 
 function handleTogglePower(power: HeroPowerDefinition) {
   if (!props.heroId || isPowerDisabled(power)) {
     return;
   }
+
   if (power.slot === 'starting') {
     toggleStartingPower(props.heroId);
+
     return;
   }
-  if (power.slot === 'trainable-1') {
-    toggleTrainablePower(props.heroId, 1);
-    return;
-  }
-  if (power.slot === 'trainable-2') {
-    toggleTrainablePower(props.heroId, 2);
-  }
+
+  toggleTrainablePower(props.heroId, trainableIndex(power.slot));
 }
-// * The pair's combined effective stats — the planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014). Read-only: the dialog edits one hero.
-// ! Declared above the tween below, not beside the other pair helpers: `useTweenedValues` reads its
-// ! source once at setup, so a source referencing a `const` declared later throws on the first render.
+
+function trainableIndex(
+  slot: Exclude<HeroPowerDefinition['slot'], 'starting'>
+): 1 | 2 {
+  return slot === 'trainable-1' ? 1 : 2;
+}
+
+// * The planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014).
+// ! Declared above the tween: `useTweenedValues` reads its source once at setup, so a source referencing a later `const` throws on the first render.
 const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
   const partner = synergyPartner.value;
 
@@ -924,12 +891,7 @@ const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
   return getPairCombinedStats(props.heroId, partner.id);
 });
 
-// * Feature 025. One tween for every figure the dialog shows, so they travel together and with the
-// * radar beside them, which shares this composable (decision 008). A single fixed-length array is
-// * what keeps it one rAF loop and, more importantly, keeps the length stable: `useTweenedValues`
-// * lands instantly when the length changes, and a hero without a synergy partner would otherwise
-// * make every figure on the panel jump. Its pair slots simply hold zero, unread behind a block
-// * that has faded out.
+// ! One fixed-length array for every figure (feature 025): `useTweenedValues` lands instantly when the length changes, so a hero without a partner would make every figure jump. Its pair slots then hold zero behind a faded-out block.
 const LEVEL_INDEX = STAT_NAMES.length;
 const BONUS_INDEX = LEVEL_INDEX + 1;
 const PAIR_OFFSET = BONUS_INDEX + 1;
@@ -943,8 +905,7 @@ const figureTargets = computed(() => [
 
 const figures = useTweenedValues(figureTargets);
 
-// * Rounded off the travelling value; anything deciding state (a capped stepper, the disabled minus)
-// * reads the settled one, so it cannot flicker mid-count.
+// * Rounded off the travelling value; anything deciding state reads the settled one, so it cannot flicker mid-count.
 function shownFigure(index: number): number {
   return Math.round(figures.value[index] ?? 0);
 }
@@ -956,8 +917,7 @@ function shownStat(stat: StatName): number {
 const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
 const shownBonus = computed(() => shownFigure(BONUS_INDEX));
 
-// * Reserves the synergy control's name cell (annex §13, layout stability): the widest name any
-// * partner can carry, so the label beside it never re-centres when the partner changes.
+// * Reserves the synergy control's name cell (annex §13).
 const longestHeroName = computed(() =>
   rosterOrder.value.reduce(
     (longest: string, rosterHero) =>
@@ -973,8 +933,7 @@ const shownCombinedStats = computed(() =>
   }))
 );
 
-// * The note only earns its line where a slot-filling power is actually in play — feature 012's deduction is invisible on every other pair.
-// * Only while the power is actually contributing. The line explains a subtraction from the pair total, and with Spread Thin untrained there is no bonus to subtract from — the sentence would be describing arithmetic the reader cannot see, on the panel where the copy is tightest.
+// * The suffix explains feature 012's slot deduction, so it shows only while Spread Thin is actually contributing to the pair.
 const pairFillsASlot = computed(() =>
   [props.heroId, synergyPartner.value?.id].some(
     (id) =>
@@ -994,8 +953,7 @@ const pairTotalBaseText = computed(() =>
 const PAIR_TOTAL_SPREAD_THIN_SUFFIX =
   " Spread Thin counts the partner's slot as filled.";
 
-// * Both possible lengths, for the reserved-height grid in the template — see
-// * descriptionVariants above for the same technique.
+// * Both possible lengths, for the reserved-height grid in the template.
 const pairTotalDescriptionVariants = computed(() => [
   pairTotalBaseText.value,
   pairTotalBaseText.value + PAIR_TOTAL_SPREAD_THIN_SUFFIX

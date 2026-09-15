@@ -1,11 +1,4 @@
-// * Tween a fixed-length array of numbers toward a target, one requestAnimationFrame loop for the whole array. Written here rather than pulled from `@vueuse/core`'s `useTransition`, which this project declined (feature 006) — the loop below is what that composable does internally.
-// * Values, never coordinates: a caller derives its geometry from what this returns, so everything drawn from those values (a polygon and its plot dots) moves as one object without being tweened separately.
-
-// * Ease-out cubic. Fast at the start so a click is acknowledged immediately, settling rather than stopping.
-function easeOutCubic(progress: number): number {
-  return 1 - Math.pow(1 - progress, 3);
-}
-
+// * Written here because `@vueuse/core`'s `useTransition` was declined (feature 006). Tweens values, never coordinates, so everything a caller draws from them moves as one object.
 export function useTweenedValues(
   source: MaybeRefOrGetter<readonly number[]>,
   durationMs = 200
@@ -71,4 +64,9 @@ export function useTweenedValues(
   onScopeDispose(stop);
 
   return readonly(displayed);
+}
+
+// * Fast at the start, so a click is acknowledged immediately.
+function easeOutCubic(progress: number): number {
+  return 1 - Math.pow(1 - progress, 3);
 }

@@ -86,17 +86,17 @@ Not role-specific. (Cloud saves require the API schema to accept the new keys; n
 
 The success model, the slot effects and the illusion lifecycle are exercised case by case in the two test files named under Tests. These rows pin a rendered state or a boundary rather than a number.
 
-| Input                                | Expected Output                  | Notes                                |
-| ------------------------------------ | -------------------------------- | ------------------------------------ |
-| all REQs 0                           | 100% regardless of team          | empty required area covers trivially |
-| empty team, any REQ > 0              | 0%                               | nothing to cover with                |
-| coverage 100%, nothing failing       | 100% on green with a check       | the certain-success state            |
-| ep3 cut removes a team hero          | hero silently leaves the team    | also on deserialization              |
-| old v1 document without the new keys | defaults, fresh random templates | backward compatible                  |
+| Input                          | Expected Output               | Notes                                  |
+| ------------------------------ | ----------------------------- | -------------------------------------- |
+| all REQs 0                     | 100% regardless of team       | empty required area covers trivially   |
+| empty team, any REQ > 0        | 0%                            | nothing to cover with                  |
+| coverage 100%, nothing failing | 100% on green with a check    | the certain-success state              |
+| ep3 cut removes a team hero    | hero silently leaves the team | also on deserialization                |
+| document without `mt`          | loads with no templates       | never rolled; no migration pre-release |
 
 ## Business Rules
 
-- The serialized-format change is **additive on v1**: new optional keys only, old documents load unchanged, unknown keys stay tolerated client-side. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) learn the keys in the same change; the 8KB document cap holds.
+- The serialized-format change adds optional keys on v1, and unknown keys stay tolerated client-side. Templates roll only for a fresh planner with nothing to load; a loaded document supplies its own or has none. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) learn the keys in the same change; the 8KB document cap holds.
 - Threshold checks (fail and 2×XP) compare the **clamped team total** of their stat, at-or-above. Each column holds at most one threshold — enforced by the setter, sanitized to the first on load, rejected by the server past one.
 - Derived slot effects are local to the simulator's totals and math panel; `heroSpecialPowers` state is never read for En Pointe/Spread Thin here and never written.
 - The illusion contributes stats only — it is nobody for power, synergy-pair, or roster purposes.

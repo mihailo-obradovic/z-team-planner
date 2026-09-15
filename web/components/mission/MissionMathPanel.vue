@@ -4,16 +4,8 @@
       <h2 class="font-heading text-title uppercase">The math</h2>
     </div>
 
-    <!-- * Feature 016: one column at the widest tier and at the narrowest, two in between —
-         the stat rows left, the success calculation and the special conditions right. The
-         panel fills its row below 77rem, so `w-96` is the widest tier's width only; below
-         that the grid tracks decide. The two children are already the two columns.
-         * The lower bound is the panel's own, not the layout's: below 77rem this panel
-         spans the whole tab whether the tab is one column or three, so two columns keep
-         working past the point the rest of the layout stacks — measured, down to a 510px
-         panel. The bound is set well above that, at a 768px viewport, which is 726 here:
-         the tab's queried box runs 42px under the viewport once the scrolling main has its
-         scrollbar. Written in px because it is a viewport decision, not a rem one. -->
+    <!-- * One column at the widest and narrowest tiers, two in between; `w-96` applies only at the widest, where the panel does not fill its row (feature 016). -->
+    <!-- * The two-column floor is a 768px viewport, 726px of the tab's queried box once main has its scrollbar, and so written in px; two columns were measured to hold down to a 510px panel. -->
     <div
       class="grid w-96 gap-3 p-3 @max-[77rem]:w-auto @max-[77rem]:@min-[726px]:grid-cols-2 @max-[77rem]:@min-[726px]:items-start @max-[77rem]:@min-[726px]:gap-x-8"
     >
@@ -47,8 +39,7 @@
         </ul>
       </div>
 
-      <!-- * Every row below renders always, with a dash when it has nothing to say — a
-           threshold or power appearing changes a value, never the panel's height. -->
+      <!-- * Every row always renders, with a dash when it has nothing to say, so a threshold or power appearing never changes the panel's height. -->
       <div class="flex flex-col gap-1">
         <h3 class="font-heading text-label text-dimmed uppercase">
           Success calculation
@@ -73,8 +64,7 @@
               Synergy level
             </dt>
             <dd class="flex items-center gap-2">
-              <!-- * The 4-position switch (feature 015): one global level, +5% each, inert
-                   without a pair on the team. -->
+              <!-- * One global level, +5% each, inert without a pair on the team (feature 015). -->
               <div class="flex gap-1" role="group" aria-label="Synergy level">
                 <IconButton
                   v-for="level in SYNERGY_LEVELS"
@@ -134,7 +124,7 @@
                 variant="outline"
                 size="lg"
               >
-                {{ failed ? `${success.failedStat} fail` : 'Safe' }}
+                {{ failed ? `${missionSuccess.failedStat} fail` : 'Safe' }}
               </u-badge>
               <span v-else class="font-heading text-base font-bold text-dimmed">
                 —
@@ -169,8 +159,6 @@
 </template>
 
 <script setup lang="ts">
-// * Feature 015's right column: the estimate's provenance, row by row, from the planner's
-// * missionSuccess — nothing here recomputes, and every row holds its place (see above).
 import { STAT_NAMES } from '@/types/hero';
 import { STAT_ICONS } from '@/utils/statIcons';
 
@@ -190,11 +178,8 @@ const {
   setMissionSynergyLevel
 } = useHeroPlanner();
 
-const success = computed(() => missionSuccess.value);
-const failed = computed(() => success.value.failedStat !== null);
+const failed = computed(() => missionSuccess.value.failedStat !== null);
 
-// * Every number in this panel tweens, the way the estimate does: the stat totals and
-// * requirements, the coverage and the synergy bonus all travel to their new value.
 const tweenTargets = computed(() => [
   ...STAT_NAMES.map((stat) => missionTeamTotals.value[stat]),
   ...STAT_NAMES.map((stat) => missionActiveTemplateData.value?.req[stat] ?? 0),
@@ -209,8 +194,7 @@ const totalRows = computed(() =>
     stat,
     need: Math.round(tweened.value[STAT_NAMES.length + index] ?? 0),
     have: Math.round(tweened.value[index] ?? 0),
-    // * The check compares the settled values, not the travelling ones, so the icon does
-    // * not flicker mid-tween.
+    // * Compares the settled values, not the travelling ones, so the icon does not flicker mid-tween.
     met:
       missionTeamTotals.value[stat] >=
       (missionActiveTemplateData.value?.req[stat] ?? 0)
@@ -222,7 +206,7 @@ const hasFailThresholds = computed(
 );
 
 const reattemptNote = computed(() => {
-  const names = success.value.reattempters.map(
+  const names = missionSuccess.value.reattempters.map(
     (hero) => REATTEMPT_NAMES[hero as keyof typeof REATTEMPT_NAMES] ?? hero
   );
 
@@ -232,6 +216,7 @@ const reattemptNote = computed(() => {
 const coveragePercent = computed(() =>
   Math.round(tweened.value[STAT_NAMES.length * 2] ?? 0)
 );
+
 const synergyPercent = computed(() =>
   Math.round(tweened.value[STAT_NAMES.length * 2 + 1] ?? 0)
 );

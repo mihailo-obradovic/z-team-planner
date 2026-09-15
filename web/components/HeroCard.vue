@@ -64,7 +64,7 @@
               <IconButton
                 :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
                 :color="bonusLevel > 0 ? 'primary' : 'neutral'"
-                :disabled="bonusLevel >= 4 || bonusFull"
+                :disabled="bonusLevel >= MAX_BONUS_LEVEL_PER_HERO || bonusFull"
                 :swap-key="bonusLevel"
                 @click="addBonusLevel(heroId)"
               >
@@ -151,7 +151,11 @@ import HeroPortrait from '@/components/HeroPortrait.vue';
 import HeroPowerChips from '@/components/HeroPowerChips.vue';
 
 import { confirmationText } from '@/utils/confirmationText';
-import { STAT_NAMES, MAX_STAT_VALUE } from '@/types/hero';
+import {
+  STAT_NAMES,
+  MAX_BONUS_LEVEL_PER_HERO,
+  MAX_STAT_VALUE
+} from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
 
@@ -201,6 +205,7 @@ const flightVisuallyActive = computed(() => {
   if (props.heroId !== 'sonar') {
     return flightActive.value;
   }
+
   return flightActive.value && monsterForm.value;
 });
 

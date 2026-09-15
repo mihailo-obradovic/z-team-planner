@@ -1,15 +1,9 @@
-// * Feature 015: mission success starts from radar coverage — the area the team's radar
-// * shape shares with the required shape, over the required shape's area. Both shapes are
-// * star polygons on the same equally-spaced axes (RADAR_STAT_ORDER decides which values
-// * land where), so the intersection is computed sector by sector: in each sector the
-// * boundary is whichever chord runs nearer the center, and the two chords cross at most
-// * once, splitting the sector into two triangles at the crossing point.
-
-interface Point {
+type Point = {
   x: number;
   y: number;
-}
+};
 
+// * The area the team's radar shares with the required radar, over the required area (feature 015).
 export function radarCoverage(team: number[], required: number[]): number {
   const requiredArea = starArea(required);
 
@@ -19,6 +13,19 @@ export function radarCoverage(team: number[], required: number[]): number {
   }
 
   return sharedArea(team, required) / requiredArea;
+}
+
+function starArea(values: number[]): number {
+  let area = 0;
+
+  for (let i = 0; i < values.length; i++) {
+    area += triangleArea(
+      axisPoint(values, i),
+      axisPoint(values, (i + 1) % values.length)
+    );
+  }
+
+  return area;
 }
 
 function axisPoint(values: number[], index: number): Point {
@@ -38,19 +45,7 @@ function cross(a: Point, b: Point): number {
   return a.x * b.y - a.y * b.x;
 }
 
-function starArea(values: number[]): number {
-  let area = 0;
-
-  for (let i = 0; i < values.length; i++) {
-    area += triangleArea(
-      axisPoint(values, i),
-      axisPoint(values, (i + 1) % values.length)
-    );
-  }
-
-  return area;
-}
-
+// * Both shapes sit on the same equally spaced axes, so the intersection is taken per sector: its boundary is whichever chord runs nearer the center, and where the two chords cross the sector splits into two triangles.
 function sharedArea(team: number[], required: number[]): number {
   let area = 0;
 
@@ -60,22 +55,19 @@ function sharedArea(team: number[], required: number[]): number {
     const t2 = axisPoint(team, next);
     const r1 = axisPoint(required, i);
     const r2 = axisPoint(required, next);
-    const n1 = team[i]! <= required[i]! ? t1 : r1;
-    const n2 = team[next]! <= required[next]! ? t2 : r2;
+    const nearStart = team[i]! <= required[i]! ? t1 : r1;
+    const nearEnd = team[next]! <= required[next]! ? t2 : r2;
     const crossing = chordCrossing(t1, t2, r1, r2);
 
-    // * Same chord nearer at both axis ends: one triangle. Otherwise the chords cross
-    // * inside the sector and the shared region splits there.
     area += crossing
-      ? triangleArea(n1, crossing) + triangleArea(crossing, n2)
-      : triangleArea(n1, n2);
+      ? triangleArea(nearStart, crossing) + triangleArea(crossing, nearEnd)
+      : triangleArea(nearStart, nearEnd);
   }
 
   return area;
 }
 
-// * The intersection point of the two sector chords, or null when they do not cross
-// * strictly inside both segments (parallel, touching at an axis, or one fully inside).
+// * Null unless the chords cross strictly inside both segments, which excludes parallel chords, chords touching at an axis, and one lying fully inside the other.
 function chordCrossing(
   t1: Point,
   t2: Point,

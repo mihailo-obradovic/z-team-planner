@@ -4,13 +4,11 @@ import { MISSION_TEMPLATE_COUNT } from '@/types/mission';
 import type { HeroStats } from '@/types/hero';
 import type { MissionTemplate } from '@/types/mission';
 
-// * Feature 015: a fresh planner state rolls REQs in 3–8; template #2 gets one random
-// * stat's 2×XP threshold in 6–9, and template #3 a fixed fail example — combat at 8, the
-// * common end-game case with maxed heroes.
 const REQ_MIN = 3;
 const REQ_MAX = 8;
 const THRESHOLD_MIN = 6;
 const THRESHOLD_MAX = 9;
+// * The common end-game failure with maxed heroes (feature 015).
 const FAIL_EXAMPLE_STAT = 'combat';
 const FAIL_EXAMPLE_VALUE = 8;
 
@@ -36,10 +34,10 @@ function randomReqs(): HeroStats {
   ) as HeroStats;
 }
 
-function randomStat() {
-  return STAT_NAMES[randomInt(0, STAT_NAMES.length - 1)]!;
-}
-
 function randomInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function randomStat() {
+  return STAT_NAMES[randomInt(0, STAT_NAMES.length - 1)]!;
 }

@@ -9,7 +9,6 @@ import {
   ILLUSION_SLOT,
   MISSION_SLOT_COUNT
 } from '@/types/mission';
-import { rollMissionTemplates } from '@/utils/missionTemplates';
 
 import type {
   HeroId,
@@ -22,18 +21,18 @@ import type { PlannerState } from '@/composables/usePlannerState';
 import type { SerializedBuild, SerializedMissionTemplate } from '@/types/build';
 
 export function serializeBuild(state: PlannerState): SerializedBuild {
-  const build: SerializedBuild = { v: 1 };
+  const buildDocument: SerializedBuild = { v: 1 };
 
   if (state.ep3Cut.value !== DEFAULT_EP3_CUT) {
-    build.ec = state.ep3Cut.value;
+    buildDocument.ec = state.ep3Cut.value;
   }
 
   if (state.ep4Hire.value !== DEFAULT_EP4_HIRE) {
-    build.eh = state.ep4Hire.value;
+    buildDocument.eh = state.ep4Hire.value;
   }
 
   if (state.showEp8Recruits.value) {
-    build.e8 = 1;
+    buildDocument.e8 = 1;
   }
 
   const lu: Record<string, number[]> = {};
@@ -45,7 +44,7 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (Object.keys(lu).length > 0) {
-    build.lu = lu;
+    buildDocument.lu = lu;
   }
 
   const bl: Record<string, number> = {};
@@ -57,7 +56,7 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (Object.keys(bl).length > 0) {
-    build.bl = bl;
+    buildDocument.bl = bl;
   }
 
   const pw: Record<string, [number, number]> = {};
@@ -69,7 +68,7 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (Object.keys(pw).length > 0) {
-    build.pw = pw;
+    buildDocument.pw = pw;
   }
 
   const sp: Record<string, number> = {};
@@ -81,7 +80,7 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (Object.keys(sp).length > 0) {
-    build.sp = sp;
+    buildDocument.sp = sp;
   }
 
   const fl: string[] = [];
@@ -93,13 +92,12 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (fl.length > 0) {
-    build.fl = fl;
+    buildDocument.fl = fl;
   }
 
-  // * Rolled templates are never a default, so `mt` is present on every build the tab has
-  // * touched; only a state that never rolled (server render) omits it.
+  // * Rolled templates are never a default, so only a state that never rolled, on the server, omits `mt`.
   if (state.missionTemplates.value) {
-    build.mt = state.missionTemplates.value.map((template) => {
+    buildDocument.mt = state.missionTemplates.value.map((template) => {
       const entry: SerializedMissionTemplate = {
         r: statsToArray(template.req)
       };
@@ -119,35 +117,35 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
   }
 
   if (state.missionSlots.value.some((slot) => slot !== null)) {
-    build.mh = [...state.missionSlots.value];
+    buildDocument.mh = [...state.missionSlots.value];
   }
 
   if (state.missionSynergyLevel.value > 0) {
-    build.ml = state.missionSynergyLevel.value;
+    buildDocument.ml = state.missionSynergyLevel.value;
   }
 
   if (state.missionActiveTemplate.value > 0) {
-    build.ma = state.missionActiveTemplate.value;
+    buildDocument.ma = state.missionActiveTemplate.value;
   }
 
-  return build;
+  return buildDocument;
 }
 
 // ! Episode choices are written first and the rest only after `nextTick()`: the sub-composables watch those flags and reset allocations for cut and non-hired heroes on the next tick, which would otherwise wipe the values this function has just loaded.
 export async function deserializeBuild(
-  build: SerializedBuild,
+  buildDocument: SerializedBuild,
   state: PlannerState
 ): Promise<void> {
-  state.ep3Cut.value = build.ec ?? DEFAULT_EP3_CUT;
-  state.ep4Hire.value = build.eh ?? DEFAULT_EP4_HIRE;
-  state.showEp8Recruits.value = build.e8 === 1;
+  state.ep3Cut.value = buildDocument.ec ?? DEFAULT_EP3_CUT;
+  state.ep4Hire.value = buildDocument.eh ?? DEFAULT_EP4_HIRE;
+  state.showEp8Recruits.value = buildDocument.e8 === 1;
 
   await nextTick();
 
   const lu: Partial<Record<HeroId, HeroStats>> = {};
 
-  if (build.lu) {
-    for (const [id, values] of Object.entries(build.lu)) {
+  if (buildDocument.lu) {
+    for (const [id, values] of Object.entries(buildDocument.lu)) {
       lu[id as HeroId] = arrayToStats(values);
     }
   }
@@ -156,8 +154,8 @@ export async function deserializeBuild(
 
   const bl: Partial<Record<HeroId, number>> = {};
 
-  if (build.bl) {
-    for (const [id, level] of Object.entries(build.bl)) {
+  if (buildDocument.bl) {
+    for (const [id, level] of Object.entries(buildDocument.bl)) {
       bl[id as HeroId] = level;
     }
   }
@@ -166,8 +164,8 @@ export async function deserializeBuild(
 
   const pw: Partial<Record<HeroId, HeroPowerSelection>> = {};
 
-  if (build.pw) {
-    for (const [id, [revealed, selected]] of Object.entries(build.pw)) {
+  if (buildDocument.pw) {
+    for (const [id, [revealed, selected]] of Object.entries(buildDocument.pw)) {
       pw[id as HeroId] = {
         startingRevealed: revealed === 1,
         trainableSelected: selected as 0 | 1 | 2
@@ -179,8 +177,8 @@ export async function deserializeBuild(
 
   const sp: Partial<Record<HeroId, number>> = {};
 
-  if (build.sp) {
-    for (const [id, value] of Object.entries(build.sp)) {
+  if (buildDocument.sp) {
+    for (const [id, value] of Object.entries(buildDocument.sp)) {
       sp[id as HeroId] = value;
     }
   }
@@ -189,25 +187,22 @@ export async function deserializeBuild(
 
   const fl: Partial<Record<HeroId, boolean>> = {};
 
-  if (build.fl) {
-    for (const id of build.fl) {
+  if (buildDocument.fl) {
+    for (const id of buildDocument.fl) {
       fl[id as HeroId] = true;
     }
   }
 
   state.heroFlights.value = fl;
 
-  // * An old document without `mt` gets a fresh roll (feature 015) — on the client only, so a
-  // * server render cannot bake one roll into the prerendered payload.
-  state.missionTemplates.value = build.mt
-    ? build.mt.map(readTemplate)
-    : import.meta.client
-      ? rollMissionTemplates()
-      : null;
+  state.missionTemplates.value = buildDocument.mt?.map(readTemplate) ?? null;
 
-  state.missionSlots.value = readSlots(build.mh);
-  state.missionSynergyLevel.value = readRange(build.ml, 3) as SynergyLevel;
-  state.missionActiveTemplate.value = readRange(build.ma, 2);
+  state.missionSlots.value = readSlots(buildDocument.mh);
+  state.missionSynergyLevel.value = readRange(
+    buildDocument.ml,
+    3
+  ) as SynergyLevel;
+  state.missionActiveTemplate.value = readRange(buildDocument.ma, 2);
 }
 
 function statsToArray(stats: HeroStats): number[] {
@@ -218,14 +213,14 @@ function isZeroStats(stats: HeroStats): boolean {
   return STAT_NAMES.every((stat) => stats[stat] === 0);
 }
 
-// * Missing entries pad with `0` so a document written before a stat existed still loads.
+// * Missing entries read as `0`, because a share link's contents reach this unvalidated (feature 001).
 function arrayToStats(values: number[]): HeroStats {
   return Object.fromEntries(
     STAT_NAMES.map((stat, index) => [stat, values[index] ?? 0])
   ) as HeroStats;
 }
 
-// * A threshold column serializes as 5 values with 0 for unset — omitted entirely when empty.
+// * Omitted entirely when no stat carries a threshold.
 function thresholdsToArray(
   thresholds: Partial<HeroStats>
 ): number[] | undefined {
@@ -257,9 +252,7 @@ function readTemplate(entry: SerializedMissionTemplate): MissionTemplate {
 
 const HERO_IDS = new Set<string>(HEROES.map((hero) => hero.id));
 
-// * Pad or truncate to the four slots; an entry that is neither a hero nor the illusion
-// * marker empties its slot. A duplicated hero keeps its first slot only. Contextual cleanup
-// * (a hidden hero, an illusion without Prism beside it) is the team composable's job.
+// * Only structural cleanup happens here; contextual cleanup, such as a hidden hero or an illusion without Prism beside it, is the team composable's job.
 function readSlots(entries: (string | null)[] | undefined): MissionSlot[] {
   const seen = new Set<string>();
 

@@ -5,76 +5,58 @@ import {
   EP4_HIRE_OPTIONS,
   EP8_ALWAYS_RECRUITED,
   BASE_SYNERGY_PAIRS,
-  CONDITIONAL_SYNERGY_PAIRS
+  CONDITIONAL_SYNERGY_PAIRS,
+  HEROES
 } from '@/types/hero';
 
-import type { Hero, HeroId } from '@/types/hero';
+import type { HeroId } from '@/types/hero';
 
-// * Composable for managing episode choices and hero visibility. Handles episode 3 cut, episode 4 hire, and episode 8 recruits.
-export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
+export function useHeroEpisodeSetup() {
   const ep3Cut = useState<HeroId>('ep3Cut', () => DEFAULT_EP3_CUT);
   const ep4Hire = useState<HeroId>('ep4Hire', () => DEFAULT_EP4_HIRE);
   const showEp8Recruits = useState('showEp8Recruits', () => false);
 
-  const ep3CutItems = computed(
-    () =>
-      heroes.value
-        ?.filter((h) =>
-          EP3_CUT_OPTIONS.includes(h.id as (typeof EP3_CUT_OPTIONS)[number])
-        )
-        .map((h) => ({ label: h.name, value: h.id })) ?? []
+  const ep3CutItems = computed(() =>
+    HEROES.filter((hero) =>
+      (EP3_CUT_OPTIONS as readonly HeroId[]).includes(hero.id)
+    ).map((hero) => ({ label: hero.name, value: hero.id }))
   );
 
-  const ep4HireItems = computed(
-    () =>
-      heroes.value
-        ?.filter((h) =>
-          EP4_HIRE_OPTIONS.includes(h.id as (typeof EP4_HIRE_OPTIONS)[number])
-        )
-        .map((h) => ({ label: h.name, value: h.id })) ?? []
+  const ep4HireItems = computed(() =>
+    HEROES.filter((hero) =>
+      (EP4_HIRE_OPTIONS as readonly HeroId[]).includes(hero.id)
+    ).map((hero) => ({ label: hero.name, value: hero.id }))
   );
 
-  // * Who joins in episode 8, which is the same question as who cannot be trained: arriving
-  // * that late is exactly what removes the training (context/glossary.md, Trainable). It
-  // * decides who gets a card and what the training call sites gate on, and the two readings
-  // * cannot diverge — a hero hired in episode 4 is never in here.
+  // * Who joins in episode 8 is exactly who cannot be trained (glossary, Trainable), so the cards shown and the training gates can never disagree.
   const ep8RecruitIds = computed<Set<HeroId>>(() => {
     const ids = new Set<HeroId>(EP8_ALWAYS_RECRUITED);
 
     for (const id of EP4_HIRE_OPTIONS) {
       if (id !== ep4Hire.value) {
-        ids.add(id as HeroId);
+        ids.add(id);
       }
     }
 
     return ids;
   });
 
-  const visibleHeroes = computed(
-    () =>
-      heroes.value?.filter((hero) => {
-        if (hero.id === ep3Cut.value) {
-          return false;
-        }
+  const visibleHeroes = computed(() =>
+    HEROES.filter((hero) => {
+      if (hero.id === ep3Cut.value) {
+        return false;
+      }
 
-        if (hero.id === 'blonde-blazer') {
-          return showEp8Recruits.value;
-        }
+      if (ep8RecruitIds.value.has(hero.id)) {
+        return showEp8Recruits.value;
+      }
 
-        if (
-          EP4_HIRE_OPTIONS.includes(
-            hero.id as (typeof EP4_HIRE_OPTIONS)[number]
-          )
-        ) {
-          return hero.id === ep4Hire.value || showEp8Recruits.value;
-        }
-
-        return true;
-      }) ?? []
+      return true;
+    })
   );
 
   const ep8Recruits = computed(() =>
-    visibleHeroes.value.filter((h) => ep8RecruitIds.value.has(h.id))
+    visibleHeroes.value.filter((hero) => ep8RecruitIds.value.has(hero.id))
   );
 
   const synergyPairs = computed((): [HeroId, HeroId][] => {
@@ -96,7 +78,7 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
   });
 
   const synergyPairColumns = computed(() => {
-    const heroMap = new Map(visibleHeroes.value.map((h) => [h.id, h]));
+    const heroMap = new Map(visibleHeroes.value.map((hero) => [hero.id, hero]));
 
     const pairs = [];
 
@@ -123,11 +105,10 @@ export function useHeroEpisodeSetup(heroes: Ref<Hero[] | null | undefined>) {
     ep8Recruits,
     showEp8Recruits,
 
-    // * The heroes that have a card, and so the only ones any control can reach. Derived here already for `ep8Recruits` and `synergyPairColumns`; exposed so feature 005's agreement test can ask the app which heroes are drivable instead of keeping its own copy of the rule.
+    // * Exposed so feature 005's agreement test asks the app which heroes are drivable instead of keeping its own copy of the rule.
     visibleHeroes,
 
-    // * The derived pairs as id tuples — the mission simulator's synergy gate (feature 015)
-    // * asks about ids, not cards, so the raw pairs are exposed beside the resolved columns.
+    // * The mission simulator's synergy gate (feature 015) asks about ids, not cards, so the raw pairs are exposed beside the resolved columns.
     synergyPairs,
     synergyPairColumns
   };
