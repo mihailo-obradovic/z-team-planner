@@ -1,6 +1,6 @@
-// * Feature 021: the one place a portrait's rendered width is declared. `HeroPortrait` reads it per usage site and `nuxt.config.ts` derives `image.screens` from it, so the widths the app requests and the widths Vercel is allowed to produce cannot drift apart.
+// * The one place a portrait's rendered width is declared (feature 021): `HeroPortrait` and `image.screens` both read it, so the widths the app requests and the widths Vercel may produce cannot drift apart.
 
-// * The largest master's edge in px (test/unit/portrait-masters.test.ts). No width × density may exceed it, and test/unit/portrait-sizes.test.ts holds that line; a smaller master answers a request above its own size with itself, since neither Vercel nor IPX enlarges.
+// * The largest master's edge in px, which no width × density may exceed (both pinned by the portrait unit tests). A smaller master answers a larger request with itself, since neither Vercel nor IPX enlarges.
 export const PORTRAIT_MASTER = 512;
 
 export const PORTRAIT_DENSITIES = [1, 2];
