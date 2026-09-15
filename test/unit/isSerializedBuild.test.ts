@@ -47,7 +47,7 @@ describe('isSerializedBuild', () => {
     expect(isSerializedBuild(value)).toBe(false);
   });
 
-  // * Feature 001's format must stay backward-compatible, so a later client's document is still readable here.
+  // * The gate checks only the keys it knows and polices nothing else.
   it('accepts a v1 document carrying a key this client does not know', () => {
     expect(isSerializedBuild({ v: 1, xx: { anything: true } })).toBe(true);
   });

@@ -34,7 +34,7 @@ Hero base data is the `HEROES` constant in `types/hero.ts`, transcribed from `ca
 
 ## Local invariants
 
-- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`; `z-team-import-offer-seen` records that the first-login offer has been answered, and `z-team-spoiler-acknowledged` / `z-team-storage-notice-acknowledged` that each first-run banner has been confirmed) and share via the `build` URL parameter — the serialized-build format in `utils/buildDocument.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; keep it backward-compatible.
+- Builds persist client-side only (localStorage keys `z-team-builds`, `z-team-active-build`; `z-team-import-offer-seen` records that the first-login offer has been answered, and `z-team-spoiler-acknowledged` / `z-team-storage-notice-acknowledged` that each first-run banner has been confirmed) and share via the `build` URL parameter — the serialized-build format in `utils/buildDocument.ts`/`types/build.ts` is a protected area owned by `catalyst/features/001_build-persistence.md`; backward compatibility starts at the first public release, not before.
 - Hero ids (`types/hero.ts`) are referenced by saved/shared builds; renaming one breaks existing builds.
 - Game data mirrors `catalyst/context/game-mechanics.md` — change data only against that reference, not from memory.
 - Styling values come from `catalyst/annexes/design-system.md`, never a raw hex or an off-scale px. Colour is named through the seven semantic aliases, never a ramp name.

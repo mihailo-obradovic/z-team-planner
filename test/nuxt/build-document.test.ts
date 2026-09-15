@@ -65,8 +65,8 @@ async function freshPlanner() {
 
   await initial.loadInitialBuild();
 
-  // ! `useState` refs are shared for the lifetime of the module, so a hero trained in one test is still trained in the next. Loading an empty document is the reset: it puts every group back to `{}` and both episode choices back to their defaults, through the same path a real load takes.
-  await mode.loadAccountBuild({ v: 1 });
+  // ! `useState` refs are shared for the lifetime of the module, so a hero trained in one test is still trained in the next. Loading a document holding only the fresh roll is the reset: it puts every group back to `{}` and both episode choices back to their defaults, through the same path a real load takes.
+  await mode.loadAccountBuild({ v: 1, mt: serializeBuild(state).mt });
 
   return {
     ...planner,
@@ -218,12 +218,11 @@ describe('build document — round trip', () => {
       zz: 'from a later client'
     } as SerializedBuild);
 
-    // * Feature 001's contract is backward compatibility, so an unknown key is read past rather than rejected — but it is not carried forward either.
+    // * The gate checks only the keys it knows, so an unknown key is read past rather than rejected — but it is not carried forward either.
     expect(planner.ep3Cut.value).toBe('coupe');
     expect(planner.serializeCurrentBuild()).toEqual({
       v: 1,
-      ec: 'coupe',
-      mt: ROLLED_TEMPLATES
+      ec: 'coupe'
     });
   });
 });
@@ -339,15 +338,13 @@ describe('build document — mission simulator keys (feature 015)', () => {
     expect(planner.serializeCurrentBuild()).toEqual(before);
   });
 
-  it('rolls fresh templates for a document from before the simulator', async () => {
+  it('loads a document without templates as having none, never rolling', async () => {
     const planner = await freshPlanner();
 
     await planner.loadSharedBuild({ v: 1 });
 
-    expect(planner.serializeCurrentBuild()).toEqual({
-      v: 1,
-      mt: ROLLED_TEMPLATES
-    });
+    expect(planner.plannerState.missionTemplates.value).toBeNull();
+    expect(planner.serializeCurrentBuild()).toEqual({ v: 1 });
   });
 
   it('sanitises loaded slots: unknown ids and duplicates empty out, ranges clamp', async () => {

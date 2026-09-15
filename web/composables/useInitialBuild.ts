@@ -28,13 +28,10 @@ export function useInitialBuild() {
 
       if (active) {
         await deserializeBuild(active.data, state);
+      } else {
+        // * Rolled before the snapshot, so the roll never counts as an unsaved change (feature 015).
+        state.missionTemplates.value = rollMissionTemplates();
       }
-    }
-
-    // * A fresh state (nothing to load) still needs its mission templates rolled — before the
-    // * snapshot, so the roll itself never counts as an unsaved change (feature 015).
-    if (!state.missionTemplates.value) {
-      state.missionTemplates.value = rollMissionTemplates();
     }
 
     updateSavedSnapshot();

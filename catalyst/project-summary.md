@@ -60,9 +60,9 @@ One line per record: type, status, title, link.
 
 Present only when the project has standing cross-cutting domain/method decisions (e.g. "negative values are signal, never clipped") — pre-resolved judgment calls the agent follows and never re-litigates (`references/domain-decisions.md`). One line each: decision + short rationale. A local decision graduates here when it proves cross-cutting.
 
-| Decision                       | Rationale |
-| ------------------------------ | --------- |
-| _No documented decisions yet._ | -         |
+| Decision                                                  | Rationale                                                                                                                                                       |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No backward compatibility before the first public release | No build document exists in the wild yet, so formats change without migrations, version bumps, or decoding of earlier shapes; the obligation starts at release. |
 
 ## Protected Areas
 

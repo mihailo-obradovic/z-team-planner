@@ -9,7 +9,6 @@ import {
   ILLUSION_SLOT,
   MISSION_SLOT_COUNT
 } from '@/types/mission';
-import { rollMissionTemplates } from '@/utils/missionTemplates';
 
 import type {
   HeroId,
@@ -196,12 +195,7 @@ export async function deserializeBuild(
 
   state.heroFlights.value = fl;
 
-  // * An old document without `mt` gets a fresh roll (feature 015), on the client only so the prerendered payload never bakes one in.
-  state.missionTemplates.value = buildDocument.mt
-    ? buildDocument.mt.map(readTemplate)
-    : import.meta.client
-      ? rollMissionTemplates()
-      : null;
+  state.missionTemplates.value = buildDocument.mt?.map(readTemplate) ?? null;
 
   state.missionSlots.value = readSlots(buildDocument.mh);
   state.missionSynergyLevel.value = readRange(
@@ -219,7 +213,7 @@ function isZeroStats(stats: HeroStats): boolean {
   return STAT_NAMES.every((stat) => stats[stat] === 0);
 }
 
-// * Missing entries pad with `0` so a document written before a stat existed still loads.
+// * Missing entries read as `0`, because a share link's contents reach this unvalidated (feature 001).
 function arrayToStats(values: number[]): HeroStats {
   return Object.fromEntries(
     STAT_NAMES.map((stat, index) => [stat, values[index] ?? 0])
