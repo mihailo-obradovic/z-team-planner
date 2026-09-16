@@ -6,6 +6,7 @@
       @click="emit('select', partner.id)"
     >
       <u-icon name="i-lucide-link" class="size-4 shrink-0" />
+
       <span>Synergy partner:</span>
 
       <!-- * Old and new names overlap in one grid cell so the label beside them stays put. -->

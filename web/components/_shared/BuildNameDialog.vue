@@ -13,7 +13,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="open = false">
+        <u-button variant="ghost" color="neutral" @click="close">
           Cancel
         </u-button>
 
@@ -49,4 +49,8 @@ withDefaults(
 const emit = defineEmits<{
   confirm: [];
 }>();
+
+function close() {
+  open.value = false;
+}
 </script>

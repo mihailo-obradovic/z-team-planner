@@ -26,6 +26,7 @@
             class="size-4 shrink-0"
             :class="index === activeIndex ? 'text-warning-500' : 'text-dimmed'"
           />
+
           <span
             class="font-heading text-base font-bold tracking-label uppercase"
           >
@@ -48,6 +49,7 @@
                 class="flex items-center gap-1 border border-accented bg-default px-2 py-0.5 text-toned"
               >
                 <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
+
                 <span class="font-heading text-base font-bold">
                   {{ template.req[stat] }}
                 </span>
@@ -98,12 +100,14 @@
               >
                 REQ
               </span>
+
               <span
                 class="text-center font-heading text-tag text-dimmed uppercase"
                 :class="conditionColumnClass"
               >
                 2×XP ≥
               </span>
+
               <span
                 class="text-center font-heading text-tag text-dimmed uppercase"
                 :class="conditionColumnClass"
@@ -120,6 +124,7 @@
                     :name="STAT_ICONS[stat]"
                     class="size-4 shrink-0 @max-[28.5rem]:size-3.5"
                   />
+
                   <span :class="wordmarkClass">{{ stat }}</span>
                 </span>
 
@@ -158,8 +163,6 @@
 import MissionValueStepper from '@/components/mission/MissionValueStepper.vue';
 
 import { STAT_NAMES } from '@/types/hero';
-import { STAT_ICONS } from '@/utils/statIcons';
-
 const {
   missionTemplates,
   missionActiveTemplate,

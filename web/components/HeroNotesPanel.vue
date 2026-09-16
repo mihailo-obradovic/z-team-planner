@@ -24,6 +24,7 @@
           <li v-if="heroNote" key="note" class="text-muted">
             {{ heroNote }}
           </li>
+
           <li
             v-for="advisory in heroAdvisories"
             :key="advisory.id"
@@ -38,8 +39,6 @@
 </template>
 
 <script setup lang="ts">
-import { pinLeaving } from '@/utils/pinLeaving';
-
 import type { HeroId } from '@/types/hero';
 
 const props = defineProps<{

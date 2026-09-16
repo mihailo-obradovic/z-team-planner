@@ -48,6 +48,7 @@
               <IconButton
                 icon="i-lucide-rotate-ccw"
                 color="neutral"
+                label="Reset this hero"
                 @click="resetHero(heroId)"
               />
             </span>
@@ -66,6 +67,7 @@
                 :color="bonusLevel > 0 ? 'primary' : 'neutral'"
                 :disabled="bonusLevel >= MAX_BONUS_LEVEL_PER_HERO || bonusFull"
                 :swap-key="bonusLevel"
+                label="Add a bonus level"
                 @click="addBonusLevel(heroId)"
               >
                 <span v-if="bonusLevel > 0" class="text-xs font-semibold"
@@ -114,6 +116,7 @@
                   icon="i-lucide-minus"
                   color="neutral"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
+                  :label="`Remove a ${stat} point`"
                   @click="statDown(heroId, resolvedStat(stat))"
                 />
               </div>
@@ -135,6 +138,7 @@
                       statBonuses[resolvedStat(stat)] >=
                       MAX_STAT_VALUE
                   "
+                  :label="`Add a ${stat} point`"
                   @click="statUp(heroId, resolvedStat(stat))"
                 />
               </div>
@@ -150,7 +154,6 @@
 import HeroPortrait from '@/components/HeroPortrait.vue';
 import HeroPowerChips from '@/components/HeroPowerChips.vue';
 
-import { confirmationText } from '@/utils/confirmationText';
 import {
   STAT_NAMES,
   MAX_BONUS_LEVEL_PER_HERO,

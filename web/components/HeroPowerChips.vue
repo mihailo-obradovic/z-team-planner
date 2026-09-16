@@ -123,8 +123,6 @@
 </template>
 
 <script setup lang="ts">
-import { confirmationText } from '@/utils/confirmationText';
-import { pinLeaving } from '@/utils/pinLeaving';
 import {
   HERO_POWERS,
   MAX_POWER_TRAININGS,

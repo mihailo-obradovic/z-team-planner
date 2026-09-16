@@ -42,6 +42,7 @@
               :alt="hero.name"
               class="aspect-square w-full border-2 border-accented bg-accented object-cover"
             />
+
             <span class="font-heading text-label uppercase">
               {{ hero.name }}
             </span>
@@ -61,8 +62,6 @@ import HeroPortrait from '@/components/HeroPortrait.vue';
 import MissionTeamSlot from '@/components/mission/MissionTeamSlot.vue';
 
 import { GOLEM_COPY_SLOT } from '@/types/mission';
-
-import { isHeroSlot, isRightmostCopy } from '@/utils/missionTeam';
 
 import type { HeroId } from '@/types/hero';
 

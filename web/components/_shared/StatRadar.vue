@@ -9,6 +9,7 @@
     preserveAspectRatio="xMidYMid meet"
   >
     <title :id="`${uid}-title`">{{ title }}</title>
+
     <desc :id="`${uid}-desc`">{{ description }}</desc>
 
     <!-- * Drawn outermost first, so the spokes and the data sit above them. -->

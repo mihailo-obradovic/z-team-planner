@@ -48,6 +48,7 @@
           />
           {{ displayedEstimate }}%
         </span>
+
         <span
           class="font-heading text-base tracking-label text-dimmed uppercase"
         >
@@ -59,8 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { STAT_ICONS, RADAR_STAT_ORDER } from '@/utils/statIcons';
-
 // * Each series as the radar draws it: a dashed rule, the team's fill, and the two threshold discs.
 const LEGEND = [
   {

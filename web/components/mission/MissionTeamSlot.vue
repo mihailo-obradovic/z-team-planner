@@ -26,6 +26,7 @@
             class="@max-[35rem]:absolute @max-[35rem]:bottom-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
             @click="handleMove(-1)"
           />
+
           <IconButton
             icon="i-lucide-chevron-right"
             :label="`Move ${name} right`"
@@ -100,6 +101,7 @@
       @click="emit('add')"
     >
       <u-icon name="i-lucide-plus" class="size-6" />
+
       <span class="@max-[35rem]:hidden">Add hero</span>
     </button>
   </div>
@@ -109,8 +111,6 @@
 import HeroPortrait from '@/components/HeroPortrait.vue';
 
 import { GOLEM_COPY_SLOT, ILLUSION_SLOT } from '@/types/mission';
-
-import { isHeroSlot } from '@/utils/missionTeam';
 
 import type { HeroId } from '@/types/hero';
 import type { MissionSlot } from '@/types/mission';
