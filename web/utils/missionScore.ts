@@ -10,15 +10,9 @@ import { radarCoverage } from '@/utils/radarCoverage';
 import type { HeroId, HeroStats, StatName, SynergyLevel } from '@/types/hero';
 import type {
   IllusionRatio,
-  MissionDerivedEffect,
   MissionTemplate,
   SlotPowerTraining
 } from '@/types/mission';
-
-export type SlotScore = {
-  stats: HeroStats | null;
-  effect: MissionDerivedEffect | null;
-};
 
 type SuccessInputs = {
   totals: HeroStats;
@@ -93,41 +87,28 @@ export function xpFulfilled(
 export function enPointe(
   index: number,
   aLaSeconde: SlotPowerTraining
-): { bonus: HeroStats; effect: MissionDerivedEffect | null } {
+): HeroStats {
   const mechanics = SPECIAL_POWER_MECHANICS.coupe;
   const bonus =
     aLaSeconde === 'trained' ? mechanics.upgradeBonus : mechanics.baseBonus;
   const stat = index === 0 ? 'combat' : index === 1 ? 'mobility' : null;
 
-  return {
-    bonus: mapStats((name) => (name === stat ? bonus : 0)),
-    effect: stat ? { type: 'en-pointe', stat, bonus } : null
-  };
+  return mapStats((name) => (name === stat ? bonus : 0));
 }
 
 // * Golem's Spread Thin pays +25% of his own starting-plus-allocated stats per copy standing on the team.
-export function spreadThin(
-  ownStats: HeroStats,
-  copies: number
-): { bonus: HeroStats; effect: MissionDerivedEffect | null } {
+export function spreadThin(ownStats: HeroStats, copies: number): HeroStats {
   const factor = SPECIAL_POWER_MECHANICS.golem.percentPerSlot * copies;
 
-  return {
-    bonus: mapStats((stat) => Math.floor(ownStats[stat] * factor)),
-    effect: copies > 0 ? { type: 'spread-thin', copies } : null
-  };
+  return mapStats((stat) => Math.floor(ownStats[stat] * factor));
 }
 
 // * An illusion mirrors its source live, never as a snapshot: half its stats floored per stat, or full once Perfect Copy is trained.
 export function illusion(
   sourceStats: HeroStats,
-  source: HeroId,
   ratio: IllusionRatio
-): SlotScore {
-  return {
-    stats: mapStats((stat) => Math.floor(sourceStats[stat] * ratio)),
-    effect: { type: 'illusion', source, ratio }
-  };
+): HeroStats {
+  return mapStats((stat) => Math.floor(sourceStats[stat] * ratio));
 }
 
 function mapStats(value: (stat: StatName) => number): HeroStats {

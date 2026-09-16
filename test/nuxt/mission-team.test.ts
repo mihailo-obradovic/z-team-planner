@@ -373,26 +373,6 @@ describe('derived slot effects and team totals', () => {
     // * Combat 8 + 7 caps at 10.
     expect(totals().combat).toBe(10);
   });
-
-  it('lists the derived effects for the math panel', () => {
-    planner.fillMissionSlot(0, 'coupe');
-    planner.fillMissionSlot(1, 'prism');
-
-    expect(planner.missionDerivedEffects.value).toEqual([
-      { type: 'en-pointe', stat: 'combat', bonus: 1 },
-      { type: 'illusion', source: 'coupe', ratio: 0.5 }
-    ]);
-
-    // * Spread Thin lists by its standing copies.
-    state.missionSlots.value = [null, null, null, null];
-    planner.toggleStartingPower('golem');
-    planner.toggleTrainablePower('golem', 1);
-    planner.fillMissionSlot(1, 'golem');
-
-    expect(planner.missionDerivedEffects.value).toEqual([
-      { type: 'spread-thin', copies: 2 }
-    ]);
-  });
 });
 
 describe('the illusion source', () => {

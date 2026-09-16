@@ -1,4 +1,4 @@
-import type { HeroId, HeroStats, StatName } from '@/types/hero';
+import type { HeroId, HeroStats } from '@/types/hero';
 
 export const MISSION_SLOT_COUNT = 4;
 export const MISSION_TEMPLATE_COUNT = 3;
@@ -17,12 +17,6 @@ export type MissionSlot =
 
 // * Whether the power a slot rule reads is trained; each rule names the trainable it means.
 export type SlotPowerTraining = 'trained' | 'untrained';
-
-// * Listed for the math panel, so every number it shows is explainable (feature 015).
-export type MissionDerivedEffect =
-  | { type: 'en-pointe'; stat: StatName; bonus: number }
-  | { type: 'spread-thin'; copies: number }
-  | { type: 'illusion'; source: HeroId; ratio: IllusionRatio };
 
 export type IllusionRatio = 0.5 | 1;
 

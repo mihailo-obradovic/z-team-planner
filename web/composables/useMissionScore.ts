@@ -9,21 +9,10 @@ import {
   teamTotals,
   xpFulfilled
 } from '@/utils/missionScore';
-import { illusionSource, isHeroSlot } from '@/utils/missionTeam';
+import { isHeroSlot } from '@/utils/missionTeam';
 
 import type { HeroId, HeroStats, SynergyLevel } from '@/types/hero';
-import type {
-  IllusionRatio,
-  MissionDerivedEffect,
-  SlotPowerTraining
-} from '@/types/mission';
-import type { SlotScore } from '@/utils/missionScore';
-
-const EFFECT_ORDER: MissionDerivedEffect['type'][] = [
-  'en-pointe',
-  'spread-thin',
-  'illusion'
-];
+import type { IllusionRatio, SlotPowerTraining } from '@/types/mission';
 
 // * En Pointe and Spread Thin come from the real team, ignoring the other tabs' what-if chips; Supernova and Sonar's form flow in through the shared effective stats.
 export function useMissionScore(
@@ -38,38 +27,27 @@ export function useMissionScore(
     training('prism', 1) === 'trained' ? 1 : 0.5
   );
 
-  const slotScores = computed<SlotScore[]>(() => {
+  const slotStats = computed<(HeroStats | null)[]>(() => {
     const slots = team.missionSlots.value;
-    const heroScores = slots.map((slot, index) =>
-      isHeroSlot(slot) ? heroScore(slot, index) : null
+    const heroStats = slots.map((slot, index) =>
+      isHeroSlot(slot) ? heroSlotStats(slot, index) : null
     );
 
     return slots.map((slot, index) => {
       if (slot !== ILLUSION_SLOT) {
         // * A copy is Golem's own expansion — its value is already in his boosted row.
-        return heroScores[index] ?? { stats: null, effect: null };
+        return heroStats[index] ?? null;
       }
 
-      const source = illusionSource(slots);
-      const sourceStats = heroScores[slots.indexOf('prism') - 1]?.stats;
+      const sourceStats = heroStats[slots.indexOf('prism') - 1];
 
-      return source && sourceStats
-        ? illusion(sourceStats, source, missionIllusionRatio.value)
-        : { stats: null, effect: null };
+      return sourceStats
+        ? illusion(sourceStats, missionIllusionRatio.value)
+        : null;
     });
   });
 
-  const missionTeamTotals = computed(() =>
-    teamTotals(slotScores.value.map((score) => score.stats))
-  );
-
-  const missionDerivedEffects = computed(() =>
-    slotScores.value
-      .flatMap((score) => (score.effect ? [score.effect] : []))
-      .sort(
-        (a, b) => EFFECT_ORDER.indexOf(a.type) - EFFECT_ORDER.indexOf(b.type)
-      )
-  );
+  const missionTeamTotals = computed(() => teamTotals(slotStats.value));
 
   // * Talk Shit works only in Hybrid form, which is the shared monster toggle being off (feature 012).
   const missionReattempters = computed<HeroId[]>(() => {
@@ -114,14 +92,12 @@ export function useMissionScore(
     }
   }
 
-  function heroScore(id: HeroId, index: number): SlotScore {
+  function heroSlotStats(id: HeroId, index: number): HeroStats {
     if (id === 'coupe') {
-      const { bonus, effect } = enPointe(index, training('coupe', 2));
-
-      return {
-        stats: powerTraining.getEffectiveStatsWithBonuses(id, bonus),
-        effect
-      };
+      return powerTraining.getEffectiveStatsWithBonuses(
+        id,
+        enPointe(index, training('coupe', 2))
+      );
     }
 
     if (id === 'golem') {
@@ -132,24 +108,17 @@ export function useMissionScore(
           HERO_STARTING_STATS.golem[stat] + allocations[stat]
         ])
       ) as HeroStats;
-      const { bonus, effect } = spreadThin(
-        ownStats,
-        team.missionCopyCount.value
-      );
 
-      return {
-        stats: powerTraining.getEffectiveStatsWithBonuses(id, bonus),
-        effect
-      };
+      return powerTraining.getEffectiveStatsWithBonuses(
+        id,
+        spreadThin(ownStats, team.missionCopyCount.value)
+      );
     }
 
-    return {
-      stats: powerTraining.getEffectiveStatsWithBonuses(
-        id,
-        powerTraining.getSpecialPowerBonusStats(id)
-      ),
-      effect: null
-    };
+    return powerTraining.getEffectiveStatsWithBonuses(
+      id,
+      powerTraining.getSpecialPowerBonusStats(id)
+    );
   }
 
   function training(id: HeroId, trainable: 1 | 2): SlotPowerTraining {
@@ -161,7 +130,6 @@ export function useMissionScore(
   return {
     missionSynergyLevel,
     missionTeamTotals,
-    missionDerivedEffects,
     missionIllusionRatio,
     missionSuccess,
     missionXpFulfilled,
