@@ -141,3 +141,42 @@ describe('hero derived values', () => {
     expect(await dialogText('golem')).toContain('Level 11');
   });
 });
+
+describe('trainable power lock', () => {
+  async function derived(heroId: HeroId) {
+    let instance!: ReturnType<typeof useHeroDerived>;
+
+    mounted.push(
+      await mountSuspended(
+        defineComponent({
+          setup() {
+            instance = useHeroDerived(() => heroId);
+
+            return () => h('div');
+          }
+        })
+      )
+    );
+
+    return instance;
+  }
+
+  it('locks both upgrades until the starting power is revealed', async () => {
+    const p = await planner();
+    const golem = await derived('golem');
+
+    expect(golem.isTrainableLocked(1)).toBe(true);
+    expect(golem.isTrainableLocked(2)).toBe(true);
+
+    p.toggleStartingPower('golem');
+
+    expect(golem.isTrainableLocked(1)).toBe(false);
+    expect(golem.isTrainableLocked(2)).toBe(false);
+  });
+
+  it('locks everything for a closed dialog', async () => {
+    const closed = await derived(null as unknown as HeroId);
+
+    expect(closed.isTrainableLocked(1)).toBe(true);
+  });
+});

@@ -71,11 +71,7 @@
 <script setup lang="ts">
 import HeroPowerCard from '@/components/HeroPowerCard.vue';
 
-import {
-  HERO_POWERS,
-  MAX_POWER_TRAININGS,
-  SPECIAL_POWER_MECHANICS
-} from '@/types/hero';
+import { HERO_POWERS, SPECIAL_POWER_MECHANICS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
@@ -87,7 +83,6 @@ const {
   getPowerState,
   toggleStartingPower,
   toggleTrainablePower,
-  trainingsUsed,
   getSpecialPowerState,
   toggleSpecialPower,
   monsterForm,
@@ -95,9 +90,13 @@ const {
   toggleFlight
 } = useHeroPlanner();
 
-const { flightActive, flightInfo, flightShown, flightLocked } = useHeroDerived(
-  () => props.heroId
-);
+const {
+  flightActive,
+  flightInfo,
+  flightShown,
+  flightLocked,
+  isTrainableLocked
+} = useHeroDerived(() => props.heroId);
 
 const displayPowers = computed(() => HERO_POWERS[props.heroId] ?? []);
 
@@ -125,11 +124,7 @@ function isPowerDisabled(power: HeroPowerDefinition): boolean {
     return false;
   }
 
-  return (
-    !powerState.value.startingRevealed ||
-    (powerState.value.trainableSelected !== trainableIndex(power.slot) &&
-      trainingsUsed.value >= MAX_POWER_TRAININGS)
-  );
+  return isTrainableLocked(trainableIndex(power.slot));
 }
 
 function trainableIndex(

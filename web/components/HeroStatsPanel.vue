@@ -153,7 +153,6 @@ const synergyPartner = computed(() => {
   return null;
 });
 
-// * One fixed-length array: `useTweenedValues` lands directly when the length changes.
 const LEVEL_INDEX = STAT_NAMES.length;
 const BONUS_INDEX = LEVEL_INDEX + 1;
 

@@ -57,7 +57,7 @@
         :icon="POWER_ICONS[index + 1]!"
         :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
         :active="trainablePowerActive(index)"
-        :disabled="isTrainableDisabled(index)"
+        :disabled="isTrainableLocked(trainableSlot(index))"
         :confirmation="
           () =>
             confirmationText({
@@ -123,11 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  HERO_POWERS,
-  MAX_POWER_TRAININGS,
-  SPECIAL_POWER_MECHANICS
-} from '@/types/hero';
+import { HERO_POWERS, SPECIAL_POWER_MECHANICS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
@@ -139,7 +135,6 @@ const {
   getPowerState,
   toggleStartingPower,
   toggleTrainablePower,
-  trainingsUsed,
   ep8RecruitIds,
   getSpecialPowerState,
   toggleSpecialPower,
@@ -147,13 +142,11 @@ const {
   toggleMonsterForm
 } = useHeroPlanner();
 
+const { isTrainableLocked } = useHeroDerived(() => props.heroId);
+
 const powerStates = computed(() => getPowerState(props.heroId));
 
 const specialPowerState = computed(() => getSpecialPowerState(props.heroId));
-
-const trainingsFull = computed(
-  () => trainingsUsed.value >= MAX_POWER_TRAININGS
-);
 
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
@@ -166,15 +159,13 @@ const upgradePowers = computed((): HeroPowerDefinition[] => {
   return powers.value.slice(1);
 });
 
-function trainablePowerActive(index: number) {
-  return powerStates.value.trainableSelected === index + 1;
+// * Upgrade powers follow the starting power, so list position 0 is trainable slot 1.
+function trainableSlot(index: number): 1 | 2 {
+  return index === 0 ? 1 : 2;
 }
 
-function isTrainableDisabled(index: number) {
-  return (
-    !powerStates.value.startingRevealed ||
-    (powerStates.value.trainableSelected !== index + 1 && trainingsFull.value)
-  );
+function trainablePowerActive(index: number) {
+  return powerStates.value.trainableSelected === trainableSlot(index);
 }
 
 function handleToggleStartingPower() {
@@ -182,7 +173,7 @@ function handleToggleStartingPower() {
 }
 
 function handleToggleTrainablePower(index: number) {
-  toggleTrainablePower(props.heroId, (index + 1) as 1 | 2);
+  toggleTrainablePower(props.heroId, trainableSlot(index));
 }
 
 function handleToggleSpecialPower() {

@@ -4,7 +4,8 @@ import {
   HERO_FLIGHT_CAPABILITY,
   MAX_BONUS_POINTS,
   MAX_FLIGHT_TRAININGS,
-  MAX_LEVEL_UPS
+  MAX_LEVEL_UPS,
+  MAX_POWER_TRAININGS
 } from '@/types/hero';
 import { isFlightTrainable } from '@/utils/isFlightTrainable';
 
@@ -28,6 +29,7 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     getBonusLevel,
     bonusLevelsUsed,
     getPowerState,
+    trainingsUsed,
     resolveDisplayStat,
     flyingHeroIds,
     flightTrainingsUsed
@@ -118,6 +120,21 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     return powerState.startingRevealed || powerState.trainableSelected > 0;
   });
 
+  // * A trained power can always be untrained; any other needs the starting power revealed and a training left.
+  function isTrainableLocked(slot: 1 | 2): boolean {
+    if (!id.value) {
+      return true;
+    }
+
+    const powerState = getPowerState(id.value);
+
+    return (
+      !powerState.startingRevealed ||
+      (powerState.trainableSelected !== slot &&
+        trainingsUsed.value >= MAX_POWER_TRAININGS)
+    );
+  }
+
   // * Sonar's stats are read under whichever form is active, so the stat a row displays is not always the stat it is named after.
   function resolvedStat(stat: StatName): StatName {
     return id.value ? resolveDisplayStat(id.value, stat) : stat;
@@ -137,6 +154,7 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     flightShown,
     flightLocked,
     hasPowers,
+    isTrainableLocked,
     resolvedStat
   };
 }
