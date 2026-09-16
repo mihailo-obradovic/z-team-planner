@@ -14,10 +14,7 @@
       </template>
 
       <template #right>
-        <!-- * Feature 023. One wrapper so the whole cluster is withheld or shown as a unit,
-             * and so `main.css` has a single element to key off rather than eight.
-             ! Withheld by CSS rather than `v-if`: these controls are in the prerendered HTML
-             ! and stay there. What the boot flag takes away is their paint, never the markup. -->
+        <!-- ! Withheld by CSS, not `v-if`: the markup stays in the prerendered HTML, only its paint waits for boot (feature 023). -->
         <div data-boot-withheld class="flex items-center gap-2">
           <BudgetCounters />
 
@@ -33,9 +30,7 @@
             />
           </ClientOnly>
 
-          <!-- * Outside ClientOnly on purpose: the store starts `unknown` on the server and on
-             * the first client render alike, so both draw the same reserved slot and the
-             * prerendered page never shows the wrong button (feature 004). -->
+          <!-- ! Outside ClientOnly on purpose: auth starts `unknown` on server and client alike, so both render the same reserved slot. -->
           <AuthMenu tier="labelled" />
 
           <AuthMenu tier="icon" />
@@ -64,7 +59,7 @@
             />
           </u-tooltip>
 
-          <!-- ! Cream, not text-inverted: --ui-text-inverted resolves to ink, which is right on the amber and gold solids and unreadable on the teal chrome this glyph sits on (annex §1, §14.1 — cream on chrome is 9.03:1). -->
+          <!-- ! Cream, not text-inverted: inverted resolves to ink, which is unreadable on the teal chrome (annex §14.1). -->
           <button
             type="button"
             class="flex size-11 touch-manipulation items-center justify-center text-neutral-100 md:hidden"
@@ -77,7 +72,7 @@
       </template>
     </u-header>
 
-    <!-- * `width` is the master's own 2560 and there is no 2x: `image.screens` is feature 021's portrait list, a width-less image would be snapped to its largest entry, and the module's default densities would ask for a 5120 that no source has. The wash's fitting size per viewport is a change of its own. -->
+    <!-- ! Explicit width and `x1`: without them the image module snaps to the portrait screens or requests a 5120 that no source has. -->
     <NuxtImg
       src="/images/background.webp"
       width="2560"
@@ -86,15 +81,12 @@
       alt=""
     />
 
-    <!-- * Feature 023. Nothing here reads the boot state: `main.css` hides this region while the
-         * flag is on, which keeps the decision in one place and off the hydrated tree. Hiding it
-         * also takes it out of the tab order and the accessibility tree, so `inert` and
-         * `aria-busy` would add nothing the hiding does not already do. -->
+    <!-- * Hidden during boot by `main.css`, which also removes it from the tab order and accessibility tree. -->
     <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
 
-    <!-- * Leave-only: the ring is already there when the app mounts, so it has no enter to play. -->
+    <!-- * Leave-only: the ring is already showing when the app mounts. -->
     <Transition
       leave-active-class="transition-opacity duration-(--duration-baseline) ease-in"
       leave-to-class="opacity-0"
@@ -103,10 +95,7 @@
     </Transition>
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-    <!-- * Feature 023. `v-if` here, where the header's cluster takes CSS: these two are already
-         * client-only, so they render nothing on the server and nothing for a visitor without
-         * JavaScript. There is no prerendered markup to preserve, and so nothing for the head
-         * block to restore either. -->
+    <!-- * `v-if` rather than the header's CSS withholding: client-only content has no prerendered markup to preserve. -->
     <ClientOnly>
       <FirstRunBanners v-if="!booting" />
     </ClientOnly>
@@ -146,12 +135,8 @@ const { setupBeforeUnload } = useUnsavedChanges();
 
 const storySetupOpen = ref(false);
 
-// * Feature 023. Read once, not reactively: the wait belongs to the boot of `/`, never to a
-// * later navigation that happens to land there. The value is the same on the server, in the
-// * prerendered HTML and on the first client render, and it is cleared only after mount, below.
-// * A plain ref rather than the query layer's `isPending` (stacks/frontend/nuxt/nuxt.md): what
-// * this waits on is local planner state read from localStorage, not a request, so there is no
-// * query whose state could stand in for it.
+// * Read once, not reactively: only the initial boot of `/` waits, never a later navigation to it.
+// * A plain ref, not query state: it waits on localStorage, not a request (feature 023).
 const booting = ref(useRoute().path === '/');
 
 function openStorySetup() {
@@ -159,12 +144,7 @@ function openStorySetup() {
 }
 
 onMounted(async () => {
-  // * `finally`, so a build that will not deserialize reveals the planner instead of leaving the
-  // * visitor behind a ring that never stops. What happens after the throw is unchanged: the
-  // * leave-site prompt is still not armed, because there is no loaded build to lose.
-  // ! The `catch` is what keeps that throw from becoming an unhandled rejection — it was one
-  // ! before this cover existed too, silent and unattributable. Reported the way the Firebase
-  // ! plugin reports its own failure, and nowhere else: this is a log, not a surface.
+  // * `finally` reveals the planner even when the build fails to load; the leave-site prompt stays unarmed, as there is nothing to lose.
   try {
     await loadInitialBuild();
   } catch (error) {
@@ -179,16 +159,16 @@ onMounted(async () => {
 });
 
 useHead({
-  // * Feature 027. `@nuxtjs/seo`'s SEO Utils otherwise applies `'%s %separator %siteName'` to every title at low tag-priority, on the assumption that a page's own title is a bare segment. Every title here is already complete (this file: "Z-Team Planner"; `web/pages/privacy.vue`: "Privacy — Z-Team Planner"), so left alone the default duplicated the site name — verified as `<title>Z-Team Planner | Z-Team Planner</title>`. This call's normal priority out-ranks that low-priority default (`node_modules/nuxt-seo-utils/dist/runtime/app/logic/applyDefaults.js`).
+  // ! Overrides SEO Utils' low-priority `'%s %separator %siteName'` default: every page title here is already complete, so it doubled the site name.
   titleTemplate: '%s',
 
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    // * The chrome the header already paints, so the browser's own bar continues the page rather than framing it (annex §1, lagoon 600).
+    // * Matches the header chrome, so the browser bar continues the page.
     { name: 'theme-color', content: '#143e38' }
   ],
   link: [
-    // ! Order matters: a browser takes the first icon it understands, so the scalable one leads and the .ico is the fallback for those that ignore SVG.
+    // ! Order matters: browsers take the first icon they understand, so SVG leads and .ico is the fallback.
     { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
     { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
     {
@@ -201,25 +181,14 @@ useHead({
   htmlAttrs: {
     lang: 'en',
 
-    // * Feature 023. The flag every boot rule keys off. On `<html>` via unhead rather than in the
-    // * template, so it is written outside the tree Vue hydrates and can never be part of a
-    // * mismatch.
-    // ! Two values, never an absent attribute. Resolving this to `undefined` leaves the
-    // ! server-rendered `data-booting="true"` on the element for good — unhead drops the key from
-    // ! its own state but does not remove an attribute it inherited from the SSR markup, so the
-    // ! app stayed hidden behind rules that never stopped matching. Flipping a value is an
-    // ! update, which does reach the DOM.
-    'data-booting': computed(() => (booting.value ? 'true' : 'false'))
+    // * The flag every boot rule keys off, set via unhead so it stays outside the hydrated tree.
+    // ! Always 'true' or 'false', never `undefined`: unhead does not remove an attribute inherited from SSR, so the app would stay hidden.
+    'data-booting': computed(() => String(booting.value))
   },
 
-  // * Without JavaScript nothing ever clears the flag, so the app would sit half-drawn behind a
-  // * ring that never stops. One block undoes every boot rule at once — partially undoing them
-  // * would be worse than either end state.
-  // ! In <head>, not the template: with scripting *on*, a browser parses the contents of a
-  // ! <noscript> element as plain text, while Vue's virtual DOM holds a <style> element, and
-  // ! hydrating one against the other is the exact mismatch this feature exists to avoid.
-  // ! `!important` because these rules and the ones they undo have equal specificity, and the
-  // ! stylesheet's position relative to this block is not something to depend on.
+  // ! Without JavaScript nothing clears the flag, so this must undo every boot rule in `main.css`.
+  // ! In <head>, not the template: browsers parse <noscript> as text when scripting is on, which would mismatch hydration.
+  // ! `!important` because these rules tie in specificity with the ones they undo.
   noscript: [
     {
       innerHTML:
