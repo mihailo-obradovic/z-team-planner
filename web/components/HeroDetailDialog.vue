@@ -28,68 +28,22 @@
 
     <template #body>
       <div v-if="hero" class="flex h-full min-h-0 gap-4">
-        <!-- * Every tile is bordered, so the open hero differs by colour without nudging its neighbours. -->
-        <ScrollRegion
+        <HeroRosterStrip
           ref="rosterRail"
-          as="nav"
-          class="hidden w-24 shrink-0 flex-col gap-2 lg:flex"
-          aria-label="Roster"
-        >
-          <button
-            v-for="rosterHero in rosterOrder"
-            ref="railTile"
-            :key="rosterHero.id"
-            type="button"
-            class="aspect-square shrink-0 border-2 select-none"
-            :class="
-              rosterHero.id === heroId
-                ? 'border-primary'
-                : 'border-default opacity-70 hover:opacity-100'
-            "
-            :aria-current="rosterHero.id === heroId ? 'true' : undefined"
-            :aria-label="rosterHero.name"
-            @click="handleRosterSelect(rosterHero.id, $event)"
-          >
-            <HeroPortrait
-              :hero-id="rosterHero.id"
-              usage="rail"
-              :alt="rosterHero.name"
-              class="size-full object-cover object-top"
-            />
-          </button>
-        </ScrollRegion>
+          variant="rail"
+          :heroes="rosterOrder"
+          :active-id="heroId"
+          @select="emit('select', $event)"
+        />
 
         <ScrollRegion class="flex min-w-0 flex-1 flex-col gap-4">
-          <ScrollRegion
+          <HeroRosterStrip
             ref="rosterRibbon"
-            as="nav"
-            axis="horizontal"
-            class="flex shrink-0 gap-2 lg:hidden"
-            aria-label="Roster"
-          >
-            <button
-              v-for="rosterHero in rosterOrder"
-              ref="ribbonTile"
-              :key="rosterHero.id"
-              type="button"
-              class="size-14 shrink-0 border-2 select-none"
-              :class="
-                rosterHero.id === heroId
-                  ? 'border-primary'
-                  : 'border-default opacity-70'
-              "
-              :aria-current="rosterHero.id === heroId ? 'true' : undefined"
-              :aria-label="rosterHero.name"
-              @click="handleRosterSelect(rosterHero.id, $event)"
-            >
-              <HeroPortrait
-                :hero-id="rosterHero.id"
-                usage="ribbon"
-                :alt="rosterHero.name"
-                class="size-full object-cover object-top"
-              />
-            </button>
-          </ScrollRegion>
+            variant="ribbon"
+            :heroes="rosterOrder"
+            :active-id="heroId"
+            @select="emit('select', $event)"
+          />
 
           <!-- * Viewport breakpoints, not container queries: the dialog is fullscreen, so both would measure the same width. -->
           <!-- ! The first two rows have fixed heights, or switching to a hero without steppers or a partner resizes the dialog. -->
@@ -146,14 +100,12 @@
 
 <script setup lang="ts">
 import HeroPortrait from '@/components/HeroPortrait.vue';
+import HeroRosterStrip from '@/components/HeroRosterStrip.vue';
 import HeroStatsPanel from '@/components/HeroStatsPanel.vue';
 import HeroPowersPanel from '@/components/HeroPowersPanel.vue';
 import HeroNotesPanel from '@/components/HeroNotesPanel.vue';
 
 import type { HeroId, StatName } from '@/types/hero';
-
-// * Structural, so the dialog needn't import an auto-imported component for its type.
-type RosterStrip = { bringIntoView: (target: HTMLElement) => void };
 
 const props = defineProps<{
   heroId: HeroId | null;
@@ -164,11 +116,11 @@ const emit = defineEmits<{
   select: [heroId: HeroId];
 }>();
 
-// * Both rails are mounted at every width; the hidden one measures zero and no-ops.
-const rosterRail = useTemplateRef<RosterStrip>('rosterRail');
-const rosterRibbon = useTemplateRef<RosterStrip>('rosterRibbon');
-const railTiles = useTemplateRef<HTMLElement[]>('railTile');
-const ribbonTiles = useTemplateRef<HTMLElement[]>('ribbonTile');
+// * Both strips are mounted at every width; the hidden one measures zero and no-ops.
+const rosterRail =
+  useTemplateRef<InstanceType<typeof HeroRosterStrip>>('rosterRail');
+const rosterRibbon =
+  useTemplateRef<InstanceType<typeof HeroRosterStrip>>('rosterRibbon');
 
 const { synergyPairColumns, ep8Recruits, showEp8Recruits, getEffectiveStats } =
   useHeroPlanner();
@@ -184,38 +136,10 @@ const rosterOrder = computed(() => {
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
 
-// * Followed on click rather than through the watcher: clicking the open hero changes nothing to watch.
-function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
-  const tile = event.currentTarget;
-
-  if (tile instanceof HTMLElement) {
-    rosterRail.value?.bringIntoView(tile);
-    rosterRibbon.value?.bringIntoView(tile);
-  }
-
-  emit('select', heroId);
-}
-
 // * Follows every change of the open hero, including ones the app makes.
 function followMarkedHero() {
-  const index = rosterOrder.value.findIndex(
-    (rosterHero) => rosterHero.id === props.heroId
-  );
-
-  if (index < 0) {
-    return;
-  }
-
-  followTile(rosterRail.value, railTiles.value?.[index]);
-  followTile(rosterRibbon.value, ribbonTiles.value?.[index]);
-}
-
-function followTile(strip: RosterStrip | null, tile: HTMLElement | undefined) {
-  if (!strip || !tile) {
-    return;
-  }
-
-  strip.bringIntoView(tile);
+  rosterRail.value?.follow();
+  rosterRibbon.value?.follow();
 }
 
 // ! Deferred a frame: on open the dialog is still laying out and measures zeroes.
@@ -227,7 +151,7 @@ watch(
   { flush: 'post' }
 );
 
-// * Forward when the new hero sits later in the visible strip, read from the rail's tiles, which have no rect while the rail is hidden. Set before the DOM patches so the classes are in place when the transition starts.
+// * Forward when the new hero sits later in the visible strip; sideways when the rail is the hidden one. Set before the DOM patches so the classes are in place when the transition starts.
 const nameSlideClass = ref<string[]>([]);
 
 watch(
@@ -239,7 +163,7 @@ watch(
 
     const order = rosterOrder.value.map((rosterHero) => rosterHero.id);
     const backward = order.indexOf(heroId) < order.indexOf(previousHeroId);
-    const sideways = railTiles.value?.[0]?.getClientRects().length === 0;
+    const sideways = rosterRail.value?.isDisplayed() === false;
 
     nameSlideClass.value = [
       ...(backward ? ['slide-backward'] : []),
