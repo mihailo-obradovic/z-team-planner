@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   PORTRAIT_DENSITIES,
+  PORTRAIT_LOADING,
   PORTRAIT_MASTER,
   PORTRAIT_WIDTHS,
   portraitScreens
@@ -62,6 +63,14 @@ describe('portrait widths', () => {
     expect(ownKeys.map(([key]) => key)).toEqual(
       ownKeys.map(([, width]) => `portrait-${width}`)
     );
+  });
+
+  it('load eagerly only on the landing tab', () => {
+    const eager = Object.entries(PORTRAIT_LOADING)
+      .filter(([, loading]) => loading === 'eager')
+      .map(([usage]) => usage);
+
+    expect(eager).toEqual(['card']);
   });
 
   it('are declared only by HeroPortrait — no other component renders a portrait', () => {
