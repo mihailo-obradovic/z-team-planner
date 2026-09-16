@@ -51,7 +51,7 @@
               icon="i-lucide-rotate-ccw"
               color="neutral"
               size="sm"
-              @click="budget.reset()"
+              @click="() => budget.reset()"
             />
           </span>
         </div>

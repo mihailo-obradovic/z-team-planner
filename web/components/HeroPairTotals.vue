@@ -3,7 +3,7 @@
     <button
       type="button"
       class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-      @click="emit('select', partner.id)"
+      @click="handleSelectPartner"
     >
       <u-icon name="i-lucide-link" class="size-4 shrink-0" />
 
@@ -131,4 +131,8 @@ const descriptionVariants = computed(() => [
 const description = computed(() =>
   fillsASlot.value ? descriptionVariants.value[1] : descriptionVariants.value[0]
 );
+
+function handleSelectPartner() {
+  emit('select', props.partner.id);
+}
 </script>

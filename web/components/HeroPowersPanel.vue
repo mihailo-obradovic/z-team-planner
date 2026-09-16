@@ -20,7 +20,7 @@
               :active="isPowerActive(power)"
               :disabled="isPowerDisabled(power)"
               :badge="power.slot === 'starting' ? 'Revealed' : 'Trained'"
-              @click="handleTogglePower(power)"
+              @click="() => handleTogglePower(power)"
             />
           </section>
 

@@ -29,7 +29,7 @@
               size="sm"
               :disabled="bonusFull || !canLevelUp"
               label="Add a bonus level"
-              @click="addBonusLevel(heroId)"
+              @click="handleAddBonusLevel"
             />
 
             <IconButton
@@ -38,7 +38,7 @@
               size="sm"
               :disabled="!canLevelUp"
               label="Reset this hero"
-              @click="resetHero(heroId)"
+              @click="handleReset"
             />
           </div>
         </div>
@@ -66,7 +66,7 @@
                   size="sm"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
                   :label="`Remove a ${stat} point`"
-                  @click="statDown(heroId, resolvedStat(stat))"
+                  @click="() => handleStatDown(stat)"
                 />
               </div>
 
@@ -82,7 +82,7 @@
                   size="sm"
                   :disabled="isStatCapped(stat)"
                   :label="`Add a ${stat} point`"
-                  @click="statUp(heroId, resolvedStat(stat))"
+                  @click="() => handleStatUp(stat)"
                 />
               </div>
             </div>
@@ -95,7 +95,7 @@
             :hero-id="heroId"
             :partner="synergyPartner"
             :longest-partner-name="longestPartnerName"
-            @select="emit('select', $event)"
+            @select="handleSelect"
           />
         </Transition>
       </div>
@@ -176,6 +176,26 @@ function shownStat(stat: StatName): number {
 
 const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
 const shownBonus = computed(() => shownFigure(BONUS_INDEX));
+
+function handleAddBonusLevel() {
+  addBonusLevel(props.heroId);
+}
+
+function handleReset() {
+  resetHero(props.heroId);
+}
+
+function handleStatDown(stat: StatName) {
+  statDown(props.heroId, resolvedStat(stat));
+}
+
+function handleStatUp(stat: StatName) {
+  statUp(props.heroId, resolvedStat(stat));
+}
+
+function handleSelect(heroId: HeroId) {
+  emit('select', heroId);
+}
 
 // * The cap reads the raw allocation: a special-power bonus can show 10 while the allocation still has room.
 function isStatCapped(stat: StatName): boolean {

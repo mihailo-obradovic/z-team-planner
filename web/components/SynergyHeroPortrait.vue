@@ -6,7 +6,7 @@
       usage="synergy"
       :alt="hero.name"
       class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
-      @click="$emit('viewDetail')"
+      @click="handleViewDetail"
     />
 
     <HeroPowerChips :hero-id="heroId" />
@@ -23,7 +23,7 @@ const props = defineProps<{
   heroId: HeroId;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   viewDetail: [];
 }>();
 
@@ -32,4 +32,8 @@ const { heroes } = useHeroPlanner();
 const hero = computed(() =>
   heroes.value.find((candidate) => candidate.id === props.heroId)!
 );
+
+function handleViewDetail() {
+  emit('viewDetail');
+}
 </script>

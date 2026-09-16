@@ -19,10 +19,10 @@
         :removable="
           slot !== GOLEM_COPY_SLOT || isRightmostCopy(missionSlots, index)
         "
-        @move="moveMissionSlot(index, $event)"
-        @remove="removeMissionSlot(index)"
-        @view="emit('viewDetail', $event)"
-        @add="openPicker(index)"
+        @move="(direction) => moveMissionSlot(index, direction)"
+        @remove="() => removeMissionSlot(index)"
+        @view="handleView"
+        @add="() => openPicker(index)"
       />
     </TransitionGroup>
 
@@ -34,7 +34,7 @@
             :key="hero.id"
             type="button"
             class="flex cursor-pointer flex-col items-center gap-2 border-2 border-default p-2 hover:border-accented"
-            @click="pick(hero.id)"
+            @click="() => pick(hero.id)"
           >
             <HeroPortrait
               :hero-id="hero.id"
@@ -78,6 +78,10 @@ const {
 } = useHeroPlanner();
 
 const { pickerOpen, openPicker, pick } = usePicker();
+
+function handleView(heroId: HeroId) {
+  emit('viewDetail', heroId);
+}
 
 // * Heroes are keyed by id so a swap travels; other occupants are keyed by position and change in place.
 const teamSlots = computed(() =>

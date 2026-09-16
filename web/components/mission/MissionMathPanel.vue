@@ -75,7 +75,7 @@
                   :active="missionSynergyLevel === level"
                   :disabled="!missionTeamHasPair"
                   color="secondary"
-                  @click="setMissionSynergyLevel(level)"
+                  @click="() => setMissionSynergyLevel(level)"
                 >
                   {{ level }}
                 </IconButton>

@@ -19,7 +19,7 @@
       ]"
       :aria-current="hero.id === activeId ? 'true' : undefined"
       :aria-label="hero.name"
-      @click="handleSelect(hero.id, $event)"
+      @click="(event: MouseEvent) => handleSelect(hero.id, event)"
     >
       <HeroPortrait
         :hero-id="hero.id"

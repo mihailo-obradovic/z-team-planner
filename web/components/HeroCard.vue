@@ -28,7 +28,7 @@
                       trained: flightActive
                     })
                 "
-                @click="toggleFlight(heroId)"
+                @click="handleToggleFlight"
               />
             </span>
           </Transition>
@@ -49,7 +49,7 @@
                 icon="i-lucide-rotate-ccw"
                 color="neutral"
                 label="Reset this hero"
-                @click="resetHero(heroId)"
+                @click="handleReset"
               />
             </span>
           </Transition>
@@ -68,7 +68,7 @@
                 :disabled="bonusLevel >= MAX_BONUS_LEVEL_PER_HERO || bonusFull"
                 :swap-key="bonusLevel"
                 label="Add a bonus level"
-                @click="addBonusLevel(heroId)"
+                @click="handleAddBonusLevel"
               >
                 <span v-if="bonusLevel > 0" class="text-xs font-semibold"
                   >+{{ bonusLevel }}</span
@@ -89,7 +89,7 @@
           usage="card"
           :alt="hero.name"
           class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
-          @click="$emit('viewDetail')"
+          @click="handleViewDetail"
         />
 
         <HeroPowerChips :hero-id="heroId" />
@@ -117,7 +117,7 @@
                   color="neutral"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
                   :label="`Remove a ${stat} point`"
-                  @click="statDown(heroId, resolvedStat(stat))"
+                  @click="() => handleStatDown(stat)"
                 />
               </div>
 
@@ -139,7 +139,7 @@
                       MAX_STAT_VALUE
                   "
                   :label="`Add a ${stat} point`"
-                  @click="statUp(heroId, resolvedStat(stat))"
+                  @click="() => handleStatUp(stat)"
                 />
               </div>
             </div>
@@ -166,7 +166,7 @@ const props = defineProps<{
   heroId: HeroId;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   viewDetail: [];
 }>();
 
@@ -219,4 +219,28 @@ const flightColor = computed(() =>
       ? 'secondary'
       : 'neutral'
 );
+
+function handleToggleFlight() {
+  toggleFlight(props.heroId);
+}
+
+function handleReset() {
+  resetHero(props.heroId);
+}
+
+function handleAddBonusLevel() {
+  addBonusLevel(props.heroId);
+}
+
+function handleViewDetail() {
+  emit('viewDetail');
+}
+
+function handleStatDown(stat: StatName) {
+  statDown(props.heroId, resolvedStat(stat));
+}
+
+function handleStatUp(stat: StatName) {
+  statUp(props.heroId, resolvedStat(stat));
+}
 </script>

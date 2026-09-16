@@ -24,7 +24,7 @@
             :disabled="index === 0"
             data-move="-1"
             class="@max-[35rem]:absolute @max-[35rem]:bottom-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
-            @click="handleMove(-1)"
+            @click="handleMoveLeft"
           />
 
           <IconButton
@@ -33,7 +33,7 @@
             :disabled="index === count - 1"
             data-move="1"
             class="@max-[35rem]:absolute @max-[35rem]:right-0 @max-[35rem]:bottom-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
-            @click="handleMove(1)"
+            @click="handleMoveRight"
           />
         </template>
 
@@ -42,7 +42,7 @@
           :label="`Remove ${name}`"
           :disabled="!removable"
           class="@max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:right-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
-          @click="emit('remove')"
+          @click="handleRemove"
         />
       </template>
     </div>
@@ -98,7 +98,7 @@
       type="button"
       class="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center gap-2 font-heading text-label text-dimmed uppercase hover:text-highlighted @max-[35rem]:aspect-square"
       :aria-label="`Add hero to slot ${index + 1}`"
-      @click="emit('add')"
+      @click="handleAdd"
     >
       <u-icon name="i-lucide-plus" class="size-6" />
 
@@ -158,8 +158,16 @@ function heroName(id: HeroId | null): string {
   return heroes.value.find((hero) => hero.id === id)?.name ?? id ?? '';
 }
 
+function handleMoveLeft() {
+  void move(-1);
+}
+
+function handleMoveRight() {
+  void move(1);
+}
+
 // * Focus stays with the moved card: if the pressed arrow ends up disabled, the card's other arrow takes it.
-async function handleMove(direction: -1 | 1) {
+async function move(direction: -1 | 1) {
   emit('move', direction);
 
   await nextTick();
@@ -170,6 +178,14 @@ async function handleMove(direction: -1 | 1) {
     ) ?? card.value?.querySelector<HTMLElement>('[data-move]:not([disabled])');
 
   arrow?.focus();
+}
+
+function handleRemove() {
+  emit('remove');
+}
+
+function handleAdd() {
+  emit('add');
 }
 
 function handleView() {

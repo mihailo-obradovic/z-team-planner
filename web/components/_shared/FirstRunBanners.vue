@@ -35,7 +35,7 @@
               variant="subtle"
               color="neutral"
               :label="notice.confirm"
-              @click="handleConfirm(notice.key)"
+              @click="() => handleConfirm(notice.key)"
             />
           </div>
         </div>

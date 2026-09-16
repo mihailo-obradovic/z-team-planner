@@ -43,7 +43,7 @@
               revealed: powerStates.startingRevealed
             })
         "
-        @click="toggleStartingPower(heroId)"
+        @click="handleToggleStartingPower"
       />
     </span>
 
@@ -66,7 +66,7 @@
               trained: trainablePowerActive(index)
             })
         "
-        @click="toggleTrainablePower(heroId, (index + 1) as 1 | 2)"
+        @click="() => handleToggleTrainablePower(index)"
       />
     </span>
 
@@ -80,7 +80,7 @@
           () =>
             confirmationText({ kind: 'supernova', on: specialPowerState > 0 })
         "
-        @click="toggleSpecialPower(heroId)"
+        @click="handleToggleSpecialPower"
       />
     </span>
 
@@ -99,7 +99,7 @@
               bonus: coupeBonus
             })
         "
-        @click="toggleSpecialPower(heroId)"
+        @click="handleToggleSpecialPower"
       />
     </span>
 
@@ -116,7 +116,7 @@
               slots: specialPowerState as 0 | 1 | 2 | 3
             })
         "
-        @click="toggleSpecialPower(heroId)"
+        @click="handleToggleSpecialPower"
       />
     </span>
   </TransitionGroup>
@@ -175,6 +175,18 @@ function isTrainableDisabled(index: number) {
     !powerStates.value.startingRevealed ||
     (powerStates.value.trainableSelected !== index + 1 && trainingsFull.value)
   );
+}
+
+function handleToggleStartingPower() {
+  toggleStartingPower(props.heroId);
+}
+
+function handleToggleTrainablePower(index: number) {
+  toggleTrainablePower(props.heroId, (index + 1) as 1 | 2);
+}
+
+function handleToggleSpecialPower() {
+  toggleSpecialPower(props.heroId);
 }
 
 const showFlambaeSupernova = computed(

@@ -1,5 +1,5 @@
 <template>
-  <u-modal :open="!!heroId" fullscreen @update:open="emit('close')">
+  <u-modal :open="!!heroId" fullscreen @update:open="handleClose">
     <!-- * The thumbnail names the hero below `lg`, where the large portrait is not drawn. -->
     <!-- * The roster rail and the radar stay outside the keyed fade: the rail is stable and the radar has its own tween. -->
     <template #title>
@@ -33,7 +33,7 @@
           variant="rail"
           :heroes="rosterOrder"
           :active-id="heroId"
-          @select="emit('select', $event)"
+          @select="handleSelect"
         />
 
         <ScrollRegion class="flex min-w-0 flex-1 flex-col gap-4">
@@ -42,7 +42,7 @@
             variant="ribbon"
             :heroes="rosterOrder"
             :active-id="heroId"
-            @select="emit('select', $event)"
+            @select="handleSelect"
           />
 
           <!-- * Viewport breakpoints, not container queries: the dialog is fullscreen, so both would measure the same width. -->
@@ -71,7 +71,7 @@
               :hero-id="hero.id"
               :longest-partner-name="longestHeroName"
               class="md:row-span-2 md:min-h-0 lg:row-span-2 lg:min-h-0"
-              @select="emit('select', $event)"
+              @select="handleSelect"
             />
 
             <!-- ! Capped from `sm`, or the fullscreen square frame is viewport-wide until `md` gives it a column of its own. -->
@@ -134,6 +134,14 @@ const rosterOrder = computed(() => {
 
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
+
+function handleClose() {
+  emit('close');
+}
+
+function handleSelect(heroId: HeroId) {
+  emit('select', heroId);
+}
 
 // * Follows every change of the open hero, including ones the app makes.
 function followMarkedHero() {

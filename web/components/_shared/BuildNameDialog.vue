@@ -6,7 +6,7 @@
           v-model="name"
           :placeholder="placeholder"
           autofocus
-          @keydown.enter="emit('confirm')"
+          @keydown.enter="handleConfirm"
         />
       </u-form-field>
     </template>
@@ -20,7 +20,7 @@
         <u-button
           :disabled="disabled"
           :loading="loading"
-          @click="emit('confirm')"
+          @click="handleConfirm"
         >
           {{ confirmLabel }}
         </u-button>
@@ -48,6 +48,10 @@ withDefaults(
 const emit = defineEmits<{
   confirm: [];
 }>();
+
+function handleConfirm() {
+  emit('confirm');
+}
 
 function close() {
   open.value = false;

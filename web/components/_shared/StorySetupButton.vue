@@ -6,7 +6,7 @@
     class="size-11 touch-manipulation items-center justify-center text-neutral-100"
     :class="visibilityClass"
     aria-label="Story setup"
-    @click="emit('open')"
+    @click="handleOpen"
   >
     <u-icon name="i-lucide-sliders-horizontal" class="size-5" />
   </button>
@@ -20,7 +20,7 @@
       :class="visibilityClass"
       :label="tier === 'labelled' ? 'Story setup' : undefined"
       :aria-label="tier === 'labelled' ? undefined : 'Story setup'"
-      @click="emit('open')"
+      @click="handleOpen"
     />
   </u-tooltip>
 </template>
@@ -37,4 +37,8 @@ const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
 const emit = defineEmits<{ open: [] }>();
 
 const visibilityClass = computed(() => HEADER_TIER_CLASS[props.tier]);
+
+function handleOpen() {
+  emit('open');
+}
 </script>

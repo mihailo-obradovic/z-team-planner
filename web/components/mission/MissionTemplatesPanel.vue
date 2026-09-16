@@ -11,13 +11,13 @@
         :key="index"
         class="cursor-pointer border-2 border-accented"
         :class="index === activeIndex ? 'bg-muted' : 'bg-default'"
-        @click="setMissionActiveTemplate(index)"
+        @click="() => setMissionActiveTemplate(index)"
       >
         <button
           type="button"
           class="flex w-full cursor-pointer items-center gap-2 px-3 py-1"
           :aria-pressed="index === activeIndex"
-          @click="setMissionActiveTemplate(index)"
+          @click="() => setMissionActiveTemplate(index)"
         >
           <u-icon
             :name="
@@ -77,7 +77,7 @@
                 color="secondary"
                 :active="columnView === option.value"
                 :aria-pressed="columnView === option.value"
-                @click="setColumnView(option.value)"
+                @click="() => setColumnView(option.value)"
               >
                 {{ option.label }}
               </u-button>
@@ -132,7 +132,7 @@
                   :value="template.req[stat]"
                   :label="`template ${index + 1} required ${stat}`"
                   :class="reqColumnClass"
-                  @change="setMissionReq(index, stat, $event ?? 0)"
+                  @change="(value) => handleReqChange(index, stat, value)"
                 />
 
                 <MissionValueStepper
@@ -140,7 +140,9 @@
                   :label="`template ${index + 1} double XP threshold for ${stat}`"
                   unsettable
                   :class="conditionColumnClass"
-                  @change="setMissionThreshold(index, 'xp', stat, $event)"
+                  @change="
+                    (value) => setMissionThreshold(index, 'xp', stat, value)
+                  "
                 />
 
                 <MissionValueStepper
@@ -148,7 +150,9 @@
                   :label="`template ${index + 1} fail threshold for ${stat}`"
                   unsettable
                   :class="conditionColumnClass"
-                  @change="setMissionThreshold(index, 'fail', stat, $event)"
+                  @change="
+                    (value) => setMissionThreshold(index, 'fail', stat, value)
+                  "
                 />
               </template>
             </div>
@@ -163,6 +167,8 @@
 import MissionValueStepper from '@/components/mission/MissionValueStepper.vue';
 
 import { STAT_NAMES } from '@/types/hero';
+
+import type { StatName } from '@/types/hero';
 const {
   missionTemplates,
   missionActiveTemplate: activeIndex,
@@ -178,6 +184,11 @@ const COLUMN_VIEWS = [
 ] as const;
 
 const columnView = ref<(typeof COLUMN_VIEWS)[number]['value']>('req');
+
+// * A requirement has no unset state, so clearing the stepper means zero.
+function handleReqChange(index: number, stat: StatName, value: number | null) {
+  setMissionReq(index, stat, value ?? 0);
+}
 
 function setColumnView(value: (typeof COLUMN_VIEWS)[number]['value']) {
   columnView.value = value;

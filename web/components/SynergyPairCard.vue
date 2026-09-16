@@ -22,12 +22,12 @@
         >
           <SynergyHeroPortrait
             :hero-id="top.id"
-            @viewDetail="$emit('viewDetail', top.id)"
+            @viewDetail="handleViewTopDetail"
           />
 
           <SynergyHeroPortrait
             :hero-id="bottom.id"
-            @viewDetail="$emit('viewDetail', bottom.id)"
+            @viewDetail="handleViewBottomDetail"
           />
         </div>
 
@@ -85,7 +85,7 @@ const props = defineProps<{
   bottom: Hero;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   viewDetail: [heroId: HeroId];
 }>();
 
@@ -107,4 +107,12 @@ const radarAxes = computed(() =>
     value: pairTotals.value[stat]
   }))
 );
+
+function handleViewTopDetail() {
+  emit('viewDetail', props.top.id);
+}
+
+function handleViewBottomDetail() {
+  emit('viewDetail', props.bottom.id);
+}
 </script>

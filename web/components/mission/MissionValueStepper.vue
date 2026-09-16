@@ -4,7 +4,7 @@
       icon="i-lucide-minus"
       :label="`Decrease ${label}`"
       :disabled="value === null || (!unsettable && value <= 0)"
-      @click="step(-1)"
+      @click="handleDecrease"
     />
 
     <!-- * Fixed width, so a new digit or the dash shifts nothing; the tight tier narrows it because the buttons sit on the 24px touch floor. -->
@@ -18,7 +18,7 @@
       icon="i-lucide-plus"
       :label="`Increase ${label}`"
       :disabled="value === MAX_STAT_VALUE"
-      @click="step(1)"
+      @click="handleIncrease"
     />
   </div>
 </template>
@@ -39,6 +39,14 @@ const props = withDefaults(
 const emit = defineEmits<{
   change: [value: number | null];
 }>();
+
+function handleDecrease() {
+  step(-1);
+}
+
+function handleIncrease() {
+  step(1);
+}
 
 function step(direction: -1 | 1) {
   if (props.value === null) {
