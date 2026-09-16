@@ -68,6 +68,15 @@ Always `<script setup lang="ts">`. Use the **`@/` alias, never `~/`**.
 
 `<template>` → `<script setup>` → `<style scoped>`. Keep the order identical in every file.
 
+## Component size
+
+Counted on the whole `.vue` file after formatting — template, script, and style together — so the number is what `wc -l` prints.
+
+- **Over 300 lines is a soft limit.** The file is not wrong, but it is due for structure. First extract coherent template subtrees into child components. Then group each remaining feature group — the state, handlers, and watchers that change together — into a local composable at the bottom of the script (§21), destructured at §14. Single-member leftovers stay top-level.
+- **Over 450 lines is a hard limit,** enforced by the lint run. Split until under, child components first.
+- **A child must be a coherent subtree** with a self-describing name and a narrow prop boundary. A split done only to get under a number produces a child with no name and a wide prop list; a file that cannot be split that way stays over 300 with composables as its only remedy.
+- **A `composables/` file** is created only when a second consumer exists or a template split alone cannot reach 450. One-use logic stays beside its template.
+
 ## General rules
 
 - Empty lines between major blocks (imports, props, composables, refs, functions).
