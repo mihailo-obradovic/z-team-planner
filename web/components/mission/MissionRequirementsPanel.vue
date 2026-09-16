@@ -103,19 +103,17 @@ const radarAxes = computed(() =>
 );
 
 const requiredValues = computed(() =>
-  RADAR_STAT_ORDER.map(
-    (stat) => missionActiveTemplateData.value?.req[stat] ?? 0
-  )
+  RADAR_STAT_ORDER.map((stat) => missionActiveTemplateData.value.req[stat])
 );
 
 const failValues = computed(() =>
   RADAR_STAT_ORDER.map(
-    (stat) => missionActiveTemplateData.value?.fail[stat] ?? 0
+    (stat) => missionActiveTemplateData.value.fail[stat] ?? 0
   )
 );
 
 const xpValues = computed(() =>
-  RADAR_STAT_ORDER.map((stat) => missionActiveTemplateData.value?.xp[stat] ?? 0)
+  RADAR_STAT_ORDER.map((stat) => missionActiveTemplateData.value.xp[stat] ?? 0)
 );
 
 // * The same rAF tween the radar uses, so the number and the shape move together.

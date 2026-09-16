@@ -182,7 +182,7 @@ const failed = computed(() => missionSuccess.value.failedStat !== null);
 
 const tweenTargets = computed(() => [
   ...STAT_NAMES.map((stat) => missionTeamTotals.value[stat]),
-  ...STAT_NAMES.map((stat) => missionActiveTemplateData.value?.req[stat] ?? 0),
+  ...STAT_NAMES.map((stat) => missionActiveTemplateData.value.req[stat]),
   missionSuccess.value.coverage * 100,
   missionSuccess.value.synergyBonus * 100
 ]);
@@ -196,13 +196,12 @@ const totalRows = computed(() =>
     have: Math.round(tweened.value[index] ?? 0),
     // * Compares the settled values, not the travelling ones, so the icon does not flicker mid-tween.
     met:
-      missionTeamTotals.value[stat] >=
-      (missionActiveTemplateData.value?.req[stat] ?? 0)
+      missionTeamTotals.value[stat] >= missionActiveTemplateData.value.req[stat]
   }))
 );
 
 const hasFailThresholds = computed(
-  () => Object.keys(missionActiveTemplateData.value?.fail ?? {}).length > 0
+  () => Object.keys(missionActiveTemplateData.value.fail).length > 0
 );
 
 const reattemptNote = computed(() => {

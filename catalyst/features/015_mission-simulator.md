@@ -132,7 +132,7 @@ _None — resolved in the grilling session of 2026-08-31._
 
 - `web/pages/index.vue`: tab wiring, `?tab=` sync.
 - `web/components/mission/*`: templates, requirements check, math, team row, picker.
-- `web/composables/useMissionSimulator.ts`: team, derived effects, success math.
+- `web/composables/useMissionSimulator.ts`: assembles `useMissionTeam`, `useMissionTemplates` and `useMissionScore`; the pure rules live in `web/utils/missionTeam.ts` and `web/utils/missionScore.ts`.
 - `web/utils/buildDocument.ts`, `web/types/build.ts`, `web/utils/isSerializedBuild.ts`: the new v1 keys (protected area).
 - `app/schemas/builds.py`, `app/services/validation.py`: server acceptance of the new keys.
 - `web/components/_shared/StatRadar.vue`: required-vs-team overlay and markers (decision 008).
