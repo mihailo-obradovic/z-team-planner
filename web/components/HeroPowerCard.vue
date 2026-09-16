@@ -6,7 +6,7 @@
       active
         ? 'border-accented bg-elevated'
         : 'border-default hover:border-accented/50',
-      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+      disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
     ]"
   >
     <!-- ! `min-w-0` lets the name shrink, so `flex-wrap` can drop the badge to its own line. -->

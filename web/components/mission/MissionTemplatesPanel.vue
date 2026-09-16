@@ -37,7 +37,7 @@
         <!-- * Both bodies stay mounted in `0fr`/`1fr` rows, so a selection animates the card's height. -->
         <!-- ! `inert` on the collapsed half, or its controls stay focusable and in the accessibility tree. -->
         <div
-          class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
+          class="grid transition-[grid-template-rows] duration-(--duration-slow) ease-in-out motion-reduce:transition-none"
           :class="index === activeIndex ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'"
           :inert="index === activeIndex"
         >
@@ -59,7 +59,7 @@
         </div>
 
         <div
-          class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
+          class="grid transition-[grid-template-rows] duration-(--duration-slow) ease-in-out motion-reduce:transition-none"
           :class="index === activeIndex ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
           :inert="index !== activeIndex"
         >

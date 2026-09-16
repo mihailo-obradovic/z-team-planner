@@ -9,7 +9,7 @@
     <!-- * Below 35rem each control sits on its own scrim, so a disabled arrow doesn't vanish against the art. -->
     <div class="flex h-6 w-full items-center gap-1 @max-[35rem]:contents">
       <span
-        class="w-3 text-center font-heading text-label text-dimmed @max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:w-auto @max-[35rem]:bg-default/80 @max-[35rem]:px-1"
+        class="w-3 text-center font-heading text-label text-dimmed @max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:w-auto @max-[35rem]:bg-default/85 @max-[35rem]:px-1"
       >
         {{ index + 1 }}
       </span>
@@ -89,7 +89,7 @@
       <u-icon
         name="i-lucide-copy"
         title="Copy — +25%"
-        class="hidden size-4 @max-[35rem]:absolute @max-[35rem]:bottom-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:block @max-[35rem]:bg-default/80"
+        class="hidden size-4 @max-[35rem]:absolute @max-[35rem]:bottom-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:block @max-[35rem]:bg-default/85"
       />
     </div>
 

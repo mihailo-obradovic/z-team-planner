@@ -45,14 +45,17 @@
               {{ budget.used }}/{{ budget.max }}
             </span>
 
-            <TooltipButton
-              v-if="budget.used > 0"
-              :text="`Reset ${budget.label.toLowerCase()}`"
-              icon="i-lucide-rotate-ccw"
-              color="neutral"
-              size="sm"
-              @click="() => budget.reset()"
-            />
+            <!-- * The slot stays when the reset leaves, so the count doesn't jump under the finger that pressed it. -->
+            <span class="flex size-7 items-center justify-center">
+              <TooltipButton
+                v-if="budget.used > 0"
+                :text="`Reset ${budget.label.toLowerCase()}`"
+                icon="i-lucide-rotate-ccw"
+                color="neutral"
+                size="sm"
+                @click="() => budget.reset()"
+              />
+            </span>
           </span>
         </div>
       </div>

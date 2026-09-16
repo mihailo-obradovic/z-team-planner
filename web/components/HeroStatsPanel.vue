@@ -10,7 +10,10 @@
         <div class="flex items-center gap-4 border-b-2 border-default pb-3">
           <span class="font-heading tracking-label text-toned uppercase">
             Level
-            <span class="text-lg font-bold text-highlighted select-none">
+            <!-- * A two-digit slot, so reaching level 10 doesn't push Bonus sideways. -->
+            <span
+              class="inline-block w-6 text-center text-lg font-bold text-highlighted select-none"
+            >
               {{ shownLevel }}
             </span>
           </span>
