@@ -7,7 +7,7 @@
     <!-- * Four fixed slots, so filling, clearing or moving a hero reflows nothing (feature 015); `min-w-0` without `flex-wrap` keeps them in one row, shrinking from their design width only once it would not fit (feature 016). -->
     <TransitionGroup
       tag="div"
-      name="slot"
+      name="mission-slot"
       class="flex justify-center gap-3 p-2 @max-[35rem]:gap-2"
     >
       <div
@@ -259,21 +259,3 @@ function slotHeroId(slot: Exclude<MissionSlot, null>): HeroId {
   return id ?? 'prism';
 }
 </script>
-
-<style scoped>
-/* * The swapped cards travel into each other's positions, so which two slots swapped is legible (annex §11). */
-.slot-move {
-  transition: transform var(--duration-slow) ease-in-out;
-}
-
-/* ! Dropped from layout at once: swapping a hero with a positional slot makes one card leave as another enters, and the row would otherwise hold five cards in space for four for the length of the travel. */
-.slot-leave-active {
-  display: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slot-move {
-    transition: none;
-  }
-}
-</style>

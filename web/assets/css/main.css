@@ -1,10 +1,15 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
+@import './motion.css';
 
 /* * Design tokens — the source of truth is catalyst/annexes/design-system.md. Ramps and scales here; the semantic alias mapping is in app.config.ts. */
 @theme static {
     --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
     --font-heading: 'Barlow Condensed', 'Barlow', ui-sans-serif, sans-serif;
+
+    /* * Tracking, as its own token: a control takes its size from the component theme's own size variant, so only the tracking is a design decision. */
+    --tracking-label: 0.09em;
+    --tracking-tag: 0.14em;
 
     /* * Type scale (annex §2) — size, weight and leading travel together */
     --text-display: 2.125rem;
@@ -20,16 +25,12 @@
     --text-label: 0.8125rem;
     --text-label--line-height: 1.2;
     --text-label--font-weight: 700;
-    --text-label--letter-spacing: 0.09em;
+    --text-label--letter-spacing: var(--tracking-label);
 
     --text-tag: 0.6875rem;
     --text-tag--line-height: 1.3;
     --text-tag--font-weight: 700;
-    --text-tag--letter-spacing: 0.14em;
-
-    /* * Tracking, as its own token: a control takes its size from the component theme's own size variant, so only the tracking is a design decision. */
-    --tracking-label: 0.09em;
-    --tracking-tag: 0.14em;
+    --text-tag--letter-spacing: var(--tracking-tag);
 
     /* * body is text-sm, small is text-xs — only the leading is decided here */
     --text-sm--line-height: 1.5;
@@ -165,11 +166,7 @@
     --z-popover: 50;
     --z-toast: 60;
 
-    /* * Motion (annex §11) */
-    --duration-baseline: 150ms;
-    --duration-slow: 250ms;
-    --duration-slowest: 400ms;
-    /* * Added: how long a confirmation holds before it closes (feature 018). A hold, not motion, so no reduced-motion guard. */
+    /* * A hold, not motion (annex §11): how long a confirmation holds before it closes (feature 018), so no reduced-motion guard. */
     --duration-linger: 1500ms;
 
     /* * Scrollbars (annex §1). Two pairs — thumb then track — because the app scrolls on two grounds: the dark page and the paper surfaces. Written as one variable each so the value is a single decision applied at several roots, not repeated. */
@@ -216,30 +213,6 @@
     text-underline-offset: 2px;
 }
 
-/* * Feature 015: a tab fades its content in on a switch, at the slow duration.
- * ! On the panel element itself this breaks the tabs: the panel keeps a running animation,
- * ! and the presence logic that hides an inactive panel waits for that animation to end, so
- * ! two panels stay visible at once. It belongs on the content inside the panel. */
-@utility tab-fade {
-    animation: tab-fade var(--duration-slow) ease-out;
-}
-
-/* * Past the baseline duration, so it short-circuits under reduced motion (annex §11). */
-@media (prefers-reduced-motion: reduce) {
-    .tab-fade {
-        animation: none;
-    }
-}
-
-@keyframes tab-fade {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
 /* * Feature 023's boot rules, both keyed off the flag `app.vue` puts on <html> through unhead. The flag carries `true` or `false` and is never absent — see the note beside it there. Written here rather than as bindings in the template so the decision lives in one place, and so a visitor with no JavaScript can be handed all of it back by the single <noscript> block that file emits.
  * ! `visibility`, not `display`, and deliberately the one exception to the feature's own rule: the planner keeps its space so that arriving reflows nothing. Everything else withheld at boot is `display: none`, because reserving space is exactly what leaves an empty band.
  * ! The scroll lock is not decoration. The region keeps its full height while hidden, so without this a wheel could scroll it and the reveal would land somewhere nobody chose. */
@@ -252,154 +225,6 @@
     display: none;
 }
 
-/* * Annex §11 named patterns, feature 024. State fade: content that mounts or unmounts with a state change. Opacity at the baseline, so no reduced-motion guard. */
-.state-fade-enter-active {
-    transition: opacity var(--duration-baseline) ease-out;
-}
-
-.state-fade-leave-active {
-    transition: opacity var(--duration-baseline) ease-in;
-}
-
-.state-fade-enter-from,
-.state-fade-leave-to {
-    opacity: 0;
-}
-
-/* * Annex §11 list move, and the one place it rides alongside a state fade (feature 024). The chip row is centre-justified, so an arriving or leaving chip re-centres every other one; without this the survivors jump a whole chip width in a single frame.
- * ! `position: absolute` is what makes the two work together. A leaving chip left in flow holds its slot until its fade ends, so the survivors would wait and then jump anyway. Safe only because the row's height is reserved (annex §13) — taking the chip out of layout cannot resize anything.
- * ! Applied through the group's `move-class` and `leave-active-class` rather than by renaming the transition, so the fade's own values stay defined once. */
-.chip-move {
-    transition: transform var(--duration-slow) ease-in-out;
-}
-
-/* ! Both of these must stay after `.chip-move`, and both exist to take the travel away from the chip that is arriving or leaving. Vue puts the move class on those too, and two `transition` shorthands on one element do not merge — the later one wins outright. So `chip-move` alone replaced their fade with a transform, which both blinked them out and slid them across the row. A chip that comes or goes only fades, in place; travelling is for the chips that stay. */
-.chip-entering {
-    transition: opacity var(--duration-baseline) ease-out;
-}
-
-.chip-leaving {
-    position: absolute;
-    transition: opacity var(--duration-baseline) ease-in;
-}
-
-/* * Transform-based and past the baseline, so the travel short-circuits (annex §11). The fades are opacity at the baseline and stay. */
-@media (prefers-reduced-motion: reduce) {
-    .chip-move {
-        transition: none;
-    }
-}
-
-/* * Glyph swap: a control that stays while its icon or label changes — the old glyph shrinks to nothing, the new one grows from nothing, one baseline each. Transform-based, so it short-circuits under reduced motion and the glyph lands at once. */
-.glyph-swap-enter-active {
-    transition: transform var(--duration-baseline) ease-out;
-}
-
-.glyph-swap-leave-active {
-    transition: transform var(--duration-baseline) ease-in;
-}
-
-.glyph-swap-enter-from,
-.glyph-swap-leave-to {
-    transform: scale(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .glyph-swap-enter-active,
-    .glyph-swap-leave-active {
-        transition: none;
-    }
-}
-
-/* * Slide: text that swaps on a state change travels about half a line while it fades — the leaving text one way, the arriving text in from the other, both at once, so the two must overlap in one grid cell and the cell must clip (feature 025). The distance and the axis come from the four variables, defaulted to the vertical, forward case: old up and out, new in from below. A wrapper overrides them to turn the slide around or sideways. */
-.slide-enter-active {
-    transition:
-        opacity var(--duration-baseline) ease-out,
-        transform var(--duration-baseline) ease-out;
-}
-
-.slide-leave-active {
-    transition:
-        opacity var(--duration-baseline) ease-in,
-        transform var(--duration-baseline) ease-in;
-}
-
-.slide-enter-from {
-    opacity: 0;
-    transform: translate(var(--slide-enter-x, 0), var(--slide-enter-y, 0.5lh));
-}
-
-.slide-leave-to {
-    opacity: 0;
-    transform: translate(var(--slide-leave-x, 0), var(--slide-leave-y, -0.5lh));
-}
-
-/* * Direction overrides for a slide. `slide-backward` turns it round (in from the start, out toward the end); `slide-sideways` puts it on the x axis, and the two combine. */
-.slide-backward {
-    --slide-enter-y: -0.5lh;
-    --slide-leave-y: 0.5lh;
-}
-
-.slide-sideways {
-    --slide-enter-x: 0.5lh;
-    --slide-enter-y: 0;
-    --slide-leave-x: -0.5lh;
-    --slide-leave-y: 0;
-}
-
-.slide-sideways.slide-backward {
-    --slide-enter-x: -0.5lh;
-    --slide-leave-x: 0.5lh;
-}
-
-/* * The notes list's move and its out-of-flow leave, the chip row's arrangement again (feature 025): an advisory that clears is taken out of flow as it slides away so the lines below travel at once, and the lines that stay travel under the list move. `notes-entering` restates the slide so the move class is not put on the arriving line too — as with the chips, two `transition` shorthands on one element do not merge. */
-.notes-move {
-    transition: transform var(--duration-slow) ease-in-out;
-}
-
-.notes-entering {
-    transition:
-        opacity var(--duration-baseline) ease-out,
-        transform var(--duration-baseline) ease-out;
-}
-
-.notes-leaving {
-    position: absolute;
-    transition:
-        opacity var(--duration-baseline) ease-in,
-        transform var(--duration-baseline) ease-in;
-}
-
-/* * Transform-based, so the travel goes under reduced motion; the slide keeps its opacity leg and degrades to the state fade rather than to a cut (feature 025). */
-@media (prefers-reduced-motion: reduce) {
-    .slide-enter-from,
-    .slide-leave-to {
-        transform: none;
-    }
-
-    .notes-move {
-        transition: none;
-    }
-}
-
-/* * The annex's loading ring (§11), the initial-load ring's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. The deferred /b/** splash cannot do either — Nuxt inlines that file ahead of the stylesheet, so it restates the annex's values as literals. */
-@utility loading-ring {
-    animation: loading-ring 1.4s linear infinite;
-}
-
-/* * Transform-based, so it short-circuits under reduced motion (annex §11). The ring stays drawn and only stops turning: its presence is the information. */
-@media (prefers-reduced-motion: reduce) {
-    .loading-ring {
-        animation: none;
-    }
-}
-
-@keyframes loading-ring {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 @utility plate {
     height: var(--control-h-plate);
     background: linear-gradient(
@@ -410,7 +235,6 @@
     border-bottom: 2px solid var(--ui-border-accented);
 }
 
-/* * The height chain: the shell is exactly the viewport and never scrolls */
 html,
 body,
 #__nuxt {
@@ -429,12 +253,4 @@ button,
 [role='button'] {
     @apply cursor-pointer;
     @apply disabled:cursor-not-allowed;
-}
-
-/* * Annex §14.4: transform-based enter/exit must short-circuit under reduced motion. The overlays animate via Tailwind `animate-[slide-in-from-right_200ms_…]` utilities baked into their theme configs, so there is no per-component prop to disable — the animation is cancelled here instead, for every overlay at once. Colour and opacity transitions stay: they are at the baseline duration and need no guard. */
-@media (prefers-reduced-motion: reduce) {
-    [data-state='open'],
-    [data-state='closed'] {
-        animation: none !important;
-    }
 }

@@ -127,7 +127,7 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 ## Entry Points
 
 - `web/components/HeroDetailDialog.vue`: the name's directional slide and its rail-position lookup, and the thumbnail and portrait fades; `HeroStatsPanel.vue`: the figure count and the partner fades; `HeroPowersPanel.vue`: the panel fade; `HeroNotesPanel.vue`: the notes' slide and move.
-- `web/assets/css/main.css`: the `slide` transition classes beside `state-fade` and `glyph-swap`.
+- `web/assets/css/motion.css`: the `slide` transition classes beside `state-fade` and `glyph-swap`.
 - `web/composables/useTweenedValues.ts`: the tween the figures share with the radar and the mission panel.
 - `annexes/design-system.md` §11: **Value count** and **Slide** as named patterns.
 

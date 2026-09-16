@@ -1,16 +1,16 @@
 <template>
   <div ref="region" class="shrink-0">
-    <TransitionGroup name="banner" appear @before-leave="sealLeaving">
+    <TransitionGroup name="first-run-banner" appear @before-leave="sealLeaving">
       <div
         v-for="notice in pending"
         :key="notice.key"
         :data-notice="notice.key"
-        class="banner grid"
+        class="first-run-banner grid"
       >
         <!-- * The clip box: the row's height is what animates, and this hides the body travelling through it. -->
         <div class="min-h-0 overflow-hidden">
           <div
-            class="banner-body flex flex-col gap-2 border-t-2 border-secondary-950 bg-secondary-800 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+            class="first-run-banner-body flex flex-col gap-2 border-t-2 border-secondary-950 bg-secondary-800 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             role="region"
             :aria-label="notice.label"
           >
@@ -127,41 +127,3 @@ function sealLeaving(element: Element) {
   element.setAttribute('aria-hidden', 'true');
 }
 </script>
-
-<style scoped>
-/* * The row's height opens the space and the body travels through it, on one shared duration so the main and the banner settle together (feature 017). */
-.banner {
-  grid-template-rows: 1fr;
-  transition: grid-template-rows var(--duration-slow) ease-out;
-}
-
-.banner-body {
-  transition:
-    transform var(--duration-slow) ease-out,
-    opacity var(--duration-slow) ease-out;
-}
-
-.banner-enter-from,
-.banner-leave-to {
-  grid-template-rows: 0fr;
-}
-
-.banner-enter-from .banner-body,
-.banner-leave-to .banner-body {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-.banner-leave-active,
-.banner-leave-active .banner-body {
-  transition-timing-function: ease-in;
-}
-
-/* ! Past the baseline, so it short-circuits under reduced motion (annex §11); the inert-and-focus handling is behaviour and deliberately not guarded. */
-@media (prefers-reduced-motion: reduce) {
-  .banner,
-  .banner-body {
-    transition: none;
-  }
-}
-</style>

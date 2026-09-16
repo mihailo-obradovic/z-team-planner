@@ -4,7 +4,7 @@ The project's own design system, instantiated from `stacks/frontend/nuxt/design-
 
 **Loads when:** styling anything, adding or changing a token, picking a size, shadow, or spacing value, or building a new component.
 
-Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `web/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too. A component never names a ramp or a hex — it names an alias or a token.
+Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `web/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too, except the two motion durations, which sit in `web/assets/css/motion.css` beside the transitions that are their only readers. A component never names a ramp or a hex — it names an alias or a token.
 
 ---
 
@@ -385,7 +385,6 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 | --------------------- | ----- | ------------------------------------------------------------------------------------------------- |
 | `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions                                         |
 | `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit                                             |
-| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                                                                   |
 | `--duration-linger`   | 1.5s  | A confirmation's hold before it closes (feature 018). A hold, not motion: no reduced-motion guard |
 
 Start at the baseline and step up only when the element's size justifies it. Vue `<Transition>` classes draw from the same tokens — a duration hardcoded in a transition class has bypassed the scale.
@@ -412,11 +411,13 @@ Seven motions recur and are settled here once, so a second instance of any of th
 - **A list may carry both a move and a state fade**, and a centred one has to: adding or removing an entry re-centres every other entry, so a fade alone leaves the survivors to jump. The cost is that a leaving element must be **taken out of flow** as its fade begins, or the survivors wait for the fade to finish and jump anyway. The element arriving or leaving takes the fade **without** the move: it has no origin to travel from, and one that fades while sliding reads as coming from somewhere it never was. Take it out of flow only where the row's size is already reserved, so removing it from the layout cannot resize anything. Where a list is not centred and its entries only ever append or truncate, the move is not worth that: give it the move alone.
 - **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
 - Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
-- **State fade** is what a mounting or unmounting element gets by default. A control whose glyph changes while it stays is a **glyph swap**, never a fade, and a colour-only change is neither — it keeps the baseline colour fade. A glyph swap fires only on a change while the control is on screen, never on first render, and an interrupted swap re-targets to the newest glyph rather than queueing. Both live as the `state-fade` and `glyph-swap` transition classes in `main.css`.
+- **State fade** is what a mounting or unmounting element gets by default. A control whose glyph changes while it stays is a **glyph swap**, never a fade, and a colour-only change is neither — it keeps the baseline colour fade. A glyph swap fires only on a change while the control is on screen, never on first render, and an interrupted swap re-targets to the newest glyph rather than queueing. Both live as the `state-fade` and `glyph-swap` transition classes in `motion.css`.
 - **Glyph swap** short-circuits under reduced motion and the glyph lands at once. **State fade** is opacity at the baseline and needs no guard.
 - **Slide** is what running text gets where a fade on it is too much fading beside content that holds still; a picture keeps the state fade. Both legs overlap, so the block stacks old and new in one grid cell and clips. Under reduced motion the transform is dropped and the opacity leg stays: it degrades to the state fade, never to a cut.
 - **Value count** short-circuits under reduced motion by landing on the value directly; its duration is JavaScript's, not a `--duration-*` token, because it is shared with the radar's tween (decision 008). That is the one motion on this page not on the CSS scale, recorded rather than left to be discovered.
 - **Loading ring** short-circuits too, and it is the one pattern where the guard leaves something behind: the ring stays drawn and stops turning. Its presence is the information — something is still working — and only the rotation is decoration. It is the mark for a wait with no known length; a wait whose final geometry is known takes §10's placeholder instead.
+
+- **Every shared motion lives in `web/assets/css/motion.css`**, imported by `main.css`: the named patterns, their reduced-motion guards, and the two durations they read. A motion belonging to a single component lives there too rather than in that component's `<style>` block, so this section has one implementation to check against it. The two motions driven in JavaScript are the exception no stylesheet can hold, and that file names them at its end.
 
 ---
 
@@ -575,7 +576,7 @@ The preference is the visitor's own operating-system setting, switched on by peo
 
 ## 15. Scoped styles and token reach
 
-Tokens live in `web/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
+Tokens live in `web/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale; the motion durations on `:root` in `motion.css`, which it imports) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
 
 This matters concretely here: `UModal`, `UDropdownMenu`, `UTooltip` and `UToast` teleport to `body`, outside the app subtree. Tokens hung on an app wrapper element would never reach them — a dialog that loses its palette is almost always that mistake. `:root` is the only correct home.
 

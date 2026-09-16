@@ -99,7 +99,7 @@ Not role-specific.
 - No animation state is serialized or readable by another feature.
 - The card's header slots and chip row keep their reserved size throughout, including while a chip is out of flow.
 - A control never displays a glyph that disagrees with its state for longer than one swap.
-- Every duration the motions use is a `--duration-*` token from `web/assets/css/main.css`.
+- Every duration the motions use is a `--duration-*` token from `web/assets/css/motion.css`.
 
 ## Error Handling
 
