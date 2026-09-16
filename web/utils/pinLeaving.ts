@@ -1,12 +1,12 @@
-// * Measurements last a microtask: long enough for Vue's synchronous run of every leave hook in one change, gone before the next change.
+// * Kept for one microtask, which spans Vue's synchronous run of a change's leave hooks.
 const measuredLists = new WeakMap<
   Element,
   Map<Element, { left: number; top: number; width: number }>
 >();
 
-// * A `TransitionGroup` `beforeLeave` hook that takes the leaving element out of flow, so its neighbours travel while it fades rather than after (annex §11, features 024 and 025).
-// ! Offsets are pinned first because an absolutely positioned flex child is placed by the container's alignment, not where it stood, and Vue's move would drag it from there. The width is pinned too, so a wrapped line does not re-wrap outside its column.
-// ! The whole list is measured on a batch's first call: the first element pinned is already out of flow when the second is measured, which would put the second a line too high.
+// * Pins a leaving element where it stood, so the CSS can take it out of flow and its neighbours travel while it fades (annex §11, features 024 and 025).
+// ! Unpinned, an absolute flex child jumps to the container's alignment and a wrapped line re-wraps at a new width.
+// ! The list is measured once per batch, because each pinned sibling leaves flow and shifts the ones measured after it.
 export function pinLeaving(element: Element) {
   const leaving = element as HTMLElement;
   const list = leaving.parentElement;
