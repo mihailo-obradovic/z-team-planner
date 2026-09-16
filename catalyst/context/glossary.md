@@ -45,13 +45,17 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 
 ## Mission simulator
 
-**Mission template** — one of the simulator's three fixed, unnamed call definitions: five required stat values, plus at most one optional per-stat condition column (a 2×XP threshold on template #2, a fail threshold on template #3). Always a 4-slot call.
+**Mission template** — one of the simulator's three fixed, unnamed call definitions: five required stat values, plus two optional condition columns (a 2×XP threshold and a fail threshold), each holding at most one stat's threshold, on any template. The defaults only seed #2 with a 2×XP example and #3 with a fail example. Always a 4-slot call.
 
 **Mission team** — the up-to-four heroes placed into the simulator's slots. Distinct from the roster: it is a selection for one simulated call, not who exists.
 
 **Slot** — one of the four ordered positions in a mission team. Position matters: some powers pay differently by slot, and an empty slot is itself a quantity powers consume.
 
 **Illusion** — the stat-only occupant Prism's power places beside her: a copy of her left neighbor's stats in the slot to her right. It fills a slot but is nobody for power, synergy, or roster purposes.
+
+**Copy** — the stand-in Golem's trained Spread Thin places in every free slot to his right. It contributes no stats itself, pays Golem per copy, and is nobody for power, synergy, or roster purposes. Copies leave right to left.
+
+**Spawned occupant** — an illusion or a copy: a slot occupant created only by placing its owner, never by any other action. Removing one is sticky until the owner is placed again.
 
 **Estimated success** — the simulator's percentage for the active mission template: radar coverage plus the synergy boost, adjusted by reattempt powers, zeroed by a tripped fail threshold.
 

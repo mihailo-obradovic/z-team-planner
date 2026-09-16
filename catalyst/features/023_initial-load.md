@@ -69,17 +69,17 @@ Not role-specific. The wait is identical signed in and signed out, since waiting
 
 ## Examples
 
-| Input                                     | Expected Output                                                                                 | Notes                                                       |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `GET /`, prerendered HTML                 | The booting flag is set, the ring is present, and the planner markup is all there but unpainted | What the CDN serves, before any JS                          |
-| `/` while booting                         | Title, wash and ring only; the header's right cluster and the banners are not displayed         | The wash is the page's own, at its own opacity              |
-| `/` after `loadInitialBuild` resolves     | The flag clears and everything appears at once, nothing shifting                                |                                                             |
-| `/` with an active local build            | The planner appears already holding it                                                          | The flip this feature exists to hide                        |
-| `/` with `?build=` on a valid payload     | The planner appears in shared-build mode                                                        | A dead parameter is still stripped before the reveal        |
-| `/` with no local build and no parameter  | The wait ends on the default roster                                                             | Mission templates are rolled before the snapshot, unchanged |
-| `/b/{id}` or `/privacy`                   | No ring, no flag, nothing withheld                                                              | Nothing waits where nothing is prerendered stale            |
-| `/` with `prefers-reduced-motion: reduce` | The ring is drawn but does not rotate; the fade still runs                                      | Annex §11, §14.4                                            |
-| `/` with scripting disabled               | No ring, and every withheld region is displayed                                                 | The head block, or none of it is any use                    |
+| Input                                     | Expected Output                                                                                 | Notes                                                |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `GET /`, prerendered HTML                 | The booting flag is set, the ring is present, and the planner markup is all there but unpainted | What the CDN serves, before any JS                   |
+| `/` while booting                         | Title, wash and ring only; the header's right cluster and the banners are not displayed         | The wash is the page's own, at its own opacity       |
+| `/` after `loadInitialBuild` resolves     | The flag clears and everything appears at once, nothing shifting                                |                                                      |
+| `/` with an active local build            | The planner appears already holding it                                                          | The flip this feature exists to hide                 |
+| `/` with `?build=` on a valid payload     | The planner appears in shared-build mode                                                        | A dead parameter is still stripped before the reveal |
+| `/` with no local build and no parameter  | The wait ends on the default roster                                                             | Mission templates are at their defaults, unchanged   |
+| `/b/{id}` or `/privacy`                   | No ring, no flag, nothing withheld                                                              | Nothing waits where nothing is prerendered stale     |
+| `/` with `prefers-reduced-motion: reduce` | The ring is drawn but does not rotate; the fade still runs                                      | Annex §11, §14.4                                     |
+| `/` with scripting disabled               | No ring, and every withheld region is displayed                                                 | The head block, or none of it is any use             |
 
 ## Business Rules
 

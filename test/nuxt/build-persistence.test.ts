@@ -88,4 +88,26 @@ describe('useInitialBuild', () => {
       JSON.stringify([SAVED_BUILD])
     );
   });
+
+  // * Feature 015: templates are never absent, so a build saved without `mt` opens on the defaults rather than an empty panel.
+  it('opens an active build saved without templates on the default templates', async () => {
+    seedActiveBuild();
+    delete routeQuery.build;
+
+    const planner = await initializedPlanner();
+
+    expect(planner.ep3Cut.value).toBe('coupe');
+    expect(planner.missionTemplates.value).toHaveLength(3);
+    expect(planner.missionTemplates.value[2]!.fail).toEqual({ combat: 8 });
+  });
+
+  it('opens with the default templates when there is nothing to load', async () => {
+    store.clear();
+    delete routeQuery.build;
+
+    const planner = await initializedPlanner();
+
+    expect(planner.missionTemplates.value).toHaveLength(3);
+    expect(planner.missionTemplates.value[1]!.xp).toEqual({ intellect: 8 });
+  });
 });

@@ -31,7 +31,7 @@
           <span class="flex-1 @max-[35rem]:hidden" />
 
           <template v-if="slot !== null">
-            <template v-if="isHero(slot)">
+            <template v-if="isHeroSlot(slot)">
               <IconButton
                 icon="i-lucide-chevron-left"
                 :label="`Move ${slotName(slot)} left`"
@@ -54,7 +54,10 @@
             <IconButton
               icon="i-lucide-x"
               :label="`Remove ${slotName(slot)}`"
-              :disabled="slot === GOLEM_COPY_SLOT && !isRemovableCopy(index)"
+              :disabled="
+                slot === GOLEM_COPY_SLOT &&
+                !isRightmostCopy(missionSlots, index)
+              "
               class="@max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:right-0 @max-[35rem]:z-10 @max-[35rem]:bg-default/85"
               @click="removeMissionSlot(index)"
             />
@@ -157,6 +160,8 @@ import HeroPortrait from '@/components/HeroPortrait.vue';
 
 import { GOLEM_COPY_SLOT, ILLUSION_SLOT } from '@/types/mission';
 
+import { isHeroSlot, isRightmostCopy } from '@/utils/missionTeam';
+
 import type { HeroId } from '@/types/hero';
 import type { MissionSlot } from '@/types/mission';
 
@@ -183,7 +188,7 @@ const teamSlots = computed(() =>
   missionSlots.value.map((slot, index) => ({
     slot,
     index,
-    key: slot !== null && isHero(slot) ? `hero:${slot}` : `at:${index}`
+    key: isHeroSlot(slot) ? `hero:${slot}` : `at:${index}`
   }))
 );
 
@@ -218,16 +223,8 @@ async function moveSlot(index: number, direction: -1 | 1, event: MouseEvent) {
   arrow?.focus();
 }
 
-function isHero(slot: Exclude<MissionSlot, null>): slot is HeroId {
-  return slot !== ILLUSION_SLOT && slot !== GOLEM_COPY_SLOT;
-}
-
-function isRemovableCopy(index: number): boolean {
-  return missionSlots.value.lastIndexOf(GOLEM_COPY_SLOT) === index;
-}
-
 function viewSlotDetail(slot: Exclude<MissionSlot, null>) {
-  const id = isHero(slot) ? slot : missionIllusionSource.value;
+  const id = isHeroSlot(slot) ? slot : missionIllusionSource.value;
 
   if (id) {
     emit('viewDetail', id);
@@ -254,7 +251,7 @@ function slotName(slot: Exclude<MissionSlot, null>): string {
 
 // * An illusion wears its source's face; before a source exists it wears Prism's, whose power it is.
 function slotHeroId(slot: Exclude<MissionSlot, null>): HeroId {
-  const id = isHero(slot) ? slot : missionIllusionSource.value;
+  const id = isHeroSlot(slot) ? slot : missionIllusionSource.value;
 
   return id ?? 'prism';
 }

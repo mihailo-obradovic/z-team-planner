@@ -51,7 +51,7 @@ Non-goals:
 
 ## User / System Behavior
 
-**Templates.** Exactly three, unnamed ("Template #1/#2/#3"), always 4 slots. Each holds five editable REQ values plus two optional condition columns — `2×XP ≥` and `FAIL ≥` — configurable on **any** template, each holding **at most one** threshold (setting another stat's moves it). A fresh planner state rolls REQs uniformly in 3–8; as worked examples, #2 rolls one random stat's XP threshold in 6–9 and #3 gets a fixed fail threshold, combat at 8. All of it is editable afterwards and travels with the build. One template is active at a time and drives the requirements check and the math.
+**Templates.** Exactly three, unnamed ("Template #1/#2/#3"), always 4 slots. Each holds five editable REQ values plus two optional condition columns — `2×XP ≥` and `FAIL ≥` — configurable on **any** template, each holding **at most one** threshold (setting another stat's moves it). The planner always holds all three, starting from fixed defaults — worked examples whose thresholds sit above their own stat's REQ: #1 a plain call (C6 I3 V5 Ch3 M4), #2 a stretch with `2×XP ≥` intellect 8 (C2 I6 V3 Ch6 M3), #3 a brawl with `FAIL ≥` combat 8 (C5 I3 V6 Ch2 M5), the common end-game trip wire. Edits are not held to that rule; all of it travels with the build. One template is active at a time and drives the requirements check and the math.
 
 **Motion and certainty.** Tab content fades in, template card heights animate, and every number in the requirements check and the math counts to its new value. A fully covered mission reads 100% on a green field with a check; a 0% mission on a red field with a ✕.
 
@@ -92,16 +92,15 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 | empty team, any REQ > 0        | 0%                            | nothing to cover with                |
 | coverage 100%, nothing failing | 100% on green with a check    | the certain-success state            |
 | ep3 cut removes a team hero    | hero silently leaves the team | also on deserialization              |
-| document without `mt`          | loads with no templates       | never rolled                         |
+| document without `mt`          | loads the default templates   | `mt` is omitted while it equals them |
 
 ## Business Rules
 
-- The simulator keys are optional v1 keys, and unknown keys stay tolerated client-side. Templates roll only for a fresh planner with nothing to load; a loaded document supplies its own or has none. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) both know the keys; the 8KB document cap holds.
+- The simulator keys are optional v1 keys, and unknown keys stay tolerated client-side. A document without `mt` holds the default templates. The client gate (`isSerializedBuild.ts`) and the strict server schema (`app/schemas/builds.py`, `extra="forbid"`) both know the keys; the 8KB document cap holds.
 - Threshold checks (fail and 2×XP) compare the **clamped team total** of their stat, at-or-above. Each column holds at most one threshold — enforced by the setter, sanitized to the first on load, rejected by the server past one.
 - Derived slot effects are local to the simulator's totals and math panel; `heroSpecialPowers` state is never read for En Pointe/Spread Thin here and never written.
 - The illusion contributes stats only — it is nobody for power, synergy-pair, or roster purposes.
 - Synergy pairs remain purely derived from episode setup; the switch selects a level, never a pair.
-- Random rolls happen once per fresh planner state (new/reset build), not per visit.
 
 ## Edge Cases
 
@@ -111,12 +110,12 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 - Arrows on slot 1/4 have one direction only; moving Prism or her source recomputes the illusion per its lifecycle.
 - Clearing a threshold (unset) removes that stat's check; a template may end with none.
 - Required area zero with team present is still 100%; both zero is 100%.
-- The template roll happens client-side only: `/` is prerendered, and a roll during prerender would bake one "random" set into every visitor's payload.
 
 ## Invariants
 
 - The active tab never enters the build document: switching tabs changes no serialized state and never marks the build dirty.
 - Every serialized simulator value round-trips through save/load and the API validator; a document the client writes is never rejected by the server.
+- The planner always holds exactly three templates; none is ever absent.
 - Team slots hold at most 4 occupants; a hero appears at most once.
 - The estimate is always in 0–100%; a tripped fail check is always exactly 0%.
 
@@ -131,7 +130,7 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 
 - `web/pages/index.vue`: tab wiring, `?tab=` sync.
 - `web/components/mission/*`: templates, requirements check, math, team row, picker.
-- `web/composables/useMissionSimulator.ts`: team, derived effects, success math.
+- `web/composables/useMissionSimulator.ts`: assembles `useMissionTeam`, `useMissionTemplates` and `useMissionScore`; the pure rules live in `web/utils/missionTeam.ts` and `web/utils/missionScore.ts`.
 - `web/utils/buildDocument.ts`, `web/types/build.ts`, `web/utils/isSerializedBuild.ts`: the new v1 keys (protected area).
 - `app/schemas/builds.py`, `app/services/validation.py`: server acceptance of the new keys.
 - `web/components/_shared/StatRadar.vue`: required-vs-team overlay and markers (decision 008).
@@ -146,6 +145,7 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 
 - `test/nuxt/mission-success.test.ts`: coverage, synergy gating, reattempt, fail precedence, 2×XP.
 - `test/nuxt/mission-team.test.ts`: slot actions, Coupé per-slot bonus, Golem copies and ordered removal, illusion lifecycle, load sanitation.
+- `test/nuxt/build-document.test.ts`, `test/nuxt/build-persistence.test.ts`: the default templates, their omission, and loads without `mt`.
 - Round-trip tests, `shared/build-cases.json` fixtures, backend range/shape tests.
 - Live browser walk of the Examples before `Active`.
 

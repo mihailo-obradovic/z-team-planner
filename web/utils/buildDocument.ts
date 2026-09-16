@@ -5,6 +5,7 @@ import {
   STAT_NAMES
 } from '@/types/hero';
 import {
+  DEFAULT_MISSION_TEMPLATES,
   GOLEM_COPY_SLOT,
   ILLUSION_SLOT,
   MISSION_SLOT_COUNT
@@ -95,25 +96,10 @@ export function serializeBuild(state: PlannerState): SerializedBuild {
     buildDocument.fl = fl;
   }
 
-  // * Rolled templates are never a default, so only a state that never rolled, on the server, omits `mt`.
-  if (state.missionTemplates.value) {
-    buildDocument.mt = state.missionTemplates.value.map((template) => {
-      const entry: SerializedMissionTemplate = {
-        r: statsToArray(template.req)
-      };
-      const x = thresholdsToArray(template.xp);
-      const f = thresholdsToArray(template.fail);
+  const mt = state.missionTemplates.value.map(templateToEntry);
 
-      if (x) {
-        entry.x = x;
-      }
-
-      if (f) {
-        entry.f = f;
-      }
-
-      return entry;
-    });
+  if (JSON.stringify(mt) !== DEFAULT_TEMPLATE_ENTRIES) {
+    buildDocument.mt = mt;
   }
 
   if (state.missionSlots.value.some((slot) => slot !== null)) {
@@ -195,7 +181,9 @@ export async function deserializeBuild(
 
   state.heroFlights.value = fl;
 
-  state.missionTemplates.value = buildDocument.mt?.map(readTemplate) ?? null;
+  state.missionTemplates.value =
+    buildDocument.mt?.map(readTemplate) ??
+    structuredClone(DEFAULT_MISSION_TEMPLATES);
 
   state.missionSlots.value = readSlots(buildDocument.mh);
   state.missionSynergyLevel.value = readRange(
@@ -242,6 +230,22 @@ function arrayToThresholds(values: number[] | undefined): Partial<HeroStats> {
   return {};
 }
 
+function templateToEntry(template: MissionTemplate): SerializedMissionTemplate {
+  const entry: SerializedMissionTemplate = { r: statsToArray(template.req) };
+  const x = thresholdsToArray(template.xp);
+  const f = thresholdsToArray(template.fail);
+
+  if (x) {
+    entry.x = x;
+  }
+
+  if (f) {
+    entry.f = f;
+  }
+
+  return entry;
+}
+
 function readTemplate(entry: SerializedMissionTemplate): MissionTemplate {
   return {
     req: arrayToStats(entry.r),
@@ -249,6 +253,10 @@ function readTemplate(entry: SerializedMissionTemplate): MissionTemplate {
     fail: arrayToThresholds(entry.f)
   };
 }
+
+const DEFAULT_TEMPLATE_ENTRIES = JSON.stringify(
+  DEFAULT_MISSION_TEMPLATES.map(templateToEntry)
+);
 
 const HERO_IDS = new Set<string>(HEROES.map((hero) => hero.id));
 

@@ -1,5 +1,5 @@
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE } from '@/types/hero';
-import { MISSION_SLOT_COUNT } from '@/types/mission';
+import { DEFAULT_MISSION_TEMPLATES, MISSION_SLOT_COUNT } from '@/types/mission';
 
 import type {
   HeroId,
@@ -7,7 +7,7 @@ import type {
   HeroStats,
   SynergyLevel
 } from '@/types/hero';
-import type { MissionSlot, MissionTemplates } from '@/types/mission';
+import type { MissionSlot, MissionTemplate } from '@/types/mission';
 
 export type PlannerState = ReturnType<typeof usePlannerState>;
 
@@ -36,9 +36,8 @@ export function usePlannerState() {
       'heroFlights',
       () => ({})
     ),
-    missionTemplates: useState<MissionTemplates>(
-      'missionTemplates',
-      () => null
+    missionTemplates: useState<MissionTemplate[]>('missionTemplates', () =>
+      structuredClone(DEFAULT_MISSION_TEMPLATES)
     ),
     missionSlots: useState<MissionSlot[]>('missionSlots', () =>
       Array.from({ length: MISSION_SLOT_COUNT }, () => null)

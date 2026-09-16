@@ -28,9 +28,6 @@ export function useInitialBuild() {
 
       if (active) {
         await deserializeBuild(active.data, state);
-      } else {
-        // * Rolled before the snapshot, so the roll never counts as an unsaved change (feature 015).
-        state.missionTemplates.value = rollMissionTemplates();
       }
     }
 
