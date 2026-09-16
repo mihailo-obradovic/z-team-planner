@@ -102,7 +102,7 @@ Not role-specific.
 
 ## Error Handling
 
-No failure mode reaches the user. A browser that runs no transition renders the swapped order immediately — the pre-feature behaviour, which is also the reduced-motion behaviour.
+No failure mode reaches the user: a browser that runs no transition renders the swapped order at once, which is also the reduced-motion behaviour.
 
 ## Entry Points
 
@@ -126,9 +126,9 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 ## Verification
 
-`test/nuxt/mission-team.test.ts`: the hero's own DOM node is the one that ends up in the new slot; an empty slot is rebuilt where the gap now is rather than following it; the slots after a swap are exactly what the action alone produces; focus moves to the card's other arrow when the pressed one lands disabled, and stays put when it does not. Lint, format and typecheck clean.
+`test/nuxt/mission-team.test.ts` passes: the hero's own DOM node lands in the new slot, an empty slot is rebuilt where the gap now is rather than following it, the post-swap slots are what the action alone produces, and focus moves to the card's other arrow only when the pressed one lands disabled. Suite, lint, format and typecheck clean.
 
-Live in Chrome at 1440×900 and 320×640@2×: mid-travel the two cards carry mirrored `transform`s over `0.25s ease-in-out` and settle swapped as the same DOM nodes; walking a hero into slot 4 lands focus on that card's other arrow; moving Prism dissolved her illusion while only the two heroes carried a transform; an interrupted press re-aimed rather than queued; a swap with an empty slot kept four cards laid out and the row's width constant throughout; the page never scrolled sideways. Under emulated reduced motion every sample reads `transform: none` with the cards exchanged in place and focus still moved.
+Walked at 1440 and 320, the Examples table row by row — including a Golem swap, a Prism swap dissolving her illusion, an interrupted press, four cards laid out at a constant row width throughout, and a reduced-motion pass.
 
 ## Agent Change Rules
 

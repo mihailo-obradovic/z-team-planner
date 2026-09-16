@@ -99,9 +99,7 @@ Not role-specific.
 ## Business Rules
 
 - **Presentation only.** The motions read state; none delays, batches or suppresses a write.
-- **Durations come from the token scale**, except the value count: a JavaScript tween whose 200ms is the radar's, kept so the two agree (annex §11).
-- **Easing follows the annex:** `ease-out` entering or growing, `ease-in` leaving or closing.
-- **Properties are named**, never `transition: all`.
+- **Durations, easing and named properties follow annex §11**, except the value count: a JavaScript tween whose 200ms is the radar's, kept so the two agree.
 - **A slide is transform-based**, so it carries the annex's reduced-motion guard, degrading to the fade rather than a cut.
 
 ## Edge Cases
@@ -149,7 +147,7 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 ## Verification
 
-Suite, typecheck, lint and format clean. Walked in headless Chromium at 1500x1100 and 375x800, sampling computed transforms every 40ms: the name leaves toward the rail's start and arrives from its end for a later hero, reversed for an earlier one, on x at 375px; the partner control obeys the rule both ways and an interrupted click measures from the arriving hero; the thumbnail fades beside the text. The notes block leaves upward and arrives from below; advisories firing enter from below while the lines after them travel, and clearing ones hold their row while sliding out. The stats panel held still throughout and every figure counted. Under emulated reduced motion every transform reads `none` while the opacities still cross.
+Suite, typecheck, lint and format clean. Walked at 1500 and 375, the Examples table row by row — including the name's direction agreeing with the rail both ways and on x at 375, an interrupted click measuring from the arriving hero, advisories firing and clearing without a line jumping, the stats column held still while every figure counted, and a reduced-motion pass where the transforms read `none` while the opacities still cross.
 
 ## Agent Change Rules
 

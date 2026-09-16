@@ -138,7 +138,9 @@ Vitest's Nuxt environment mounts client-side and never hydrates, so it cannot pr
 
 ## Verification
 
-By test: the four cases under Tests; typecheck, lint, format and build clean. The built `/` serves the booting flag, the ring, the withheld wrapper and the head block; `/privacy` serves no flag; both boot rules and the reduced-motion guard ship in the stylesheet. Walked in Chrome on the preview and a dev server: after the reveal the flag reads `false`, `main` is visible and scrollable and the cluster displayed; with the flag forced on, `main` is hidden but keeps its height, the cluster is not displayed and the wash shows through. Dev `/` loads with no hydration-mismatch warning. The flag's two-value rule exists because a walk with a one-value flag stuck on: happy-dom lets the unit test pass either way. Reduced motion and scripting-disabled were read from the stylesheet and served HTML.
+The four cases under Tests pass; suite, typecheck, lint, format and build clean. The built `/` serves the flag, the ring, the withheld wrapper and the head block, and `/privacy` serves none of it.
+
+Walked on the preview and a dev server: the reveal clears every region in one tick, a flag forced on hides `main` while it keeps its height and shows the wash through, and dev `/` loads with no hydration-mismatch warning. The reduced-motion guard and the scripting-disabled undo were read from the built stylesheet and the served HTML.
 
 ## Agent Change Rules
 

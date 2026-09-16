@@ -82,9 +82,7 @@ Not role-specific.
 ## Business Rules
 
 - **Presentation only.** The motions read state; none delays, batches or suppresses a write. Budgets, totals and pair markers are correct on the first frame.
-- **Durations come from the token scale.** Every transition class reads a `--duration-*` token; a hardcoded one has bypassed it (annex §11).
-- **Easing follows the annex:** `ease-out` entering or growing, `ease-in` leaving or shrinking, one baseline per leg.
-- **Properties are named**, never `transition: all`.
+- **Durations, easing and named properties follow annex §11**, one baseline per leg; a duration hardcoded in a transition class has bypassed the scale.
 
 ## Edge Cases
 
@@ -103,7 +101,7 @@ Not role-specific.
 
 ## Error Handling
 
-No failure mode reaches the user. A browser running no transition renders the settled state immediately: the pre-feature behaviour, and the reduced-motion behaviour of the glyph swap.
+No failure mode reaches the user: a browser that runs no transition renders the settled state at once, which is also the glyph swap's reduced-motion behaviour.
 
 ## Entry Points
 
@@ -128,7 +126,9 @@ No failure mode reaches the user. A browser running no transition renders the se
 
 ## Verification
 
-Lint, typecheck, format and suite clean. Walked in headless Chrome at 1905px and 375px: the reset icon, Supernova's chip, the bonus swap (two fast presses re-targeting to `+3`), a reset running both motions at once, and Coupé's glyph swap all behaved; a share link loaded with no motion. Chip movement measured frame by frame on Coupé revealing and hiding En Pointe: the existing chips travel under the move while the fourth fades, and the chip that comes or goes holds its own x throughout rather than snapping to the row's centre. Sonar's chip and a reduced-motion machine were not covered.
+Suite, lint, typecheck and format clean. Walked at 1905 and 375, the Examples table row by row — including a reset running both motions at once, two fast bonus presses re-targeting rather than queueing, and the chip row's neighbours travelling while the arriving or leaving chip holds its own x.
+
+Not covered: Sonar's chip, and a machine with reduced motion set rather than emulated.
 
 ## Agent Change Rules
 

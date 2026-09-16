@@ -52,7 +52,7 @@ Non-goals:
 ## User / System Behavior
 
 - On a first visit, both banners are present, in one column at the bottom of the app shell: the spoiler warning above, the storage notice below it. They sit in the layout rather than over it — nothing is covered, and the page's scroll area shrinks by their height.
-- **They arrive by sliding up** from below the shell's edge and fading in, the region's height expanding over the same `--duration-slow` and `ease-out`, so the scrolling main is squeezed in one motion. A returning visitor with both keys set has no region at all and nothing animates.
+- **They arrive by sliding up** from below the shell's edge and fading in, the region's height expanding over the same `--duration-slow` and `ease-out`, so the scrolling main is squeezed in one motion.
 - Each banner carries its copy and one confirm button. Confirming removes that banner and persists its key; the other banner stays. When one remains, it takes the bottom of the shell on its own.
 - **They leave by sliding down** and fading, the height collapsing over the same duration and `ease-in` — a height that snapped shut would jolt the remaining banner.
 - **A leaving banner is sealed while it leaves**: `inert` and `aria-hidden` for its exit, so neither keyboard nor assistive technology reaches a notice just dismissed. Focus moves to the remaining banner's confirm button, or is released when none is left.
@@ -137,9 +137,9 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Verification
 
-By test: every case under Tests; lint, format and typecheck clean. Live walk at 1280 and 320 (mobile, touch): both stacked and in-flow, spoiler above notice; confirming one writes its key and leaves the other; a reload with both keys renders no banner and no flash; at 320 the copy wraps, the buttons are full-width, nothing scrolls sideways, and the build bar's Save stays hittable with both banners up. Motion measured in Chrome: enter opens the row and slides the body in together over 250ms; mid-exit the banner is still in the DOM carrying `inert` and `aria-hidden`, unreachable by tab, with height and travel moving as one and nothing below the leaving banner moving; focus lands on the remaining confirm button. Under emulated reduced motion both banners sit at their final offsets on the first sample and an exit completes within one frame, focus unchanged.
+Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass.
 
-Remaining risk: at 320 the two banners occupy roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Acceptable for a one-time notice; shortening the copy is the lever if it annoys.
+Remaining risk: at 320 the two banners take roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Shortening the copy is the lever if it annoys.
 
 ## Agent Change Rules
 
