@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-2 p-3">
       <!-- * Only the active template is expanded. The whole card selects, the header button stays the accessible control, and a click bubbling from a stepper only re-selects the active card. -->
       <section
-        v-for="(template, index) in templates"
+        v-for="(template, index) in missionTemplates"
         :key="index"
         class="cursor-pointer border-2 border-accented"
         :class="index === activeIndex ? 'bg-muted' : 'bg-default'"
@@ -170,7 +170,6 @@ const {
   setMissionThreshold
 } = useHeroPlanner();
 
-const templates = computed(() => missionTemplates.value ?? []);
 const activeIndex = computed(() => missionActiveTemplate.value);
 
 // * One per panel, so switching template keeps what you were reading, and a plain ref, because planner state serializes and the build document must never carry a layout choice (feature 016).

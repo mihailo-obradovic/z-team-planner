@@ -65,8 +65,8 @@ async function freshPlanner() {
 
   await initial.loadInitialBuild();
 
-  // ! `useState` refs are shared for the lifetime of the module, so a hero trained in one test is still trained in the next. Loading a document holding only the fresh roll is the reset: it puts every group back to `{}` and both episode choices back to their defaults, through the same path a real load takes.
-  await mode.loadAccountBuild({ v: 1, mt: serializeBuild(state).mt });
+  // ! `useState` refs are shared for the lifetime of the module, so a hero trained in one test is still trained in the next. Loading the bare document is the reset: it puts every group, the templates included, back to its default through the same path a real load takes.
+  await mode.loadAccountBuild({ v: 1 });
 
   return {
     ...planner,
@@ -84,21 +84,12 @@ function decodeShareParam(url: string): SerializedBuild {
   return JSON.parse(atob(padded));
 }
 
-// * Feature 015: a client state always carries rolled mission templates — random values,
-// * so the shape is matched, not the numbers. #2 rolls one 2×XP column, #3 one fail column.
-const ROLLED_TEMPLATES = [
-  { r: expect.any(Array) },
-  { r: expect.any(Array), x: expect.any(Array) },
-  { r: expect.any(Array), f: expect.any(Array) }
-];
-
 describe('build document — what the format omits', () => {
   it('serialises an untouched planner to the version alone', async () => {
     const planner = await freshPlanner();
 
     expect(planner.serializeCurrentBuild()).toEqual({
-      v: 1,
-      mt: ROLLED_TEMPLATES
+      v: 1
     });
   });
 
@@ -108,8 +99,7 @@ describe('build document — what the format omits', () => {
     planner.ep4Hire.value = 'waterboy';
 
     expect(planner.serializeCurrentBuild()).toEqual({
-      v: 1,
-      mt: ROLLED_TEMPLATES
+      v: 1
     });
   });
 
@@ -120,8 +110,7 @@ describe('build document — what the format omits', () => {
 
     expect(planner.serializeCurrentBuild()).toEqual({
       v: 1,
-      ec: 'coupe',
-      mt: ROLLED_TEMPLATES
+      ec: 'coupe'
     });
   });
 
@@ -256,29 +245,27 @@ describe('build document — url codec', () => {
 });
 
 describe('build document — mission simulator keys (feature 015)', () => {
-  it('rolls templates: REQs 3–8, one XP threshold in 6–9, fail fixed at combat 8', async () => {
+  it('starts from the three default templates, each threshold above its own REQ', async () => {
     const planner = await freshPlanner();
-    const templates = planner.plannerState.missionTemplates.value!;
 
-    expect(templates).toHaveLength(3);
-
-    for (const template of templates) {
-      for (const stat of STAT_NAMES) {
-        expect(template.req[stat]).toBeGreaterThanOrEqual(3);
-        expect(template.req[stat]).toBeLessThanOrEqual(8);
+    expect(planner.plannerState.missionTemplates.value).toEqual([
+      {
+        req: { combat: 6, intellect: 3, vigor: 5, charisma: 3, mobility: 4 },
+        xp: {},
+        fail: {}
+      },
+      {
+        req: { combat: 2, intellect: 6, vigor: 3, charisma: 6, mobility: 3 },
+        xp: { intellect: 8 },
+        fail: {}
+      },
+      {
+        req: { combat: 5, intellect: 3, vigor: 6, charisma: 2, mobility: 5 },
+        xp: {},
+        fail: { combat: 8 }
       }
-    }
-
-    const xp = Object.values(templates[1]!.xp);
-
-    expect(templates[0]!.xp).toEqual({});
-    expect(templates[0]!.fail).toEqual({});
-    expect(xp).toHaveLength(1);
-    expect(xp[0]).toBeGreaterThanOrEqual(6);
-    expect(xp[0]).toBeLessThanOrEqual(9);
-
-    // * The fail example is fixed: combat at 8, the common end-game trip wire.
-    expect(templates[2]!.fail).toEqual({ combat: 8 });
+    ]);
+    expect(planner.serializeCurrentBuild().mt).toBeUndefined();
   });
 
   it('writes a threshold column as five values with 0 for unset', async () => {
@@ -338,13 +325,31 @@ describe('build document — mission simulator keys (feature 015)', () => {
     expect(planner.serializeCurrentBuild()).toEqual(before);
   });
 
-  it('loads a document without templates as having none, never rolling', async () => {
+  it('loads a shared document without templates with the defaults', async () => {
     const planner = await freshPlanner();
 
+    planner.setMissionReq(0, 'combat', 10);
     await planner.loadSharedBuild({ v: 1 });
 
-    expect(planner.plannerState.missionTemplates.value).toBeNull();
+    expect(planner.plannerState.missionTemplates.value).toHaveLength(3);
+    expect(planner.plannerState.missionTemplates.value[0]!.req.combat).toBe(6);
     expect(planner.serializeCurrentBuild()).toEqual({ v: 1 });
+  });
+
+  it('keeps edited templates through a save and load', async () => {
+    const planner = await freshPlanner();
+
+    planner.setMissionReq(1, 'vigor', 9);
+
+    const saved = planner.serializeCurrentBuild();
+
+    expect(saved.mt).toHaveLength(3);
+
+    await planner.loadSharedBuild({ v: 1 });
+    await planner.loadSharedBuild(saved);
+
+    expect(planner.plannerState.missionTemplates.value[1]!.req.vigor).toBe(9);
+    expect(planner.serializeCurrentBuild()).toEqual(saved);
   });
 
   it('sanitises loaded slots: unknown ids and duplicates empty out, ranges clamp', async () => {
@@ -382,7 +387,7 @@ describe('build document — mission simulator keys (feature 015)', () => {
 
     await planner.loadSharedBuild(document);
 
-    expect(planner.plannerState.missionTemplates.value![0]!.xp).toEqual({
+    expect(planner.plannerState.missionTemplates.value[0]!.xp).toEqual({
       intellect: 7
     });
     expect(planner.serializeCurrentBuild().mt).toEqual(document.mt);

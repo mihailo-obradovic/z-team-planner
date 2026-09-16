@@ -29,7 +29,7 @@ export type SerializedBuild = {
   sp?: Record<string, number>;
   // * Flight-trained hero ids
   fl?: string[];
-  // * All three mission templates, once rolled
+  // * All three mission templates, omitted while they equal the defaults
   mt?: SerializedMissionTemplate[];
   // * All four mission team slots in order: a hero id, `illusion`, `copy`, or null
   mh?: (string | null)[];
