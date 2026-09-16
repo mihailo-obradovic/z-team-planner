@@ -1,9 +1,5 @@
 <template>
-  <u-dropdown-menu
-    v-if="isSignedIn"
-    :items="menuItems"
-    :ui="{ content: 'min-w-48' }"
-  >
+  <u-dropdown-menu v-if="isSignedIn" :items="menuItems">
     <button
       v-if="tier === 'bare'"
       type="button"

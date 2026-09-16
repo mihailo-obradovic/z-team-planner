@@ -11,7 +11,6 @@
           <u-checkbox
             v-for="localBuild in candidates"
             :key="localBuild.id"
-            size="xl"
             :model-value="selected.includes(localBuild.id)"
             :label="localBuild.name"
             @update:model-value="handleToggle(localBuild.id, $event)"

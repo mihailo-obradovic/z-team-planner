@@ -58,7 +58,6 @@
           v-if="localBuilds.length > 0 || isSignedIn"
           v-model:open="isMenuOpen"
           :items="buildMenuItems"
-          :ui="{ content: 'min-w-48' }"
           :class="block ? 'min-w-0 flex-1 basis-0' : undefined"
         >
           <u-button
