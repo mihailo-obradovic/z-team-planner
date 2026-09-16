@@ -90,87 +90,13 @@
         </ul>
 
         <Transition name="state-fade">
-          <div v-if="synergyPartner" class="flex flex-col gap-3">
-            <button
-              type="button"
-              class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-              @click="emit('select', synergyPartner.id)"
-            >
-              <u-icon name="i-lucide-link" class="size-4 shrink-0" />
-              <span>Synergy partner:</span>
-
-              <!-- * Old and new names overlap in one grid cell so the label beside them stays put. -->
-              <!-- ! The invisible longest name reserves the cell, or the row re-centres on every switch. -->
-              <span class="grid">
-                <span
-                  class="invisible col-start-1 row-start-1"
-                  aria-hidden="true"
-                >
-                  {{ longestPartnerName }}
-                </span>
-
-                <Transition name="state-fade">
-                  <span
-                    :key="synergyPartner.id"
-                    class="col-start-1 row-start-1"
-                  >
-                    {{ synergyPartner.name }}
-                  </span>
-                </Transition>
-              </span>
-            </button>
-
-            <div class="flex flex-col gap-1 bg-muted p-3">
-              <p class="font-heading tracking-label text-toned uppercase">
-                Pair total
-              </p>
-
-              <!-- ! Reserves the two-sentence Spread Thin variant, or Golem's pair alone pushes the fixed-height column into scroll. -->
-              <div aria-label="Pair total description" class="grid">
-                <p
-                  v-for="variant in pairTotalDescriptionVariants"
-                  :key="variant"
-                  class="invisible col-start-1 row-start-1 text-sm text-muted"
-                  aria-hidden="true"
-                >
-                  {{ variant }}
-                </p>
-
-                <p class="col-start-1 row-start-1 text-sm text-muted">
-                  {{ pairTotalDescription }}
-                </p>
-              </div>
-            </div>
-
-            <!-- ! Read-only: this is the pair's total, and steppers here would silently change the partner. -->
-            <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
-              <li
-                v-for="entry in shownCombinedStats"
-                :key="entry.stat"
-                class="flex items-center justify-between"
-              >
-                <span
-                  class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                >
-                  <u-icon
-                    :name="STAT_ICONS[entry.stat]"
-                    class="size-5 shrink-0"
-                  />
-                  {{ entry.stat }}
-                </span>
-
-                <div class="ml-2 flex items-center gap-1">
-                  <div class="w-7" />
-
-                  <span class="w-7 text-center text-xl font-bold">
-                    {{ entry.value }}
-                  </span>
-
-                  <div class="w-7" />
-                </div>
-              </li>
-            </ul>
-          </div>
+          <HeroPairTotals
+            v-if="synergyPartner"
+            :hero-id="heroId"
+            :partner="synergyPartner"
+            :longest-partner-name="longestPartnerName"
+            @select="emit('select', $event)"
+          />
         </Transition>
       </div>
     </ScrollRegion>
@@ -178,11 +104,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  MAX_STAT_VALUE,
-  SPECIAL_POWER_MECHANICS,
-  STAT_NAMES
-} from '@/types/hero';
+import HeroPairTotals from '@/components/HeroPairTotals.vue';
+
+import { MAX_STAT_VALUE, STAT_NAMES } from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
 
@@ -201,9 +125,7 @@ const {
   statDown,
   addBonusLevel,
   resetHero,
-  getEffectiveStats,
-  getPairCombinedStats,
-  getSpecialPowerState
+  getEffectiveStats
 } = useHeroPlanner();
 
 const {
@@ -231,28 +153,14 @@ const synergyPartner = computed(() => {
   return null;
 });
 
-// * The planner's shared pair computation, so this block and the synergy tab agree.
-// ! Declared above the tween: `useTweenedValues` reads its source once at setup.
-const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
-  const partner = synergyPartner.value;
-
-  if (!partner) {
-    return {};
-  }
-
-  return getPairCombinedStats(props.heroId, partner.id);
-});
-
-// ! One fixed-length array: `useTweenedValues` jumps when the length changes, so a hero without a partner holds zeros in the pair slots.
+// * One fixed-length array: `useTweenedValues` lands directly when the length changes.
 const LEVEL_INDEX = STAT_NAMES.length;
 const BONUS_INDEX = LEVEL_INDEX + 1;
-const PAIR_OFFSET = BONUS_INDEX + 1;
 
 const figureTargets = computed(() => [
   ...STAT_NAMES.map((stat) => getEffectiveStats(props.heroId)[stat]),
   heroLevel.value,
-  bonusLevel.value,
-  ...STAT_NAMES.map((stat) => pairTotals.value[stat] ?? 0)
+  bonusLevel.value
 ]);
 
 const figures = useTweenedValues(figureTargets);
@@ -268,45 +176,6 @@ function shownStat(stat: StatName): number {
 
 const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
 const shownBonus = computed(() => shownFigure(BONUS_INDEX));
-
-const shownCombinedStats = computed(() =>
-  STAT_NAMES.map((stat, index) => ({
-    stat,
-    value: shownFigure(PAIR_OFFSET + index)
-  }))
-);
-
-// * Only while Spread Thin is actually contributing to the pair.
-const pairFillsASlot = computed(() =>
-  [props.heroId, synergyPartner.value?.id].some(
-    (id) =>
-      !!id &&
-      SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS]
-        ?.type === 'spread-thin' &&
-      getSpecialPowerState(id) > 0
-  )
-);
-
-const pairTotalBaseText = computed(() =>
-  synergyPartner.value
-    ? `${hero.value?.name} and ${synergyPartner.value.name} combined, with every bonus applied.`
-    : ''
-);
-
-const PAIR_TOTAL_SPREAD_THIN_SUFFIX =
-  " Spread Thin counts the partner's slot as filled.";
-
-// * Both variants, for the reserved-height cell.
-const pairTotalDescriptionVariants = computed(() => [
-  pairTotalBaseText.value,
-  pairTotalBaseText.value + PAIR_TOTAL_SPREAD_THIN_SUFFIX
-]);
-
-const pairTotalDescription = computed(() =>
-  pairFillsASlot.value
-    ? pairTotalDescriptionVariants.value[1]
-    : pairTotalDescriptionVariants.value[0]
-);
 
 // * The cap reads the raw allocation: a special-power bonus can show 10 while the allocation still has room.
 function isStatCapped(stat: StatName): boolean {
