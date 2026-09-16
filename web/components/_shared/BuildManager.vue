@@ -54,23 +54,7 @@
           />
         </u-tooltip>
 
-        <u-dropdown-menu
-          v-if="localBuilds.length > 0 || isSignedIn"
-          v-model:open="isMenuOpen"
-          :items="buildMenuItems"
-          :class="block ? 'min-w-0 flex-1 basis-0' : undefined"
-        >
-          <u-button
-            :size="size"
-            variant="solid"
-            color="secondary"
-            trailing-icon="i-lucide-chevron-down"
-            :block="block"
-            :class="block ? undefined : 'max-w-40'"
-            :label="displayName"
-            :ui="{ label: 'truncate' }"
-          />
-        </u-dropdown-menu>
+        <BuildMenu :tier="tier" :size="size" :block="block" />
       </template>
     </div>
 
@@ -91,13 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  useFetchBuild,
-  useFetchBuilds,
-  useUpdateBuild
-} from '@/services/queries/useBuildQueries';
+import { useUpdateBuild } from '@/services/queries/useBuildQueries';
 
-import type { DropdownMenuItem } from '@nuxt/ui';
 import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(
@@ -112,56 +91,19 @@ const props = withDefaults(
 
 const toast = useToast();
 
-const authStore = useAuthStore();
-const { isSignedIn, activeAccountBuildId } = storeToRefs(authStore);
-const { setActiveAccountBuildId } = authStore;
+const { activeAccountBuildId } = storeToRefs(useAuthStore());
 
 const plannerState = usePlannerState();
 
-const {
-  localBuilds,
-  activeBuildId,
-  activeBuildName,
-  saveLocalBuild,
-  loadLocalBuild,
-  backToMyBuild
-} = useLocalBuilds();
+const { localBuilds, saveLocalBuild, backToMyBuild } = useLocalBuilds();
 
-const { isViewingSharedBuild, loadAccountBuild } = useBuildMode();
+const { isViewingSharedBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
-const {
-  buildMenuTier,
-  saveSharedOpen,
-  deleteOpen,
-  accountDeleteOpen,
-  openNewBuild,
-  openRename,
-  openAccountSave
-} = useBuildDialogs();
+const { saveSharedOpen, openNewBuild } = useBuildDialogs();
 
-const isMenuOpen = computed({
-  get: () => buildMenuTier.value === props.tier,
-  set: (open: boolean) => {
-    buildMenuTier.value = open ? props.tier : null;
-  }
-});
-
-const { data: accountBuilds, isPending: accountBuildsPending } =
-  useFetchBuilds();
-
-const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
-
-const activeAccountBuild = computed(() =>
-  accountBuilds.value?.items.find(
-    (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
-  )
-);
-
-const displayName = computed(
-  () => activeAccountBuild.value?.name ?? activeBuildName.value
-);
+const { handleShare } = useShareFlow();
 
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
@@ -170,127 +112,11 @@ const { mutate: patchBuild } = useUpdateBuild({
   }
 });
 
-const { mutate: patchThenShare } = useUpdateBuild({
-  onSuccess: async (updated, { payload }) => {
-    updateSavedSnapshot(payload.data);
-    reportShare(
-      (await copyAccountBuildLink(updated.id)) ? 'saved-and-copied' : 'failed'
-    );
-  }
-});
-
 const saveLabel = computed(() =>
-  hasUnsavedChanges.value ? 'Save \u2014 unsaved changes' : 'Save'
+  hasUnsavedChanges.value ? 'Save — unsaved changes' : 'Save'
 );
 
 const saveLabelled = computed(() => props.labelled && !props.block);
-
-const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
-  const localBuildItems = localBuilds.value.map((localBuild) => ({
-    label: localBuild.name,
-    icon: localBuild.id === activeBuildId.value ? 'i-lucide-check' : undefined,
-    onSelect: () => {
-      loadLocalBuild(localBuild.id);
-    }
-  }));
-
-  const management: DropdownMenuItem[] = [
-    {
-      label: 'New build...',
-      icon: 'i-lucide-plus',
-      class: 'uppercase',
-      onSelect: () => openNewBuild('')
-    },
-    {
-      label: 'Rename...',
-      icon: 'i-lucide-pencil',
-      class: 'uppercase',
-      onSelect: () => openRename(activeBuildName.value)
-    }
-  ];
-
-  if (localBuilds.value.length > 1 && activeBuildId.value) {
-    management.push({
-      label: 'Delete...',
-      icon: 'i-lucide-trash-2',
-      color: 'error',
-      class: 'uppercase',
-      onSelect: () => {
-        deleteOpen.value = true;
-      }
-    });
-  }
-
-  if (!isSignedIn.value) {
-    const hint: DropdownMenuItem[] = [
-      {
-        label: 'Sign in to keep your builds stored securely',
-        icon: 'i-lucide-cloud-off',
-        class: 'whitespace-normal',
-        type: 'label'
-      }
-    ];
-
-    return [localBuildItems, management, hint];
-  }
-
-  const account: DropdownMenuItem[] = accountBuildsPending.value
-    ? [
-        {
-          label: 'Loading your builds...',
-          icon: 'i-lucide-loader',
-          disabled: true
-        }
-      ]
-    : (accountBuilds.value?.items ?? []).map((cloudBuild) => ({
-        label: cloudBuild.name,
-        icon:
-          cloudBuild.id === activeAccountBuildId.value
-            ? 'i-lucide-check'
-            : 'i-lucide-cloud',
-        onSelect: () => {
-          void openAccountBuild(cloudBuild.id);
-        }
-      }));
-
-  const accountActions: DropdownMenuItem[] = [
-    {
-      label: 'Save to account...',
-      icon: 'i-lucide-cloud-upload',
-      class: 'uppercase',
-      onSelect: () => openAccountSave(displayName.value)
-    }
-  ];
-
-  if (activeAccountBuildId.value) {
-    accountActions.push({
-      label: 'Delete from account...',
-      icon: 'i-lucide-cloud-off',
-      color: 'error',
-      class: 'uppercase',
-      onSelect: () => {
-        accountDeleteOpen.value = true;
-      }
-    });
-  }
-
-  return [localBuildItems, account, accountActions, management];
-});
-
-async function openAccountBuild(id: string) {
-  if (id !== activeAccountBuildId.value) {
-    setActiveAccountBuildId(id);
-
-    return;
-  }
-
-  const opened = openedAccountBuild.value;
-
-  if (opened) {
-    await loadAccountBuild(opened.data);
-    updateSavedSnapshot();
-  }
-}
 
 function openSaveShared() {
   saveSharedOpen.value = true;
@@ -316,58 +142,65 @@ function handleSave() {
   toast.add({ title: 'Build saved', color: 'success' });
 }
 
-async function handleShare() {
-  const accountBuildId = activeAccountBuildId.value;
-
-  if (!accountBuildId) {
-    reportShare((await shareBuild()) ? 'copied' : 'failed');
-
-    return;
-  }
-
-  if (hasUnsavedChanges.value) {
-    patchThenShare({
-      id: accountBuildId,
-      payload: { data: serializeBuild(plannerState) }
-    });
-
-    return;
-  }
-
-  reportShare(
-    (await copyAccountBuildLink(accountBuildId)) ? 'copied' : 'failed'
-  );
-}
-
-function reportShare(outcome: 'copied' | 'saved-and-copied' | 'failed') {
-  const titles = {
-    copied: 'Link copied to clipboard',
-    'saved-and-copied': 'Saved, and link copied to clipboard',
-    failed: 'Failed to copy link'
-  };
-
-  toast.add({
-    title: titles[outcome],
-    color: outcome === 'failed' ? 'error' : 'success'
+// * An account build with unsaved changes is saved first, so the link never points at a stale version.
+function useShareFlow() {
+  const { mutate: patchThenShare } = useUpdateBuild({
+    onSuccess: async (updated, { payload }) => {
+      updateSavedSnapshot(payload.data);
+      reportShare(
+        (await copyAccountBuildLink(updated.id)) ? 'saved-and-copied' : 'failed'
+      );
+    }
   });
-}
 
-async function copyAccountBuildLink(id: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(
-      new URL(`/b/${id}`, window.location.origin).toString()
+  async function handleShare() {
+    const accountBuildId = activeAccountBuildId.value;
+
+    if (!accountBuildId) {
+      reportShare((await shareBuild()) ? 'copied' : 'failed');
+
+      return;
+    }
+
+    if (hasUnsavedChanges.value) {
+      patchThenShare({
+        id: accountBuildId,
+        payload: { data: serializeBuild(plannerState) }
+      });
+
+      return;
+    }
+
+    reportShare(
+      (await copyAccountBuildLink(accountBuildId)) ? 'copied' : 'failed'
     );
-
-    return true;
-  } catch {
-    return false;
   }
+
+  function reportShare(outcome: 'copied' | 'saved-and-copied' | 'failed') {
+    const titles = {
+      copied: 'Link copied to clipboard',
+      'saved-and-copied': 'Saved, and link copied to clipboard',
+      failed: 'Failed to copy link'
+    };
+
+    toast.add({
+      title: titles[outcome],
+      color: outcome === 'failed' ? 'error' : 'success'
+    });
+  }
+
+  async function copyAccountBuildLink(id: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(
+        new URL(`/b/${id}`, window.location.origin).toString()
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return { handleShare };
 }
-
-watch(openedAccountBuild, async (cloudBuild) => {
-  if (cloudBuild) {
-    await loadAccountBuild(cloudBuild.data);
-    updateSavedSnapshot();
-  }
-});
 </script>
