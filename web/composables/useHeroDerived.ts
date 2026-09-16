@@ -4,9 +4,9 @@ import {
   HERO_FLIGHT_CAPABILITY,
   MAX_BONUS_POINTS,
   MAX_FLIGHT_TRAININGS,
-  MAX_LEVEL_UPS,
-  isFlightTrainable
+  MAX_LEVEL_UPS
 } from '@/types/hero';
+import { isFlightTrainable } from '@/utils/isFlightTrainable';
 
 import type { Hero, HeroId, HeroStats, StatName } from '@/types/hero';
 

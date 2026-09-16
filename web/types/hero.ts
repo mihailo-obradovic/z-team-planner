@@ -111,11 +111,6 @@ export const FLIGHT_SCHOOL_HEROES = [
   'sonar'
 ] as const satisfies readonly HeroId[];
 
-// * Every other hero's flight is settled by their own data — innate, power-driven, or absent — so no control on a card can toggle it.
-export function isFlightTrainable(id: HeroId): boolean {
-  return (FLIGHT_SCHOOL_HEROES as readonly HeroId[]).includes(id);
-}
-
 export const MAX_FLIGHT_TRAININGS = 2;
 
 // * The single source of the game data (feature 002), transcribed from `catalyst/context/game-mechanics.md`. A constant rather than an endpoint because it feeds the compile-time type system; the API validates saved builds against a fixture generated from it (decision 004).
