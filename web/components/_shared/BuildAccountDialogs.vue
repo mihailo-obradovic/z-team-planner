@@ -1,32 +1,15 @@
 <template>
-  <u-modal v-model:open="accountSaveOpen" title="Save to your account">
-    <template #body>
-      <u-form-field label="Build name" :error="nameError">
-        <u-input
-          v-model="accountSaveName"
-          placeholder="My build"
-          autofocus
-          @keydown.enter="handleSave"
-        />
-      </u-form-field>
-    </template>
-
-    <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="handleCancelSave">
-          Cancel
-        </u-button>
-
-        <u-button
-          :disabled="nameForm.$invalid"
-          :loading="isCreating"
-          @click="handleSave"
-        >
-          Save
-        </u-button>
-      </div>
-    </template>
-  </u-modal>
+  <BuildNameDialog
+    v-model:open="accountSaveOpen"
+    v-model:name="accountSaveName"
+    title="Save to your account"
+    confirm-label="Save"
+    placeholder="My build"
+    :error="nameError"
+    :disabled="nameForm.$invalid"
+    :loading="isCreating"
+    @confirm="handleSave"
+  />
 
   <u-modal v-model:open="accountDeleteOpen" title="Delete from your account">
     <template #body>
@@ -109,10 +92,6 @@ const activeBuildLabel = computed(
       (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
     )?.name ?? 'this build'
 );
-
-function handleCancelSave() {
-  accountSaveOpen.value = false;
-}
 
 function handleCancelDelete() {
   accountDeleteOpen.value = false;

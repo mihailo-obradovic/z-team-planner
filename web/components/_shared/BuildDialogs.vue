@@ -1,53 +1,25 @@
 <template>
-  <u-modal v-model:open="saveSharedOpen" title="Save as my build">
-    <template #body>
-      <u-form-field label="Build name" :error="nameError">
-        <u-input
-          v-model="newBuildName"
-          placeholder="My build"
-          autofocus
-          @keydown.enter="confirmSaveShared"
-        />
-      </u-form-field>
-    </template>
+  <BuildNameDialog
+    v-model:open="saveSharedOpen"
+    v-model:name="newBuildName"
+    title="Save as my build"
+    confirm-label="Save"
+    placeholder="My build"
+    :error="nameError"
+    :disabled="isNameInvalid"
+    @confirm="confirmSaveShared"
+  />
 
-    <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="closeSaveShared">
-          Cancel
-        </u-button>
-
-        <u-button :disabled="isNameInvalid" @click="confirmSaveShared">
-          Save
-        </u-button>
-      </div>
-    </template>
-  </u-modal>
-
-  <u-modal v-model:open="newBuildOpen" title="New build">
-    <template #body>
-      <u-form-field label="Build name" :error="nameError">
-        <u-input
-          v-model="newBuildName"
-          placeholder="My build"
-          autofocus
-          @keydown.enter="confirmNewBuild"
-        />
-      </u-form-field>
-    </template>
-
-    <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="closeNewBuild">
-          Cancel
-        </u-button>
-
-        <u-button :disabled="isNameInvalid" @click="confirmNewBuild">
-          Create
-        </u-button>
-      </div>
-    </template>
-  </u-modal>
+  <BuildNameDialog
+    v-model:open="newBuildOpen"
+    v-model:name="newBuildName"
+    title="New build"
+    confirm-label="Create"
+    placeholder="My build"
+    :error="nameError"
+    :disabled="isNameInvalid"
+    @confirm="confirmNewBuild"
+  />
 
   <u-modal v-model:open="deleteOpen" title="Delete build">
     <template #body>
@@ -67,27 +39,13 @@
     </template>
   </u-modal>
 
-  <u-modal v-model:open="renameOpen" title="Rename build">
-    <template #body>
-      <u-form-field label="Build name">
-        <u-input
-          v-model="renameBuildName"
-          autofocus
-          @keydown.enter="confirmRename"
-        />
-      </u-form-field>
-    </template>
-
-    <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="closeRename">
-          Cancel
-        </u-button>
-
-        <u-button @click="confirmRename">Rename</u-button>
-      </div>
-    </template>
-  </u-modal>
+  <BuildNameDialog
+    v-model:open="renameOpen"
+    v-model:name="renameBuildName"
+    title="Rename build"
+    confirm-label="Rename"
+    @confirm="confirmRename"
+  />
 </template>
 
 <script setup lang="ts">
@@ -118,10 +76,6 @@ const nameError = computed(() => nameForm.$errors.name?.[0]);
 
 const isNameInvalid = computed(() => nameForm.$invalid);
 
-function closeSaveShared() {
-  saveSharedOpen.value = false;
-}
-
 function confirmSaveShared() {
   if (nameForm.$invalid) {
     return;
@@ -133,10 +87,6 @@ function confirmSaveShared() {
   saveSharedOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Saved as "${name}"`, color: 'success' });
-}
-
-function closeNewBuild() {
-  newBuildOpen.value = false;
 }
 
 function confirmNewBuild() {
@@ -171,10 +121,6 @@ function confirmDelete() {
   }
 
   toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
-}
-
-function closeRename() {
-  renameOpen.value = false;
 }
 
 function confirmRename() {
