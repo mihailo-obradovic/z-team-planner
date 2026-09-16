@@ -7,14 +7,14 @@
         :data-notice="notice.key"
         class="first-run-banner grid"
       >
-        <!-- * The clip box: the row's height is what animates, and this hides the body travelling through it. -->
+        <!-- * The clip box: the row's height animates while this hides the body passing through it. -->
         <div class="min-h-0 overflow-hidden">
           <div
             class="first-run-banner-body flex flex-col gap-2 border-t-2 border-secondary-950 bg-secondary-800 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             role="region"
             :aria-label="notice.label"
           >
-            <!-- ! Cream, not the muted body colour: on the teal chrome only cream and steel clear the body floor (annex §14.1 — cream is 9.03:1). -->
+            <!-- ! Cream, not the muted body colour: only cream and steel clear the body contrast floor on teal. -->
             <p class="text-sm text-neutral-100">
               <span class="font-semibold">{{ notice.lead }}</span>
               {{ notice.body }}
@@ -28,7 +28,7 @@
               </NuxtLink>
             </p>
 
-            <!-- * Neutral subtle, like Story Setup and Save: a secondary solid on this bar is 1.29:1 and is never a control (annex §14.1). -->
+            <!-- * Neutral subtle: a secondary solid on this bar is 1.29:1. -->
             <u-button
               class="w-full shrink-0 justify-center sm:w-auto"
               size="md"
@@ -54,7 +54,7 @@ type Notice = {
   link?: { to: string; label: string };
 };
 
-// * Array order is stacking order: the spoiler warning sits above the storage notice (feature 017).
+// * Array order is stacking order.
 const NOTICES: Notice[] = [
   {
     key: 'z-team-spoiler-acknowledged',
@@ -69,14 +69,14 @@ const NOTICES: Notice[] = [
     lead: 'Your builds stay in this browser.',
     body: "Saved builds live in this browser's storage, not on a server. Sign in and they're saved to your account instead.",
     confirm: 'Got it',
-    // * The notice is the moment the storage is first mentioned, so the policy is one step away from it (feature 010).
+    // * The storage notice links the policy where storage is first mentioned.
     link: { to: '/privacy', label: 'Privacy' }
   }
 ];
 
 const region = useTemplateRef<HTMLElement>('region');
 
-// * Mounted client-only, so setup already knows what storage holds and the first paint is the right one.
+// * Client-only, so setup already knows what storage holds and the first paint is right.
 const pending = ref<Notice[]>(
   NOTICES.filter((notice) => !isAcknowledged(notice.key))
 );
@@ -85,13 +85,13 @@ function isAcknowledged(key: string): boolean {
   try {
     return localStorage.getItem(key) !== null;
   } catch {
-    // ! Fails visible, unlike FirstLoginOffer: a warning that cannot read its flag is shown rather than skipped.
+    // ! Fails visible, unlike FirstLoginOffer: a warning that can't read its flag is shown.
     return false;
   }
 }
 
 async function handleConfirm(key: string) {
-  // ! The button survives the exit animation, so without this guard a second press would rewrite the key and move focus against a banner already gone.
+  // ! The button outlives the exit animation, so a second press would rewrite the key and move focus again.
   if (!pending.value.some((notice) => notice.key === key)) {
     return;
   }
@@ -99,7 +99,7 @@ async function handleConfirm(key: string) {
   try {
     localStorage.setItem(key, '1');
   } catch {
-    // * A full or blocked quota loses the write, not the session — the notice returns on the next load.
+    // * A full quota loses the write; the notice returns on the next load.
   }
 
   pending.value = pending.value.filter((notice) => notice.key !== key);
@@ -108,7 +108,7 @@ async function handleConfirm(key: string) {
   focusFirstPending();
 }
 
-// * Focus is on the button that just left: hand it to the banner still up rather than leave it on an element mid-exit.
+// * Focus moves to the banner still up rather than stay on one mid-exit.
 function focusFirstPending() {
   const next = pending.value[0];
 
@@ -121,7 +121,7 @@ function focusFirstPending() {
     ?.focus();
 }
 
-// * Keeps a dismissed notice out of the tab order and away from assistive technology while its exit is still on screen (feature 017).
+// * Keeps a dismissed notice out of the tab order and away from assistive technology during its exit.
 function sealLeaving(element: Element) {
   element.setAttribute('inert', '');
   element.setAttribute('aria-hidden', 'true');

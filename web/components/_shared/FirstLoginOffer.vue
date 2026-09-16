@@ -7,7 +7,7 @@
         </p>
 
         <div class="flex flex-col gap-2">
-          <!-- ! Size xl, not the default md: it is the only step whose container clears the 24px touch floor, with the label part of the target (annex §14.2). -->
+          <!-- ! Size xl: the only size whose target clears the 24px touch floor. -->
           <u-checkbox
             v-for="localBuild in candidates"
             :key="localBuild.id"
@@ -95,7 +95,7 @@ function markOfferSeen() {
   try {
     localStorage.setItem(OFFER_SEEN_KEY, '1');
   } catch {
-    // * Nothing to do: without storage the offer cannot be suppressed, and without storage there are no local builds to raise it again.
+    // * Without storage the offer can't be suppressed, but there are no local builds to raise it either.
   }
 }
 

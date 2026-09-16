@@ -16,15 +16,15 @@ import type {
   ScrollAxis
 } from '@/utils/scrollEdges';
 
-// * The scroll box is the component's own, so the edge rules run its full width and content passes under them.
+// * The component owns the scroll box, so the edge rules span its full width and content passes under them.
 const OVERFLOW_CLASS: Record<ScrollAxis, string> = {
   vertical: 'overflow-y-auto',
   horizontal: 'overflow-x-auto',
   both: 'overflow-auto'
 };
 
-// * `--ui-border` measures 3.13:1 on paper, clearing the 3:1 floor this rule needs because it carries information (annex §5).
-// ! Every edge is always drawn and only its colour changes: toggling the border would resize the content box by 1px and feed it back into the measurement. Naming both states keeps the pair one directional utility, independent of Tailwind's emit order.
+// * `--ui-border` measures 3.13:1 on paper, clearing the 3:1 floor an informational rule needs.
+// ! Every edge is always drawn and only its colour changes: toggling the border would resize the content box and feed back into the measurement.
 const EDGE_CLASS: Record<keyof HiddenEdges, { hidden: string; clear: string }> =
   {
     top: {
@@ -52,7 +52,7 @@ const NO_EDGES: HiddenEdges = {
   right: false
 };
 
-// * `as` keeps the region's own semantics, since two of the hero dialog's scroll areas are `nav` landmarks.
+// * `as` keeps semantics, since two of the dialog's scroll areas are `nav` landmarks.
 const { as = 'div', axis = 'vertical' } = defineProps<{
   as?: string;
   axis?: ScrollAxis;
@@ -90,7 +90,7 @@ function measure() {
   });
 }
 
-// ! Read from the computed style, not the `axis` prop: a responsive overflow class does not scroll at every width, and `overflow: visible` still reports scrollHeight past clientHeight.
+// ! Read from the computed style, not `axis`: a responsive overflow class doesn't scroll at every width.
 function scrollableAxis(element: HTMLElement): ScrollableAxis {
   const style = getComputedStyle(element);
   const vertical = scrolls(style.overflowY);
@@ -115,7 +115,7 @@ function scrolls(overflow: string): boolean {
   return overflow === 'auto' || overflow === 'scroll';
 }
 
-// * Content growing inside a scroll box never resizes the box, so observing only the region would miss slot content changing.
+// * Content growing inside never resizes the box, so the children are observed too.
 function observedElements(element: HTMLElement): HTMLElement[] {
   return [element, ...(Array.from(element.children) as HTMLElement[])];
 }
@@ -147,7 +147,7 @@ onMounted(() => {
   }
 
   resizeObserver = new ResizeObserver(measure);
-  // * Children come and go, and a new one is content the resize observer is not yet watching.
+  // * A new child isn't observed yet.
   mutationObserver = new MutationObserver(observe);
   mutationObserver.observe(element, { childList: true });
 
@@ -159,8 +159,7 @@ onBeforeUnmount(() => {
   mutationObserver?.disconnect();
 });
 
-// * The caller decides when something must be seen; the region owns how far it moves (feature 013).
-// ! Never `Element.scrollIntoView`: it walks the ancestor chain, so bringing a tile into a ribbon would also scroll the dialog body it sits in.
+// ! Never `scrollIntoView`: it also scrolls every scrolling ancestor, such as the dialog body.
 function bringIntoView(target: HTMLElement) {
   const element = region.value;
 
@@ -196,7 +195,7 @@ function bringIntoView(target: HTMLElement) {
     return;
   }
 
-  // * Snaps under reduced motion but still runs, because it corrects what is visible rather than decorating it (annex §14.4).
+  // * Snaps under reduced motion but still runs, because it corrects what is visible.
   element.scrollTo({
     left,
     top,
@@ -204,7 +203,7 @@ function bringIntoView(target: HTMLElement) {
   });
 }
 
-// ! Read from the layout tree, never `getBoundingClientRect`: a dialog mid enter-animation is scaled, and a scaled rect compared against an unscaled `scrollLeft` aims the scroll wrong.
+// ! Measured from the layout tree, not `getBoundingClientRect`: a dialog mid-enter is scaled and would misaim the scroll.
 function contentOffset(
   element: HTMLElement,
   target: HTMLElement
@@ -229,14 +228,14 @@ function contentOffset(
     }
   }
 
-  // * The region is not an offset parent, so both are measured from the same ancestor; `clientLeft` removes the border outside the padding box `scrollLeft` counts from.
+  // * Both are measured from the same ancestor, since the region isn't an offset parent; `clientLeft` drops the border `scrollLeft` doesn't count.
   return {
     left: left - element.offsetLeft - element.clientLeft,
     top: top - element.offsetTop - element.clientTop
   };
 }
 
-// * The clearance is the region's own gap, so a tile lands beside its neighbour rather than flush under the edge rule.
+// * The region's own gap, so a tile lands clear of the edge rule.
 function scrollGaps(element: HTMLElement): { column: number; row: number } {
   const style = getComputedStyle(element);
 

@@ -1,5 +1,5 @@
 <template>
-  <!-- ! Cream, not text-inverted: inverted resolves to ink, which is unreadable on the teal chrome (annex §14.1). -->
+  <!-- ! Cream, not text-inverted, which resolves to ink on the teal chrome. -->
   <button
     v-if="tier === 'bare'"
     type="button"

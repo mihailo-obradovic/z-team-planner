@@ -4,7 +4,7 @@
       <h2 class="font-heading text-title uppercase">Your team</h2>
     </div>
 
-    <!-- * Four fixed slots, so filling, clearing or moving a hero reflows nothing (feature 015); `min-w-0` without `flex-wrap` keeps them in one row, shrinking from their design width only once it would not fit (feature 016). -->
+    <!-- * `min-w-0` without `flex-wrap` keeps the four slots in one row, shrinking only when they don't fit. -->
     <TransitionGroup
       tag="div"
       name="mission-slot"
@@ -19,8 +19,8 @@
           slot === null ? 'border-dashed border-default' : 'border-accented'
         "
       >
-        <!-- * The control row keeps its height, with ineligible controls disabled or invisible, never missing. -->
-        <!-- * Below 35rem the row becomes `contents` and its children sit in the portrait's corners, each on its own scrim so a disabled arrow does not read as absent against the art. -->
+        <!-- * Ineligible controls are disabled or invisible, never removed, so the row keeps its height. -->
+        <!-- * Below 35rem each control sits on its own scrim, so a disabled arrow doesn't vanish against the art. -->
         <div class="flex h-6 w-full items-center gap-1 @max-[35rem]:contents">
           <span
             class="w-3 text-center font-heading text-label text-dimmed @max-[35rem]:absolute @max-[35rem]:top-0 @max-[35rem]:left-0 @max-[35rem]:z-10 @max-[35rem]:w-auto @max-[35rem]:bg-default/80 @max-[35rem]:px-1"
@@ -50,7 +50,6 @@
               />
             </template>
 
-            <!-- * Copies dissolve right-to-left: only the outermost one offers its X. -->
             <IconButton
               icon="i-lucide-x"
               :label="`Remove ${slotName(slot)}`"
@@ -64,7 +63,6 @@
           </template>
         </div>
 
-        <!-- * A filled slot opens the detail dialog, the illusion its source's; replacing a hero is remove-then-add (feature 015). -->
         <button
           v-if="slot !== null && slot !== GOLEM_COPY_SLOT"
           type="button"
@@ -87,7 +85,6 @@
           </span>
         </button>
 
-        <!-- * A copy is not a control surface: it dissolves via its X, nothing else. -->
         <div
           v-else-if="slot === GOLEM_COPY_SLOT"
           class="flex min-h-0 w-full flex-1 flex-col items-center gap-2"
@@ -183,7 +180,7 @@ const {
 const pickerOpen = ref(false);
 const pickerSlot = ref<number | null>(null);
 
-// * A hero is keyed by id so the swap travels it (feature 020); empty slots, copies and illusions have no identity of their own, so they are keyed by position and change in place.
+// * Heroes are keyed by id so a swap travels; other occupants are keyed by position and change in place.
 const teamSlots = computed(() =>
   missionSlots.value.map((slot, index) => ({
     slot,
@@ -206,9 +203,9 @@ function pick(heroId: HeroId) {
   pickerSlot.value = null;
 }
 
-// * Focus travels with the card until it lands where the pressed arrow is disabled and the browser drops it; the card's other arrow then takes it (feature 020).
+// * Focus stays with the moved card: if the pressed arrow ends up disabled, the card's other arrow takes it.
 async function moveSlot(index: number, direction: -1 | 1, event: MouseEvent) {
-  // ! `data-team-slot`, not `data-slot`: Nuxt UI puts its own `data-slot` on the button, so `closest` would stop at the control.
+  // ! `data-team-slot`, not `data-slot`: Nuxt UI puts its own `data-slot` on the button.
   const card = (event.currentTarget as HTMLElement).closest('[data-team-slot]');
 
   moveMissionSlot(index, direction);
@@ -249,7 +246,7 @@ function slotName(slot: Exclude<MissionSlot, null>): string {
   return source ? `Illusion of ${heroName(source)}` : 'Illusion';
 }
 
-// * An illusion wears its source's face; before a source exists it wears Prism's, whose power it is.
+// * Before a source exists, the illusion wears Prism's face.
 function slotHeroId(slot: Exclude<MissionSlot, null>): HeroId {
   const id = isHeroSlot(slot) ? slot : missionIllusionSource.value;
 

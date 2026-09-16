@@ -4,8 +4,8 @@
       <h2 class="font-heading text-title uppercase">The math</h2>
     </div>
 
-    <!-- * One column at the widest and narrowest tiers, two in between; `w-96` applies only at the widest, where the panel does not fill its row (feature 016). -->
-    <!-- * The two-column floor is a 768px viewport, 726px of the tab's queried box once main has its scrollbar, and so written in px; two columns were measured to hold down to a 510px panel. -->
+    <!-- * `w-96` applies only at the widest tier, where the panel doesn't fill its row. -->
+    <!-- * The two-column floor is in px: a 768px viewport leaves 726px of the tab's queried box once main has its scrollbar. -->
     <div
       class="grid w-96 gap-3 p-3 @max-[77rem]:w-auto @max-[77rem]:@min-[726px]:grid-cols-2 @max-[77rem]:@min-[726px]:items-start @max-[77rem]:@min-[726px]:gap-x-8"
     >
@@ -24,7 +24,7 @@
             </span>
 
             <span class="flex items-center gap-2">
-              <!-- * `have/need`, in a fixed slot so two digits shift nothing. -->
+              <!-- * Fixed width, so two digits shift nothing. -->
               <span class="w-14 text-center font-heading text-lg">
                 <b>{{ row.have }}</b
                 ><span class="text-muted">/{{ row.need }}</span>
@@ -39,7 +39,7 @@
         </ul>
       </div>
 
-      <!-- * Every row always renders, with a dash when it has nothing to say, so a threshold or power appearing never changes the panel's height. -->
+      <!-- * Every row always renders, a dash when empty, so the panel's height never changes. -->
       <div class="flex flex-col gap-1">
         <h3 class="font-heading text-label text-dimmed uppercase">
           Success calculation
@@ -64,7 +64,6 @@
               Synergy level
             </dt>
             <dd class="flex items-center gap-2">
-              <!-- * One global level, +5% each, inert without a pair on the team (feature 015). -->
               <div class="flex gap-1" role="group" aria-label="Synergy level">
                 <IconButton
                   v-for="level in SYNERGY_LEVELS"
@@ -84,7 +83,7 @@
             </dd>
           </div>
 
-          <!-- * Same height as the switch row above, reserved even when empty. -->
+          <!-- * Reserved at the switch row's height even when empty. -->
           <div class="flex h-3 items-center justify-end">
             <span
               class="font-heading text-tag text-dimmed uppercase"
@@ -194,7 +193,7 @@ const totalRows = computed(() =>
     stat,
     need: Math.round(tweened.value[STAT_NAMES.length + index] ?? 0),
     have: Math.round(tweened.value[index] ?? 0),
-    // * Compares the settled values, not the travelling ones, so the icon does not flicker mid-tween.
+    // * Settled values, not tweened ones, so the icon doesn't flicker.
     met:
       missionTeamTotals.value[stat] >= missionActiveTemplateData.value.req[stat]
   }))

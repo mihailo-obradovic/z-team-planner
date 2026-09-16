@@ -6,7 +6,7 @@
       </h3>
 
       <div class="flex items-center gap-2">
-        <!-- * Every header icon sits in a reserved slot and comes and goes with the state fade (annex §11, feature 024); the slot is what keeps the row still while it does. The span is the transition's element: the button components render fragments (the tooltip's renderless root, the annotation comments the dev build keeps), which `Transition` cannot animate. -->
+        <!-- * The span is the transition's element because the button components render fragments; the reserved slot keeps the row still while an icon fades. -->
         <div v-if="flightInfo" class="flex w-6 items-center justify-center">
           <Transition name="state-fade">
             <span v-if="flightShown" class="flex">
@@ -78,9 +78,9 @@
       </div>
     </div>
 
-    <!-- ! The tighter base gap is what leaves the shrunk portrait column wide enough for the power chips beneath it: at 320px the column lands on 80px and the chips need 78px. At `gap-3` it lands on 76px and they overflow. -->
+    <!-- ! The tighter base gap leaves the portrait column the 78px the power chips need at 320px; `gap-3` overflows them. -->
     <div class="flex justify-between gap-2 p-3 sm:gap-3">
-      <!-- ! Shrinkable, not fixed: at 27rem the portrait column plus the stat rows need 316px of a 260px row below ~328px viewport, and the portrait is the only part that degrades gracefully — the stat steppers are tap targets and must not shrink at the narrowest width. Nothing moves at 360px and up. -->
+      <!-- ! Shrinkable because the portrait is the only part that degrades gracefully below ~328px; the stat steppers are tap targets and must not shrink. -->
       <div class="flex w-27 min-w-0 shrink flex-col gap-2">
         <HeroPortrait
           :hero-id="heroId"
@@ -194,7 +194,7 @@ const {
   resolvedStat
 } = useHeroDerived(() => props.heroId);
 
-// * The card is always given a hero that exists, so it narrows the shared value once here rather than guarding at every use. The dialog cannot: its hero is null while it is closed.
+// * The card always gets an existing hero, so it narrows once here; the dialog can't, as its hero is null while closed.
 const hero = computed(() => maybeHero.value!);
 
 const specialPowerBonus = computed(() =>

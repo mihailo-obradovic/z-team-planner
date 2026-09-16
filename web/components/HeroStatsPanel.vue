@@ -1,11 +1,11 @@
 <template>
   <div class="flex min-w-0 flex-col border-2 border-accented bg-default">
-    <!-- ! Comments stay inside the root: one at template top level makes the component multi-root, and the grid placement the dialog passes would not fall through. -->
-    <!-- ! A static shell and an inner scroll box, as in HeroPowersPanel: the element carrying `overflow` never also carries a structural border. -->
+    <!-- ! Comments stay inside the root, so the grid placement the dialog passes falls through. -->
+    <!-- ! A static shell and an inner scroll box, as in HeroPowersPanel. -->
     <ScrollRegion
       class="flex flex-col p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
     >
-      <!-- * No transition and no `:key`: the structure is the same for every hero, so the DOM persists and only the figures count to their new values (feature 025). -->
+      <!-- * No `:key`: the DOM persists across heroes, so the figures count to their new values. -->
       <div class="flex flex-col gap-3">
         <div class="flex items-center gap-4 border-b-2 border-default pb-3">
           <span class="font-heading tracking-label text-toned uppercase">
@@ -43,7 +43,7 @@
           </div>
         </div>
 
-        <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
+        <!-- * Folds the special-power bonus into the number exactly as the hero card does. -->
         <ul class="flex flex-col gap-1 px-3">
           <li
             v-for="stat in STAT_NAMES"
@@ -89,7 +89,6 @@
           </li>
         </ul>
 
-        <!-- * The block comes and goes with the hero's partner under the state fade; the control inside never moves while one exists (feature 025). -->
         <Transition name="state-fade">
           <div v-if="synergyPartner" class="flex flex-col gap-3">
             <button
@@ -100,8 +99,8 @@
               <u-icon name="i-lucide-link" class="size-4 shrink-0" />
               <span>Synergy partner:</span>
 
-              <!-- * Only the name fades, with old and new overlapping in one grid cell so the label beside them does not shift. -->
-              <!-- ! The invisible longest name reserves the cell; without it the row re-centres on every switch. -->
+              <!-- * Old and new names overlap in one grid cell so the label beside them stays put. -->
+              <!-- ! The invisible longest name reserves the cell, or the row re-centres on every switch. -->
               <span class="grid">
                 <span
                   class="invisible col-start-1 row-start-1"
@@ -126,7 +125,7 @@
                 Pair total
               </p>
 
-              <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
+              <!-- ! Reserves the two-sentence Spread Thin variant, or Golem's pair alone pushes the fixed-height column into scroll. -->
               <div aria-label="Pair total description" class="grid">
                 <p
                   v-for="variant in pairTotalDescriptionVariants"
@@ -143,7 +142,7 @@
               </div>
             </div>
 
-            <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
+            <!-- ! Read-only: this is the pair's total, and steppers here would silently change the partner. -->
             <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
               <li
                 v-for="entry in shownCombinedStats"
@@ -189,7 +188,6 @@ import type { HeroId, StatName } from '@/types/hero';
 
 const props = defineProps<{
   heroId: HeroId;
-  // * Reserves the synergy control's name cell (annex §13).
   longestPartnerName: string;
 }>();
 
@@ -233,8 +231,8 @@ const synergyPartner = computed(() => {
   return null;
 });
 
-// * The planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014).
-// ! Declared above the tween: `useTweenedValues` reads its source once at setup, so a source referencing a later `const` throws on the first render.
+// * The planner's shared pair computation, so this block and the synergy tab agree.
+// ! Declared above the tween: `useTweenedValues` reads its source once at setup.
 const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
   const partner = synergyPartner.value;
 
@@ -245,7 +243,7 @@ const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
   return getPairCombinedStats(props.heroId, partner.id);
 });
 
-// ! One fixed-length array for every figure (feature 025): `useTweenedValues` lands instantly when the length changes, so a hero without a partner would make every figure jump. Its pair slots then hold zero behind a faded-out block.
+// ! One fixed-length array: `useTweenedValues` jumps when the length changes, so a hero without a partner holds zeros in the pair slots.
 const LEVEL_INDEX = STAT_NAMES.length;
 const BONUS_INDEX = LEVEL_INDEX + 1;
 const PAIR_OFFSET = BONUS_INDEX + 1;
@@ -259,7 +257,7 @@ const figureTargets = computed(() => [
 
 const figures = useTweenedValues(figureTargets);
 
-// * Rounded off the travelling value; anything deciding state reads the settled one, so it cannot flicker mid-count.
+// * Anything deciding state reads the settled value, so it can't flicker mid-count.
 function shownFigure(index: number): number {
   return Math.round(figures.value[index] ?? 0);
 }
@@ -278,7 +276,7 @@ const shownCombinedStats = computed(() =>
   }))
 );
 
-// * The suffix explains feature 012's slot deduction, so it shows only while Spread Thin is actually contributing to the pair.
+// * Only while Spread Thin is actually contributing to the pair.
 const pairFillsASlot = computed(() =>
   [props.heroId, synergyPartner.value?.id].some(
     (id) =>
@@ -298,7 +296,7 @@ const pairTotalBaseText = computed(() =>
 const PAIR_TOTAL_SPREAD_THIN_SUFFIX =
   " Spread Thin counts the partner's slot as filled.";
 
-// * Both possible lengths, for the reserved-height grid in the template.
+// * Both variants, for the reserved-height cell.
 const pairTotalDescriptionVariants = computed(() => [
   pairTotalBaseText.value,
   pairTotalBaseText.value + PAIR_TOTAL_SPREAD_THIN_SUFFIX
@@ -310,7 +308,7 @@ const pairTotalDescription = computed(() =>
     : pairTotalDescriptionVariants.value[0]
 );
 
-// * The cap reads the raw allocation, not the displayed value: a special-power bonus can lift what is shown to 10 while the allocation still has room. Same rule as the hero card.
+// * The cap reads the raw allocation: a special-power bonus can show 10 while the allocation still has room.
 function isStatCapped(stat: StatName): boolean {
   if (!hero.value) {
     return true;

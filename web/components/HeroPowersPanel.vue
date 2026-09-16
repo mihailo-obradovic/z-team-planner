@@ -1,8 +1,8 @@
 <template>
   <div class="flex min-w-0 flex-col border-2 border-accented bg-default">
     <!-- ! Comments stay inside the root, so the grid placement the dialog passes falls through. -->
-    <!-- * Powers apart from effects: the first is what a training is spent on, the second is what the hero already has or gains. Mixing them made a trained power read as the same kind of thing as a passive. -->
-    <!-- ! The frame and the scroll box are two elements on purpose: ScrollRegion draws its edge rules on whichever element scrolls, so a panel that scrolled itself would stack a 1px rule inside its own 2px border. The shell stays static and the region inside it takes the overflow, the padding and the gap. -->
+    <!-- * Powers and effects stay apart so a trained power never reads like a passive. -->
+    <!-- ! Frame and scroll box are separate elements: ScrollRegion draws edge rules on the scrolling element, which would stack inside the frame's border. -->
     <ScrollRegion class="flex flex-col p-4 lg:min-h-0 lg:flex-1">
       <Transition name="state-fade" mode="out-in">
         <div :key="heroId" class="flex flex-col gap-4">
@@ -25,7 +25,7 @@
               ]"
               @click="handleTogglePower(power)"
             >
-              <!-- ! `flex-wrap` alone does not do it: without `min-w-0` the name refuses to shrink and pushes the badge past the panel instead of wrapping it. The pair is what lets the badge drop to its own line just over `lg`, where this column is at its narrowest. -->
+              <!-- ! `min-w-0` lets the name shrink, so `flex-wrap` can drop the badge to its own line. -->
               <div class="flex flex-wrap items-center gap-2">
                 <u-icon :name="POWER_ICONS[index]!" class="size-4 shrink-0" />
 
@@ -51,7 +51,7 @@
               Effects
             </h3>
 
-            <!-- ! Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
+            <!-- ! Hidden, not greyed: Heavily Medicated removes Fly-Nomenal rather than disabling it. -->
             <div
               v-if="flightInfo && flightShown"
               class="border-2 p-3 transition-colors"
@@ -68,7 +68,6 @@
               <div class="flex items-center gap-2">
                 <u-icon name="i-lucide-plane" class="size-4 shrink-0" />
 
-                <!-- * A hero whose flight the game leaves unnamed still needs a heading here. -->
                 <span class="font-medium">
                   {{ flightInfo.name ?? 'Flight' }}
                 </span>
@@ -134,7 +133,7 @@
                 />
               </div>
 
-              <!-- ! Every state's line is rendered invisibly in this one grid cell, so the card reserves the tallest of them and keeps its height when the power is toggled. The copy is shorter once active, and at the widths a phone lands on that is the difference between two lines and one — the card used to collapse under the tap and drag everything below it up. Reserving beats a fixed height: the tallest variant is two lines at 393px and one on desktop. -->
+              <!-- ! Every state's line renders invisibly in one grid cell, reserving the tallest, so toggling the power never collapses the card. -->
               <div class="mt-1 grid">
                 <p
                   v-for="variant in specialAbility.descriptionVariants"
@@ -265,7 +264,7 @@ const hasEffects = computed(
     !!specialAbility.value
 );
 
-// * One source for the line, so the description shown and the variants reserved behind it can never drift apart.
+// * One source, so the shown line and the reserved variants can't drift.
 function spreadThinDescription(state: number): string {
   if (state === 0) {
     return 'Expands into each empty slot, raising every stat 25% per slot.';
