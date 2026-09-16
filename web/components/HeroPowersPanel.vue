@@ -95,7 +95,7 @@ const {
   flightInfo,
   flightShown,
   flightLocked,
-  isTrainableLocked
+  trainablesLocked
 } = useHeroDerived(() => props.heroId);
 
 const displayPowers = computed(() => HERO_POWERS[props.heroId] ?? []);
@@ -124,7 +124,7 @@ function isPowerDisabled(power: HeroPowerDefinition): boolean {
     return false;
   }
 
-  return isTrainableLocked(trainableIndex(power.slot));
+  return trainablesLocked.value;
 }
 
 function trainableIndex(

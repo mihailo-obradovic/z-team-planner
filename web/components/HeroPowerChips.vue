@@ -57,7 +57,7 @@
         :icon="POWER_ICONS[index + 1]!"
         :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
         :active="trainablePowerActive(index)"
-        :disabled="isTrainableLocked(trainableSlot(index))"
+        :disabled="trainablesLocked"
         :confirmation="
           () =>
             confirmationText({
@@ -142,7 +142,7 @@ const {
   toggleMonsterForm
 } = useHeroPlanner();
 
-const { isTrainableLocked } = useHeroDerived(() => props.heroId);
+const { trainablesLocked } = useHeroDerived(() => props.heroId);
 
 const powerStates = computed(() => getPowerState(props.heroId));
 

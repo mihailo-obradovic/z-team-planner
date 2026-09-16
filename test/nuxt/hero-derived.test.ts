@@ -5,6 +5,8 @@ import { defineComponent, h, nextTick } from 'vue';
 import HeroCard from '@/components/HeroCard.vue';
 import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
 
+import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
+
 import type { HeroId, StatName } from '@/types/hero';
 
 // * Characterization, not specification: every assertion here was read off the two components as they behaved before their shared derived values moved into `useHeroDerived`, and they exist so that move can be shown to have changed nothing. What they really pin is agreement — the card and the dialog derive the same hero from the same state, which is the one thing two copies of a computed are always at risk of losing.
@@ -165,18 +167,44 @@ describe('trainable power lock', () => {
     const p = await planner();
     const golem = await derived('golem');
 
-    expect(golem.isTrainableLocked(1)).toBe(true);
-    expect(golem.isTrainableLocked(2)).toBe(true);
+    expect(golem.trainablesLocked.value).toBe(true);
 
     p.toggleStartingPower('golem');
 
-    expect(golem.isTrainableLocked(1)).toBe(false);
-    expect(golem.isTrainableLocked(2)).toBe(false);
+    expect(golem.trainablesLocked.value).toBe(false);
+  });
+
+  it('leaves a trained hero free to switch upgrades once every training is spent', async () => {
+    const p = await planner();
+    // * Only heroes that can train count: a one-power hero and the episode 8 recruits spend nothing.
+    const trainable = (Object.keys(HERO_POWERS) as HeroId[]).filter(
+      (id) => HERO_POWERS[id]!.length > 1 && !p.ep8RecruitIds.value.has(id)
+    );
+    const trainees = trainable.slice(0, MAX_POWER_TRAININGS);
+
+    for (const id of trainees) {
+      p.toggleStartingPower(id);
+      p.toggleTrainablePower(id, 1);
+    }
+
+    expect(p.trainingsUsed.value).toBe(MAX_POWER_TRAININGS);
+
+    const trained = await derived(trainees[0]!);
+
+    expect(trained.trainablesLocked.value).toBe(false);
+
+    const untrained = trainable[MAX_POWER_TRAININGS]!;
+
+    p.toggleStartingPower(untrained);
+
+    const waiting = await derived(untrained);
+
+    expect(waiting.trainablesLocked.value).toBe(true);
   });
 
   it('locks everything for a closed dialog', async () => {
     const closed = await derived(null as unknown as HeroId);
 
-    expect(closed.isTrainableLocked(1)).toBe(true);
+    expect(closed.trainablesLocked.value).toBe(true);
   });
 });

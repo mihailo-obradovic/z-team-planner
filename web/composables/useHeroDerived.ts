@@ -120,8 +120,8 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     return powerState.startingRevealed || powerState.trainableSelected > 0;
   });
 
-  // * A trained power can always be untrained; any other needs the starting power revealed and a training left.
-  function isTrainableLocked(slot: 1 | 2): boolean {
+  // * Only a hero with no upgrade trained spends a training; untraining or switching to the other upgrade is free (feature 003, Powers).
+  const trainablesLocked = computed(() => {
     if (!id.value) {
       return true;
     }
@@ -130,10 +130,10 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
 
     return (
       !powerState.startingRevealed ||
-      (powerState.trainableSelected !== slot &&
+      (powerState.trainableSelected === 0 &&
         trainingsUsed.value >= MAX_POWER_TRAININGS)
     );
-  }
+  });
 
   // * Sonar's stats are read under whichever form is active, so the stat a row displays is not always the stat it is named after.
   function resolvedStat(stat: StatName): StatName {
@@ -154,7 +154,7 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
     flightShown,
     flightLocked,
     hasPowers,
-    isTrainableLocked,
+    trainablesLocked,
     resolvedStat
   };
 }
