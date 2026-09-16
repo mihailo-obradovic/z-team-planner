@@ -13,7 +13,8 @@ export default {
     // * Default: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-(--ui-header-height)'
     header: 'plate flex items-center gap-1.5 px-4 sm:px-6 py-0 min-h-10',
     wrapper: '',
-    body: 'flex-1 overflow-y-auto p-4 sm:p-6',
+    // * Changes: the one slideover is the Story Setup drawer, whose body stacks its sections. Default: 'flex-1 overflow-y-auto p-4 sm:p-6'
+    body: 'flex flex-1 flex-col gap-8 overflow-y-auto p-4 sm:p-6',
     footer: 'flex items-center gap-1.5 p-4 sm:px-6',
     // * Changes: a plate's heading is the title role — condensed, uppercase, tracked (annex §2). font-semibold is dropped because text-title carries its own 800 weight.
     // * Default: 'text-highlighted font-semibold'

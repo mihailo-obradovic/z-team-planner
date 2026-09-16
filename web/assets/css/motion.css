@@ -1,0 +1,236 @@
+/* * Shared motions plus two component-owned ones; imported by main.css. */
+/* * Reduced-motion guards follow annex §11 and are annotated only where something survives them. */
+
+:root {
+    --duration-baseline: 150ms;
+    --duration-slow: 250ms;
+}
+
+/* ! Put on the content inside a panel, never the panel (feature 015): presence waits for the panel's animation to end, leaving two panels visible. */
+@utility tab-fade {
+    animation: tab-fade var(--duration-slow) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab-fade {
+        animation: none;
+    }
+}
+
+@keyframes tab-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* * Annex §11 state fade (feature 024); opacity at the baseline needs no reduced-motion guard. */
+.state-fade-enter-active {
+    transition: opacity var(--duration-baseline) ease-out;
+}
+
+.state-fade-leave-active {
+    transition: opacity var(--duration-baseline) ease-in;
+}
+
+.state-fade-enter-from,
+.state-fade-leave-to {
+    opacity: 0;
+}
+
+/* * Annex §11 list move with a state fade (feature 024): the chip row is centred, so without it the survivors jump when a chip arrives or leaves. */
+/* ! `position: absolute` lets survivors travel while the leaving chip fades; safe only because the row's height is reserved (annex §13). */
+.chip-move {
+    transition: transform var(--duration-slow) ease-in-out;
+}
+
+/* ! Keep after `.chip-move`: Vue puts the move class on arriving and leaving chips too, and the later `transition` shorthand wins. */
+.chip-entering {
+    transition: opacity var(--duration-baseline) ease-out;
+}
+
+.chip-leaving {
+    position: absolute;
+    transition: opacity var(--duration-baseline) ease-in;
+}
+
+/* * Travel is cut; the fades stay. */
+@media (prefers-reduced-motion: reduce) {
+    .chip-move {
+        transition: none;
+    }
+}
+
+/* * Annex §11 glyph swap (feature 024). */
+.glyph-swap-enter-active {
+    transition: transform var(--duration-baseline) ease-out;
+}
+
+.glyph-swap-leave-active {
+    transition: transform var(--duration-baseline) ease-in;
+}
+
+.glyph-swap-enter-from,
+.glyph-swap-leave-to {
+    transform: scale(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glyph-swap-enter-active,
+    .glyph-swap-leave-active {
+        transition: none;
+    }
+}
+
+/* * Annex §11 slide (feature 025): the consumer stacks old and new in one clipping grid cell. The variables default to vertical and forward. */
+.slide-enter-active {
+    transition:
+        opacity var(--duration-baseline) ease-out,
+        transform var(--duration-baseline) ease-out;
+}
+
+.slide-leave-active {
+    transition:
+        opacity var(--duration-baseline) ease-in,
+        transform var(--duration-baseline) ease-in;
+}
+
+.slide-enter-from {
+    opacity: 0;
+    transform: translate(var(--slide-enter-x, 0), var(--slide-enter-y, 0.5lh));
+}
+
+.slide-leave-to {
+    opacity: 0;
+    transform: translate(var(--slide-leave-x, 0), var(--slide-leave-y, -0.5lh));
+}
+
+.slide-backward {
+    --slide-enter-y: -0.5lh;
+    --slide-leave-y: 0.5lh;
+}
+
+.slide-sideways {
+    --slide-enter-x: 0.5lh;
+    --slide-enter-y: 0;
+    --slide-leave-x: -0.5lh;
+    --slide-leave-y: 0;
+}
+
+.slide-sideways.slide-backward {
+    --slide-enter-x: -0.5lh;
+    --slide-leave-x: 0.5lh;
+}
+
+/* * The chip row's arrangement for notes (feature 025): a clearing advisory leaves the flow, so the lines below travel at once. */
+/* ! `notes-entering` restates the slide, or the move class's `transition` would override it on the arriving line. */
+.notes-move {
+    transition: transform var(--duration-slow) ease-in-out;
+}
+
+.notes-entering {
+    transition:
+        opacity var(--duration-baseline) ease-out,
+        transform var(--duration-baseline) ease-out;
+}
+
+.notes-leaving {
+    position: absolute;
+    transition:
+        opacity var(--duration-baseline) ease-in,
+        transform var(--duration-baseline) ease-in;
+}
+
+/* * The slide degrades to the state fade, never a cut. */
+@media (prefers-reduced-motion: reduce) {
+    .slide-enter-from,
+    .slide-leave-to {
+        transform: none;
+    }
+
+    .notes-move {
+        transition: none;
+    }
+}
+
+/* * Annex §11 ring (feature 023); its size, stroke and colours are classes on the element. */
+@utility loading-ring {
+    animation: loading-ring 1.4s linear infinite;
+}
+
+/* * The ring stays drawn and only stops turning: its presence is the information. */
+@media (prefers-reduced-motion: reduce) {
+    .loading-ring {
+        animation: none;
+    }
+}
+
+@keyframes loading-ring {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* * First-run banners (feature 017): row height and body share one duration so main and banner settle together. */
+.first-run-banner {
+    grid-template-rows: 1fr;
+    transition: grid-template-rows var(--duration-slow) ease-out;
+}
+
+.first-run-banner-body {
+    transition:
+        transform var(--duration-slow) ease-out,
+        opacity var(--duration-slow) ease-out;
+}
+
+.first-run-banner-enter-from,
+.first-run-banner-leave-to {
+    grid-template-rows: 0fr;
+}
+
+.first-run-banner-enter-from .first-run-banner-body,
+.first-run-banner-leave-to .first-run-banner-body {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.first-run-banner-leave-active,
+.first-run-banner-leave-active .first-run-banner-body {
+    transition-timing-function: ease-in;
+}
+
+/* * Only the motion is guarded; the inert and focus handling stays (feature 017). */
+@media (prefers-reduced-motion: reduce) {
+    .first-run-banner,
+    .first-run-banner-body {
+        transition: none;
+    }
+}
+
+/* * Swapped mission cards travel into each other's positions (feature 020). */
+/* ! The leave drops from layout at once, or a hero-for-slot swap holds five cards in space for four. */
+.mission-slot-move {
+    transition: transform var(--duration-slow) ease-in-out;
+}
+
+.mission-slot-leave-active {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mission-slot-move {
+        transition: none;
+    }
+}
+
+/* * Overlay animations come from theme `animate-[…]` utilities with no prop to disable them, so they are cancelled here (annex §14.4). */
+@media (prefers-reduced-motion: reduce) {
+    [data-state='open'],
+    [data-state='closed'] {
+        animation: none !important;
+    }
+}
+
+/* * JS motions that honour reduced motion themselves: `useTweenedValues.ts` (decision 008) and `ScrollRegion.vue`. */

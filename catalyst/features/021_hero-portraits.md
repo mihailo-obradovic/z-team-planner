@@ -10,7 +10,7 @@ Medium
 
 ## Purpose
 
-Every hero is pictured in five places, and the pictures were uneven: twelve files at six pixel sizes, one a PNG wearing a `.webp` name, Blonde Blazer on a bust the game never leads with, and every one requested from Vercel at 1536px and quality 100 because `@nuxt/image` was installed but unconfigured. This feature makes the portrait a contract: one master per hero on one canvas, and one declared width per usage site that Nuxt Image serves at exactly the pixels rendered.
+Every hero is pictured in five places. This feature makes the portrait a contract: one master per hero on one canvas, and one declared width per usage site that Nuxt Image serves at exactly the pixels rendered.
 
 The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust** is the game's unedited roster art, a **portrait** is the square the app shows. The rules are the `image` addon's (`stacks/frontend/nuxt/addons/image.md`).
 
@@ -19,7 +19,7 @@ The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust**
 | Input                                        | Type                     | Source                                   | Constraints                                                                                                                                                                                     |
 | -------------------------------------------- | ------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | master                                       | lossless WebP            | `public/images/portraits/<hero-id>.webp` | the bust at its native size, 450–512 a side, square (Sonar's monster is 450×452 as published); never upscaled, cropped, padded, or pre-encoded lossy                                            |
-| bust                                         | PNG                      | Fandom `dispatch` wiki, `<Name>.png`     | the fuller framing — horns, ears and collars that wiki.gg's larger busts crop away. Waterboy's is wiki.gg's 512 bust; Phenomaman's is the file the repo already carried                         |
+| bust                                         | PNG                      | Fandom `dispatch` wiki, `<Name>.png`     | the fuller framing — horns, ears and collars that wiki.gg's larger busts crop away; Waterboy's is wiki.gg's 512 bust                                                                            |
 | Blonde Blazer                                | PNG                      | Fandom `Blonde_Blazer.png`, 2439×2054    | the Training render: a 2000px square at x=250 with 100px of headroom above the hair, downscaled once to 512                                                                                     |
 | canvas rule                                  | none                     | this document                            | no canvas normalisation: every usage fills its box under `object-fit: cover`, so a transparent margin would paint as background                                                                 |
 | usage width                                  | `PORTRAIT_WIDTHS[usage]` | `web/config/portraits.ts`                | CSS px per usage: header 24, ribbon 52, rail 90, card 108, tile 120, synergy 224, panel 256 (renders 268; 256 keeps its 2x at the largest master). Applied only by `HeroPortrait`, at x1 and x2 |
@@ -47,10 +47,10 @@ In scope:
 Non-goals:
 
 - More pixels. No source carries the fuller framing above 512; extracting textures from the game's files is out of scope.
-- Vectors. Tracing was tested (vtracer, Coupe at 512px): 370–440 KB of SVG with posterised shading against 22 KB of AVIF.
+- Vectors. Tracing measured 370–440 KB of posterised SVG against 22 KB of AVIF.
 - Lossy files at rest, or versioned filenames. `heroPortraitSrc` keeps building `<hero-id>.webp`; a changed master is reset by cache invalidation.
 - The injured and mustache bust variants. One portrait per hero, Sonar's two forms excepted (feature 012).
-- Presets. On `@nuxt/image` 2.0.0 a preset's width never reaches the density srcset (`getSizes` reads the element's own), so the component is the declaration. `sizes` strings are out too: layouts resize on container queries and content, not only on breakpoints, and a refactor to breakpoint-only sizing owns that switch.
+- Presets: a preset's width never reaches the density srcset (`getSizes` reads the element's own), so the component is the declaration. `sizes` strings too: layouts resize on container queries and content, not only on breakpoints.
 - The background wash's own sizing. It gets `width="2560"` only so the tightened `screens` cannot resize it; a fitting width per viewport is its own change.
 
 ## User / System Behavior
@@ -101,13 +101,12 @@ Not role-specific.
 
 ## Error Handling
 
-- A width outside `image.screens` is snapped up by the Vercel provider, silently overfetching; deriving the list prevents it. Vercel rejects a width outside the list with a 400, so the list being right is what keeps every rendered variant reachable.
+- Vercel rejects a width outside `image.screens` with a 400, so the derived list is what keeps every rendered variant reachable.
 - A `usage` outside the union is a type error, not a runtime state.
 
 ## Entry Points
 
 - `web/config/portraits.ts` — the widths and `portraitScreens()`; `web/components/HeroPortrait.vue` — the one `NuxtImg` for portraits.
-- `web/components/HeroPortrait.vue` — the one `NuxtImg` for portraits.
 - `nuxt.config.ts` — the `image` block and the cache TTL under `nitro`; `public/images/portraits/` — the masters.
 - `web/utils/heroPortraitSrc.ts` — the path contract, untouched; `operations.md` — the cache reset.
 
@@ -130,9 +129,7 @@ Not role-specific.
 
 ## Verification
 
-`test/unit/portrait-masters.test.ts` (13), `test/unit/portrait-sizes.test.ts` (3) and `test/nuxt/hero-portrait.test.ts` (4) pass; full suite 359 passed / 46 files. `pnpm lint`, `pnpm typecheck` and `pnpm format:check` clean.
-
-Production walk, 2026-09-04: the markup requests only `w=108, 216, 224, 448` and the wash's `2560`, all at `q=90`. A card's 2x returns `image/avif`, 4,099 bytes, `x-vercel-cache` MISS then HIT; without AVIF in `Accept`, `image/webp`. Browsers still get `max-age=0, must-revalidate` under the one-year edge TTL. Coupé's 460px master answers `w=512` with 460×460 — no upscale. The walk found one defect and fixed it: the module merges its own `sm`…`2xl` screens under the configured map, so production accepted 640–1536; `portraitScreens()` now reuses those keys and each returns 400.
+The three test files under Tests pass; `pnpm lint`, `pnpm typecheck` and `pnpm format:check` clean. Production walk: the markup requests only the declared widths at their densities and the wash's `2560`, all at `q=90`; a card's 2x returns `image/avif` with `x-vercel-cache` MISS then HIT, and `image/webp` without AVIF in `Accept`; browsers get `max-age=0, must-revalidate` under the one-year edge TTL; Coupé's 460px master answers `w=512` at 460×460 — no upscale; the module's own `sm`…`2xl` widths each return 400.
 
 Remaining risk: the Hobby image quota is not yet read into `operations.md`. Volume is bounded and cached for a year, but the first month is worth a look.
 

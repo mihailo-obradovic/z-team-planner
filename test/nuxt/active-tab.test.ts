@@ -100,6 +100,20 @@ describe('the tab in the URL (feature 015)', () => {
     expect(currentUrl.searchParams.get('tab')).toBe('mission-simulator');
   });
 
+  it('switches through the model the tabs bind with v-model, ignoring a value that is not a tab', async () => {
+    const tabs = await freshTabs();
+
+    tabs.activeTabModel.value = 'synergy-pairs';
+
+    expect(tabs.activeTab.value).toBe('synergy-pairs');
+    expect(currentUrl.searchParams.get('tab')).toBe('synergy-pairs');
+
+    tabs.activeTabModel.value = 'nonsense';
+
+    expect(tabs.activeTab.value).toBe('synergy-pairs');
+    expect(currentUrl.searchParams.get('tab')).toBe('synergy-pairs');
+  });
+
   it('never enters the build document', async () => {
     const tabs = await freshTabs();
     const state = usePlannerState();

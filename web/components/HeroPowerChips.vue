@@ -1,6 +1,6 @@
 <template>
-  <!-- * A chip arriving or leaving only fades in place, while the chips that stay travel under the list move (annex §11, feature 024); `chip-leaving` takes a departing chip out of flow, positioned against the `relative` row. -->
-  <!-- * Each chip's span is the group's keyed element, because `TooltipButton` renders a fragment a transition cannot animate. -->
+  <!-- * `chip-leaving` takes a departing chip out of flow so the chips that stay travel under `chip-move`. -->
+  <!-- * The span is the keyed element because `TooltipButton` renders a fragment a transition cannot animate. -->
   <TransitionGroup
     v-if="powers"
     tag="div"
@@ -165,7 +165,7 @@ const trainingsFull = computed(
 
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
-// * An episode 8 arrival never had training available, so there are no upgrades to offer.
+// * Episode 8 arrivals never had training, so they have no upgrades.
 const upgradePowers = computed((): HeroPowerDefinition[] => {
   if (!powers.value || ep8RecruitIds.value.has(props.heroId)) {
     return [];
@@ -217,7 +217,7 @@ const showGolemSpreadThin = computed(
   () => props.heroId === 'golem' && powerStates.value.trainableSelected === 1
 );
 
-// * Labelled by slot count rather than percentage: slots are what the player picks at the dispatch screen, the percentage is only the mechanism.
+// * Labelled by slot count, since slots are what the player picks at dispatch.
 const golemTooltip = computed(() => {
   const slots = specialPowerState.value;
 

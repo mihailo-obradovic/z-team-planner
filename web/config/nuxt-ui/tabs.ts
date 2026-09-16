@@ -2,8 +2,9 @@ import type { TabsConfig } from '../../types/nuxt-ui';
 
 export default {
   slots: {
-    root: 'flex items-center gap-2',
-    list: 'relative flex p-1 group',
+    // * Changes: `u-tabs` renders once, as the planner page's column — the list keeps its height and the panel is the scrolling region. `gap-0` out-ranks upstream's gap rather than omitting it. Default root: 'flex items-center gap-2'; list: 'relative flex p-1 group'; content: 'focus:outline-none w-full'
+    root: 'flex items-center gap-0',
+    list: 'relative flex shrink-0 p-1 group',
     indicator: 'absolute transition-[translate,width] duration-200',
     trigger: [
       'group relative inline-flex items-center min-w-0 data-[state=inactive]:text-muted hover:data-[state=inactive]:not-disabled:text-default font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75',
@@ -17,7 +18,7 @@ export default {
     label: 'truncate',
     trailingBadge: 'shrink-0',
     trailingBadgeSize: 'sm',
-    content: 'focus:outline-none w-full'
+    content: 'focus:outline-none w-full min-h-0 flex-1 overflow-y-auto'
   },
   variants: {
     color: {
@@ -257,7 +258,8 @@ export default {
   ],
   defaultVariants: {
     color: 'primary',
-    variant: 'pill',
+    // * Changes: the one instance is the link variant. Default: 'pill'
+    variant: 'link',
     size: 'md'
   }
 } satisfies TabsConfig;

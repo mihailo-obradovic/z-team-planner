@@ -10,11 +10,9 @@ Medium
 
 ## Purpose
 
-The mission simulator's team is four positional slots, and the arrows on a filled slot swap it with its neighbour (feature 015). Position is not cosmetic there — Coupé's bonus, Golem's copies and Prism's illusion all derive from slot index — so a swap is a meaningful act, and today it happens as an instant exchange of contents. Two cards change at once with nothing to say which two moved or where they went, which is exactly the information the user needs to confirm the arrow did what they meant.
+The mission simulator's team is four positional slots, and the arrows on a filled slot swap it with its neighbour (feature 015). Position is not cosmetic there — Coupé's bonus, Golem's copies and Prism's illusion all derive from slot index — so a swap is a meaningful act. An instant exchange of contents changes two cards at once with nothing to say which two moved or where they went, which is exactly the information the user needs to confirm the arrow did what they meant.
 
 This makes the swap a **travel**: the two cards move into each other's positions. It changes nothing about what a swap does.
-
-Split from feature 015 rather than amended into it: 015 is at its size budget, and the identity model this needs is a contract of its own.
 
 ## Inputs
 
@@ -104,11 +102,12 @@ Not role-specific.
 
 ## Error Handling
 
-No failure mode reaches the user. A browser that runs no transition renders the swapped order immediately — the pre-feature behaviour, which is also the reduced-motion behaviour.
+No failure mode reaches the user: a browser that runs no transition renders the swapped order at once, which is also the reduced-motion behaviour.
 
 ## Entry Points
 
-- `web/components/mission/MissionTeamPanel.vue`: the slot row, the derived identity, the travel, and the focus move.
+- `web/components/mission/MissionTeamPanel.vue`: the slot row, the derived identity, the `mission-slot` transition name, and the focus move.
+- `web/assets/css/motion.css`: the travel, its out-of-layout leave, and their reduced-motion guard.
 - `web/composables/useMissionSimulator.ts`: `moveMissionSlot` and `withSpawns` — read, not changed.
 
 ## Dependencies
@@ -119,8 +118,6 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 
 ## Open Questions
 
-_None._
-
 ## Tests
 
 - `test/nuxt/mission-team.test.ts` (existing file): the derived identity is the hero id for heroes and positional for empties, copies and illusions; identity is unique within a render; a swap leaves exactly the slot state it did before this feature; focus moves to the sibling arrow when the pressed one arrives disabled.
@@ -129,13 +126,9 @@ _None._
 
 ## Verification
 
-`test/nuxt/mission-team.test.ts` — 5 new cases (27 in the file): the hero's own DOM node is the one that ends up in the new slot; an empty slot is rebuilt where the gap now is rather than following it; the slots after a swap are exactly what the action alone produces; focus moves to the card's other arrow when the pressed one lands disabled, and stays put when it does not. Full suite 318 passed / 38 files; lint, format and typecheck clean.
+`test/nuxt/mission-team.test.ts` passes: the hero's own DOM node lands in the new slot, an empty slot is rebuilt where the gap now is rather than following it, the post-swap slots are what the action alone produces, and focus moves to the card's other arrow only when the pressed one lands disabled. Suite, lint, format and typecheck clean.
 
-Live in Chrome at 1440×900, mission tab. Mid-travel the two cards carry `slot-move` with `transform 0.25s ease-in-out` and mirrored transforms (∓127.7px), and settle swapped as the same DOM nodes. Walking a hero right into slot 4 disables the arrow being pressed and focus lands on that card's left arrow, not the document. With Prism beside a hero, moving her left dissolved her illusion while only the two heroes carried a transform — the derived slots read 0 throughout — and an interrupted press re-aimed the travel (`-128.8 → -63.6`) rather than queueing. At 320×640@2× the slots are 61px, the row holds at 284, the travel runs `-67 → 0`, and the page never scrolls sideways.
-
-One defect found by the walk and fixed here: a hero swapping with an **empty** slot churns positional keys, and the leaving card was staying in the flex row for the full 250ms — five 128px cards measured in space for four, widening the row on the most common swap of all. Leaving cards are now dropped from layout at once; re-measured, the row holds at 564 (desktop) and 284 (320px) with four cards laid out throughout.
-
-**Reduced motion, walked 2026-09-13** in headless Chromium with the media feature emulated, mission tab at 1400×1000: pressing Move Coupé right exchanges the two cards in place — every 40ms sample reads `transform: none` with the row at 564 — and walking the hero on into slot 4 still lands focus on that card's left arrow. With the preference off the same press carries transforms on both cards across six samples and settles at 400ms.
+Walked at 1440 and 320, the Examples table row by row — including a Golem swap, a Prism swap dissolving her illusion, an interrupted press, four cards laid out at a constant row width throughout, and a reduced-motion pass.
 
 ## Agent Change Rules
 

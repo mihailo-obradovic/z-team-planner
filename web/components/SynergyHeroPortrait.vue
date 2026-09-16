@@ -1,5 +1,5 @@
 <template>
-  <!-- * w-27 is the chip box's own 108px (annex §13): below lg the portrait shrinks to exactly what four chips need. -->
+  <!-- * w-27 is the chip box's 108px, the width four chips need. -->
   <div class="flex w-27 shrink-0 flex-col gap-2 lg:w-56">
     <HeroPortrait
       :hero-id="heroId"

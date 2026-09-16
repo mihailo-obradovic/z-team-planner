@@ -14,8 +14,6 @@ The hero detail dialog carries a roster control that switches hero without closi
 
 Feature 013 gave the same strips an edge rule saying content is hidden. This is the other half: when the app hides the marked tile, the strip goes and gets it.
 
-Split from feature 011 rather than amended into it: 011 is at its size budget, and the triggers are their own contract with their own tests.
-
 ## Inputs
 
 | Input          | Type             | Source                         | Constraints                                                   |
@@ -85,7 +83,7 @@ Not role-specific.
 
 ## Edge Cases
 
-- **The dialog's first frame.** The strip has not laid out when the open hero is first set, so the call is deferred until it has. Feature 013 makes a zero measurement a no-op, so a premature call is harmless rather than a wrong scroll.
+- **The dialog's first frame.** The strip has not laid out when the open hero is first set, so the call is deferred until it has. Feature 013 makes a zero measurement a no-op, so a premature call is harmless rather than a wrong scroll. The open trigger runs from `onMounted`, never an `immediate` watcher: `/` is prerendered, and a watcher running in setup on the server has no `requestAnimationFrame` and fails the page.
 - **The tier changes while the dialog is open** — a resize across `lg` swaps the rail for the ribbon. The newly rendered strip follows on its first layout; the unmounted one is not positioned.
 - **The roster shrinks under the open hero** (an episode change removing recruits). Either the hero survives in the list and is followed as usual, or the dialog is showing a hero the roster no longer holds — feature 011's existing case, and no follow is attempted.
 - **Episode-8 recruits appearing** lengthen the strip; the next follow measures the new geometry, and nothing is cached across it.
@@ -115,8 +113,6 @@ No failure mode reaches the user. A strip that has not laid out, a missing tile,
 
 ## Open Questions
 
-_None._
-
 ## Tests
 
 - `test/nuxt/roster-follow.test.ts`: opening the dialog asks the rendered strip to bring the marked tile into view; the synergy partner control does the same; a click on a clipped tile follows and a click on a visible one does not; the target passed is the marked tile and not another; nothing is asked when the roster does not overflow; the rail is asked at `lg`+ and the ribbon below.
@@ -125,13 +121,9 @@ _None._
 
 ## Verification
 
-`test/nuxt/roster-follow.test.ts` — 5 cases against a `ScrollRegion` stub that records what it was asked to bring into view: opening asks both strips with the marked tile; a hero change asks with the new tile and never the one it replaced; the synergy partner control follows; a click follows the clicked tile even when it is already the open hero; nothing is asked when no hero is open. `test/unit/scrollEdges.test.ts` covers the arithmetic (feature 013). Full suite 313 passed / 38 files; lint, format and typecheck clean.
+`test/nuxt/roster-follow.test.ts` against a `ScrollRegion` stub that records what it was asked to bring into view: opening asks both strips with the marked tile; a hero change asks with the new tile and never the one it replaced; the synergy partner control follows; a click follows the clicked tile even when it is already the open hero; nothing is asked when no hero is open. `test/unit/scrollEdges.test.ts` covers the arithmetic (feature 013). Lint, format and typecheck clean.
 
-Live in Chrome. **Rail at 1440×520** (8 heroes, 426 visible of 728): opening on the last hero scrolls `0 → 302`, its maximum, and the tile is whole — the clearance gave way at the end of the range, as specified. With the rail hand-scrolled to 0, the partner control moved to a hero off-screen and the rail followed `0 → 302`. A tile clipped by 25px scrolled to `34` — 25 to clear plus the 8px gap — leaving 9px below it; clicking an already-whole tile moved nothing. **Ribbon at 320×640@2×** (280 visible of 504): opening on the last hero scrolled to 224, its maximum; a tile clipped by 31px scrolled to `40`, leaving 9px. Throughout, the dialog's own scrolling column stayed at 0 and the page never scrolled sideways.
-
-One bug found by the walk and fixed in this change: the open trigger was first written as an `immediate` watcher, which runs in setup — on the server, where there is no `requestAnimationFrame`. `/` is prerendered, so the page 500'd. It is an `onMounted` hook instead, which never runs server-side. No test could have caught it; the component tests run client-only.
-
-**Reduced motion, walked 2026-09-13** in headless Chromium with the media feature emulated, rail at 1400×520: opening on Golem and clicking the last tile puts the rail at `382`, its maximum, on the first 40ms sample and it stays there — the scroll still happens, and it jumps. With the preference off the same click glides `0 → 12 → 164 → 295 → 345 → 369 → 377 → 382`.
+Live in Chrome, rail at 1440×520 and ribbon at 320×640@2×: opening on the last hero scrolls the strip to its maximum with the tile whole — the clearance giving way at the end of the range; the partner control moved to an off-screen hero and the strip followed; a clipped tile scrolled by exactly its clipped amount plus the 8px gap; clicking an already-whole tile moved nothing. Throughout, the dialog's own scrolling column stayed at 0 and the page never scrolled sideways. Under emulated reduced motion the same click lands at the same maximum on the first sample and stays there; with the preference off it glides.
 
 ## Agent Change Rules
 

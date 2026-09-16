@@ -314,6 +314,7 @@ export default {
   defaultVariants: {
     size: 'md',
     color: 'primary',
-    variant: 'outline'
+    // * Changes: both selects are the Story Setup drawer's, filled rather than outlined. Default: 'outline'
+    variant: 'subtle'
   }
 } satisfies SelectConfig;

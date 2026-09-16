@@ -1,5 +1,5 @@
 <template>
-  <!-- * No `click` emit is declared: re-emitting one would fire twice, while an undeclared `@click` falls through to the native button the call sites expect. -->
+  <!-- * No `click` emit: declaring one would fire twice, while an undeclared `@click` falls through to the native button. -->
   <u-button
     :icon="swapKey === undefined ? icon : undefined"
     :color="color"
@@ -11,7 +11,7 @@
     variant="subtle"
     square
   >
-    <!-- * Annex §11 glyph swap (feature 024): with a swap key the glyph — the icon, or the slot when there is none — is keyed by it and swaps out-in. The leading slot replaces the button's own icon, so the icon class is restated: `size-4` is the theme's leadingIcon at both `xs` and `sm`. -->
+    <!-- * The leading slot replaces the button's own icon, so `size-4` restates the theme's leadingIcon size. -->
     <template v-if="swapKey !== undefined" #leading>
       <Transition name="glyph-swap" mode="out-in">
         <span :key="swapKey" class="flex items-center justify-center">
@@ -33,7 +33,7 @@ withDefaults(
     size?: 'xs' | 'sm';
     disabled?: boolean;
     active?: boolean;
-    // * A value that changes exactly when the glyph does; its change is what runs the swap (feature 024). Absent, the glyph is static.
+    // * Changing it swaps the glyph out-in; absent, the glyph is static.
     swapKey?: string | number;
   }>(),
   { size: 'xs' }

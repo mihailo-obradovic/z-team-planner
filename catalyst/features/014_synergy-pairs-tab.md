@@ -10,7 +10,7 @@ Medium
 
 ## Purpose
 
-Fill the planner's empty "Synergy pairs" tab (a feature 003 placeholder) with what each derived pair's two heroes add up to. This tab puts every pair's combined stats and radar shape side by side, so a player can compare pairs at a glance and probe what-ifs by toggling powers in place.
+The "Synergy pairs" tab shows what each derived pair's two heroes add up to. This tab puts every pair's combined stats and radar shape side by side, so a player can compare pairs at a glance and probe what-ifs by toggling powers in place.
 
 ## Inputs
 
@@ -37,11 +37,11 @@ In scope:
 
 - The tab's content: one card per derived pair, with both portraits, their power/status icon rows, the read-only pair total, and the combined radar.
 - Extracting the pair-total computation the dialog already does into a shared home, so the dialog and the tab can never disagree.
-- Lifting Sonar's form toggle to shared state (amends feature 012's "Sonar's form" row; it remains never serialized).
+- Sonar's form toggle as shared state (feature 012; never serialized).
 
 Non-goals:
 
-- Synergy _levels_ (0–3, +5%/level) — unmodeled, reserved for the mission simulator.
+- Synergy _levels_ (0–3, +5%/level) — the mission simulator's (feature 015).
 - Editing chrome: no stat steppers, no flight, no reset, no level controls — those live on the overview and in the dialog.
 - Adding, removing, or toggling pairs — pairs are derived from episode setup only.
 
@@ -108,8 +108,8 @@ Not role-specific.
 ## Dependencies
 
 - Feature 003 (planner mechanics): episode setup, derived pairs, toggle gating.
-- Feature 012 (special powers): effective-stat math, the pair's `min(slots, 2)` rule, Sonar's form — amended for the shared form state and the per-hero clamp fix.
-- Feature 011 (hero detail dialog): the selection flow the portrait click enters; its pair-total block moves onto the shared computation.
+- Feature 012 (special powers): effective-stat math, the pair's `min(slots, 2)` rule, Sonar's shared form.
+- Feature 011 (hero detail dialog): the selection flow the portrait click enters; its pair-total block uses the shared computation.
 - Feature 002 (hero data): `STAT_NAMES`, `MAX_STAT_VALUE`, pair definitions.
 
 ## Open Questions
@@ -121,9 +121,9 @@ Not role-specific.
 
 ## Verification
 
-By test (222 across 30 files, `vue-tsc` and `oxlint` clean): `test/nuxt/synergy-pairs.test.ts` proves the derived card set and the conditional swap, card values matching `getPairCombinedStats`, live update on a shared toggle, and the portrait click; `pair-stats.test.ts` the clamp-before-sum, the `min(slots, 2)` deduction, the Sonar swap on either side; `monster-form.test.ts` the shared form.
+By test (`vue-tsc` and `oxlint` clean): `test/nuxt/synergy-pairs.test.ts` proves the derived card set and the conditional swap, card values matching `getPairCombinedStats`, live update on a shared toggle, and the portrait click; `pair-stats.test.ts` the clamp-before-sum, the `min(slots, 2)` deduction, the Sonar swap on either side; `monster-form.test.ts` the shared form.
 
-Walked live in Chrome at `localhost:3123` (2026-08-31): the default setup renders 4 cards (Golem–Invisigal, Prism–Flambae, Punch Up–Coupé, and the conditional Malevola–Waterboy under the default Sonar cut); toggling Golem's power on a synergy card pressed the overview card's chip in the same tick and back; a portrait click opened Golem's dialog with the synergy tab active under it and after close. The reflow was measured at 525/580/700/1400px: stacking, spread, content-hug, and desktop bands all behave, and the frame cap flips at exactly the width the row wraps (one container query drives both). Remaining risk: WebKit is unverified locally — the container query needs a device check.
+Walked live in Chrome: the default setup renders 4 cards; toggling Golem's power on a synergy card pressed the overview card's chip in the same tick and back; a portrait click opened Golem's dialog with the synergy tab active under it and after close. The reflow was measured from 1400 down to 525px: stacking, spread, content-hug and desktop bands all behave, and the frame cap flips at exactly the width the row wraps. Remaining risk: WebKit is unverified locally — the container query needs a device check.
 
 ## Agent Change Rules
 

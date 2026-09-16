@@ -5,7 +5,7 @@
     </div>
 
     <div class="flex flex-col gap-2 p-3">
-      <!-- * Only the active template is expanded. The whole card selects, the header button stays the accessible control, and a click bubbling from a stepper only re-selects the active card. -->
+      <!-- * The whole card selects, while the header button stays the accessible control. -->
       <section
         v-for="(template, index) in missionTemplates"
         :key="index"
@@ -33,7 +33,7 @@
           </span>
         </button>
 
-        <!-- * Both bodies stay mounted in `0fr`/`1fr` grid rows, so a selection animates the card's height; a size animation, so it short-circuits under reduced motion (annex §11). -->
+        <!-- * Both bodies stay mounted in `0fr`/`1fr` rows, so a selection animates the card's height. -->
         <!-- ! `inert` on the collapsed half, or its controls stay focusable and in the accessibility tree. -->
         <div
           class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
@@ -41,7 +41,6 @@
           :inert="index === activeIndex"
         >
           <div class="min-h-0 overflow-hidden">
-            <!-- * One badge per stat, so the five REQs read as separate fields rather than one run of numbers. -->
             <ul class="flex flex-wrap gap-2 border-t border-muted px-3 py-2">
               <li
                 v-for="stat in STAT_NAMES"
@@ -63,7 +62,6 @@
           :inert="index !== activeIndex"
         >
           <div class="min-h-0 overflow-hidden">
-            <!-- * Below 28.5rem the panel shows one column set at a time, and the toggle exists only there (feature 016). -->
             <div
               class="hidden gap-1 border-t border-muted px-3 pt-2 @max-[28.5rem]:flex"
               role="group"
@@ -114,7 +112,7 @@
               </span>
 
               <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The label steps down a type size rather than leaving, so the wordmark survives an iPhone SE; only below 20rem does the icon carry the stat alone. -->
+                <!-- * The label steps down a size rather than leaving, so the wordmark survives an iPhone SE. -->
                 <span
                   class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase @max-[28.5rem]:gap-1 @max-[28.5rem]:text-sm"
                 >
@@ -172,7 +170,7 @@ const {
 
 const activeIndex = computed(() => missionActiveTemplate.value);
 
-// * One per panel, so switching template keeps what you were reading, and a plain ref, because planner state serializes and the build document must never carry a layout choice (feature 016).
+// * A plain ref, not planner state: the build document must never carry a layout choice.
 const COLUMN_VIEWS = [
   { value: 'req', label: 'Requirements' },
   { value: 'conditions', label: 'Conditions' }
@@ -191,7 +189,6 @@ const conditionColumnClass = computed(() =>
   columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
 );
 
-// * Only the Conditions view runs out of room for the wordmark, and only below 20rem.
 const wordmarkClass = computed(() =>
   columnView.value === 'conditions' ? '@max-[20rem]:hidden' : ''
 );

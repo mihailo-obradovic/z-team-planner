@@ -1,6 +1,6 @@
 <template>
-  <!-- * `role="img"` with a title and description: the chart is one graphic, and the numbers behind it are already real text in the stat rows beside it, so a second hidden table would only duplicate them (decision 008). -->
-  <!-- ! `block max-w-full` is load-bearing, not tidying: WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic 320px where Chromium gives 0, so without the cap the chart floors the width of whatever holds it and the dialog's mobile column scrolls sideways on iOS. -->
+  <!-- * One `role="img"` graphic: its numbers are already real text in the stat rows beside it. -->
+  <!-- ! `block max-w-full` is load-bearing: WebKit gives a `viewBox` SVG a 320px min-content width, which scrolls the dialog's mobile column sideways on iOS. -->
   <svg
     :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
     class="block h-full w-full max-w-full select-none"
@@ -11,7 +11,7 @@
     <title :id="`${uid}-title`">{{ title }}</title>
     <desc :id="`${uid}-desc`">{{ description }}</desc>
 
-    <!-- * Rings every 2 points on the 0-10 scale, drawn outermost first so the axis spokes and the data sit above them. -->
+    <!-- * Drawn outermost first, so the spokes and the data sit above them. -->
     <polygon
       v-for="ring in rings"
       :key="ring"
@@ -32,7 +32,7 @@
       stroke-width="1"
     />
 
-    <!-- * Feature 015: the mission simulator's required shape, under the team's — ink and dashed, so the two series differ by pattern as well as colour. -->
+    <!-- * Ink and dashed, so the required shape differs from the team's by pattern as well as colour. -->
     <polygon
       v-if="referencePoints"
       :points="referencePoints"
@@ -62,7 +62,6 @@
       fill="var(--ui-primary)"
     />
 
-    <!-- * Feature 015: per-axis threshold markers. A fail threshold is an error disc, a 2×XP threshold a gold disc with its multiplier; both sit at their value on the stat's axis, tween with it, and carry a hover tooltip. -->
     <g
       v-for="marker in thresholdMarkers"
       :key="`marker-${marker.kind}-${marker.index}`"
@@ -100,8 +99,8 @@
       </text>
     </g>
 
-    <!-- * Icons alone, no words: the stat rows beside the chart already name every axis, so repeating the names here only shrank the polygon to make room for them. Each glyph sits in a solid ink disc, as on the mockup's axis markers — a bare icon floating against the grid read as debris. Nothing here is rotated. -->
-    <!-- ! The glyph is cream, not `text-inverted`: this project remaps `--ui-text-inverted` to ink for the amber and gold solids, so on an ink disc it would be invisible. `text-neutral-100` is the same call app.vue makes for the chrome glyphs. -->
+    <!-- * Icons only: the stat rows already name each axis, and words shrank the polygon. -->
+    <!-- ! Cream, not `text-inverted`: this project remaps inverted text to ink, which vanishes on an ink disc. -->
     <g
       v-for="(axis, index) in axes"
       :key="`label-${axis.key}`"
@@ -139,9 +138,9 @@ const props = withDefaults(
     title: string;
     max?: number;
     durationMs?: number;
-    // * A second series in axis order (feature 015's required shape), tweened like the data.
+    // * The required shape, in axis order.
     reference?: number[];
-    // * Per-axis thresholds in axis order, 0 meaning none (feature 015).
+    // * In axis order; 0 means none.
     failAt?: number[];
     xpAt?: number[];
   }>(),
@@ -151,17 +150,15 @@ const props = withDefaults(
   }
 );
 
-// * Square, and the polygon fills nearly all of it. Dropping the word labels is what bought the room: the box only has to clear a disc at each vertex now, not a word hanging off one.
+// * Without word labels the box only has to clear a disc at each vertex.
 const WIDTH = 320;
 const HEIGHT = 320;
 const CENTRE_X = WIDTH / 2;
 const RADIUS = 118;
 const ICON_BOX = 24;
 const ICON_RADIUS = 17;
-// * How far past the outer ring a disc's centre sits — enough clearance that the disc reads as separate from the pentagon rather than stuck to it.
 const ICON_OFFSET = 28;
 
-// * Every 2 points, per the design brief.
 const rings = computed(() => {
   const values: number[] = [];
 
@@ -174,7 +171,7 @@ const rings = computed(() => {
 
 const uid = useId();
 
-// * The whole reason this is hand-rolled: a quarter turn back from due east puts axis 0 at the apex by construction, so nothing downstream is rotated and no label needs counter-rotating.
+// * A quarter turn back from due east puts axis 0 at the apex, so nothing downstream rotates.
 const START_ANGLE = -Math.PI / 2;
 
 const step = computed(() => (2 * Math.PI) / props.axes.length);
@@ -191,7 +188,7 @@ function angle(index: number): number {
   return START_ANGLE + index * step.value;
 }
 
-// ! Not `HEIGHT / 2`: with the apex pointing up, a pentagon is taller above its centre than below it — the top vertex sits a full radius out while the bottom two reach only `sin 54°` of it. Centring the drawing on the box's middle therefore leaves the whole chart sitting visibly high. This centres the drawn EXTENT instead, discs included, so the shape reads as centred in its panel.
+// ! Not `HEIGHT / 2`: an apex-up pentagon reaches further above its centre than below, so this centres the drawn extent, discs included.
 const CENTRE_Y = computed(() => {
   const reach = RADIUS + ICON_OFFSET + ICON_RADIUS;
   const sines = props.axes.map((_, index) => Math.sin(angle(index)));
@@ -258,7 +255,7 @@ const displayedXpAt = useTweenedValues(
   props.durationMs
 );
 
-// * A marker renders only while its target is set, and follows the tween, so an edited threshold slides along its axis.
+// * Follows the tween, so an edited threshold slides along its axis.
 const thresholdMarkers = computed(() => {
   const markers: {
     kind: 'fail' | 'xp';

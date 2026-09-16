@@ -4,7 +4,7 @@ The project's own design system, instantiated from `stacks/frontend/nuxt/design-
 
 **Loads when:** styling anything, adding or changing a token, picking a size, shadow, or spacing value, or building a new component.
 
-Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `web/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too. A component never names a ramp or a hex — it names an alias or a token.
+Under `frontend/ui = nuxtui`, the source of truth splits: **colour ramps** are `@theme static` definitions in `web/assets/css/main.css`, mapped to the seven semantic aliases in `app.config.ts`'s `ui.colors`; **surface variables** (`--ui-*`) are remapped in an unlayered `:root` block in the same stylesheet; **every non-colour scale** is a CSS custom property there too, except the two motion durations, which sit in `web/assets/css/motion.css` beside the transitions that are their only readers. A component never names a ramp or a hex — it names an alias or a token.
 
 ---
 
@@ -385,7 +385,6 @@ No raw literals, and no `9999`. A new layer is **added to this scale** with a na
 | --------------------- | ----- | ------------------------------------------------------------------------------------------------- |
 | `--duration-baseline` | 150ms | **Baseline** — hover, colour, opacity, micro-interactions                                         |
 | `--duration-slow`     | 250ms | Panel slides, the mobile slideover, dialog enter/exit                                             |
-| `--duration-slowest`  | 400ms | Reserved; nothing uses it today                                                                   |
 | `--duration-linger`   | 1.5s  | A confirmation's hold before it closes (feature 018). A hold, not motion: no reduced-motion guard |
 
 Start at the baseline and step up only when the element's size justifies it. Vue `<Transition>` classes draw from the same tokens — a duration hardcoded in a transition class has bypassed the scale.
@@ -412,11 +411,13 @@ Seven motions recur and are settled here once, so a second instance of any of th
 - **A list may carry both a move and a state fade**, and a centred one has to: adding or removing an entry re-centres every other entry, so a fade alone leaves the survivors to jump. The cost is that a leaving element must be **taken out of flow** as its fade begins, or the survivors wait for the fade to finish and jump anyway. The element arriving or leaving takes the fade **without** the move: it has no origin to travel from, and one that fades while sliding reads as coming from somewhere it never was. Take it out of flow only where the row's size is already reserved, so removing it from the layout cannot resize anything. Where a list is not centred and its entries only ever append or truncate, the move is not worth that: give it the move alone.
 - **Bring into view** clears the target past the region's own edge by the region's gap, so it does not land flush against the clipping edge or under §5's edge rule. An already-fully-visible target does not move.
 - Both short-circuit under reduced motion by the rule above — the list snaps to its new order, the scroll jumps. **Bring into view still happens** under reduce: it corrects what is visible, and only its smoothness is decoration.
-- **State fade** is what a mounting or unmounting element gets by default. A control whose glyph changes while it stays is a **glyph swap**, never a fade, and a colour-only change is neither — it keeps the baseline colour fade. A glyph swap fires only on a change while the control is on screen, never on first render, and an interrupted swap re-targets to the newest glyph rather than queueing. Both live as the `state-fade` and `glyph-swap` transition classes in `main.css`.
+- **State fade** is what a mounting or unmounting element gets by default. A control whose glyph changes while it stays is a **glyph swap**, never a fade, and a colour-only change is neither — it keeps the baseline colour fade. A glyph swap fires only on a change while the control is on screen, never on first render, and an interrupted swap re-targets to the newest glyph rather than queueing. Both live as the `state-fade` and `glyph-swap` transition classes in `motion.css`.
 - **Glyph swap** short-circuits under reduced motion and the glyph lands at once. **State fade** is opacity at the baseline and needs no guard.
 - **Slide** is what running text gets where a fade on it is too much fading beside content that holds still; a picture keeps the state fade. Both legs overlap, so the block stacks old and new in one grid cell and clips. Under reduced motion the transform is dropped and the opacity leg stays: it degrades to the state fade, never to a cut.
 - **Value count** short-circuits under reduced motion by landing on the value directly; its duration is JavaScript's, not a `--duration-*` token, because it is shared with the radar's tween (decision 008). That is the one motion on this page not on the CSS scale, recorded rather than left to be discovered.
 - **Loading ring** short-circuits too, and it is the one pattern where the guard leaves something behind: the ring stays drawn and stops turning. Its presence is the information — something is still working — and only the rotation is decoration. It is the mark for a wait with no known length; a wait whose final geometry is known takes §10's placeholder instead.
+
+- **Every shared motion lives in `web/assets/css/motion.css`**, imported by `main.css`: the named patterns, their reduced-motion guards, and the two durations they read. A motion belonging to a single component lives there too rather than in that component's `<style>` block, so this section has one implementation to check against it. The two motions driven in JavaScript are the exception no stylesheet can hold, and that file names them at its end.
 
 ---
 
@@ -543,7 +544,7 @@ The mission team's slot controls make the same trade harder. Below 35rem they le
 
 The bare glyph triggers in the mobile header — Story Setup, the account control, and the menu — paint at 20-22px and pad their hit area to 44, not merely to the 24 floor: they are the only route to episode setup, to signing in, and to build management at that width, which makes them primary touch actions.
 
-The switch used to be the one control whose paint was under the floor. It is drawn at the mockup's size now — a 44 × 24 track — so the paint is the target, and the `::after` box that padded it to 24 stays in the theme only for the smaller size variants, which the app does not currently render.
+The switch is drawn at the mockup's size — a 44 × 24 track — so the paint is the target; the `::after` box that pads a switch to 24 stays in the theme only for the smaller size variants, which the app does not render.
 
 ### 14.3 Breakpoints & reflow
 
@@ -551,7 +552,7 @@ The switch used to be the one control whose paint was under the floor. It is dra
 
 The header does not hold one shape across this range — see the tier ladder in §13, which names what is dropped at `lg`, `md`, and base. Below `md` the three primary build actions leave the header entirely for the mobile action bar, so the vertical chrome budget changes there too: the header stays 64 (`--ui-header-height` does not vary by breakpoint — the mockup's 52 was not worth a responsive token) and the action bar adds 70, both `shrink-0`, with the scrolling region between them still owned by the chain in `stacks/frontend/nuxt/page-layout.md`. Measured at 320: no horizontal scroll and no element wider than the viewport.
 
-**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. The tab list used to be the one region that scrolled inside itself — at 320 the three short-label triggers measured 353px, and the shared `label` slot's `truncate` turned that into clipped names. It is now three equal thirds of the frame below `sm`, which removes the overflow rather than scrolling it: measured 91px per trigger at 320, nothing clipped, `scrollWidth === clientWidth`. `overflow-x-auto` and `shrink-0` stay on the `sm`-and-up row, where the labels are full-length, as the safety net. `overflow-x-auto` on the list with `shrink-0` on the trigger is the pair that matters — without the second the triggers compress and there is nothing to scroll. Getting there took two fixes worth remembering: a card with a fixed `w-92` is 368px and clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
+**Reflow (WCAG 1.4.10): verified at 320px** — no horizontal scrolling, and no element in the main content wider than the viewport. The tab list is three equal thirds of the frame below `sm`, which removes its overflow rather than scrolling it; `overflow-x-auto` on the list with `shrink-0` on the trigger stays on the `sm`-and-up row as the safety net — without the second the triggers compress and there is nothing to scroll. Two rules worth remembering: a card with a fixed width wider than 320 clips, and `w-full` inside an **auto-width** flex column resolves against an indefinite width and falls back to content width, so the column has to be capped too, not just the card.
 
 **The mission simulator is the one region that does not use the breakpoints above.** Its tab reflows through `@container` queries on its own wrapper (feature 016), the same choice feature 014's `SynergyPairCard` already made, so the rules hold whatever page chrome arrives later. What a container query measures is the wrapper's **content** box, and its `p-4` is outside that; the layout's scrolling main takes a further 10px when its scrollbar is up. Measured, the offset from viewport to queried width is **32px without that scrollbar and 42 with it** — it is not a constant, so the rem figures below are the contract and the viewport figures are approximations. Four thresholds, each a subtraction from the desktop design: **77rem** splits the top row into templates + requirements, then the team, then the math, which itself goes to two columns; **49.5rem** (≈834px viewport) takes everything to one column and the math back to one; **35rem** (≈602px) moves the team's slot controls onto the portrait (§14.2); **28.5rem** (≈498px) puts the templates panel's two condition columns behind a `Requirements` / `Conditions` toggle, and **19rem** finally drops its stat wordmarks to icons.
 
@@ -575,7 +576,7 @@ The preference is the visitor's own operating-system setting, switched on by peo
 
 ## 15. Scoped styles and token reach
 
-Tokens live in `web/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
+Tokens live in `web/assets/css/main.css` on `:root` (and in `@theme` for the ramps and the type scale; the motion durations on `:root` in `motion.css`, which it imports) — **never inside a `<style scoped>` block**, which cannot define a token for anything but itself.
 
 This matters concretely here: `UModal`, `UDropdownMenu`, `UTooltip` and `UToast` teleport to `body`, outside the app subtree. Tokens hung on an app wrapper element would never reach them — a dialog that loses its palette is almost always that mistake. `:root` is the only correct home.
 

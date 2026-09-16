@@ -7,7 +7,7 @@
       @click="step(-1)"
     />
 
-    <!-- * A fixed slot, so a value growing a digit or becoming the dash shifts nothing; in the tight tier it and the gaps narrow, because the buttons sit on the 24px touch floor (feature 016, annex §14.2). -->
+    <!-- * Fixed width, so a new digit or the dash shifts nothing; the tight tier narrows it because the buttons sit on the 24px touch floor. -->
     <span
       class="w-7 text-center font-heading text-lg font-bold select-none @max-[28.5rem]:w-6"
     >
@@ -30,7 +30,7 @@ const props = withDefaults(
   defineProps<{
     value: number | null;
     label: string;
-    // * Stepping below 1 clears the value to the dash, and stepping up from the dash starts at 1 (feature 015).
+    // * Stepping below 1 clears to the dash; stepping up from the dash starts at 1.
     unsettable?: boolean;
   }>(),
   { unsettable: false }

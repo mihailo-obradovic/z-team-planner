@@ -10,7 +10,7 @@ Easy
 
 ## Purpose
 
-`/b/{id}` is rendered client-only (`ssr: false`, feature 007), so a visitor following a share link gets a blank ground until the JavaScript bundle has loaded and run — only then does the page's own skeleton appear. Feature 023 gave `/` a held-back first paint and deliberately left this route out. This feature fills the gap with Nuxt's own mechanism for it: a loading template inlined into the HTML, shown until the app mounts, torn down by Nuxt itself.
+`/b/{id}` is rendered client-only (`ssr: false`, feature 007), so a visitor following a share link gets a blank ground until the JavaScript bundle has loaded and run — only then does the page's own skeleton appear. Feature 023 holds `/` back and leaves this route out. This feature covers it with Nuxt's own mechanism: a loading template inlined into the HTML, shown until the app mounts, torn down by Nuxt itself.
 
 ## Inputs
 
@@ -98,8 +98,6 @@ None reaches the user. A broken template is a build-time error in Nuxt, not a ru
 
 ## Open Questions
 
-_None._
-
 ## Tests
 
 - No automated test: the template is static HTML that Nuxt inlines, and nothing in the app reads it.
@@ -107,13 +105,7 @@ _None._
 
 ## Verification
 
-Suite 387 passing across 49 files, typecheck, lint and format clean; production build clean. Walked 2026-09-13.
-
-**Served HTML.** The dev server and the built server both put the template beside the app root on `/b/{id}`; the prerendered `/` and `/privacy` carry none of it.
-
-**First paint, scripts blocked.** The splash paints `rgb(23, 28, 25)` edge to edge with a 32px ring, 4px stroke, `rgb(223, 138, 32)` over the same at 25%, turning once per 1.4s linear, centred in a 1000×700 viewport, with no text and an empty app root. With reduced motion emulated the ring is drawn and its animation reads `none`.
-
-**Mount.** With scripts allowed the loader node is gone after load and the page's own state shows.
+Suite, typecheck, lint, format and production build clean. The dev server and the built server both put the template beside the app root on `/b/{id}`; the prerendered `/` and `/privacy` carry none of it. With scripts blocked the splash paints the ground edge to edge with the annex's ring — 32px, 4px stroke, primary over primary at 25%, once per 1.4s linear — centred, with no text and an empty app root; with reduced motion emulated the ring is drawn and its animation reads `none`. With scripts allowed the loader node is gone after load and the page's own state shows.
 
 ## Agent Change Rules
 

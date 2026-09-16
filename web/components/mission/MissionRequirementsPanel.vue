@@ -5,7 +5,7 @@
     </div>
 
     <div class="flex flex-col items-center gap-4 p-3">
-      <!-- * The frame is exactly the panel's design width, so `max-w-full` lets it give up width rather than bleed over the panel's padding and border (feature 016). -->
+      <!-- * `max-w-full` lets the design-width frame give up width instead of bleeding past the panel's padding. -->
       <div class="w-72 max-w-full border-2 border-accented bg-default">
         <div class="mx-auto aspect-square w-full">
           <StatRadar
@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <!-- * The legend always lists every series and marker, so a threshold appearing changes the chart, never the layout (feature 015). -->
+      <!-- * The legend always lists every series, so a threshold appearing changes the chart, not the layout. -->
       <ul class="grid grid-cols-2 gap-x-10 gap-y-2">
         <li
           class="flex items-center gap-3 font-heading text-label text-toned uppercase"
@@ -56,7 +56,7 @@
       </ul>
 
       <p class="flex items-center gap-3">
-        <!-- * A fixed width, so the panel never breathes as the estimate moves; the certain outcomes carry a marker beside the number, so colour is never the only signal (annex §14). -->
+        <!-- * Fixed width, so the panel doesn't breathe as the estimate moves; the certain outcomes add a marker so colour is never the only signal. -->
         <span
           class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-0.5 text-center font-heading text-2xl font-bold transition-colors duration-150"
           :class="outcomeClass"
@@ -116,7 +116,7 @@ const xpValues = computed(() =>
   RADAR_STAT_ORDER.map((stat) => missionActiveTemplateData.value.xp[stat] ?? 0)
 );
 
-// * The same rAF tween the radar uses, so the number and the shape move together.
+// * The radar's own tween, so the number and the shape move together.
 const displayedValues = useTweenedValues(
   computed(() => [missionSuccess.value.estimate * 100]),
   200
@@ -126,7 +126,7 @@ const displayedEstimate = computed(() =>
   Math.round(displayedValues.value[0] ?? 0)
 );
 
-// * The two certainties, read from the settled estimate rather than the travelling one.
+// * Read from the settled estimate, not the tweened one.
 const outcome = computed<'certain' | 'doomed' | null>(() => {
   const estimate = missionSuccess.value.estimate;
 

@@ -37,6 +37,7 @@ const stubs = {
   BudgetCounters: true,
   BuildManager: true,
   AuthMenu: true,
+  StorySetupButton: true,
   BuildDialogs: true,
   BuildAccountDialogs: true,
   BuildConflictDialog: true,

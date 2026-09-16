@@ -1,28 +1,13 @@
 <template>
-  <u-slideover
-    v-model:open="open"
-    side="right"
-    title="Story setup"
-    :ui="{ body: 'flex flex-col gap-8 p-4 sm:p-6' }"
-  >
+  <u-slideover v-model:open="open" side="right" title="Story setup">
     <template #body>
       <div class="flex flex-col gap-4">
         <u-form-field label="Episode 3: Cut" size="xl">
-          <u-select
-            v-model="ep3Cut"
-            :items="ep3CutItems"
-            variant="subtle"
-            class="w-full"
-          />
+          <u-select v-model="ep3Cut" :items="ep3CutItems" class="w-full" />
         </u-form-field>
 
         <u-form-field label="Episode 4: Hire" size="xl">
-          <u-select
-            v-model="ep4Hire"
-            :items="ep4HireItems"
-            variant="subtle"
-            class="w-full"
-          />
+          <u-select v-model="ep4Hire" :items="ep4HireItems" class="w-full" />
         </u-form-field>
 
         <u-form-field
@@ -31,7 +16,7 @@
           size="xl"
           class="justify-between"
         >
-          <u-switch v-model="showEp8Recruits" size="xl" />
+          <u-switch v-model="showEp8Recruits" />
         </u-form-field>
       </div>
 

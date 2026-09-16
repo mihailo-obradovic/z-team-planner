@@ -125,6 +125,7 @@ export default {
   },
   defaultVariants: {
     color: 'primary',
-    size: 'md'
+    // * Changes: the one switch sits in the Story Setup drawer at its xl control size. Default: 'md'
+    size: 'xl'
   }
 } satisfies SwitchConfig;

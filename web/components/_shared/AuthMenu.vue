@@ -1,9 +1,5 @@
 <template>
-  <u-dropdown-menu
-    v-if="isSignedIn"
-    :items="menuItems"
-    :ui="{ content: 'min-w-48' }"
-  >
+  <u-dropdown-menu v-if="isSignedIn" :items="menuItems">
     <button
       v-if="tier === 'bare'"
       type="button"
@@ -28,7 +24,7 @@
     />
   </u-dropdown-menu>
 
-  <!-- ! Two absences, and only one reserves space: while the identity is `unknown` the control is merely `invisible`, so the header does not reflow when the SDK reports (feature 004); with no backend to sign in to it renders nothing. -->
+  <!-- ! While identity is `unknown` the control is only invisible, so the header doesn't reflow when the SDK reports; with no backend it renders nothing. -->
   <template v-else-if="!isSignInUnavailable">
     <button
       v-if="tier === 'bare'"

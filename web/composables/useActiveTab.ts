@@ -44,9 +44,14 @@ export function useActiveTab() {
   }
 
   // ! Bind this with `v-model`: with a one-way `:model-value` plus an update handler, the tabs component keeps its own copy of the selection and two panels can show at once.
-  const activeTabModel = computed({
+  // * The tabs component models its value as `string | number`, so the setter narrows rather than a caller casting.
+  const activeTabModel = computed<TabValue, string | number>({
     get: () => activeTab.value,
-    set: (value: TabValue) => setActiveTab(value)
+    set: (value) => {
+      if (isTabValue(value)) {
+        setActiveTab(value);
+      }
+    }
   });
 
   return { activeTab, activeTabModel, initTabFromUrl, setActiveTab };

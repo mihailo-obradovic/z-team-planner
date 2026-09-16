@@ -10,7 +10,7 @@ Medium
 
 ## Purpose
 
-The app has no explicit SEO surface today: no site name/URL declared to any module, no `robots.txt`, no `sitemap.xml`, no Schema.org markup, and no Open Graph image. `@nuxtjs/seo` (already added as a dependency, `nuxt.config.ts` module list) is configured to give `/`, `/privacy`, and `/b/{id}` correct share-preview meta tags and a canonical sitemap/robots policy, while keeping every page out of search indexes on non-production deployments and `/b/{id}` specifically out of both robots.txt and the sitemap (it is real and shareable, but not a page anyone should land on from search). `/b/{id}`'s tags come from a Nitro server hook, not `@nuxtjs/seo` or Vue rendering — see Entry Points and Non-Goals for why.
+`@nuxtjs/seo` gives `/`, `/privacy`, and `/b/{id}` correct share-preview meta tags and a canonical sitemap/robots policy, while keeping every page out of search indexes on non-production deployments and `/b/{id}` out of both robots.txt and the sitemap. `/b/{id}`'s tags come from a Nitro server hook, not `@nuxtjs/seo` or Vue rendering.
 
 ## Inputs
 
@@ -18,18 +18,18 @@ The app has no explicit SEO surface today: no site name/URL declared to any modu
 | ------------------ | -------- | -------------------------------- | ------------------------------------------------------------------------------- |
 | `NUXT_SITE_URL`    | `string` | Deployment environment variable  | Required in production; absolute origin, no trailing slash.                     |
 | `NUXT_SITE_ENV`    | `string` | Deployment environment variable  | `production` in production; otherwise any non-production value blocks indexing. |
-| `site.name`        | `string` | `nuxt.config.ts` (`site` object) | Static literal — no longer inferred from `package.json` in `@nuxtjs/seo` v5.    |
+| `site.name`        | `string` | `nuxt.config.ts` (`site` object) | Static literal, never inferred from `package.json`.                             |
 | `site.description` | `string` | `nuxt.config.ts` (`site` object) | Static literal, one sentence, matches `project-summary.md`'s Project Purpose.   |
 
 ## Outputs And Side Effects
 
-| Output / Side Effect | Type          | Description                                                                                                                                                                                                                                                                   |
-| -------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/robots.txt`        | HTTP response | Allows `/` and `/privacy`; disallows `/b/`; disallows everything when `NUXT_SITE_ENV` is not `production`.                                                                                                                                                                    |
-| `/sitemap.xml`       | HTTP response | Lists `/` and `/privacy` only.                                                                                                                                                                                                                                                |
-| Page `<head>` tags   | HTML          | Title, description, canonical URL, and Open Graph/Twitter tags on `/` and `/privacy` (via `useSeoMeta`, per-request). `/b/{id}` gets a fixed, id-independent title/description/image (via a Nitro `render:html` hook, not Vue — Entry Points).                                |
-| Open Graph images    | Static assets | Two 1200×630 PNGs (256-colour palette, ~130KB each) in `public/images/og/`: `build-now.png` (wired to `/`, `/privacy`), `view-build.png` (wired to `/b/{id}`). Same design, different copy. No per-build dynamic image — both are identical for every request to their route. |
-| Schema.org JSON-LD   | HTML          | A `WebApplication` node on `/`.                                                                                                                                                                                                                                               |
+| Output / Side Effect | Type          | Description                                                                                                                                                                                                                                    |
+| -------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/robots.txt`        | HTTP response | Allows `/` and `/privacy`; disallows `/b/`; disallows everything when `NUXT_SITE_ENV` is not `production`.                                                                                                                                     |
+| `/sitemap.xml`       | HTTP response | Lists `/` and `/privacy` only.                                                                                                                                                                                                                 |
+| Page `<head>` tags   | HTML          | Title, description, canonical URL, and Open Graph/Twitter tags on `/` and `/privacy` (via `useSeoMeta`, per-request). `/b/{id}` gets a fixed, id-independent title/description/image (via a Nitro `render:html` hook, not Vue — Entry Points). |
+| Open Graph images    | Static assets | Two 1200×630 PNGs in `public/images/og/`: `build-now.png` (`/`, `/privacy`), `view-build.png` (`/b/{id}`). Same design, different copy; identical for every request to their route.                                                            |
+| Schema.org JSON-LD   | HTML          | A `WebApplication` node on `/`.                                                                                                                                                                                                                |
 
 ## Scope And Non-Goals
 
@@ -75,15 +75,15 @@ Not role-specific.
 ## Business Rules
 
 - `ogImage` dynamic (per-request) generation stays disabled — one static image only; the module's dynamic path is opt-in and the project has no per-page image worth generating server-side.
-- `site.url` and `site.name` are always explicit config values, never left to inference (v5 no longer infers them).
+- `site.url` and `site.name` are always explicit config values, never left to inference.
 - The `/b/{id}` share-preview hook injects only fixed literal strings — it must never read the request's `id`, fetch, or embed build data; doing so would reintroduce the cross-viewer leak risk feature 007's `ssr: false` exists to prevent, just via a different path.
 
 ## Edge Cases
 
 - Preview/staging deployments (any `NUXT_SITE_ENV` other than `production`): entire site disallowed, no exceptions for `/` or `/privacy`.
-- `/b/{id}` is never listed in the sitemap and never allowed in `robots.txt`, even though it now carries real share-preview tags — it still carries per-user data once opened and must not be crawled or indexed (mirrors feature 007's token-less-but-unguessable access model). Crawlability and having an unfurl preview are independent: most social unfurlers ignore `robots.txt` for card fetches, which is exactly why the preview still works despite the disallow.
-- Two mechanisms were tried and rejected before the Nitro hook: a `routeRules`-declared static `ogImage`/`title` for `/b/**` (does nothing — `ssr:false` routes serve one static SPA shell built once, with no per-route `routeRules` head injection), and adopting SSR for the route (works, but is its own decision record and a Pinia Colada → `useFetch`/`useAsyncData` rework per `stacks/frontend/nuxt/addons/ssr.md`, disproportionate to the actual need of two static tags).
-- The global `app.head` default (`og:type: website`) still reaches `/b/{id}` unconditionally — the hook must not repeat it, since raw head strings pushed via `render:html` are not deduplicated the way reactive `useHead` entries are (verified: an unguarded duplicate `og:type` tag appeared before this was fixed).
+- `/b/{id}` is never listed in the sitemap and never allowed in `robots.txt`, even though it carries share-preview tags — it carries per-user data once opened (feature 007's access model). Most social unfurlers ignore `robots.txt` for card fetches, which is why the preview works despite the disallow.
+- Rejected alternatives to the Nitro hook: a `routeRules`-declared static `ogImage`/`title` for `/b/**` does nothing, since `ssr:false` routes serve one static SPA shell with no per-route head injection; adopting SSR for the route works but is its own decision record and a data-layer rework, disproportionate to two static tags.
+- The global `app.head` default (`og:type: website`) still reaches `/b/{id}` unconditionally — the hook must not repeat it, since raw head strings pushed via `render:html` are not deduplicated the way reactive `useHead` entries are.
 
 ## Invariants
 
@@ -93,28 +93,26 @@ Not role-specific.
 
 ## Error Handling
 
-- Missing `NUXT_SITE_URL` in production: the existing build-guard hook (`nuxt.config.ts` `ready` hook, feature derived from decision 007) already fails the build on a missing required public runtime config; this feature adds `NUXT_SITE_URL`/`NUXT_SITE_ENV` to that same required-key mechanism rather than introducing a second check.
+- Missing `NUXT_SITE_URL` in production: the build-guard hook (`nuxt.config.ts` `ready` hook, decision 007) fails the build on a missing required public runtime config; `NUXT_SITE_URL`/`NUXT_SITE_ENV` are in that same required-key list rather than a second check.
 
 ## Entry Points
 
 - `nuxt.config.ts`: `site`, `sitemap`, `robots`, `ogImage` config blocks, and the `ready` hook (build guard extended to require `NUXT_SITE_URL`/`NUXT_SITE_ENV`).
-- `web/app.vue`: `useHead`'s `titleTemplate: '%s'` (overrides SEO Utils' default site-name suffix, which duplicated every title) and `useSeoMeta`'s `ogImage`/`twitterImage`/`twitterCard` (site-wide default, covers `/` and `/privacy`).
+- `web/app.vue`: `useHead`'s `titleTemplate: '%s'` (overrides SEO Utils' site-name suffix, which duplicates every title) and `useSeoMeta`'s site-wide `ogImage`/`twitterImage`; `og:title`, `og:description` and `twitter:card` are inferred per page by SEO Utils (`automaticTwitterTags`), so `/privacy` previews with its own title and description.
 - `web/pages/index.vue`: `useSchemaOrg([defineSoftwareApp({ '@type': 'WebApplication', ... })])`.
-- `server/plugins/b-share-preview.ts` — the first Nitro server code in this project (previously none, `web/CLAUDE.md`). Hooks `render:html`, path-gated to `/b/`, pushes fixed title/`og:*`/`twitter:*` tag strings. Reads `site.url`/`site.name` via `getSiteConfig(event)` (the server-side counterpart to `useSiteConfig()`, auto-imported by `nuxt-site-config`).
+- `server/plugins/b-share-preview.ts` — the project's one piece of Nitro server code. Hooks `render:html`, path-gated to `/b/`, pushes fixed title/`og:*`/`twitter:*` tag strings. Reads `site.url`/`site.name` via `getSiteConfig(event)` (the server-side counterpart to `useSiteConfig()`, auto-imported by `nuxt-site-config`).
 
 ## Dependencies
 
-- `@nuxtjs/seo@5.3.16` — already declared in `package.json`/`nuxt.config.ts` modules; `architecture.md`'s `Approved Dependencies Beyond The Modules` row added in the same change as approval (Dependency Change Rule).
-- Feature 007 (share links) — its `ssr: false`/data-fetch design is untouched; `/b/{id}`'s access model is why that route is excluded from indexing here (Edge Cases) and why its share-preview needed a mechanism outside the Vue render tree (Entry Points).
+- `@nuxtjs/seo` — recorded in `architecture.md`'s `Approved Dependencies Beyond The Modules` (Dependency Change Rule).
+- Feature 007 (share links) — its `ssr: false`/data-fetch design is untouched; its access model is why `/b/{id}` is excluded from indexing and why its share-preview needs a mechanism outside the Vue render tree.
 - Feature 010 (privacy page) — the second indexable route.
 
 ## Open Questions
 
-_(none)_
-
 ## Tests
 
-- Manual curl of `/robots.txt` and `/sitemap.xml` against a real production build (`nuxt build` + `node .output/server/index.mjs`), per the Examples table — the module's own `/__robots__/debug-production.json`/`/__sitemap__/debug-production.json` endpoints need `debug: true` (not set here), so this project verifies against the real served output instead.
+- Manual curl of `/robots.txt` and `/sitemap.xml` against a real production build (`nuxt build` + `node .output/server/index.mjs`), per the Examples table; the module's debug endpoints need `debug: true`, not set here.
 - The same, with `NUXT_SITE_ENV` set to a non-`production` value, confirming the whole site is disallowed.
 - Manual curl of `/b/{id}` for two different ids against a real production build, confirming identical share-preview tags and no build data in either response.
 
@@ -122,11 +120,11 @@ _(none)_
 
 Verified against real production builds (`nuxt build` + `node .output/server/index.mjs`), not just `nuxt dev`:
 
-- `robots.txt`: `production` → `Disallow: /b/` only; any non-`production` `NUXT_SITE_ENV` (tested `development` and an arbitrary `preview` value) → `Disallow: /`. Resolves a contradiction between two of the module's own doc pages — confirmed empirically that no extra `env` option is needed beyond `NUXT_SITE_ENV` itself.
+- `robots.txt`: `production` → `Disallow: /b/` only; any non-`production` `NUXT_SITE_ENV` (tested `development` and an arbitrary `preview` value) → `Disallow: /`. No extra `env` option is needed beyond `NUXT_SITE_ENV` itself, whatever the module's docs suggest.
 - `sitemap.xml`: exactly `/` and `/privacy`.
-- `/`, `/privacy`: `og:title`, `og:description`, `og:image` (absolute URL), `twitter:card: summary_large_image`, `twitter:image`, canonical link, and correct `<title>` all present — the title-duplication bug (SEO Utils' default template) was caught this way and fixed.
+- `/`, `/privacy`: `og:title`, `og:description`, `og:image` (absolute URL), `twitter:card: summary_large_image`, `twitter:image`, canonical link, and an unduplicated `<title>` all present.
 - `/`: Schema.org JSON-LD present, `@type` includes `"WebApplication"`.
-- `/b/{id}`: `X-Robots-Tag: noindex, nofollow` still present (feature 007, unchanged). The Nitro hook (Edge Cases) verified against two different ids (`test123`, `another-id-456`): identical `og:image`/`og:title`/`og:description`/`twitter:*`/`<title>` on both, `/` and `/privacy` unaffected, no duplicate `og:type`.
+- `/b/{id}`: `X-Robots-Tag: noindex, nofollow` present (feature 007). The Nitro hook verified against two different ids: identical `og:image`/`og:title`/`og:description`/`twitter:*`/`<title>` on both, `/` and `/privacy` unaffected, no duplicate `og:type`.
 - Remaining risk: `@nuxt/fonts@0.12.1` is below `nuxt-og-image`'s stated `0.13.0+` requirement for font extraction — inert here since `ogImage` generation is fully disabled, but would need bumping if dynamic OG images are ever adopted.
 
 ## Agent Change Rules

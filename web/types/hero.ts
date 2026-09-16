@@ -23,6 +23,56 @@ export type StatName = (typeof STAT_NAMES)[number];
 
 export type HeroStats = Record<StatName, number>;
 
+export type HeroPowerDefinition = {
+  name: string;
+  description: string;
+  slot: 'starting' | 'trainable-1' | 'trainable-2';
+  // * Selecting this power upgrades the starting power rather than adding one.
+  overridesStarting?: boolean;
+};
+
+// * The game's only two shapes: a starting power alone, for a hero who arrived in episode 8 with training behind her, or a starting power at index 0 plus two mutually exclusive trainable options.
+export type HeroPowerSet =
+  | [HeroPowerDefinition]
+  | [HeroPowerDefinition, HeroPowerDefinition, HeroPowerDefinition];
+
+export type HeroPowerSelection = {
+  startingRevealed: boolean;
+  // * 0 is no trainable power; 1 and 2 are the first and second options.
+  trainableSelected: 0 | 1 | 2;
+};
+
+export type FlightCapability =
+  | { type: 'innate' }
+  | {
+      type: 'conditional-power';
+      requiresPowerSlot: 'starting' | 'trainable-1' | 'trainable-2';
+      // * The power removes flight instead of granting it.
+      inverted?: boolean;
+    }
+  | { type: 'trainable' }
+  | { type: 'none' };
+
+export type FlightInfo = {
+  // * Null where the game never names the flight (Blonde Blazer): the UI supplies a generic word rather than the data inventing a proper noun.
+  name: string | null;
+  description: string;
+};
+
+export type SynergyPair = {
+  hero1: HeroId;
+  hero2: HeroId;
+};
+
+// * +5% success per level.
+export type SynergyLevel = 0 | 1 | 2 | 3;
+
+export type Hero = {
+  id: HeroId;
+  name: string;
+  startingStats: HeroStats;
+};
+
 export const MAX_STAT_VALUE = 10;
 
 export const EP3_CUT_OPTIONS = [
@@ -53,37 +103,7 @@ export const MAX_LEVEL_UPS = 9;
 export const MAX_BONUS_POINTS = 4;
 export const MAX_BONUS_LEVEL_PER_HERO = 4;
 
-export type HeroPowerDefinition = {
-  name: string;
-  description: string;
-  slot: 'starting' | 'trainable-1' | 'trainable-2';
-  // * Selecting this power upgrades the starting power rather than adding one.
-  overridesStarting?: boolean;
-};
-
-// * The game's only two shapes: a starting power alone, for a hero who arrived in episode 8 with training behind her, or a starting power at index 0 plus two mutually exclusive trainable options.
-export type HeroPowerSet =
-  | [HeroPowerDefinition]
-  | [HeroPowerDefinition, HeroPowerDefinition, HeroPowerDefinition];
-
-export type HeroPowerSelection = {
-  startingRevealed: boolean;
-  // * 0 is no trainable power; 1 and 2 are the first and second options.
-  trainableSelected: 0 | 1 | 2;
-};
-
 export const MAX_POWER_TRAININGS = 7;
-
-export type FlightCapability =
-  | { type: 'innate' }
-  | {
-      type: 'conditional-power';
-      requiresPowerSlot: 'starting' | 'trainable-1' | 'trainable-2';
-      // * The power removes flight instead of granting it.
-      inverted?: boolean;
-    }
-  | { type: 'trainable' }
-  | { type: 'none' };
 
 export const FLIGHT_SCHOOL_HEROES = [
   'coupe',
@@ -91,12 +111,132 @@ export const FLIGHT_SCHOOL_HEROES = [
   'sonar'
 ] as const satisfies readonly HeroId[];
 
-// * Every other hero's flight is settled by their own data — innate, power-driven, or absent — so no control on a card can toggle it.
-export function isFlightTrainable(id: HeroId): boolean {
-  return (FLIGHT_SCHOOL_HEROES as readonly HeroId[]).includes(id);
-}
-
 export const MAX_FLIGHT_TRAININGS = 2;
+
+// * The single source of the game data (feature 002), transcribed from `catalyst/context/game-mechanics.md`. A constant rather than an endpoint because it feeds the compile-time type system; the API validates saved builds against a fixture generated from it (decision 004).
+export const HEROES: Hero[] = [
+  {
+    id: 'coupe',
+    name: 'Coupé',
+    startingStats: {
+      combat: 4,
+      intellect: 3,
+      vigor: 1,
+      charisma: 1,
+      mobility: 3
+    }
+  },
+  {
+    id: 'flambae',
+    name: 'Flambae',
+    startingStats: {
+      combat: 4,
+      intellect: 1,
+      vigor: 2,
+      charisma: 2,
+      mobility: 3
+    }
+  },
+  {
+    id: 'golem',
+    name: 'Golem',
+    startingStats: {
+      combat: 3,
+      intellect: 1,
+      vigor: 4,
+      charisma: 2,
+      mobility: 2
+    }
+  },
+  {
+    id: 'invisigal',
+    name: 'Invisigal',
+    startingStats: {
+      combat: 3,
+      intellect: 2,
+      vigor: 2,
+      charisma: 1,
+      mobility: 3
+    }
+  },
+  {
+    id: 'malevola',
+    name: 'Malevola',
+    startingStats: {
+      combat: 3,
+      intellect: 2,
+      vigor: 2,
+      charisma: 3,
+      mobility: 2
+    }
+  },
+  {
+    id: 'phenomaman',
+    name: 'Phenomaman',
+    startingStats: {
+      combat: 7,
+      intellect: 1,
+      vigor: 7,
+      charisma: 2,
+      mobility: 6
+    }
+  },
+  {
+    id: 'prism',
+    name: 'Prism',
+    startingStats: {
+      combat: 4,
+      intellect: 2,
+      vigor: 1,
+      charisma: 4,
+      mobility: 1
+    }
+  },
+  {
+    id: 'punch-up',
+    name: 'Punch Up',
+    startingStats: {
+      combat: 3,
+      intellect: 1,
+      vigor: 4,
+      charisma: 3,
+      mobility: 1
+    }
+  },
+  {
+    id: 'sonar',
+    name: 'Sonar',
+    startingStats: {
+      combat: 2,
+      intellect: 4,
+      vigor: 1,
+      charisma: 3,
+      mobility: 2
+    }
+  },
+  {
+    id: 'waterboy',
+    name: 'Waterboy',
+    startingStats: {
+      combat: 1,
+      intellect: 2,
+      vigor: 2,
+      charisma: 1,
+      mobility: 2
+    }
+  },
+  {
+    id: 'blonde-blazer',
+    name: 'Blonde Blazer',
+    startingStats: {
+      combat: 8,
+      intellect: 7,
+      vigor: 8,
+      charisma: 6,
+      mobility: 7
+    }
+  }
+];
 
 export const HERO_POWERS = {
   coupe: [
@@ -338,12 +478,6 @@ export const SPECIAL_POWER_MECHANICS = {
   }
 } as const satisfies Partial<Record<HeroId, unknown>>;
 
-export type FlightInfo = {
-  // * Null where the game never names the flight (Blonde Blazer): the UI supplies a generic word rather than the data inventing a proper noun.
-  name: string | null;
-  description: string;
-};
-
 export const HERO_FLIGHT = {
   coupe: {
     name: "En L'air",
@@ -383,14 +517,6 @@ export const HERO_FLIGHT_CAPABILITY = {
   flambae: { type: 'trainable' }
 } as const satisfies Partial<Record<HeroId, FlightCapability>>;
 
-export type SynergyPair = {
-  hero1: HeroId;
-  hero2: HeroId;
-};
-
-// * +5% success per level.
-export type SynergyLevel = 0 | 1 | 2 | 3;
-
 export const BASE_SYNERGY_PAIRS: readonly SynergyPair[] = [
   { hero1: 'golem', hero2: 'invisigal' },
   { hero1: 'prism', hero2: 'flambae' },
@@ -405,137 +531,6 @@ export const CONDITIONAL_SYNERGY_PAIRS = {
   'sonar-cut-phenomaman-hired': { hero1: 'malevola', hero2: 'phenomaman' },
   'sonar-cut-waterboy-hired': { hero1: 'malevola', hero2: 'waterboy' }
 } as const satisfies Record<string, SynergyPair>;
-
-export type Hero = {
-  id: HeroId;
-  name: string;
-  startingStats: HeroStats;
-};
-
-// * The single source of the game data (feature 002), transcribed from `catalyst/context/game-mechanics.md`. A constant rather than an endpoint because it feeds the compile-time type system; the API validates saved builds against a fixture generated from it (decision 004).
-export const HEROES: Hero[] = [
-  {
-    id: 'coupe',
-    name: 'Coupé',
-    startingStats: {
-      combat: 4,
-      intellect: 3,
-      vigor: 1,
-      charisma: 1,
-      mobility: 3
-    }
-  },
-  {
-    id: 'flambae',
-    name: 'Flambae',
-    startingStats: {
-      combat: 4,
-      intellect: 1,
-      vigor: 2,
-      charisma: 2,
-      mobility: 3
-    }
-  },
-  {
-    id: 'golem',
-    name: 'Golem',
-    startingStats: {
-      combat: 3,
-      intellect: 1,
-      vigor: 4,
-      charisma: 2,
-      mobility: 2
-    }
-  },
-  {
-    id: 'invisigal',
-    name: 'Invisigal',
-    startingStats: {
-      combat: 3,
-      intellect: 2,
-      vigor: 2,
-      charisma: 1,
-      mobility: 3
-    }
-  },
-  {
-    id: 'malevola',
-    name: 'Malevola',
-    startingStats: {
-      combat: 3,
-      intellect: 2,
-      vigor: 2,
-      charisma: 3,
-      mobility: 2
-    }
-  },
-  {
-    id: 'phenomaman',
-    name: 'Phenomaman',
-    startingStats: {
-      combat: 7,
-      intellect: 1,
-      vigor: 7,
-      charisma: 2,
-      mobility: 6
-    }
-  },
-  {
-    id: 'prism',
-    name: 'Prism',
-    startingStats: {
-      combat: 4,
-      intellect: 2,
-      vigor: 1,
-      charisma: 4,
-      mobility: 1
-    }
-  },
-  {
-    id: 'punch-up',
-    name: 'Punch Up',
-    startingStats: {
-      combat: 3,
-      intellect: 1,
-      vigor: 4,
-      charisma: 3,
-      mobility: 1
-    }
-  },
-  {
-    id: 'sonar',
-    name: 'Sonar',
-    startingStats: {
-      combat: 2,
-      intellect: 4,
-      vigor: 1,
-      charisma: 3,
-      mobility: 2
-    }
-  },
-  {
-    id: 'waterboy',
-    name: 'Waterboy',
-    startingStats: {
-      combat: 1,
-      intellect: 2,
-      vigor: 2,
-      charisma: 1,
-      mobility: 2
-    }
-  },
-  {
-    id: 'blonde-blazer',
-    name: 'Blonde Blazer',
-    startingStats: {
-      combat: 8,
-      intellect: 7,
-      vigor: 8,
-      charisma: 6,
-      mobility: 7
-    }
-  }
-];
 
 // * The cast is safe: `Object.fromEntries` widens the key to string, and `HEROES` covers every `HeroId` by construction.
 export const HERO_STARTING_STATS = Object.fromEntries(

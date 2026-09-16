@@ -1,7 +1,5 @@
 # Feature: Planner mechanics
 
-Retro-documented (brownfield): written from the shipped code and observed behavior.
-
 ## Status
 
 Active
@@ -43,8 +41,8 @@ In scope:
 
 Non-goals:
 
-- Synergy _levels_ (1–3) and success-chance math — pairs are displayed, levels are not modeled.
-- The "Synergy pairs" and "Mission simulator" tabs — placeholders today (see Open Questions).
+- Synergy _levels_ and success-chance math — the overview displays pairs; the simulator (feature 015) models the rest.
+- The Synergy pairs and Mission simulator tabs — features 014 and 015.
 - Persistence and sharing of this state — feature 001.
 
 ## User / System Behavior
@@ -131,11 +129,6 @@ Not role-specific.
 
 ## Open Questions
 
-Deliberate long-horizon items kept past approval (brownfield exception, `workflows/brownfield.md`):
-
-- The "Synergy pairs" and "Mission simulator" tabs are empty placeholders — planned capabilities, each expected to arrive as its own feature document.
-- Synergy levels (5%/level success math) are not modeled; adopt only if the planner ever computes success chances.
-
 ## Tests
 
 - `test/nuxt/bonus-level-reset.test.ts`: a cleared bonus leaves no hero over budget.
@@ -143,13 +136,7 @@ Deliberate long-horizon items kept past approval (brownfield exception, `workflo
 
 ## Verification
 
-Walked live on `feature/003-story-setup-drawer` (2026-08-25), in Chrome and headless against the dev server, at 1600 / 1280 / 1024 / 768 / 390 / 320:
-
-- No horizontal overflow at any width; all ten hero cards report one identical box (320 × 208 at `md`+, strip 108 × 24) and nothing reflows on click through reveal → trainable-2 → Supernova; the flight glyph is present for exactly the `HERO_FLIGHT` five and a medicated Phenomaman keeps its slot without the glyph.
-- `+1 bonus` left the level at 2 and only the allocation moved it to 3, card and dialog agreeing. `Reset all trainings` took `7/7 · 0/2 · 4/4` to `0/7 · 0/2 · 0/4` in one click, then disabled itself.
-- Pair markers sit between their cards at every tier; the recruit heading is `heading level=2` in the a11y tree, the bands `decorative`. Dialog, selects and switch are labelled. Known gap, not introduced here: `HeroCard`'s steppers, per-hero reset and bonus `+` are unnamed.
-
-Rules were retro-documented from the four composables, HeroCard and index.vue, cross-checked against `context/game-mechanics.md`; flight, episode-cut resets and effective-stat display were exercised in the feature 001 walk (2026-08-21). oxlint, vue-tsc and vitest pass. Pixel-level measurements of the tier ladder, chrome and bands live in annex §13–14, which the walk confirmed.
+Walked live in Chrome from 1600 down to 320: no horizontal overflow at any width, every hero card one identical box that does not reflow through reveal → trainable-2 → Supernova, the flight glyph present for exactly the `HERO_FLIGHT` five and absent on a medicated Phenomaman. `+1 bonus` left the level unchanged until the point was allocated, card and dialog agreeing; `Reset all trainings` zeroed all three budgets in one click and disabled itself. Pair markers sit between their cards at every tier and the recruit heading is a level-2 heading. Rules cross-checked against `context/game-mechanics.md`; oxlint, vue-tsc and vitest pass. Known gap: `HeroCard`'s steppers, per-hero reset and bonus `+` are unnamed.
 
 ## Agent Change Rules
 

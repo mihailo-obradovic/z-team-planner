@@ -1,5 +1,5 @@
 <template>
-  <!-- * The click handler here is merged with the parent's own click fallthrough (see IconButton): a no-hover tap both performs the parent's action and, on this component's own handler, reads the resulting state for the confirmation (feature 018). -->
+  <!-- * This click handler runs after the parent's fallthrough one, so the confirmation reads the resulting state. -->
   <u-tooltip
     :text="displayedText"
     :open="controlledOpen"
@@ -28,9 +28,8 @@ const props = withDefaults(
     size?: 'xs' | 'sm';
     disabled?: boolean;
     active?: boolean;
-    // * Passed through to the button (feature 024).
     swapKey?: string | number;
-    // * Called after the click resolves, with the chip's resulting state already applied; a null return shows nothing (feature 018 — every deactivation).
+    // * Called after the click with the resulting state applied; null shows nothing.
     confirmation?: () => string | null;
   }>(),
   { size: 'xs' }
@@ -38,7 +37,7 @@ const props = withDefaults(
 
 const mode = useInputMode();
 
-// * Shared across every chip so a tap on chip B closes chip A's line rather than stacking a second one.
+// * Shared across chips, so tapping one closes another's line instead of stacking.
 const activeHolder = useState<symbol | null>(
   'tooltip-button-active-holder',
   () => null
@@ -53,7 +52,7 @@ const displayedText = computed(() =>
   mode.value === 'no-hover' ? (shownText.value ?? props.text) : props.text
 );
 
-// * `undefined` leaves `UTooltip` uncontrolled in hover mode, so the library's own hover-open behaviour is untouched.
+// * `undefined` leaves `UTooltip`'s own hover behaviour untouched.
 const controlledOpen = computed(() =>
   mode.value === 'no-hover' ? isOpen.value : undefined
 );
@@ -67,7 +66,6 @@ async function handleClick() {
     return;
   }
 
-  // * The store's toggle handler runs on the same click before this one; the confirmation reads its result.
   await nextTick();
 
   const line = props.confirmation();

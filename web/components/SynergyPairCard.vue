@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex flex-col gap-4 p-3 lg:flex-row lg:items-center lg:gap-6">
-      <!-- * Below lg this row holds portraits + stats; below sm they spread apart across the full-width card. The stacking is not left to natural flex wrapping — the same @container query that caps the radar frame forces it, so the two can never disagree. -->
+      <!-- * The stacking comes from the same @container query that caps the radar frame, not flex wrapping, so the two never disagree. -->
       <div
         class="flex flex-wrap items-center gap-4 max-sm:justify-between lg:contents"
       >
@@ -31,7 +31,7 @@
           />
         </div>
 
-        <!-- * Below lg the type steps down so five rows land near the portrait column's height (portrait 108 + gap + chip row). -->
+        <!-- * Below lg the type steps down so five rows match the portrait column's height. -->
         <ul
           class="flex min-w-40 flex-1 flex-col gap-1 max-md:w-56 max-md:flex-none lg:gap-2 @max-[31rem]:mx-auto"
         >
@@ -50,7 +50,7 @@
               {{ entry.stat }}
             </span>
 
-            <!-- * A fixed slot: the total grows to two digits without shifting the column, so every card keeps the same width (layout protection). -->
+            <!-- * Fixed width, so a two-digit total doesn't shift the column. -->
             <span class="w-7 text-center text-base font-bold lg:text-xl">
               {{ entry.value }}
             </span>
@@ -58,7 +58,7 @@
         </ul>
       </div>
 
-      <!-- * One query drives the whole stacked state: below 31rem of the tab container's content box (= the card; portraits 228 + gap 16 + stats 224 + card padding 24 = 492, plus a 4px margin against subpixel wrapping) the portraits stack, the stats center, and this frame caps — all together. -->
+      <!-- * 31rem = portraits 228 + gap 16 + stats 224 + padding 24, plus 4px against subpixel wrapping. -->
       <div
         class="w-full border-2 border-accented bg-default lg:w-56 lg:shrink-0 @max-[31rem]:max-w-56 @max-[31rem]:self-center"
       >

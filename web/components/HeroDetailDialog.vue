@@ -1,7 +1,7 @@
 <template>
   <u-modal :open="!!heroId" fullscreen @update:open="emit('close')">
-    <!-- * The thumbnail rides in the toolbar so the hero is named even below `lg`, where the large portrait is not drawn. -->
-    <!-- * The thumbnail, the portrait and the powers panel are keyed by the hero and fade on a roster switch — annex §11 state fade (feature 024). The name and the notes slide instead (feature 025). The roster rail and the radar stay outside: the rail is stable and the radar keeps its own tween. -->
+    <!-- * The thumbnail names the hero below `lg`, where the large portrait is not drawn. -->
+    <!-- * The roster rail and the radar stay outside the keyed fade: the rail is stable and the radar has its own tween. -->
     <template #title>
       <span class="flex items-center gap-2">
         <Transition name="state-fade" mode="out-in">
@@ -15,7 +15,7 @@
           />
         </Transition>
 
-        <!-- * The name slides in the roster's own direction (feature 025): old and new overlap in one grid cell while the cell clips the half-line of travel, and the direction classes are set from where the two heroes sit in the strip on screen. The thumbnail beside it only fades, in its own slot, so one thing moves. -->
+        <!-- * Old and new names overlap in one clipped grid cell; the direction classes come from where the two heroes sit in the visible strip. -->
         <span class="grid overflow-hidden" :class="nameSlideClass">
           <Transition name="slide">
             <span :key="heroId ?? ''" class="col-start-1 row-start-1">
@@ -28,7 +28,7 @@
 
     <template #body>
       <div v-if="hero" class="flex h-full min-h-0 gap-4">
-        <!-- * Roster rail: square portraits, every one bordered, so the open hero differs by colour rather than by gaining an outline and nudging its neighbours. -->
+        <!-- * Every tile is bordered, so the open hero differs by colour without nudging its neighbours. -->
         <ScrollRegion
           ref="rosterRail"
           as="nav"
@@ -60,7 +60,6 @@
         </ScrollRegion>
 
         <ScrollRegion class="flex min-w-0 flex-1 flex-col gap-4">
-          <!-- * Below `lg` the rail becomes a ribbon: the same shortcut, in the one direction a phone has room for. -->
           <ScrollRegion
             ref="rosterRibbon"
             as="nav"
@@ -92,14 +91,13 @@
             </button>
           </ScrollRegion>
 
-          <!-- * Three tiers, on viewport breakpoints rather than container queries: the dialog is fullscreen, so its width is the viewport and a container query would be measuring the same number twice. -->
-          <!-- * At `md` the portrait comes back above the radar in a column of its own and the stats sit beside them; powers and notes fall into implicit rows below and size to content, so the body scrolls rather than the panels. -->
-          <!-- ! The first two rows are fixed heights on purpose: a fixed-level hero has no steppers and may have no partner, and letting the rows size to content made the whole dialog resize when switching to one. -->
-          <!-- ! The base `grid-cols-[minmax(0,1fr)]` is the fix for the iOS sideways scroll, not a restatement of the default: with no columns declared, the single column below `lg` is an implicit `auto` track, and an `auto` track is floored by the largest min-content among its items. `minmax(0,1fr)` removes that floor; the `min-w-0` on each item below removes the matching floor on the items themselves. -->
+          <!-- * Viewport breakpoints, not container queries: the dialog is fullscreen, so both would measure the same width. -->
+          <!-- ! The first two rows have fixed heights, or switching to a hero without steppers or a partner resizes the dialog. -->
+          <!-- ! `grid-cols-[minmax(0,1fr)]` fixes the iOS sideways scroll: an implicit `auto` column is floored by its widest item's min-content, and each item's `min-w-0` removes the matching floor. -->
           <div
             class="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[17rem_minmax(0,1fr)] md:grid-rows-[18rem_18rem] lg:min-h-0 lg:flex-1 lg:grid-cols-[17rem_24rem_minmax(0,1fr)] lg:grid-rows-[18rem_18rem_minmax(0,1fr)]"
           >
-            <!-- * Stretched, not square: the two columns beside this one span both rows, and letting the portrait and the radar fill their own rows is what leaves all three ending on the same line. -->
+            <!-- * Stretched, not square, so the portrait, the radar and the spanning columns end on the same line. -->
             <div
               class="hidden min-h-0 min-w-0 border-2 border-accented bg-default p-2 md:block"
             >
@@ -115,426 +113,30 @@
               </Transition>
             </div>
 
-            <!-- ! Split into a static shell and an inner scroll box for the reason the powers panel below is: the element carrying `overflow` never also carries a structural border. -->
-            <div
-              class="flex min-w-0 flex-col border-2 border-accented bg-default md:row-span-2 md:min-h-0 lg:row-span-2 lg:min-h-0"
-            >
-              <ScrollRegion
-                class="flex flex-col p-3 md:min-h-0 md:flex-1 lg:min-h-0 lg:flex-1"
-              >
-                <!-- * No transition and no `:key`: the structure is the same for every hero, so the DOM persists and only the figures count to their new values (feature 025). -->
-                <div class="flex flex-col gap-3">
-                  <div
-                    class="flex items-center gap-4 border-b-2 border-default pb-3"
-                  >
-                    <span
-                      class="font-heading tracking-label text-toned uppercase"
-                    >
-                      Level
-                      <span
-                        class="text-lg font-bold text-highlighted select-none"
-                      >
-                        {{ shownLevel }}
-                      </span>
-                    </span>
+            <HeroStatsPanel
+              :hero-id="hero.id"
+              :longest-partner-name="longestHeroName"
+              class="md:row-span-2 md:min-h-0 lg:row-span-2 lg:min-h-0"
+              @select="emit('select', $event)"
+            />
 
-                    <span
-                      class="font-heading tracking-label text-toned uppercase"
-                    >
-                      Bonus
-                      <span
-                        class="text-lg font-bold text-highlighted select-none"
-                      >
-                        {{ shownBonus }}
-                      </span>
-                    </span>
-
-                    <div class="ml-auto flex items-center gap-2">
-                      <IconButton
-                        icon="i-lucide-plus"
-                        color="neutral"
-                        size="sm"
-                        :disabled="bonusFull || !canLevelUp"
-                        label="Add a bonus level"
-                        @click="addBonusLevel(heroId!)"
-                      />
-
-                      <IconButton
-                        icon="i-lucide-rotate-ccw"
-                        color="neutral"
-                        size="sm"
-                        :disabled="!canLevelUp"
-                        label="Reset this hero"
-                        @click="resetHero(heroId!)"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- * The hero card's stat treatment, scaled up: same structure, same reserved stepper slots, and the special-power bonus folded into the number exactly as the card folds it, so the two can never disagree. -->
-                  <ul class="flex flex-col gap-1 px-3">
-                    <li
-                      v-for="stat in STAT_NAMES"
-                      :key="stat"
-                      class="flex items-center justify-between"
-                    >
-                      <span
-                        class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                      >
-                        <u-icon
-                          :name="STAT_ICONS[stat]"
-                          class="size-5 shrink-0"
-                        />
-                        {{ stat }}
-                      </span>
-
-                      <div class="ml-2 flex items-center gap-1">
-                        <div class="flex w-7 items-center justify-center">
-                          <IconButton
-                            v-if="canLevelUp"
-                            icon="i-lucide-minus"
-                            color="neutral"
-                            size="sm"
-                            :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                            :label="`Remove a ${stat} point`"
-                            @click="statDown(heroId!, resolvedStat(stat))"
-                          />
-                        </div>
-
-                        <span class="w-7 text-center text-xl font-bold">
-                          {{ shownStat(stat) }}
-                        </span>
-
-                        <div class="flex w-7 items-center justify-center">
-                          <IconButton
-                            v-if="canLevelUp"
-                            icon="i-lucide-plus"
-                            color="neutral"
-                            size="sm"
-                            :disabled="isStatCapped(stat)"
-                            :label="`Add a ${stat} point`"
-                            @click="statUp(heroId!, resolvedStat(stat))"
-                          />
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-
-                  <!-- * The block comes and goes with the hero's partner under the state fade; the control inside never moves while one exists (feature 025). -->
-                  <Transition name="state-fade">
-                    <div v-if="synergyPartner" class="flex flex-col gap-3">
-                      <button
-                        type="button"
-                        class="flex items-center justify-center gap-2 border-2 border-default p-1.5 font-heading tracking-label text-toned uppercase hover:border-accented hover:text-highlighted"
-                        @click="emit('select', synergyPartner.id)"
-                      >
-                        <u-icon name="i-lucide-link" class="size-4 shrink-0" />
-                        <span>Synergy partner:</span>
-
-                        <!-- * Only the name fades, with old and new overlapping in one grid cell so the label beside them does not shift. -->
-                        <!-- ! The invisible longest name reserves the cell; without it the row re-centres on every switch. -->
-                        <span class="grid">
-                          <span
-                            class="invisible col-start-1 row-start-1"
-                            aria-hidden="true"
-                          >
-                            {{ longestHeroName }}
-                          </span>
-
-                          <Transition name="state-fade">
-                            <span
-                              :key="synergyPartner.id"
-                              class="col-start-1 row-start-1"
-                            >
-                              {{ synergyPartner.name }}
-                            </span>
-                          </Transition>
-                        </span>
-                      </button>
-
-                      <div class="flex flex-col gap-1 bg-muted p-3">
-                        <p
-                          class="font-heading tracking-label text-toned uppercase"
-                        >
-                          Pair total
-                        </p>
-
-                        <!-- ! Reserves the two-sentence Spread Thin variant's height even when it isn't shown — otherwise this block was one line shorter for every hero but Golem's pair, and that one hero pushed the fixed-height column into scroll (feature 011). -->
-                        <div aria-label="Pair total description" class="grid">
-                          <p
-                            v-for="variant in pairTotalDescriptionVariants"
-                            :key="variant"
-                            class="invisible col-start-1 row-start-1 text-sm text-muted"
-                            aria-hidden="true"
-                          >
-                            {{ variant }}
-                          </p>
-
-                          <p class="col-start-1 row-start-1 text-sm text-muted">
-                            {{ pairTotalDescription }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- ! Read-only, and deliberately: this is the pair's total, but the dialog edits one hero. Steppers here would silently change the partner. -->
-                      <ul class="flex flex-col gap-1 bg-muted px-3 pb-3">
-                        <li
-                          v-for="entry in shownCombinedStats"
-                          :key="entry.stat"
-                          class="flex items-center justify-between"
-                        >
-                          <span
-                            class="flex items-center gap-2 font-heading text-lg tracking-label text-toned uppercase"
-                          >
-                            <u-icon
-                              :name="STAT_ICONS[entry.stat]"
-                              class="size-5 shrink-0"
-                            />
-                            {{ entry.stat }}
-                          </span>
-
-                          <div class="ml-2 flex items-center gap-1">
-                            <div class="w-7" />
-
-                            <span class="w-7 text-center text-xl font-bold">
-                              {{ entry.value }}
-                            </span>
-
-                            <div class="w-7" />
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </Transition>
-                </div>
-              </ScrollRegion>
-            </div>
-
-            <!-- ! Capped from `sm`, not left to the column. The frame is `aspect-square` at the column's full width, and the dialog is fullscreen, so between 640 and 1023 the radar was a square as wide as the viewport and pushed everything else off screen. From `md` it has a column of its own and fills it instead, which is why the cap and the centring are dropped there rather than at `lg`. -->
-            <!-- ! `w-full` is load-bearing beside the cap, and `mx-auto` is not what centres this. Auto margins on a grid item drop it out of `stretch` and size it to its content — which for a `viewBox`-only SVG is the replaced-element default of 300px, so the frame measured 304 against a 320 cap that never bound. Width 100% capped by `max-w-80`, centred by the grid, is what actually holds. -->
+            <!-- ! Capped from `sm`, or the fullscreen square frame is viewport-wide until `md` gives it a column of its own. -->
+            <!-- ! `w-full` under the cap sizes this and the grid centres it: `mx-auto` would drop it out of stretch and size the `viewBox` SVG to 300px, so the cap never binds. -->
             <div
               class="order-first aspect-square min-w-0 border-2 border-accented bg-default sm:w-full sm:max-w-80 sm:justify-self-center md:order-none md:aspect-auto md:min-h-0 md:max-w-none md:justify-self-auto lg:order-none lg:aspect-auto lg:min-h-0"
             >
               <StatRadar :axes="radarAxes" :title="`${hero.name} stats`" />
             </div>
 
-            <!-- * Powers apart from effects: the first is what a training is spent on, the second is what the hero already has or gains. Mixing them made a trained power read as the same kind of thing as a passive. -->
-            <!-- ! The frame and the scroll box are two elements on purpose: ScrollRegion draws its edge rules on whichever element scrolls, so a panel that scrolled itself would stack a 1px rule inside its own 2px border. The shell stays static and the region inside it takes the overflow, the padding and the gap. -->
-            <div
-              class="flex min-w-0 flex-col border-2 border-accented bg-default md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0"
-            >
-              <ScrollRegion class="flex flex-col p-4 lg:min-h-0 lg:flex-1">
-                <Transition name="state-fade" mode="out-in">
-                  <div :key="hero.id" class="flex flex-col gap-4">
-                    <section class="flex flex-col gap-2">
-                      <h3
-                        class="font-heading tracking-label text-toned uppercase"
-                      >
-                        Powers
-                      </h3>
+            <HeroPowersPanel
+              :hero-id="hero.id"
+              class="md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0"
+            />
 
-                      <div
-                        v-for="(power, index) in displayPowers"
-                        :key="power.name"
-                        class="border-2 p-3 transition-colors"
-                        :class="[
-                          isPowerActive(power)
-                            ? 'border-accented bg-elevated'
-                            : 'border-default hover:border-accented/50',
-                          isPowerDisabled(power)
-                            ? 'cursor-not-allowed opacity-50'
-                            : 'cursor-pointer'
-                        ]"
-                        @click="handleTogglePower(power)"
-                      >
-                        <!-- ! `flex-wrap` alone does not do it: without `min-w-0` the name refuses to shrink and pushes the badge past the panel instead of wrapping it. The pair is what lets the badge drop to its own line just over `lg`, where this column is at its narrowest. -->
-                        <div class="flex flex-wrap items-center gap-2">
-                          <u-icon
-                            :name="POWER_ICONS[index]!"
-                            class="size-4 shrink-0"
-                          />
-
-                          <span class="min-w-0 font-medium">{{
-                            power.name
-                          }}</span>
-
-                          <u-badge
-                            v-if="isPowerActive(power)"
-                            :label="
-                              power.slot === 'starting' ? 'Revealed' : 'Trained'
-                            "
-                            size="xs"
-                            variant="subtle"
-                            class="shrink-0"
-                          />
-                        </div>
-
-                        <p class="mt-1 text-sm text-muted">
-                          {{ power.description }}
-                        </p>
-                      </div>
-                    </section>
-
-                    <section v-if="hasEffects" class="flex flex-col gap-2">
-                      <h3
-                        class="font-heading tracking-label text-toned uppercase"
-                      >
-                        Effects
-                      </h3>
-
-                      <!-- ! Hidden, not greyed: Heavily Medicated does not disable Fly-Nomenal, it removes it (context/game-mechanics.md, Flight). -->
-                      <div
-                        v-if="flightInfo && flightShown"
-                        class="border-2 p-3 transition-colors"
-                        :class="[
-                          flightActive
-                            ? 'border-accented bg-elevated'
-                            : 'border-default hover:border-accented/50',
-                          flightLocked
-                            ? 'cursor-not-allowed opacity-50'
-                            : 'cursor-pointer'
-                        ]"
-                        @click="handleToggleFlight"
-                      >
-                        <div class="flex items-center gap-2">
-                          <u-icon
-                            name="i-lucide-plane"
-                            class="size-4 shrink-0"
-                          />
-
-                          <!-- * A hero whose flight the game leaves unnamed still needs a heading here. -->
-                          <span class="font-medium">
-                            {{ flightInfo.name ?? 'Flight' }}
-                          </span>
-
-                          <u-badge
-                            v-if="flightActive"
-                            label="Trained"
-                            size="xs"
-                            variant="subtle"
-                          />
-                        </div>
-
-                        <p class="mt-1 text-sm text-muted">
-                          {{ flightInfo.description }}
-                        </p>
-                      </div>
-
-                      <div
-                        v-if="heroId === 'sonar'"
-                        class="cursor-pointer border-2 p-3 transition-colors"
-                        :class="
-                          monsterForm
-                            ? 'border-accented bg-elevated'
-                            : 'border-default hover:border-accented/50'
-                        "
-                        @click="toggleMonsterForm"
-                      >
-                        <div class="flex items-center gap-2">
-                          <u-icon
-                            name="i-lucide-shuffle"
-                            class="size-4 shrink-0"
-                          />
-
-                          <span class="font-medium">Monster form</span>
-                        </div>
-
-                        <p class="mt-1 text-sm text-muted">
-                          View only — swaps which stats are shown. Nothing is
-                          spent and nothing is saved.
-                        </p>
-                      </div>
-
-                      <div
-                        v-if="specialAbility"
-                        class="border-2 p-3 transition-colors"
-                        :class="[
-                          specialAbility.active
-                            ? 'border-accented bg-elevated'
-                            : 'border-default hover:border-accented/50',
-                          specialAbility.disabled
-                            ? 'cursor-not-allowed opacity-50'
-                            : 'cursor-pointer'
-                        ]"
-                        @click="handleToggleSpecialPower"
-                      >
-                        <div class="flex items-center gap-2">
-                          <u-icon
-                            :name="specialAbility.icon"
-                            class="size-4 shrink-0"
-                          />
-
-                          <span class="font-medium">{{
-                            specialAbility.name
-                          }}</span>
-
-                          <u-badge
-                            v-if="specialAbility.active"
-                            label="Active"
-                            size="xs"
-                            variant="subtle"
-                          />
-                        </div>
-
-                        <!-- ! Every state's line is rendered invisibly in this one grid cell, so the card reserves the tallest of them and keeps its height when the power is toggled. The copy is shorter once active, and at the widths a phone lands on that is the difference between two lines and one — the card used to collapse under the tap and drag everything below it up. Reserving beats a fixed height: the tallest variant is two lines at 393px and one on desktop. -->
-                        <div class="mt-1 grid">
-                          <p
-                            v-for="variant in specialAbility.descriptionVariants"
-                            :key="variant"
-                            class="invisible col-start-1 row-start-1 text-sm text-muted"
-                            aria-hidden="true"
-                          >
-                            {{ variant }}
-                          </p>
-
-                          <p class="col-start-1 row-start-1 text-sm text-muted">
-                            {{ specialAbility.description }}
-                          </p>
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </Transition>
-              </ScrollRegion>
-            </div>
-
-            <!-- * Content is authored (feature 022): a hero note plus zero or more advisories, never player-written or persisted. -->
-            <div
-              class="flex min-w-0 flex-col border-2 border-accented bg-default md:col-span-2 lg:col-span-3 lg:min-h-0"
-            >
-              <div class="flex plate shrink-0 items-center px-4">
-                <span class="font-heading tracking-label text-toned uppercase">
-                  Notes
-                </span>
-              </div>
-
-              <!-- * The list is a transition group inside a keyed slide (feature 025): on a hero switch the whole list slides up and out while the new one slides in from below, the two overlapping in one grid cell that the region clips. Within a hero an advisory that fires or clears slides on its own line — `notes-leaving` takes a clearing line out of flow, pinned where it stood, so the lines below travel at once under `notes-move`, and `relative` is what it is then positioned against. -->
-              <ScrollRegion class="grid p-4 lg:min-h-0 lg:flex-1">
-                <Transition name="slide">
-                  <TransitionGroup
-                    :key="hero.id"
-                    tag="ul"
-                    name="slide"
-                    move-class="notes-move"
-                    enter-active-class="notes-entering"
-                    leave-active-class="notes-leaving"
-                    aria-label="Notes"
-                    @beforeLeave="pinLeaving"
-                    class="relative col-start-1 row-start-1 flex list-inside list-disc flex-col gap-2 self-start text-base marker:text-muted"
-                  >
-                    <li v-if="heroNote" key="note" class="text-muted">
-                      {{ heroNote }}
-                    </li>
-                    <li
-                      v-for="advisory in heroAdvisories"
-                      :key="advisory.id"
-                      class="text-muted"
-                    >
-                      {{ advisory.text }}
-                    </li>
-                  </TransitionGroup>
-                </Transition>
-              </ScrollRegion>
-            </div>
+            <HeroNotesPanel
+              :hero-id="hero.id"
+              class="md:col-span-2 lg:col-span-3 lg:min-h-0"
+            />
           </div>
         </ScrollRegion>
       </div>
@@ -544,25 +146,13 @@
 
 <script setup lang="ts">
 import HeroPortrait from '@/components/HeroPortrait.vue';
-import { pinLeaving } from '@/utils/pinLeaving';
+import HeroStatsPanel from '@/components/HeroStatsPanel.vue';
+import HeroPowersPanel from '@/components/HeroPowersPanel.vue';
+import HeroNotesPanel from '@/components/HeroNotesPanel.vue';
 
-import {
-  STAT_NAMES,
-  MAX_STAT_VALUE,
-  MAX_POWER_TRAININGS,
-  HERO_POWERS,
-  SPECIAL_POWER_MECHANICS
-} from '@/types/hero';
+import type { HeroId, StatName } from '@/types/hero';
 
-import type { HeroId, HeroPowerDefinition, StatName } from '@/types/hero';
-
-const POWER_ICONS = [
-  'i-lucide-zap',
-  'i-lucide-shield',
-  'i-lucide-swords'
-] as const;
-
-// * Structural rather than the component's instance type, so the dialog does not import a component it renders by auto-import.
+// * Structural, so the dialog needn't import an auto-imported component for its type.
 type RosterStrip = { bringIntoView: (target: HTMLElement) => void };
 
 const props = defineProps<{
@@ -574,34 +164,17 @@ const emit = defineEmits<{
   select: [heroId: HeroId];
 }>();
 
-// * Both rails are mounted at every width, so both are asked to follow and the hidden one measures zero and no-ops.
+// * Both rails are mounted at every width; the hidden one measures zero and no-ops.
 const rosterRail = useTemplateRef<RosterStrip>('rosterRail');
 const rosterRibbon = useTemplateRef<RosterStrip>('rosterRibbon');
 const railTiles = useTemplateRef<HTMLElement[]>('railTile');
 const ribbonTiles = useTemplateRef<HTMLElement[]>('ribbonTile');
 
-const {
-  synergyPairColumns,
-  ep8Recruits,
-  showEp8Recruits,
-  statUp,
-  statDown,
-  addBonusLevel,
-  getPowerState,
-  toggleStartingPower,
-  toggleTrainablePower,
-  trainingsUsed,
-  getSpecialPowerState,
-  toggleSpecialPower,
-  getEffectiveStats,
-  getPairCombinedStats,
-  monsterForm,
-  toggleMonsterForm,
-  toggleFlight,
-  resetHero
-} = useHeroPlanner();
+const { synergyPairColumns, ep8Recruits, showEp8Recruits, getEffectiveStats } =
+  useHeroPlanner();
 
-// * The roster in the order the overview grid draws it — each synergy column top then bottom, then the episode 8 recruits when shown. The rail is a shortcut to those same cards, so it has to agree with them.
+const { hero } = useHeroDerived(() => props.heroId);
+// * The overview grid's order, since the rail is a shortcut to those cards.
 const rosterOrder = computed(() => {
   const paired = synergyPairColumns.value.flatMap((column) => [
     column.top,
@@ -611,7 +184,7 @@ const rosterOrder = computed(() => {
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
 
-// * Followed on the click itself, not through the watcher: clicking the open hero changes nothing to watch, and a half-clipped tile should still come whole (feature 019).
+// * Followed on click rather than through the watcher: clicking the open hero changes nothing to watch.
 function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
   const tile = event.currentTarget;
 
@@ -623,7 +196,7 @@ function handleRosterSelect(heroId: HeroId, event: MouseEvent) {
   emit('select', heroId);
 }
 
-// * The marked tile is the dialog's only sign of where you are in the roster, so it follows every move of the open hero, the app's included.
+// * Follows every change of the open hero, including ones the app makes.
 function followMarkedHero() {
   const index = rosterOrder.value.findIndex(
     (rosterHero) => rosterHero.id === props.heroId
@@ -645,7 +218,7 @@ function followTile(strip: RosterStrip | null, tile: HTMLElement | undefined) {
   strip.bringIntoView(tile);
 }
 
-// ! Deferred a frame past the DOM patch: on open the dialog is still laying out, and a region not yet laid out measures as zeroes.
+// ! Deferred a frame: on open the dialog is still laying out and measures zeroes.
 watch(
   () => props.heroId,
   () => {
@@ -654,7 +227,7 @@ watch(
   { flush: 'post' }
 );
 
-// * Which way the toolbar name slides (feature 025): forward when the new hero sits later in the roster than the one it replaces, and sideways when the ribbon rather than the rail is the strip on screen — read from the rail's own tiles, which measure no rect while the rail is `display: none`, so the name follows whichever strip the user sees rather than a breakpoint of its own. Set before the DOM patches, so the classes are on the wrapper when the transition starts. A switch mid-slide measures from the hero that was arriving, since that is the name the user saw; opening the dialog has nothing to measure from and leaves the classes as they were, with nothing on screen to slide.
+// * Forward when the new hero sits later in the visible strip, read from the rail's tiles, which have no rect while the rail is hidden. Set before the DOM patches so the classes are in place when the transition starts.
 const nameSlideClass = ref<string[]>([]);
 
 watch(
@@ -675,149 +248,12 @@ watch(
   }
 );
 
-// ! A dialog mounted with a hero already set needs this, and a hook rather than an `immediate` watcher because `/` is prerendered and the server has no rAF.
+// ! A hook, not an `immediate` watcher: `/` is prerendered and the server has no rAF.
 onMounted(() => {
   requestAnimationFrame(followMarkedHero);
 });
 
-const synergyPartner = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-
-  for (const column of synergyPairColumns.value) {
-    if (column.top.id === props.heroId) {
-      return column.bottom;
-    }
-
-    if (column.bottom.id === props.heroId) {
-      return column.top;
-    }
-  }
-
-  return null;
-});
-
-const {
-  hero,
-  statBonuses,
-  bonusLevel,
-  pointsRemaining,
-  bonusFull,
-  canLevelUp,
-  heroLevel,
-  flightActive,
-  flightInfo,
-  flightShown,
-  flightLocked,
-  resolvedStat
-} = useHeroDerived(() => props.heroId);
-
-const { note: heroNote, advisories: heroAdvisories } = useHeroNotes(
-  () => props.heroId
-);
-
-const displayPowers = computed(() =>
-  props.heroId ? (HERO_POWERS[props.heroId] ?? []) : []
-);
-
-const powerState = computed(() =>
-  props.heroId ? getPowerState(props.heroId) : null
-);
-
-const specialPowerStateValue = computed(() =>
-  props.heroId ? getSpecialPowerState(props.heroId) : 0
-);
-
-const specialAbility = computed(() => {
-  if (!props.heroId) {
-    return null;
-  }
-
-  const mechanics =
-    SPECIAL_POWER_MECHANICS[
-      props.heroId as keyof typeof SPECIAL_POWER_MECHANICS
-    ];
-
-  if (!mechanics) {
-    return null;
-  }
-
-  const state = specialPowerStateValue.value;
-
-  if (mechanics.type === 'supernova') {
-    const hasRequiredPower = powerState.value?.trainableSelected === 2;
-    const description = 'Combat and Mobility set to 10 after two successes.';
-
-    return {
-      name: 'Supernova',
-      description,
-      descriptionVariants: [description],
-      icon: 'i-lucide-flame',
-      active: state > 0,
-      disabled: !hasRequiredPower
-    };
-  }
-
-  if (mechanics.type === 'en-pointe') {
-    const alaSecondeTrained = powerState.value?.trainableSelected === 2;
-    const bonus = `+${alaSecondeTrained ? mechanics.upgradeBonus : mechanics.baseBonus}`;
-
-    return {
-      name: 'En Pointe',
-      description: enPointeDescription(bonus, state),
-      descriptionVariants: [0, 1, 2].map((each) =>
-        enPointeDescription(bonus, each)
-      ),
-      icon:
-        state === 1
-          ? 'i-lucide-sword'
-          : state === 2
-            ? 'i-lucide-footprints'
-            : 'i-lucide-sparkles',
-      active: state > 0,
-      disabled: false
-    };
-  }
-
-  if (mechanics.type === 'spread-thin') {
-    const hasRequiredPower = powerState.value?.trainableSelected === 1;
-    const states = Array.from({ length: mechanics.max + 1 }, (_, each) => each);
-
-    return {
-      name: 'Spread Thin',
-      description: spreadThinDescription(state),
-      descriptionVariants: states.map(spreadThinDescription),
-      icon: 'i-lucide-expand',
-      active: state > 0,
-      disabled: !hasRequiredPower
-    };
-  }
-
-  return null;
-});
-
-// * One source for the line, so the description shown and the variants reserved behind it can never drift apart.
-function spreadThinDescription(state: number): string {
-  if (state === 0) {
-    return 'Expands into each empty slot, raising every stat 25% per slot.';
-  }
-
-  const slots = state === 1 ? '1 slot' : `${state} slots`;
-
-  const percent = state * SPECIAL_POWER_MECHANICS.golem.percentPerSlot * 100;
-
-  return `Expanded into ${slots} — every stat up ${percent}%.`;
-}
-
-function enPointeDescription(bonus: string, state: number): string {
-  const statLabel =
-    state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
-
-  return `${bonus} ${statLabel} when placed in a specific slot.`;
-}
-
-// * The radar takes the same effective value the stat row shows, so the two can never disagree. Axis order is Combat first, which the component puts at the apex, then clockwise — that lands Intellect opposite Vigor and Charisma opposite Mobility.
+// * Axis order starts at Combat, the apex, and runs clockwise, putting Intellect opposite Vigor and Charisma opposite Mobility.
 const radarAxes = computed(() =>
   RADAR_STAT_ORDER.map((stat) => ({
     key: stat,
@@ -831,93 +267,6 @@ function computedStat(stat: StatName): number {
   return props.heroId ? getEffectiveStats(props.heroId)[stat] : 0;
 }
 
-function isPowerActive(power: HeroPowerDefinition): boolean {
-  if (!powerState.value) {
-    return false;
-  }
-
-  if (power.slot === 'starting') {
-    return powerState.value.startingRevealed;
-  }
-
-  return powerState.value.trainableSelected === trainableIndex(power.slot);
-}
-
-function isPowerDisabled(power: HeroPowerDefinition): boolean {
-  if (!props.heroId || !powerState.value) {
-    return true;
-  }
-
-  if (power.slot === 'starting') {
-    return false;
-  }
-
-  return (
-    !powerState.value.startingRevealed ||
-    (powerState.value.trainableSelected !== trainableIndex(power.slot) &&
-      trainingsUsed.value >= MAX_POWER_TRAININGS)
-  );
-}
-
-function handleTogglePower(power: HeroPowerDefinition) {
-  if (!props.heroId || isPowerDisabled(power)) {
-    return;
-  }
-
-  if (power.slot === 'starting') {
-    toggleStartingPower(props.heroId);
-
-    return;
-  }
-
-  toggleTrainablePower(props.heroId, trainableIndex(power.slot));
-}
-
-function trainableIndex(
-  slot: Exclude<HeroPowerDefinition['slot'], 'starting'>
-): 1 | 2 {
-  return slot === 'trainable-1' ? 1 : 2;
-}
-
-// * The planner's shared pair computation, so this block and the synergy tab can never disagree (feature 014).
-// ! Declared above the tween: `useTweenedValues` reads its source once at setup, so a source referencing a later `const` throws on the first render.
-const pairTotals = computed<Partial<Record<StatName, number>>>(() => {
-  const partner = synergyPartner.value;
-
-  if (!props.heroId || !partner) {
-    return {};
-  }
-
-  return getPairCombinedStats(props.heroId, partner.id);
-});
-
-// ! One fixed-length array for every figure (feature 025): `useTweenedValues` lands instantly when the length changes, so a hero without a partner would make every figure jump. Its pair slots then hold zero behind a faded-out block.
-const LEVEL_INDEX = STAT_NAMES.length;
-const BONUS_INDEX = LEVEL_INDEX + 1;
-const PAIR_OFFSET = BONUS_INDEX + 1;
-
-const figureTargets = computed(() => [
-  ...STAT_NAMES.map((stat) => computedStat(stat)),
-  heroLevel.value,
-  bonusLevel.value,
-  ...STAT_NAMES.map((stat) => pairTotals.value[stat] ?? 0)
-]);
-
-const figures = useTweenedValues(figureTargets);
-
-// * Rounded off the travelling value; anything deciding state reads the settled one, so it cannot flicker mid-count.
-function shownFigure(index: number): number {
-  return Math.round(figures.value[index] ?? 0);
-}
-
-function shownStat(stat: StatName): number {
-  return shownFigure(STAT_NAMES.indexOf(stat));
-}
-
-const shownLevel = computed(() => shownFigure(LEVEL_INDEX));
-const shownBonus = computed(() => shownFigure(BONUS_INDEX));
-
-// * Reserves the synergy control's name cell (annex §13).
 const longestHeroName = computed(() =>
   rosterOrder.value.reduce(
     (longest: string, rosterHero) =>
@@ -925,81 +274,4 @@ const longestHeroName = computed(() =>
     ''
   )
 );
-
-const shownCombinedStats = computed(() =>
-  STAT_NAMES.map((stat, index) => ({
-    stat,
-    value: shownFigure(PAIR_OFFSET + index)
-  }))
-);
-
-// * The suffix explains feature 012's slot deduction, so it shows only while Spread Thin is actually contributing to the pair.
-const pairFillsASlot = computed(() =>
-  [props.heroId, synergyPartner.value?.id].some(
-    (id) =>
-      !!id &&
-      SPECIAL_POWER_MECHANICS[id as keyof typeof SPECIAL_POWER_MECHANICS]
-        ?.type === 'spread-thin' &&
-      getSpecialPowerState(id) > 0
-  )
-);
-
-const pairTotalBaseText = computed(() =>
-  synergyPartner.value
-    ? `${hero.value?.name} and ${synergyPartner.value.name} combined, with every bonus applied.`
-    : ''
-);
-
-const PAIR_TOTAL_SPREAD_THIN_SUFFIX =
-  " Spread Thin counts the partner's slot as filled.";
-
-// * Both possible lengths, for the reserved-height grid in the template.
-const pairTotalDescriptionVariants = computed(() => [
-  pairTotalBaseText.value,
-  pairTotalBaseText.value + PAIR_TOTAL_SPREAD_THIN_SUFFIX
-]);
-
-const pairTotalDescription = computed(() =>
-  pairFillsASlot.value
-    ? pairTotalDescriptionVariants.value[1]
-    : pairTotalDescriptionVariants.value[0]
-);
-
-const hasEffects = computed(
-  () =>
-    (flightInfo.value && flightShown.value) ||
-    props.heroId === 'sonar' ||
-    !!specialAbility.value
-);
-
-// * The cap reads the raw allocation, not the displayed value: a special-power bonus can lift what is shown to 10 while the allocation still has room. Same rule as the hero card.
-function isStatCapped(stat: StatName): boolean {
-  if (!hero.value) {
-    return true;
-  }
-
-  const resolved = resolvedStat(stat);
-
-  return (
-    pointsRemaining.value <= 0 ||
-    hero.value.startingStats[resolved] + statBonuses.value[resolved] >=
-      MAX_STAT_VALUE
-  );
-}
-
-function handleToggleFlight() {
-  if (!props.heroId || flightLocked.value) {
-    return;
-  }
-
-  toggleFlight(props.heroId);
-}
-
-function handleToggleSpecialPower() {
-  if (!props.heroId || specialAbility.value?.disabled) {
-    return;
-  }
-
-  toggleSpecialPower(props.heroId);
-}
 </script>

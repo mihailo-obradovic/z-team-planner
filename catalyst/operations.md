@@ -31,7 +31,7 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
 - **A `NUXT_PUBLIC_*` change needs a redeploy, not an environment edit.** `/` is prerendered, so those values are baked into the payload at build time. Editing the variable in the dashboard changes nothing until the next build.
 - An **empty `NUXT_PUBLIC_API_BASE_URL` is a valid deployment**, not a broken one: it means no API is behind this frontend and sign-in is unavailable (feature 006). The missing Firebase variables still fail the build, loudly, in the `ready` hook.
 - **`vercel.json` is read from a project's Root Directory.** Both projects are rooted at the repository root, so any such file would be read by both — and a `functions` glob that matches no files hard-fails the build it does not belong to. Python configuration lives in `pyproject.toml` instead, where the Nuxt project cannot see it.
-- **Preview deployments are off, and the switch is a dashboard project setting** — production-only building, set in the project's build/deployment settings. Nothing in the repository turns them off, which is the whole hazard: this setting reverted once and nobody noticed until a Renovate PR carried a failing Vercel check (2026-09-03). Confirm it by pushing any branch other than `master` and looking for the absence of a Vercel check — not a skipped one, none at all. It moved out of Settings → Git at some point, so hunt by setting name rather than by path.
+- **Preview deployments are off, and the switch is a dashboard project setting** — production-only building, set in the project's build/deployment settings. Nothing in the repository turns them off, which is the whole hazard: this setting reverted once and nobody noticed until a Renovate PR carried a failing Vercel check. Confirm it by pushing any branch other than `master` and looking for the absence of a Vercel check — not a skipped one, none at all. It moved out of Settings → Git at some point, so hunt by setting name rather than by path.
 - **Why previews are not turned off in the repository.** `vercel.json`'s `git.deploymentEnabled` takes a bare `false`, which stops production deploying too; its per-branch form would need every future branch listed. The older Ignored Build Step (`[ "$VERCEL_ENV" != "production" ]`, exit 0 to skip) works, but it lets Vercel create the deployment and start the build before aborting it, so the deployments list fills with aborted builds. Both are also read from a project's Root Directory, and once the API project exists both projects are rooted there — see the `vercel.json` note above.
 - **A preview build cannot succeed here even by accident.** The Firebase `NUXT_PUBLIC_*` variables are scoped to Production, so a preview build reaches `nuxt.config.ts`'s `ready` guard with none of them and fails on `Missing required public runtime config`. That is the guard working — a build without config is not a deployable artifact — but it means a stray preview always shows up as a red check rather than a quiet one.
 - **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`.
@@ -60,7 +60,7 @@ Replacing a portrait: overwrite the master under its existing name, deploy, then
 
 ### Quirks
 
-- **`image.screens` is not a breakpoint list, and the module's own defaults hide inside it.** The Vercel provider snaps every requested width **up** to the nearest value present, and the same values become the optimizer's allowed `sizes` — a request outside them is a 400. `@nuxt/image` merges its `sm` 640 … `2xl` 1536 defaults _under_ whatever is configured, so `portraitScreens()` reuses those five keys for real widths; without that the allowlist carried five sizes the app never renders (measured against production, 2026-09-04). `test/unit/portrait-sizes.test.ts` keeps both halves honest.
+- **`image.screens` is not a breakpoint list, and the module's own defaults hide inside it.** The Vercel provider snaps every requested width **up** to the nearest value present, and the same values become the optimizer's allowed `sizes` — a request outside them is a 400. `@nuxt/image` merges its `sm` 640 … `2xl` 1536 defaults _under_ whatever is configured, so `portraitScreens()` reuses those five keys for real widths; without that the allowlist carries five sizes the app never renders. `test/unit/portrait-sizes.test.ts` keeps both halves honest.
 - **The Vercel provider does nothing in `nuxt dev`** — it returns the source URL untouched, and IPX serves instead without snapping to `screens`. A width that would overfetch in production looks perfect locally, which is why the parity check is a test and not a dev-server walk.
 - **The TTL lives under `nitro`, not `image`.** `@nuxt/image`'s Vercel provider has no `minimumCacheTTL` option and writes 300 seconds itself; the explicit `nitro.vercel.config.images.minimumCacheTTL` wins by `defu` merge. Moving it under `image` would silently restore the five-minute cache.
 - **The masters are not all the same size** (450 to 512 px). Neither Vercel nor IPX enlarges, so a request above a given master's size returns that master — the 2x panel variant is 512 for most heroes and less for Coupé, Invisigal, Malevola and Sonar.
@@ -170,7 +170,7 @@ gh api repos/{owner}/{repo}/dependabot/alerts --jq 'length'        # open adviso
 gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts            # turn alerts back on
 ```
 
-Enabled 3 September 2026; the first scan answered **130 open advisories** (6 critical, 70 high, all npm — the PyPI half of the graph carries none). Enabling needs a token with `repo`; the settings pages are **Settings → Code security**.
+Enabling needs a token with `repo`; the settings pages are **Settings → Code security**.
 
 ### Recovery
 
@@ -180,7 +180,7 @@ Nothing to restore — re-enable and the scans re-run over current history. A fo
 
 - **Renovate's advisory path depends on Dependabot alerts being on.** `vulnerabilityAlerts` defaults to jumping the schedule, but on GitHub the advisories feeding it come from here. With alerts off the feature is configured and starved, and nothing anywhere reports that — the bot simply never files a security PR.
 - `dependabot/alerts` answers **403 with a message**, not an empty list, when alerts are disabled. A script reading `length` on that will crash rather than report zero, and a script ignoring the error will report "no advisories" while blind.
-- **Alerts read empty for a few minutes after enabling**, before the first scan finishes. Reading the count straight after the `PUT` reports zero and means nothing; this repository answered `0`, then `130`.
+- **Alerts read empty for a few minutes after enabling**, before the first scan finishes. Reading the count straight after the `PUT` reports zero and means nothing.
 - The endpoint pages at 100. `--paginate` or a count taken from one page will under-report a backlog this size.
 - Dependabot **security updates** (the PR-opening half) stay off on purpose: Renovate opens those PRs, and both bots on one lockfile means duplicate PRs racing each other.
 

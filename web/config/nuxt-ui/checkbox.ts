@@ -205,7 +205,8 @@ export default {
     }
   ],
   defaultVariants: {
-    size: 'md',
+    // * Changes: the one checkbox list is the first-login offer, at the drawer's control size. Default: 'md'
+    size: 'xl',
     color: 'primary',
     variant: 'list',
     indicator: 'start'

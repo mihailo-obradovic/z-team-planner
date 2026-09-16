@@ -10,7 +10,7 @@ Medium
 
 ## Purpose
 
-The display-only stat effects a hero's power grants once it is trained — Flambae's Supernova, Coupé's En Pointe, Golem's Spread Thin, and Sonar's form swap. Split out of feature 003, which owns the training _budgets_ and the roster layout: these effects have their own state field, their own serialized key, their own chip on every card, and rules that grow with each hero who gets a toggle. Nothing here allocates anything; every effect is computed from state feature 003 already holds.
+The display-only stat effects a hero's power grants once it is trained — Flambae's Supernova, Coupé's En Pointe, Golem's Spread Thin, and Sonar's form swap. Feature 003 owns the training _budgets_ and the roster layout; these effects have their own state field, their own serialized key, their own chip on every card, and rules that grow with each hero who gets a toggle. Nothing here allocates anything; every effect is computed from state feature 003 already holds.
 
 ## Inputs
 
@@ -40,6 +40,7 @@ Non-goals:
 - Training budgets, reveal/select gating, per-hero and shared resets — feature 003.
 - The detail dialog's layout and its pair-total block — feature 011; this document owns only the rule that block applies to Golem.
 - Modelling powers that are not stat effects (Pirouette, Wolf Pack, Portal Ritual, …) — they are described on the card, never computed.
+- Golem's Diamond in the Rough: it fires at random on calls the planner cannot know about, so modelling it means inventing a "pretend it procced on stat X" picker — and a second special toggle, which neither the four-chip strip nor the one-integer `sp` slot has room for.
 
 ## User / System Behavior
 
@@ -75,7 +76,7 @@ Not role-specific.
 
 - Effective displayed stat = `startingStats + allocations + specialPowerBonus`, per stat, and never exceeds `MAX_STAT_VALUE`: every special bonus is clamped against what the stat already holds. Special bonuses are computed, never written into `heroLevelUps`.
 - Spread Thin's bonus is `floor((startingStats + allocations) × 0.25 × slots)` per stat, clamped to `MAX_STAT_VALUE`. The tier is picked by the slot count and floored **once** against the total — not a per-slot increment repeated, which pays differently on any stat that is not a multiple of 4.
-- Golem fills at most three slots (+75%): calls hold four and he occupies one. Squeeze In's fifth slot is Punch Up's alone and never empty, so the source's "up to 200%" is unreachable.
+- Golem fills at most three slots (+75%): calls hold four and he occupies one. Squeeze In's fifth slot is Punch Up's alone and never empty, so the source's "up to 200%" is unreachable. The formula and the ceiling are a reading of loose source text, recorded beside the power in `context/game-mechanics.md`, not a measurement.
 - **Feature 011's pair total is a two-hero call**, so it re-derives Spread Thin at `min(slots, 2)` — the partner fills a slot Golem would have. His own rows keep all three; each figure is right for its label. The rule is about the pair being two heroes, not about Invisigal, and stays true if the conditional synergy pairs change. The one-line note explaining that deduction appears only while the power is contributing — with Spread Thin untrained there is nothing subtracted and the line would describe arithmetic the reader cannot see.
 - A gated effect is inert without its trainable power selected, guarded in state and disabled in the UI (feature 003's guard-clause convention).
 - `SPECIAL_POWER_MECHANICS` (`web/types/hero.ts`) is the single source: `scripts/export-game-data.ts` derives `special_powers` (`max`, `requires_trainable`) from it rather than restating it. A hand-copied value that drifts lets the client offer a step the API rejects on save — a bug visible only at persistence.
@@ -100,7 +101,7 @@ Not role-specific.
 
 - `web/composables/useHeroPowerTraining.ts`: `toggleSpecialPower`, `getSpecialPowerBonus`, `allSpecialPowerBonuses`.
 - `web/types/hero.ts`: `SPECIAL_POWER_MECHANICS`.
-- `web/components/HeroCard.vue` (the chip), `web/components/HeroDetailDialog.vue` (the effect row and the pair total).
+- `web/components/HeroCard.vue` (the chip), `web/components/HeroPowersPanel.vue` (the effect row) and `web/components/HeroStatsPanel.vue` (the pair total).
 - `scripts/export-game-data.ts` → `shared/game-data.json` → `app/services/validation.py`.
 
 ## Dependencies
@@ -111,22 +112,15 @@ Not role-specific.
 
 ## Open Questions
 
-- Golem's Diamond in the Rough is **deliberately not modeled**: it fires at random on calls the planner cannot know about, so representing it means inventing a "pretend it procced on stat X" picker. It would also be his second special toggle, which neither the four-chip strip nor the one-integer `sp` slot has room for.
-- The Spread Thin formula and the 175% ceiling are our reading of loose source text, not a measurement. Recorded beside the power in `context/game-mechanics.md`; worth one in-game check.
-
 ## Tests
 
-- Wanted with this feature: the Spread Thin bonus at each slot count against a floor-sensitive stat (6 → 7/9/10) and one that never moves (1), the `MAX_STAT_VALUE` clamp, the trainable-1 gate, the pair total's `min(slots, 2)` re-derivation, and a `shared/build-cases.json` fixture carrying a Golem `sp`.
+- `test/nuxt/spread-thin.test.ts`: the trainable-1 gate, the `0 → 1 → 2 → 3 → 0` cycle, the bonus at each slot count against a floor-sensitive stat (6) and one that never moves (1), the `MAX_STAT_VALUE` clamp, the pair total's `min(slots, 2)` re-derivation, and the deduction note's presence rule.
 - `test/nuxt/en-pointe.test.ts`: the base/upgraded bonus and the clamp (9 + 3 shows 10; a stat at 10 gains nothing).
-- Existing coverage of the other effects rides on `test/nuxt/hero-detail-dialog.test.ts` and the feature 003 walk.
+- `shared/build-cases.json`: `sp` range and gating cases for Golem. Supernova and Sonar's form ride on `test/nuxt/hero-detail-dialog.test.ts` and the feature 003 walk.
 
 ## Verification
 
-By test (`test/nuxt/spread-thin.test.ts`, 9 cases): the toggle is inert until trainable-1 is selected and stays inert on Found Himself; it cycles `0 → 1 → 2 → 3 → 0`; Combat 6 yields +1 / +3 / +4 (the value where a floored tier and a repeated per-slot increment disagree); Intellect 1 never moves; Vigor 9 stops at `MAX_STAT_VALUE`; the pair total credits 3 where the card credits 4; a hero without a slot power is unaffected by the pair rule; and the deduction note is absent from the dialog while Spread Thin contributes nothing, present once it is expanded into a slot. `shared/build-cases.json` gained `sp` range and gating cases for Golem, and its "hero with no special power" case moved to Prism, since Golem now has one.
-
-Walked live at `localhost:3123` in Chrome (2026-08-30): revealing Diamond in the Rough then training Spread Thin adds a fourth chip and no more; clicking it stepped the card through `+1 slot (+25%)` → `+2 slots (+50%)` → `+3 slots (+75%)`, with stats 3/1/4/2/2 → 3/1/5/2/2 → 4/1/6/3/3 → 5/1/7/3/3 — matching the formula, including the stats that never move. In the detail dialog the Effects row read "Expanded into 3 slots — every stat up 75%", while the Golem + Invisigal pair total read 7/3/8/4/6: Golem counted at two slots against his own rows' three. The deduction is explained in one line above that block, shown only for a pair where a slot-filling power is actually in play — the note has to earn its height, since the stats column scrolls before the dialog does.
-
-198 frontend tests across 25 files, 45 backend validation tests, `vue-tsc` and `oxlint` all pass.
+By test: every case under Tests, including Combat 6 yielding +1 / +3 / +4 — the value where a floored tier and a repeated per-slot increment disagree. Walked live in Chrome: training Spread Thin adds a fourth chip and no more; clicking it stepped the card through `+1 slot (+25%)` → `+2 slots (+50%)` → `+3 slots (+75%)` with every stat matching the formula, the ones that never move included; the dialog's Effects row named the expansion while the Golem pair total counted him at two slots against his own rows' three, with the deduction note shown only while the power contributed. Frontend and backend validation suites, `vue-tsc` and `oxlint` pass.
 
 ## Agent Change Rules
 

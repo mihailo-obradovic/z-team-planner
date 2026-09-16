@@ -12,8 +12,6 @@ Medium
 
 The planner's cards are deliberately dense — four power chips, a 108px portrait, five stat rows. The detail dialog is where one hero is examined properly: every power with its full description, the stats large enough to read across a room, the hero's shape as a radar, and the synergy pair's combined totals. It edits exactly the same planner state feature 003 owns; nothing here is a second source of truth.
 
-Replaces the dialog feature 003 shipped, which showed powers and stats but had no way to reach another hero, no sight of the synergy partner, and a chart whose axes were in an arbitrary order.
-
 ## Inputs
 
 | Input            | Type             | Source                      | Constraints                                                    |
@@ -58,7 +56,7 @@ Non-goals:
 - **From `lg`:** a vertical roster rail on the left; then a three-column grid — portrait above the radar in the first column, the stats column spanning both rows, the powers column spanning both rows — with notes across the bottom taking the remaining height.
 - **`md` to just under `lg`:** the ribbon rail, but the large portrait returns above the radar in its own column with the stats beside them across both rows. Powers then notes run full width beneath, sized to content, so the body scrolls rather than either panel.
 - **Below `md`:** the rail becomes a horizontally scrolling ribbon across the top and the large portrait is dropped, the thumbnail in the toolbar standing in for it. Order is radar, stats, synergy partner, powers, notes; each takes only the height it needs and the dialog scrolls.
-- **The radar is capped at `20rem` from `sm`** and centred. Its frame is square at the column's full width and the dialog is fullscreen, so uncapped it grows with the viewport and pushes everything else below the fold. From `md` the cap is released: the column bounds it.
+- **The radar is capped at `20rem` from `sm`** and centred — uncapped, its square frame grows with the fullscreen dialog and pushes everything else below the fold. From `md` the column bounds it instead.
 - The two top rows are a **fixed height wherever they exist**, never content-sized — a fixed-level hero has no steppers and may have no partner, and content-sized rows resized the dialog when switching to one.
 - A power's **Revealed** or **Trained** badge wraps to its own line rather than leaving the panel when its name crowds it.
 - The roster shows the current-setup roster **in the same order the overview grid draws it** — each synergy column top then bottom, then episode-8 recruits when shown. The open hero is marked; the others are not.
@@ -118,7 +116,7 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 ## Entry Points
 
-- `web/components/HeroDetailDialog.vue` — the dialog.
+- `web/components/HeroDetailDialog.vue` — the dialog; its panels are the `Hero*Panel.vue` files.
 - `web/components/_shared/StatRadar.vue` — the chart (decision 008).
 - `web/pages/index.vue` — mounts it and owns the open hero.
 
@@ -140,18 +138,11 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 ## Verification
 
-By test (`test/nuxt/hero-detail-dialog.test.ts`, 6 cases): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers. Suite: 297 tests, 37 files.
+By test (`test/nuxt/hero-detail-dialog.test.ts`): the roster equals the overview's own pair-by-pair order; exactly one entry is marked and it is the open hero; the partner control emits `select` and never `close`; the pair total equals both heroes' effective stats summed; a hero with no partner renders neither the control nor the totals; a fixed-level hero renders no steppers.
 
-In a browser at 1680×1000: the rail matched the overview grid exactly (`Golem, Invisigal, Prism, Flambae, Punch Up, Coupé, Malevola, Waterboy`); raising Combat moved the pair total 8 → 9, the other four unchanged; zero `panel` classes inside. Golem → Blonde Blazer left the geometry byte-identical — cells `[288, 592, 288, 592, 300]` — the case that used to jump. Feature 022 fixed a live case: unreserved pair-total text scrolled Golem's pair.
+In a browser at 1680×1000: the rail matched the overview grid; raising Combat moved the pair total by one with the other four unchanged; switching Golem → Blonde Blazer left the grid cells byte-identical. At 390×844 and 320px the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes. The `md` tier holds the radar to its column and the rows steady across three heroes; the badge wraps in a narrow powers column and sits inline in a wide one.
 
-At 390×844 and 320px: the large portrait is gone, the toolbar carries the thumbnail, the rail is a scrolling ribbon, and the order reads radar, stats, synergy, powers, notes.
-
-The `md` tier and the cap, measured in Chrome (2026-09-03): radar 282 at 320 with no overflow, 320 at 375, and exactly 320 centred at 700; two columns at 768/900/1023 with the radar held to 272 × 288 where it had been viewport-wide; 1280 unchanged (272/384/426, rows 288/288/118), and rows steady across three heroes. The badge wraps in a 186px powers column and sits inline in a 746px one.
-
-Horizontal overflow is verified per engine, because the first pass at this checked Chromium only and shipped two defects it cannot show. The document itself never scrolls — `main.css` pins `html, body, #__nuxt` to `overflow: hidden` — so `documentElement.scrollWidth` proves nothing here; the check is a scan for any element whose `scrollWidth` exceeds its `clientWidth`. The one permitted result is the roster ribbon, which scrolls sideways by design.
-
-- **WebKit (iOS Safari and every iOS browser, Brave included), 393×852.** The dialog's scrolling column must not scroll sideways. WebKit gives a `viewBox`ed SVG a min-content width of its intrinsic size where Chromium gives 0, and that column is `overflow-y-auto`, which forces the x-axis to `auto` as well — so any item that floors the grid track turns it into a horizontal scroller. The base `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what holds this; removing any of them reopens it.
-- **Every engine, 320px.** The hero card's portrait column shrinks rather than holding 27rem. At the fixed size the card's row needs 316px of a 260px panel, and the overview grid scrolls sideways.
+Horizontal overflow is checked per engine as a scan for any element whose `scrollWidth` exceeds its `clientWidth`; the roster ribbon is the one permitted result. On WebKit a `viewBox`ed SVG has a min-content width of its intrinsic size where Chromium gives 0, so `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what keeps the `overflow-y-auto` column from scrolling sideways. At 320px the hero card's portrait column shrinks rather than holding its fixed width.
 
 Not covered: `prefers-reduced-motion`. Notes are [022](022_hero-notes.md)'s.
 

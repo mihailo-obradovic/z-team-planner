@@ -10,7 +10,7 @@ Hard
 
 ## Purpose
 
-The Nuxt app has never talked to an API: hero data comes from a static Nitro route via `useFetch`, and every planner value lives in `useState`. Features 004 and 005 give it a real backend. This feature is the layer that reaches it and the conventions every resource on top of it follows — one fetcher, one error policy, the query and mutation wrappers, Zod at the boundary, and a single Pinia store for what no server owns. It follows `stacks/frontend/nuxt/` (`data-layer`, `error-handling`, `client-state`, `validation`) with the departures a bearer-token API forces written down here. Features 007 and 008 are the two resource surfaces built on it.
+Features 004 and 005 give the Nuxt app a real backend. This feature is the layer that reaches it and the conventions every resource on top of it follows — one fetcher, one error policy, the query and mutation wrappers, Zod at the boundary, and a single Pinia store for what no server owns. It follows `stacks/frontend/nuxt/` (`data-layer`, `error-handling`, `client-state`, `validation`) with the departures a bearer-token API forces written down here. Features 007 and 008 are the two resource surfaces built on it.
 
 ## Inputs
 
@@ -28,7 +28,6 @@ The Nuxt app has never talked to an API: hero data comes from a static Nitro rou
 | `useAuthStore`         | Pinia store  | `status: unknown \| anonymous \| signed-in`, `user`, `activeAccountBuildId`; readonly + actions |
 | query cache            | Pinia Colada | the only home of server state; one key namespace per resource                                   |
 | toasts / inline errors | UI           | per the central policy below; `412` and `422` never toast                                       |
-| `HEROES` constant      | `web/types`  | replaces `server/api/heroes.get.ts`; the `server/` directory is removed                         |
 
 ## Scope And Non-Goals
 
@@ -38,7 +37,7 @@ In scope:
 - The service-and-query shape every resource follows, and the key and invalidation conventions.
 - `me.api.ts` + `queries/useMeQueries.ts` — the profile read, and the only resource this feature owns outright.
 - Zod schemas for feature 005's shapes in `@/types/api.ts`; `useAuthStore`; the Firebase client plugin.
-- Retiring the Nitro route; the nine dependency additions below.
+- The nine dependency additions below.
 
 Non-goals:
 
@@ -82,7 +81,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 - **Regle** is the form library, and a form's rules mirror the server's so the client rejects what the server would; a server `422` flows back onto the field through `externalErrors` (feature 008).
 - **Client state**: `useAuthStore` only, setup syntax, readonly state, actions the sole mutation path; it never fetches — the plugin and query hooks call its actions. Planner state stays in `useState`.
 - **Dependencies added** (Dependency Change Rule, approved with this document): `pinia`, `@pinia/nuxt`, `@pinia/colada`, `@pinia/colada-nuxt`, `zod`, `firebase`, `@regle/core`, `@regle/rules`, `@regle/nuxt` — nine, recorded in `architecture.md` against this feature. Not added: `@vueuse/core`.
-- `useFetch` / `useAsyncData` and Nitro routes are gone from the app; the `server/` directory is deleted with the last route.
+- No `useFetch` / `useAsyncData` and no Nitro API routes: the app has no server-side data path, and hero data is an imported constant (feature 002).
 
 ## Edge Cases
 
@@ -107,14 +106,12 @@ Not role-specific; visibility follows the auth store (feature 004).
 - `web/utils/fetcher.ts`, `web/utils/handleApiError.ts`, `web/composables/useAppQuery.ts`, `useAppMutation.ts`.
 - `web/services/me.api.ts`, `web/services/queries/useMeQueries.ts`, `web/services/queries/chainOnSettled.ts`, `web/types/api.ts`.
 - `web/stores/useAuthStore.ts`, `web/plugins/firebase.client.ts`.
-- `web/types/hero.ts` (`HERO_STARTING_STATS`, `HEROES`) — what the retired Nitro route used to serve.
 
 ## Dependencies
 
 - Feature 005: the endpoints these conventions are written against, the error schema, `ETag` / `Idempotency-Key`. Feature 004: the store's meaning, sign-in, the offer.
 - Features 007 and 008 are the consumers: every rule here is a rule they follow, and a change to the fetcher, the policy or the key convention is a change to both.
-- Feature 002: updated in the same change — the "static Nitro endpoint" becomes an exported constant. Feature 001: unchanged.
-- `architecture.md`: the dependency additions above are recorded there in the same change.
+- `architecture.md`: the dependency additions above are recorded there.
 
 ## Open Questions
 
@@ -127,13 +124,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 
 ## Verification
 
-Fourteen steps on `feature/006-frontend-data-layer`, then re-walked against feature 005's real endpoints; each commit records what it proved. All four verbs exit 0, **114 tests passing**.
-
-By test: the single `401` retry, and a persistently failing one stopping at two requests rather than recursing; every row of the central policy, the `412` and `422` non-toast paths included, with `WeakSet` dedup; previous data held across a key change; the store's `unknown` start, both resolutions, and actions as its only mutation path. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request at all, and sign-in issued exactly one call per user-scoped query.
-
-Unverified: `GET /me`, unconsumed until feature 004's profile menu, and sign-in through Google itself. Recorded in the tests: a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`, which is why feature 007's page is browser-verified.
-
-The surfaces built on this layer carry their own evidence — features 007 and 008.
+By test: the single `401` retry, and a persistently failing one stopping at two requests rather than recursing; every row of the central policy, the `412` and `422` non-toast paths included, with `WeakSet` dedup; previous data held across a key change; the store's `unknown` start, both resolutions, and actions as its only mutation path. In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request at all, and sign-in issued exactly one call per user-scoped query. All four verbs exit 0. Unverified: sign-in through Google itself. A Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`, which is why feature 007's page is browser-verified. The surfaces built on this layer carry their own evidence — features 007 and 008.
 
 ## Agent Change Rules
 

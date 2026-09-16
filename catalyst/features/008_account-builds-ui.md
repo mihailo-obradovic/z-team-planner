@@ -134,13 +134,7 @@ Every status goes through feature 006's central policy; this feature only decide
 
 ## Verification
 
-Split out of feature 006 after it was `Active`; it adds no behavior, so the evidence is that feature's — fourteen steps on `feature/006-frontend-data-layer`, re-walked against feature 005's endpoints.
-
-By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one. In a browser on 2026-08-26 against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, and `409` toasted the server's own limit message.
-
-The first-login offer's import path was walked end to end when feature 004 landed: four local builds offered, two kept, two rows created and the outcome reported as one toast.
-
-Dirty tracking across the two worlds, in a browser on 2026-08-29 against the dev server, the Auth emulator and the Neon dev branch: opening an account build left **Save** absent, a story-setup edit raised it, and a successful **Save** cleared it again; re-selecting the build already open reloaded its stored document and discarded the local edit. Both are pinned by `build-manager.test.ts` and `build-manager-reopen.test.ts`, each confirmed failing on the pre-fix code.
+By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one; dirty tracking re-baselined on open and on save, and re-selecting the open build reloading its stored document (`build-manager.test.ts`, `build-manager-reopen.test.ts`). In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, `409` toasted the server's own limit message, and the first-login offer imported two of four local builds with one summary toast.
 
 ## Agent Change Rules
 
