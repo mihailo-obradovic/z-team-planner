@@ -26,6 +26,8 @@
 </template>
 
 <script setup lang="ts">
+import { HEADER_TIER_CLASS } from '@/types/header';
+
 import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
@@ -34,12 +36,5 @@ const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
 
 const emit = defineEmits<{ open: [] }>();
 
-const visibilityClass = computed(
-  () =>
-    ({
-      labelled: 'hidden lg:inline-flex',
-      icon: 'hidden md:inline-flex lg:hidden',
-      bare: 'flex md:hidden'
-    })[props.tier]
-);
+const visibilityClass = computed(() => HEADER_TIER_CLASS[props.tier]);
 </script>

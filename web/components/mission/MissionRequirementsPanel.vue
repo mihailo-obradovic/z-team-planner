@@ -21,37 +21,12 @@
       <!-- * The legend always lists every series, so a threshold appearing changes the chart, not the layout. -->
       <ul class="grid grid-cols-2 gap-x-10 gap-y-2">
         <li
+          v-for="series in LEGEND"
+          :key="series.label"
           class="flex items-center gap-3 font-heading text-label text-toned uppercase"
         >
-          <span
-            class="inline-block w-6 border-t-2 border-dashed border-accented"
-            aria-hidden="true"
-          />
-          Required
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span class="inline-block size-3 bg-primary" aria-hidden="true" />
-          Your team
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span
-            class="inline-block size-3 rounded-full border border-accented bg-error"
-            aria-hidden="true"
-          />
-          Fail at
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span
-            class="inline-block size-3 rounded-full border border-accented bg-warning"
-            aria-hidden="true"
-          />
-          2×XP at
+          <span :class="series.swatch" aria-hidden="true" />
+          {{ series.label }}
         </li>
       </ul>
 
@@ -85,6 +60,23 @@
 
 <script setup lang="ts">
 import { STAT_ICONS, RADAR_STAT_ORDER } from '@/utils/statIcons';
+
+// * Each series as the radar draws it: a dashed rule, the team's fill, and the two threshold discs.
+const LEGEND = [
+  {
+    label: 'Required',
+    swatch: 'inline-block w-6 border-t-2 border-dashed border-accented'
+  },
+  { label: 'Your team', swatch: 'inline-block size-3 bg-primary' },
+  {
+    label: 'Fail at',
+    swatch: 'inline-block size-3 rounded-full border border-accented bg-error'
+  },
+  {
+    label: '2×XP at',
+    swatch: 'inline-block size-3 rounded-full border border-accented bg-warning'
+  }
+];
 
 const {
   missionActiveTemplate,

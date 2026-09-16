@@ -79,12 +79,6 @@ import {
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
-const POWER_ICONS = [
-  'i-lucide-zap',
-  'i-lucide-shield',
-  'i-lucide-swords'
-] as const;
-
 const props = defineProps<{
   heroId: HeroId;
 }>();

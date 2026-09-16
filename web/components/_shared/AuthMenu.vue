@@ -59,6 +59,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
+import { HEADER_TIER_CLASS } from '@/types/header';
+
 import type { HeaderTier } from '@/types/header';
 
 const props = withDefaults(defineProps<{ tier?: HeaderTier }>(), {
@@ -80,14 +82,7 @@ const accountName = computed(() => {
   return displayName || email?.split('@', 1)[0] || 'Account';
 });
 
-const visibilityClass = computed(
-  () =>
-    ({
-      labelled: 'hidden lg:inline-flex',
-      icon: 'hidden md:inline-flex lg:hidden',
-      bare: 'flex md:hidden'
-    })[props.tier]
-);
+const visibilityClass = computed(() => HEADER_TIER_CLASS[props.tier]);
 
 const menuItems = computed<DropdownMenuItem[][]>(() => [
   [

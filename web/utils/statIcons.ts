@@ -8,6 +8,13 @@ export const STAT_ICONS: Record<StatName, string> = {
   mobility: 'i-lucide-chevrons-right'
 };
 
+// * By power slot: the starting power, then the two trainable ones.
+export const POWER_ICONS = [
+  'i-lucide-zap',
+  'i-lucide-shield',
+  'i-lucide-swords'
+] as const;
+
 // * The radar's axis order, deliberately not STAT_NAMES: it decides which stat takes the apex and how the shape reads, and every radar must agree on it.
 export const RADAR_STAT_ORDER: StatName[] = [
   'combat',
