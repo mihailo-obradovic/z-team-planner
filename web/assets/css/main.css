@@ -2,16 +2,16 @@
 @import '@nuxt/ui';
 @import './motion.css';
 
-/* * Design tokens — the source of truth is catalyst/annexes/design-system.md. Ramps and scales here; the semantic alias mapping is in app.config.ts. */
+/* * Design tokens from catalyst/annexes/design-system.md; the semantic alias mapping is in app.config.ts. */
 @theme static {
     --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
     --font-heading: 'Barlow Condensed', 'Barlow', ui-sans-serif, sans-serif;
 
-    /* * Tracking, as its own token: a control takes its size from the component theme's own size variant, so only the tracking is a design decision. */
+    /* * Tracking is its own token because a control's size comes from its component theme's size variant. */
     --tracking-label: 0.09em;
     --tracking-tag: 0.14em;
 
-    /* * Type scale (annex §2) — size, weight and leading travel together */
+    /* * Type scale (annex §2) */
     --text-display: 2.125rem;
     --text-display--line-height: 1.05;
     --text-display--font-weight: 800;
@@ -36,10 +36,10 @@
     --text-sm--line-height: 1.5;
     --text-xs--line-height: 1.4;
 
-    /* * Elevation (annex §6) — the one shadow value */
+    /* * Elevation (annex §6) */
     --shadow-panel: 0 10px 24px rgb(0 0 0 / 0.5);
 
-    /* * Ramps (annex §1). Designed steps come from the mockups; the rest are fillers — promote one in the annex before depending on it. */
+    /* * Ramps (annex §1). Steps not in the mockups are fillers — promote one in the annex before depending on it. */
     --color-paper-50: #f0e2bd;
     --color-paper-100: #ece0c6;
     --color-paper-200: #e6d6b4;
@@ -127,7 +127,7 @@
     --color-signal-950: #102538;
 }
 
-/* * Surface variables (annex §1). Nuxt UI derives these from `neutral` assuming a white page; this project is paper panels on a dark ground, so they are remapped here. Unlayered on purpose — that is what beats @layer theme. */
+/* * Surface remap (annex §1): Nuxt UI derives these assuming a white page. Unlayered, so it beats @layer theme. */
 :root {
     --ui-bg: var(--ui-color-neutral-100);
     --ui-bg-muted: var(--ui-color-neutral-50);
@@ -140,7 +140,7 @@
     --ui-text-toned: var(--ui-color-neutral-600);
     --ui-text-muted: var(--ui-color-neutral-600);
     --ui-text-dimmed: var(--ui-color-neutral-500);
-    /* * Ink on the amber and gold solids the design leans on. Secondary solids are the exception and carry text-neutral-100 in their own config. */
+    /* * Ink on amber and gold solids; secondary solids set text-neutral-100 in their own config. */
     --ui-text-inverted: var(--ui-color-neutral-900);
 
     --ui-border: var(--ui-color-neutral-500);
@@ -166,10 +166,10 @@
     --z-popover: 50;
     --z-toast: 60;
 
-    /* * A hold, not motion (annex §11): how long a confirmation holds before it closes (feature 018), so no reduced-motion guard. */
+    /* * A confirmation's hold before closing (feature 018) — not motion, so no reduced-motion guard. */
     --duration-linger: 1500ms;
 
-    /* * Scrollbars (annex §1). Two pairs — thumb then track — because the app scrolls on two grounds: the dark page and the paper surfaces. Written as one variable each so the value is a single decision applied at several roots, not repeated. */
+    /* * Scrollbar thumb and track for the dark ground and for paper surfaces (annex §1). */
     --scrollbar-ground: var(--ui-color-secondary-300)
         var(--ui-color-secondary-950);
     --scrollbar-paper: var(--ui-color-neutral-600) var(--ui-color-neutral-200);
@@ -181,18 +181,18 @@
         background-color: var(--ui-color-secondary-900);
     }
 
-    /* * `scrollbar-width` does not inherit — it applies to whichever element actually scrolls, and that element differs per component (main, a tabs panel, a modal body, a select viewport). Declaring it once universally is cheaper and more honest than adding a class to each of them and missing the next one. */
+    /* * `scrollbar-width` does not inherit and the scrolling element differs per component, so it is set universally. */
     * {
         scrollbar-width: thin;
     }
 
-    /* * `scrollbar-color` does inherit, so the ground value is set once here and paper surfaces override it further down the tree (the `panel` utility, or `scroll-paper` where the surface is paper without being a panel). */
+    /* * `scrollbar-color` inherits: the ground value here, overridden by `panel` and `scroll-paper`. */
     :root {
         scrollbar-color: var(--scrollbar-ground);
     }
 }
 
-/* * The panel anatomy from the mockups, as one decision rather than a class string repeated per component (annex §1, §6). */
+/* * The mockups' panel anatomy (annex §1, §6). */
 @utility panel {
     border: 2px solid var(--ui-border-accented);
     box-shadow:
@@ -201,21 +201,21 @@
     scrollbar-color: var(--scrollbar-paper);
 }
 
-/* * The paper scrollbar on a paper surface that is not a panel — the select menu and the mobile slideover's body. Every other paper scroll region inherits it from `panel`. */
+/* * Paper scrollbar for paper surfaces that are not a panel: the select menu and the mobile slideover's body. */
 @utility scroll-paper {
     scrollbar-color: var(--scrollbar-paper);
 }
 
-/* * Feature 010: the inline text link. A 1px underline and nothing else, so the affordance is the rule and not a colour — every amber step that clears 4.5:1 on paper is a text-only step, and a link should look like a link at a glance. The hover colour is the surface's to set: one step dimmer on paper, cream on the ground (annex §13). */
+/* * Inline text link (feature 010): the underline is the affordance, since the amber steps that clear 4.5:1 on paper are already plain-text steps. Hover colour is set per surface (annex §13). */
 @utility text-link {
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
 }
 
-/* * Feature 023's boot rules, both keyed off the flag `app.vue` puts on <html> through unhead. The flag carries `true` or `false` and is never absent — see the note beside it there. Written here rather than as bindings in the template so the decision lives in one place, and so a visitor with no JavaScript can be handed all of it back by the single <noscript> block that file emits.
- * ! `visibility`, not `display`, and deliberately the one exception to the feature's own rule: the planner keeps its space so that arriving reflows nothing. Everything else withheld at boot is `display: none`, because reserving space is exactly what leaves an empty band.
- * ! The scroll lock is not decoration. The region keeps its full height while hidden, so without this a wheel could scroll it and the reveal would land somewhere nobody chose. */
+/* * Boot rules (feature 023), keyed off the `data-booting` flag app.vue sets; its <noscript> block undoes them. */
+/* ! `visibility`, not `display`, so the planner keeps its space and the reveal reflows nothing. */
+/* ! The scroll lock stops a wheel scrolling the hidden main, which would land the reveal at a random offset. */
 [data-booting='true'] main {
     visibility: hidden;
     overflow-y: hidden;
