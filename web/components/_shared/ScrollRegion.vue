@@ -91,7 +91,6 @@ function scrolls(overflow: string): boolean {
 
 defineExpose({ bringIntoView });
 
-// * Which edges currently clip content, re-measured on scroll and whenever the box or its children resize.
 function useHiddenEdges() {
   const edges = ref<HiddenEdges>({ ...NO_EDGES });
 
@@ -166,7 +165,6 @@ function useHiddenEdges() {
   return { edgeClasses, measure };
 }
 
-// * Scrolls this region alone by the minimum that shows a descendant whole, cleared of the edge rule by the region's own gap.
 function useBringIntoView() {
   // ! Never `scrollIntoView`: it also scrolls every scrolling ancestor, such as the dialog body.
   function bringIntoView(target: HTMLElement) {

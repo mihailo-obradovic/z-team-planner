@@ -133,11 +133,11 @@ const card = useTemplateRef<HTMLElement>('card');
 
 const { heroes, missionIllusionSource } = useHeroPlanner();
 
-// * An illusion or a copy stands in for a hero; before a source exists, the illusion wears Prism's face.
 const occupantHeroId = computed(() =>
   isHeroSlot(props.slot) ? props.slot : missionIllusionSource.value
 );
 
+// * Before a source exists, the illusion wears Prism's face.
 const portraitHeroId = computed(() => occupantHeroId.value ?? 'prism');
 
 const name = computed(() => {

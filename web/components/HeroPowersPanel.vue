@@ -160,7 +160,6 @@ function handleToggleFlight() {
   toggleFlight(props.heroId);
 }
 
-// * The three special powers, each rendered as one card whose copy follows its state.
 function useSpecialAbility() {
   const specialAbility = computed(() => {
     const mechanics =

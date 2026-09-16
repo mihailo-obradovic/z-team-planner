@@ -100,7 +100,6 @@ const figures = useTweenedValues(() =>
   STAT_NAMES.map((stat) => pairTotals.value[stat] ?? 0)
 );
 
-// * Rounded from the tween, so the figures count to their new values.
 const shownStats = computed(() =>
   STAT_NAMES.map((stat, index) => ({
     stat,
@@ -124,7 +123,6 @@ const baseText = computed(
 
 const SPREAD_THIN_SUFFIX = " Spread Thin counts the partner's slot as filled.";
 
-// * Both variants, for the reserved-height cell.
 const descriptionVariants = computed(() => [
   baseText.value,
   baseText.value + SPREAD_THIN_SUFFIX

@@ -41,7 +41,6 @@ type StripVariant = 'rail' | 'ribbon';
 // * Structural, so the strip needn't import an auto-imported component for its type.
 type RosterRegion = { bringIntoView: (target: HTMLElement) => void };
 
-// * The rail is displayed from `lg`, the ribbon below it; both are mounted at every width.
 const STRIP_CLASS: Record<StripVariant, string> = {
   rail: 'hidden w-24 shrink-0 flex-col gap-2 lg:flex',
   ribbon: 'flex shrink-0 gap-2 lg:hidden'

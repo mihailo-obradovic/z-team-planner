@@ -26,7 +26,7 @@
           color="error"
           :loading="isDeleting"
           :disabled="isPending"
-          @click="handleDelete"
+          @click="deleteAccount()"
         >
           Delete account
         </u-button>
@@ -74,9 +74,5 @@ const summary = computed(() => {
 
 function handleCancel() {
   deleteAccountOpen.value = false;
-}
-
-function handleDelete() {
-  deleteAccount();
 }
 </script>

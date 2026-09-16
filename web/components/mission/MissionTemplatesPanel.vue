@@ -165,13 +165,11 @@ import MissionValueStepper from '@/components/mission/MissionValueStepper.vue';
 import { STAT_NAMES } from '@/types/hero';
 const {
   missionTemplates,
-  missionActiveTemplate,
+  missionActiveTemplate: activeIndex,
   setMissionActiveTemplate,
   setMissionReq,
   setMissionThreshold
 } = useHeroPlanner();
-
-const activeIndex = computed(() => missionActiveTemplate.value);
 
 // * A plain ref, not planner state: the build document must never carry a layout choice.
 const COLUMN_VIEWS = [

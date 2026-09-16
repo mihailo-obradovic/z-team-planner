@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-// * Each series as the radar draws it: a dashed rule, the team's fill, and the two threshold discs.
+// * Each swatch mirrors how StatRadar draws its series.
 const LEGEND = [
   {
     label: 'Required',

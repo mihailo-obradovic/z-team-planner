@@ -25,7 +25,7 @@
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <u-button variant="ghost" color="neutral" @click="handleDismiss">
+        <u-button variant="ghost" color="neutral" @click="close">
           Not now
         </u-button>
 
@@ -135,10 +135,6 @@ function handleKeep() {
       .filter((localBuild) => selected.value.includes(localBuild.id))
       .map((localBuild) => ({ name: localBuild.name, data: localBuild.data }))
   });
-}
-
-function handleDismiss() {
-  close();
 }
 
 watch(isSignedIn, (signedIn, wasSignedIn) => {

@@ -105,7 +105,7 @@ import HeroStatsPanel from '@/components/HeroStatsPanel.vue';
 import HeroPowersPanel from '@/components/HeroPowersPanel.vue';
 import HeroNotesPanel from '@/components/HeroNotesPanel.vue';
 
-import type { HeroId, StatName } from '@/types/hero';
+import type { HeroId } from '@/types/hero';
 
 const props = defineProps<{
   heroId: HeroId | null;
@@ -116,7 +116,6 @@ const emit = defineEmits<{
   select: [heroId: HeroId];
 }>();
 
-// * Both strips are mounted at every width; the hidden one measures zero and no-ops.
 const rosterRail =
   useTemplateRef<InstanceType<typeof HeroRosterStrip>>('rosterRail');
 const rosterRibbon =
@@ -183,13 +182,9 @@ const radarAxes = computed(() =>
     key: stat,
     label: stat,
     icon: STAT_ICONS[stat],
-    value: computedStat(stat)
+    value: props.heroId ? getEffectiveStats(props.heroId)[stat] : 0
   }))
 );
-
-function computedStat(stat: StatName): number {
-  return props.heroId ? getEffectiveStats(props.heroId)[stat] : 0;
-}
 
 const longestHeroName = computed(() =>
   rosterOrder.value.reduce(

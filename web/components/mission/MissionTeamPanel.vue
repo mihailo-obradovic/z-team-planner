@@ -88,7 +88,6 @@ const teamSlots = computed(() =>
   }))
 );
 
-// * The picker remembers which empty slot opened it, so the chosen hero lands there.
 function usePicker() {
   const pickerOpen = ref(false);
   const pickerSlot = ref<number | null>(null);

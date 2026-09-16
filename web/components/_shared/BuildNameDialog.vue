@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-// * The parent validates and commits; this dialog only collects the name and says when the user is done.
 const open = defineModel<boolean>('open', { required: true });
 const name = defineModel<string>('name', { required: true });
 
