@@ -106,7 +106,7 @@ No failure mode reaches the user: a browser that runs no transition renders the 
 
 ## Entry Points
 
-- `web/components/mission/MissionTeamPanel.vue`: the slot row, the derived identity, the `mission-slot` transition name, and the focus move.
+- `web/components/mission/MissionTeamPanel.vue`: the slot row, the derived identity and the `mission-slot` transition name; `MissionTeamSlot.vue`: one card and the focus move.
 - `web/assets/css/motion.css`: the travel, its out-of-layout leave, and their reduced-motion guard.
 - `web/composables/useMissionSimulator.ts`: `moveMissionSlot` and `withSpawns` — read, not changed.
 
