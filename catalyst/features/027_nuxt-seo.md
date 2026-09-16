@@ -98,7 +98,7 @@ Not role-specific.
 ## Entry Points
 
 - `nuxt.config.ts`: `site`, `sitemap`, `robots`, `ogImage` config blocks, and the `ready` hook (build guard extended to require `NUXT_SITE_URL`/`NUXT_SITE_ENV`).
-- `web/app.vue`: `useHead`'s `titleTemplate: '%s'` (overrides SEO Utils' site-name suffix, which duplicates every title) and `useSeoMeta`'s site-wide `ogImage`/`twitterImage`/`twitterCard`.
+- `web/app.vue`: `useHead`'s `titleTemplate: '%s'` (overrides SEO Utils' site-name suffix, which duplicates every title) and `useSeoMeta`'s site-wide `ogImage`/`twitterImage`; `og:title`, `og:description` and `twitter:card` are inferred per page by SEO Utils (`automaticTwitterTags`), so `/privacy` previews with its own title and description.
 - `web/pages/index.vue`: `useSchemaOrg([defineSoftwareApp({ '@type': 'WebApplication', ... })])`.
 - `server/plugins/b-share-preview.ts` — the project's one piece of Nitro server code. Hooks `render:html`, path-gated to `/b/`, pushes fixed title/`og:*`/`twitter:*` tag strings. Reads `site.url`/`site.name` via `getSiteConfig(event)` (the server-side counterpart to `useSiteConfig()`, auto-imported by `nuxt-site-config`).
 

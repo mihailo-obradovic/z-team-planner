@@ -37,37 +37,11 @@
 
           <AuthMenu tier="bare" />
 
-          <u-button
-            class="hidden lg:inline-flex"
-            size="md"
-            variant="subtle"
-            color="neutral"
-            icon="i-lucide-sliders-horizontal"
-            label="Story setup"
-            @click="openStorySetup"
-          />
+          <StorySetupButton tier="labelled" @open="handleOpen" />
 
-          <u-tooltip text="Story setup">
-            <u-button
-              class="hidden md:inline-flex lg:hidden"
-              size="md"
-              variant="subtle"
-              color="neutral"
-              icon="i-lucide-sliders-horizontal"
-              aria-label="Story setup"
-              @click="openStorySetup"
-            />
-          </u-tooltip>
+          <StorySetupButton tier="icon" @open="handleOpen" />
 
-          <!-- ! Cream, not text-inverted: inverted resolves to ink, which is unreadable on the teal chrome (annex §14.1). -->
-          <button
-            type="button"
-            class="flex size-11 touch-manipulation items-center justify-center text-neutral-100 md:hidden"
-            aria-label="Story setup"
-            @click="openStorySetup"
-          >
-            <u-icon name="i-lucide-sliders-horizontal" class="size-5" />
-          </button>
+          <StorySetupButton tier="bare" @open="handleOpen" />
         </div>
       </template>
     </u-header>
@@ -95,23 +69,18 @@
     </Transition>
 
     <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-    <!-- * `v-if` rather than the header's CSS withholding: client-only content has no prerendered markup to preserve. -->
     <ClientOnly>
-      <FirstRunBanners v-if="!booting" />
-    </ClientOnly>
+      <!-- * `v-if` rather than the header's CSS withholding: client-only content has no prerendered markup to preserve. -->
+      <template v-if="!booting">
+        <FirstRunBanners />
 
-    <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-    <ClientOnly>
-      <div
-        v-if="!booting"
-        class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
-      >
-        <BuildManager block size="lg" tier="bare" />
-      </div>
-    </ClientOnly>
+        <div
+          class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
+        >
+          <BuildManager block size="lg" tier="bare" />
+        </div>
+      </template>
 
-    <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
-    <ClientOnly>
       <BuildDialogs />
 
       <BuildAccountDialogs />
@@ -139,7 +108,7 @@ const storySetupOpen = ref(false);
 // * A plain ref, not query state: it waits on localStorage, not a request (feature 023).
 const booting = ref(useRoute().path === '/');
 
-function openStorySetup() {
+function handleOpen() {
   storySetupOpen.value = true;
 }
 
@@ -163,7 +132,6 @@ useHead({
   titleTemplate: '%s',
 
   meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     // * Matches the header chrome, so the browser bar continues the page.
     { name: 'theme-color', content: '#143e38' }
   ],
@@ -202,10 +170,7 @@ useHead({
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
   ogImage: '/images/og/build-now.png',
-  twitterCard: 'summary_large_image',
   twitterImage: '/images/og/build-now.png'
 });
 </script>
