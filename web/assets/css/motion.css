@@ -1,15 +1,12 @@
-/* * Every motion the app shares, and the two that belong to one component each. Imported by main.css, which stays the token sheet; the two durations live here because only a transition reads them. */
-/* * Reduced motion is annex §11's rule rather than a judgement per site: anything transform-based or past the baseline short-circuits, and colour or opacity at the baseline does not. A guard below is annotated only where something survives it. */
+/* * Every motion the app shares, and the two owned by one component each. Imported by main.css, which keeps every other token. */
+/* * Reduced motion follows annex §11 rather than a judgement per site, so a guard below is annotated only where something survives it. */
 
 :root {
     --duration-baseline: 150ms;
     --duration-slow: 250ms;
 }
 
-/* * Feature 015: a tab fades its content in on a switch, at the slow duration.
- * ! On the panel element itself this breaks the tabs: the panel keeps a running animation,
- * ! and the presence logic that hides an inactive panel waits for that animation to end, so
- * ! two panels stay visible at once. It belongs on the content inside the panel. */
+/* ! Belongs on the content inside a panel, never the panel itself (feature 015): the panel would keep a running animation, and the presence logic that hides an inactive panel waits for that animation to end, so two panels stay visible at once. */
 @utility tab-fade {
     animation: tab-fade var(--duration-slow) ease-out;
 }
@@ -50,7 +47,7 @@
     transition: transform var(--duration-slow) ease-in-out;
 }
 
-/* ! Both of these must stay after `.chip-move`, and both exist to take the travel away from the chip that is arriving or leaving. Vue puts the move class on those too, and two `transition` shorthands on one element do not merge — the later one wins outright. So `chip-move` alone replaced their fade with a transform, which both blinked them out and slid them across the row. A chip that comes or goes only fades, in place; travelling is for the chips that stay. */
+/* ! Both must stay after `.chip-move`: Vue puts the move class on the arriving and leaving chips too, and two `transition` shorthands on one element do not merge — the later wins outright. A chip that comes or goes only fades, in place; travelling is for the chips that stay. */
 .chip-entering {
     transition: opacity var(--duration-baseline) ease-out;
 }
@@ -88,7 +85,7 @@
     }
 }
 
-/* * Annex §11 slide (feature 025): old and new overlap in one grid cell, and the cell must clip. The four variables default to the vertical, forward case — old up and out, new in from below — and a wrapper overrides them to turn the slide around or sideways. */
+/* * Annex §11 slide (feature 025): the consumer stacks old and new in one grid cell, which must clip. The four variables default to the vertical, forward case — old up and out, new in from below. */
 .slide-enter-active {
     transition:
         opacity var(--duration-baseline) ease-out,
@@ -128,8 +125,8 @@
     --slide-leave-x: 0.5lh;
 }
 
-/* * The notes list's move and its out-of-flow leave, the chip row's arrangement again (feature 025): an advisory that clears is taken out of flow as it slides away so the lines below travel at once, and the lines that stay travel under the list move.
- * ! `notes-entering` restates the slide so the move class is not put on the arriving line too — as with the chips, two `transition` shorthands on one element do not merge. */
+/* * The chip row's arrangement again (feature 025): an advisory that clears leaves the flow as it slides away, so the lines below travel at once rather than waiting for it.
+ * ! `notes-entering` restates the slide so the move class is not put on the arriving line too — two `transition` shorthands on one element do not merge. */
 .notes-move {
     transition: transform var(--duration-slow) ease-in-out;
 }
@@ -147,7 +144,7 @@
         transform var(--duration-baseline) ease-in;
 }
 
-/* * The slide keeps its opacity leg and degrades to the state fade rather than to a cut; the notes list stops travelling (feature 025). */
+/* * The slide keeps its opacity leg and degrades to the state fade, never to a cut. */
 @media (prefers-reduced-motion: reduce) {
     .slide-enter-from,
     .slide-leave-to {
@@ -159,7 +156,7 @@
     }
 }
 
-/* * Annex §11 loading ring, the initial-load ring's only moving part (feature 023). Only the rotation lives here; the ring's size, stroke and colours are Tailwind classes on the element, as everywhere else in the app. */
+/* * Annex §11's ring (feature 023). Only the rotation lives here; its size, stroke and colours are Tailwind classes on the element. */
 @utility loading-ring {
     animation: loading-ring 1.4s linear infinite;
 }
@@ -177,7 +174,7 @@
     }
 }
 
-/* * The first-run banners' arrival (feature 017): the row's height opens the space and the body travels through it, on one shared duration so the main and the banner settle together. */
+/* * The first-run banners' arrival (feature 017): the row's height and the body travel on one duration, so the main and the banner settle together. */
 .first-run-banner {
     grid-template-rows: 1fr;
     transition: grid-template-rows var(--duration-slow) ease-out;
@@ -213,8 +210,8 @@
     }
 }
 
-/* * The mission team's swapped cards travel into each other's positions, so which two slots swapped is legible (feature 020).
- * ! The leave is dropped from layout at once: swapping a hero with a positional slot makes one card leave as another enters, and the row would otherwise hold five cards in space for four for the length of the travel. */
+/* * The mission team's swapped cards travel into each other's positions, so which two swapped is legible (feature 020).
+ * ! The leave drops from layout at once: swapping a hero with a positional slot makes one card leave as another enters, and the row would otherwise hold five cards in space for four. */
 .mission-slot-move {
     transition: transform var(--duration-slow) ease-in-out;
 }
@@ -229,7 +226,7 @@
     }
 }
 
-/* * Annex §14.4 for the overlays: their enter and exit live in `animate-[…]` utilities baked into the theme configs, with no per-component prop to disable, so the animation is cancelled here for every overlay at once. Colour and opacity transitions stay — they are at the baseline and need no guard. */
+/* * The overlays' enter and exit live in `animate-[…]` utilities inside the theme configs, with no prop to disable, so they are cancelled here for every overlay at once (annex §14.4). */
 @media (prefers-reduced-motion: reduce) {
     [data-state='open'],
     [data-state='closed'] {
@@ -237,4 +234,4 @@
     }
 }
 
-/* * Two motions no stylesheet holds, both honouring `prefers-reduced-motion` in JavaScript: annex §11's value count (`composables/useTweenedValues.ts`, 200ms of its own, decision 008) and bring into view (`components/_shared/ScrollRegion.vue`). */
+/* * Two motions no stylesheet holds, each honouring `prefers-reduced-motion` in JavaScript: the value count (`composables/useTweenedValues.ts`, decision 008) and bring into view (`components/_shared/ScrollRegion.vue`). */

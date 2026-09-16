@@ -14,13 +14,13 @@
       </template>
 
       <template #right>
-        <!-- ! Withheld by CSS, not `v-if`: the markup stays in the prerendered HTML, only its paint waits for boot (feature 023). -->
+        <!-- ! Withheld by CSS, not `v-if`: the markup has to stay in the prerendered HTML (feature 023). -->
         <div data-boot-withheld class="flex items-center gap-2">
           <BudgetCounters />
 
           <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
 
-          <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
+          <!-- ! Client-only because it renders localStorage: server-rendering it desynchronises hydration. -->
           <ClientOnly>
             <BuildManager class="hidden lg:flex" tier="labelled" />
             <BuildManager
@@ -55,7 +55,7 @@
       alt=""
     />
 
-    <!-- * Hidden during boot by `main.css`, which also removes it from the tab order and accessibility tree. -->
+    <!-- * Hidden during boot by `main.css` — `visibility`, so it leaves the tab order with it. -->
     <u-main class="relative z-10">
       <NuxtPage />
     </u-main>
@@ -68,7 +68,6 @@
       <LoadingRing v-if="booting" />
     </Transition>
 
-    <!-- ! Using localStorage in SSR causes hydration errors if not client-only -->
     <ClientOnly>
       <!-- * `v-if` rather than the header's CSS withholding: client-only content has no prerendered markup to preserve. -->
       <template v-if="!booting">
@@ -104,8 +103,7 @@ const { setupBeforeUnload } = useUnsavedChanges();
 
 const storySetupOpen = ref(false);
 
-// * Read once, not reactively: only the initial boot of `/` waits, never a later navigation to it.
-// * A plain ref, not query state: it waits on localStorage, not a request (feature 023).
+// * Read once and a plain ref, not query state: only `/`'s initial boot waits, and on localStorage rather than a request (feature 023).
 const booting = ref(useRoute().path === '/');
 
 function handleOpen() {
@@ -136,7 +134,7 @@ useHead({
     { name: 'theme-color', content: '#143e38' }
   ],
   link: [
-    // ! Order matters: browsers take the first icon they understand, so SVG leads and .ico is the fallback.
+    // ! Order matters: browsers take the first icon they understand.
     { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
     { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
     {
