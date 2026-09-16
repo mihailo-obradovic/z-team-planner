@@ -5,6 +5,8 @@ import { defineComponent, h, nextTick } from 'vue';
 
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 
+import { DEFAULT_MISSION_TEMPLATES } from '@/types/mission';
+
 import type {
   HeroId,
   HeroPowerSelection,
@@ -146,11 +148,10 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
     }
   }
 
-  // * Mission state (feature 015). The roll is setup — a document only ever carries `mt`
-  // * because a client rolled it — and the guarded setters are the behavior under test.
-  plannerState.missionTemplates.value = document.mt
-    ? rollMissionTemplates()
-    : null;
+  // * Mission state (feature 015). The defaults are setup; the guarded setters are the behavior under test.
+  plannerState.missionTemplates.value = structuredClone(
+    DEFAULT_MISSION_TEMPLATES
+  );
   plannerState.missionSlots.value = [null, null, null, null];
   plannerState.missionSynergyLevel.value = 0;
   plannerState.missionActiveTemplate.value = 0;

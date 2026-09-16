@@ -15,7 +15,7 @@ import { RADAR_STAT_ORDER } from '@/utils/statIcons';
 import { radarCoverage } from '@/utils/radarCoverage';
 
 import type { HeroId, HeroStats, StatName, SynergyLevel } from '@/types/hero';
-import type { MissionSlot } from '@/types/mission';
+import type { MissionSlot, MissionTemplate } from '@/types/mission';
 
 type SpreadThinTraining = 'trained' | 'untrained';
 
@@ -156,7 +156,7 @@ export function useMissionSimulator(
   );
 
   const missionActiveTemplateData = computed(
-    () => missionTemplates.value?.[missionActiveTemplate.value] ?? null
+    () => missionTemplates.value[missionActiveTemplate.value] ?? null
   );
 
   // * Returns every step as well as the estimate, because the math panel renders each one.
@@ -382,17 +382,11 @@ export function useMissionSimulator(
 
   function updateTemplate(
     index: number,
-    change: (
-      entry: NonNullable<typeof missionTemplates.value>[number]
-    ) => NonNullable<typeof missionTemplates.value>[number]
+    change: (entry: MissionTemplate) => MissionTemplate
   ) {
-    const templates = missionTemplates.value;
-
-    if (templates) {
-      missionTemplates.value = templates.map((entry, at) =>
-        at === index ? change(entry) : entry
-      );
-    }
+    missionTemplates.value = missionTemplates.value.map((entry, at) =>
+      at === index ? change(entry) : entry
+    );
   }
 
   // * Validity is enforced continuously but creation only on placement, so this same watcher drops a hidden hero or a contextless spawn after an episode change or a load.

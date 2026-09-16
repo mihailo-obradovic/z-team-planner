@@ -3,7 +3,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, nextTick } from 'vue';
 
 import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
-import { rollMissionTemplates } from '@/utils/missionTemplates';
+import { DEFAULT_MISSION_TEMPLATES } from '@/types/mission';
 
 import type { MissionSlot } from '@/types/mission';
 
@@ -38,7 +38,7 @@ beforeEach(async () => {
   state.ep4Hire.value = 'waterboy';
   state.showEp8Recruits.value = false;
   state.missionSlots.value = [null, null, null, null];
-  state.missionTemplates.value = rollMissionTemplates();
+  state.missionTemplates.value = structuredClone(DEFAULT_MISSION_TEMPLATES);
   state.missionSynergyLevel.value = 0;
   state.missionActiveTemplate.value = 0;
   await nextTick();
@@ -192,17 +192,17 @@ describe('mission templates and settings', () => {
     planner.setMissionReq(0, 'charisma', -1);
     planner.setMissionReq(3, 'combat', 5);
 
-    const template = state.missionTemplates.value![0]!;
+    const template = state.missionTemplates.value[0]!;
 
     expect(template.req.combat).toBe(10);
     expect(template.req.vigor).toBe(0);
-    expect(template.req.intellect).toBeLessThanOrEqual(8);
-    expect(template.req.charisma).toBeGreaterThanOrEqual(3);
+    expect(template.req.intellect).toBe(3);
+    expect(template.req.charisma).toBe(3);
   });
 
   it('sets both condition columns on any template, in range, null unsets', () => {
-    // * Deterministic start: the rolled thresholds could land on the stats asserted below.
-    state.missionTemplates.value = state.missionTemplates.value!.map(
+    // * Cleared first, so the default thresholds stay out of the assertions below.
+    state.missionTemplates.value = state.missionTemplates.value.map(
       (entry) => ({ ...entry, xp: {}, fail: {} })
     );
 
@@ -212,7 +212,7 @@ describe('mission templates and settings', () => {
     planner.setMissionThreshold(2, 'fail', 'vigor', 11);
     planner.setMissionThreshold(3, 'fail', 'combat', 5);
 
-    const templates = state.missionTemplates.value!;
+    const templates = state.missionTemplates.value;
 
     expect(templates[0]!.xp.combat).toBe(7);
     expect(templates[0]!.fail.vigor).toBe(9);
@@ -221,7 +221,7 @@ describe('mission templates and settings', () => {
 
     planner.setMissionThreshold(0, 'xp', 'combat', null);
 
-    expect(state.missionTemplates.value![0]!.xp.combat).toBeUndefined();
+    expect(state.missionTemplates.value[0]!.xp.combat).toBeUndefined();
   });
 
   it('clamps the synergy level and active template to their ranges', () => {
