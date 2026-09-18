@@ -46,7 +46,7 @@
               <li
                 v-for="stat in STAT_NAMES"
                 :key="stat"
-                class="flex items-center gap-1 border border-accented bg-default px-2 py-0.5 text-toned"
+                class="flex items-center gap-1 border border-accented bg-default px-2 py-1 text-toned"
               >
                 <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
 

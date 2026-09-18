@@ -159,6 +159,7 @@
 
     /* * Stacking (annex §8) */
     --z-base: 0;
+    --z-raised: 1;
     --z-dropdown: 10;
     --z-sticky: 20;
     --z-overlay: 30;

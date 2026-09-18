@@ -172,6 +172,21 @@ Line height by role: **tight** (1.05–1.15) for display and title and for any s
 
 The scale is registered as Tailwind text tokens (`--text-display`, `--text-title`, `--text-label`, `--text-tag`, each with its `--*--line-height`, `--*--font-weight` and `--*--letter-spacing`), so `text-title` carries size, weight and leading together and no component sets the three separately. `body` and `small` are Tailwind's `text-sm` and `text-xs` with `--text-sm--line-height: 1.5` decided here.
 
+### Figures
+
+A number the UI is read for — a stat, a level, a budget, an estimate — is a **figure**, and it takes a step of its own rather than the body or label role beside it. Measured from the built UI; the four steps are Tailwind's `text-sm`, `text-lg`, `text-xl` and `text-2xl` with their default leading, and a figure is always bold.
+
+| Step          | Size / line | Font          | Used by                                                                         |
+| ------------- | ----------- | ------------- | ------------------------------------------------------------------------------- |
+| **figure-sm** | 14px / 21px | `sans` 700    | A hero card's stat value, beside its 13px label                                 |
+| **figure**    | 18px / 28px | `heading` 700 | A level or bonus count, the mission stepper's value, a budget's `used/max`      |
+| **figure-lg** | 20px / 28px | `sans` 700    | The detail dialog's and the pair block's stat values, the mission math's totals |
+| **figure-xl** | 24px / 32px | `heading` 700 | The mission's success estimate, the one figure a panel is read for              |
+
+The family follows the row it sits in: a figure inside a condensed uppercase label stays condensed, and a figure in a stat row of its own takes the body face, where digits are wider and easier to compare down a column.
+
+**Labels step up with the surface.** `label` is 13px in a hero card, and the roomier surfaces render the same role larger: **16px** in a mission panel's rows and the Story Setup drawer, **18px** in the detail dialog's stat rows. Weight, tracking and uppercase are the label role's throughout; only the size steps.
+
 ---
 
 ## 3. Spacing
@@ -190,6 +205,8 @@ Tailwind's numeric spacing scale already lands on exactly the steps this design 
 | `12` | 48px   | Between major sections of a page                    |
 
 Used as the utilities themselves (`gap-3`, `p-4`, `px-6`). A step outside this table (`gap-5`, `p-7`) is off-scale and a defect, as is a raw value (`gap: 20px`); the nearest allowed step wins. Responsive overrides are fine when both base and override come from the scale.
+
+**One measured exception.** The detail dialog's synergy partner control carries `p-1.5` (6px). Measured at 1896 × 887 with a pair open, the stats column's content is exactly as tall as the column (586px, nothing to spare), so the 8px step puts a panel with a fixed height into scroll for the sake of 2px. It stays at 6 until that column's height changes.
 
 **Gap categories:** inline `1` · tight `2` · compact `3` · standard `4` (use when unsure) · comfortable `6` · section `8` · page `12`.
 
@@ -305,11 +322,12 @@ The template's "in dark mode, elevation is surface colour, not shadow" does not 
 
 ## 7. Opacity
 
-| Value                                                          | Use                                                                |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `0` / `1`                                                      | Enter and exit transitions (§11)                                   |
-| `0.4`                                                          | Disabled controls, via `:disabled` — always with the control inert |
-| `color-mix(in srgb, var(--color-lagoon-900) 75%, transparent)` | The dialog scrim                                                   |
+| Value                                                          | Use                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `0` / `1`                                                      | Enter and exit transitions (§11)                                                                                                                                                                                                                 |
+| `0.4`                                                          | Disabled controls, via `:disabled` — always with the control inert                                                                                                                                                                               |
+| `0.7`                                                          | De-emphasis — an item that is not the selected one and is still fully interactive, such as an unopened hero in the dialog's roster strip. Distinct from disabled on purpose: a control the user can still press must not read as one they cannot |
+| `color-mix(in srgb, var(--color-lagoon-900) 75%, transparent)` | The dialog scrim                                                                                                                                                                                                                                 |
 
 **Never dim text with opacity to make it secondary** — `--ui-text-muted` is a measured colour; an opacity produces an effective colour that changes with whatever sits behind it. Disabled controls are exempt from the contrast minimums but must stay identifiable without relying on colour alone.
 
@@ -317,17 +335,18 @@ The template's "in dark mode, elevation is surface colour, not shadow" does not 
 
 ## 8. Z-index
 
-| Token          | Value | Layer                                |
-| -------------- | ----- | ------------------------------------ |
-| `--z-base`     | 0     | In-flow content                      |
-| `--z-dropdown` | 10    | Menus, comboboxes, tooltips          |
-| `--z-sticky`   | 20    | The top bar, sticky section headings |
-| `--z-overlay`  | 30    | Modal scrim, the initial-load cover  |
-| `--z-modal`    | 40    | Dialogs, the mobile slideover        |
-| `--z-popover`  | 50    | Floating layers raised from a dialog |
-| `--z-toast`    | 60    | Toasts — always on top               |
+| Token          | Value | Layer                                                                 |
+| -------------- | ----- | --------------------------------------------------------------------- |
+| `--z-base`     | 0     | In-flow content                                                       |
+| `--z-raised`   | 1     | Content lifted within its own card — a control over the art behind it |
+| `--z-dropdown` | 10    | Menus, comboboxes, tooltips                                           |
+| `--z-sticky`   | 20    | The top bar, sticky section headings                                  |
+| `--z-overlay`  | 30    | Modal scrim, the initial-load cover                                   |
+| `--z-modal`    | 40    | Dialogs, the mobile slideover                                         |
+| `--z-popover`  | 50    | Floating layers raised from a dialog                                  |
+| `--z-toast`    | 60    | Toasts — always on top                                                |
 
-No raw literals, and no `9999`. A new layer is **added to this scale** with a name, never wedged between two values. Teleported content (`UModal`, `UDropdownMenu`, `UTooltip`, `UToast` all render to `body`) obeys the same scale; when two layers fight, the scale is what changes.
+`--z-raised` is the one step that is not a layer of the page: it orders two things inside one card, where a positioned control would otherwise fall under a sibling that paints later — a portrait dimmed with `opacity` makes its own stacking context and does exactly that (the mission team's slot controls, §14.2). No raw literals, and no `9999`. A new layer is **added to this scale** with a name, never wedged between two values. Teleported content (`UModal`, `UDropdownMenu`, `UTooltip`, `UToast` all render to `body`) obeys the same scale; when two layers fight, the scale is what changes.
 
 ---
 

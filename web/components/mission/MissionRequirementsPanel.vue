@@ -19,7 +19,7 @@
       </div>
 
       <!-- * The legend always lists every series, so a threshold appearing changes the chart, not the layout. -->
-      <ul class="grid grid-cols-2 gap-x-10 gap-y-2">
+      <ul class="grid grid-cols-2 gap-x-8 gap-y-2">
         <li
           v-for="series in LEGEND"
           :key="series.label"
@@ -33,7 +33,7 @@
       <p class="flex items-center gap-3">
         <!-- * Fixed width, so the panel doesn't breathe as the estimate moves; the certain outcomes add a marker so colour is never the only signal. -->
         <span
-          class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-0.5 text-center font-heading text-2xl font-bold transition-colors duration-(--duration-baseline)"
+          class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-1 text-center font-heading text-2xl font-bold transition-colors duration-(--duration-baseline)"
           :class="outcomeClass"
         >
           <u-icon
