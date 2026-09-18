@@ -109,7 +109,7 @@ Not applicable — layout only, no failure modes of its own.
 - `web/pages/index.vue`: the `@container` wrapper, the grid, and the two upper thresholds.
 - `web/components/mission/MissionMathPanel.vue`: the two-column split and its own bound.
 - `web/components/mission/MissionTeamPanel.vue`: the fluid slot row; `MissionTeamSlot.vue`: the overlay anatomy.
-- `web/components/mission/MissionTemplatesPanel.vue`: the toggle, the compact row, the wordmark.
+- `web/components/mission/MissionTemplateCard.vue`: the toggle, the compact row, the wordmark; `MissionTemplatesPanel.vue` holds the column choice the cards share.
 - `web/components/mission/MissionValueStepper.vue`: the compact stepper.
 - `web/components/mission/MissionRequirementsPanel.vue`: the radar frame's `max-w-full`.
 - `catalyst/annexes/design-system.md` §14.3 (the ladder and its measurements) and §14.2 (touch targets).

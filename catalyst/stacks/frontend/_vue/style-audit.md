@@ -20,6 +20,7 @@ For each file, verify and fix:
 ### Template
 
 - Audit against `vue-style.md` → **Template** (tag casing, sibling blank lines, `:key` discipline, `v-if`/`v-for` separation, shallow conditionals, utility-first CSS).
+- Bindings name values: flag a binding, interpolation or `v-if` carrying three or more operands, a string built from more than one lookup, an object or array literal, a non-null assertion, or a binding the formatter wrapped onto a second line. Vue's `:class`/`:style` syntax, a slot map prop, and listeners are outside this check.
 - Icon-only interactive elements have an accessible name on the control and `aria-hidden` on the icon. Decorative SVGs are `aria-hidden`.
 
 ### Script — imports and the auto-import boundary

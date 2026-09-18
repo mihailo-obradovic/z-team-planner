@@ -16,9 +16,7 @@
         :slot="slot"
         :index="index"
         :count="missionSlots.length"
-        :removable="
-          slot !== GOLEM_COPY_SLOT || isRightmostCopy(missionSlots, index)
-        "
+        :removable="isRemovable(slot, index)"
         @move="(direction) => moveMissionSlot(index, direction)"
         @remove="() => removeMissionSlot(index)"
         @view="handleView"
@@ -64,6 +62,7 @@ import MissionTeamSlot from '@/components/mission/MissionTeamSlot.vue';
 import { GOLEM_COPY_SLOT } from '@/types/mission';
 
 import type { HeroId } from '@/types/hero';
+import type { MissionSlot } from '@/types/mission';
 
 const emit = defineEmits<{
   viewDetail: [heroId: HeroId];
@@ -81,6 +80,11 @@ const { pickerOpen, openPicker, pick } = usePicker();
 
 function handleView(heroId: HeroId) {
   emit('viewDetail', heroId);
+}
+
+// ! Only the rightmost copy may go: removing one in the middle would renumber the copies under the pointer.
+function isRemovable(slot: MissionSlot, index: number): boolean {
+  return slot !== GOLEM_COPY_SLOT || isRightmostCopy(missionSlots.value, index);
 }
 
 // * Heroes are keyed by id so a swap travels; other occupants are keyed by position and change in place.

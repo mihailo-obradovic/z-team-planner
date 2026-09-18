@@ -11,23 +11,12 @@
           <Transition name="state-fade">
             <span v-if="flightShown" class="flex">
               <TooltipButton
-                :text="
-                  flightInfo.name
-                    ? `${flightInfo.name}: ${flightInfo.description}`
-                    : flightInfo.description
-                "
+                :text="flightTooltip"
                 icon="i-lucide-plane"
                 :color="flightColor"
                 :active="flightActive"
                 :disabled="flightLocked"
-                :confirmation="
-                  () =>
-                    confirmationText({
-                      kind: 'flight',
-                      name: flightInfo!.name,
-                      trained: flightActive
-                    })
-                "
+                :confirmation="flightConfirmation"
                 @click="handleToggleFlight"
               />
             </span>
@@ -36,15 +25,7 @@
 
         <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
           <Transition name="state-fade">
-            <span
-              v-if="
-                levelUpPointsUsed > 0 ||
-                hasPowers ||
-                flightActive ||
-                bonusLevel > 0
-              "
-              class="flex"
-            >
+            <span v-if="hasAnythingToReset" class="flex">
               <IconButton
                 icon="i-lucide-rotate-ccw"
                 color="neutral"
@@ -127,23 +108,16 @@
                 />
               </div>
 
-              <span class="w-5 text-center font-bold">{{
-                hero.startingStats[resolvedStat(stat)] +
-                statBonuses[resolvedStat(stat)] +
-                specialPowerBonus[resolvedStat(stat)]
-              }}</span>
+              <span class="w-5 text-center font-bold">
+                {{ shownStat(stat) }}
+              </span>
 
               <div class="flex w-6 items-center justify-center">
                 <IconButton
                   v-if="canLevelUp"
                   icon="i-lucide-plus"
                   color="neutral"
-                  :disabled="
-                    pointsRemaining <= 0 ||
-                    hero.startingStats[resolvedStat(stat)] +
-                      statBonuses[resolvedStat(stat)] >=
-                      MAX_STAT_VALUE
-                  "
+                  :disabled="isStatCapped(stat)"
                   :label="`Add a ${stat} point`"
                   @click="() => handleStatUp(stat)"
                 />
@@ -217,6 +191,54 @@ const flightVisuallyActive = computed(() => {
 
   return flightActive.value && monsterForm.value;
 });
+
+const flightTooltip = computed(() => {
+  const flight = flightInfo.value;
+
+  if (!flight) {
+    return '';
+  }
+
+  return flight.name
+    ? `${flight.name}: ${flight.description}`
+    : flight.description;
+});
+
+function flightConfirmation(): string | null {
+  return confirmationText({
+    kind: 'flight',
+    name: flightInfo.value?.name ?? null,
+    trained: flightActive.value
+  });
+}
+
+const hasAnythingToReset = computed(
+  () =>
+    levelUpPointsUsed.value > 0 ||
+    hasPowers.value ||
+    flightActive.value ||
+    bonusLevel.value > 0
+);
+
+function shownStat(stat: StatName): number {
+  const resolved = resolvedStat(stat);
+
+  return (
+    hero.value.startingStats[resolved] +
+    statBonuses.value[resolved] +
+    specialPowerBonus.value[resolved]
+  );
+}
+
+function isStatCapped(stat: StatName): boolean {
+  const resolved = resolvedStat(stat);
+
+  return (
+    pointsRemaining.value <= 0 ||
+    hero.value.startingStats[resolved] + statBonuses.value[resolved] >=
+      MAX_STAT_VALUE
+  );
+}
 
 const flightColor = computed(() =>
   flightVisuallyActive.value

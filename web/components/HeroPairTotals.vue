@@ -11,7 +11,8 @@
 
       <!-- * Old and new names overlap in one grid cell so the label beside them stays put. -->
       <!-- ! The invisible longest name reserves the cell, or the row re-centres on every switch. -->
-      <span class="grid">
+      <!-- ! `text-left` against the button's own centring: centred text starts further from the label the shorter the name is, so the gap moved by up to 13px between heroes. -->
+      <span class="grid text-left">
         <span class="invisible col-start-1 row-start-1" aria-hidden="true">
           {{ longestPartnerName }}
         </span>
@@ -91,7 +92,6 @@ const { getPairCombinedStats, getSpecialPowerState } = useHeroPlanner();
 
 const { hero } = useHeroDerived(() => props.heroId);
 
-// * The planner's shared pair computation, so this block and the synergy tab agree.
 const pairTotals = computed(() =>
   getPairCombinedStats(props.heroId, props.partner.id)
 );

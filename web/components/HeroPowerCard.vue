@@ -1,5 +1,5 @@
 <template>
-  <!-- * No `click` emit: an undeclared `@click` falls through to the button, and a disabled one fires none. -->
+  <!-- * No `click` emit: declaring one fires it twice, and a disabled button fires none. -->
   <button
     type="button"
     class="block w-full border-2 p-3 text-left transition-colors"
@@ -12,12 +12,11 @@
     :disabled="disabled"
     :aria-pressed="active"
   >
-    <!-- ! `min-w-0` lets the name shrink, so `flex-wrap` can drop the badge to its own line. -->
-    <!-- ! The badge is always laid out and only hidden while inactive: mounting it wrapped the row and grew the card 24px at 320 and 1024. -->
+    <!-- ! The badge is laid out even while hidden: mounting it on activation wrapped the row and grew the card 24px at 320 and 1024. -->
     <span class="flex flex-wrap items-center gap-2">
       <u-icon :name="icon" class="size-4 shrink-0" />
 
-      <span class="min-w-0 font-medium">{{ name }}</span>
+      <span class="font-medium">{{ name }}</span>
 
       <u-badge
         v-if="badge"
@@ -29,10 +28,10 @@
       />
     </span>
 
-    <!-- ! Every variant renders invisibly in one grid cell, reserving the tallest, so toggling never collapses the card. -->
-    <span v-if="descriptionVariants" class="mt-1 grid">
+    <!-- * The tallest variant reserves the row, so toggling never resizes the card. -->
+    <span class="mt-1 grid">
       <span
-        v-for="variant in descriptionVariants"
+        v-for="variant in descriptionVariants ?? []"
         :key="variant"
         class="invisible col-start-1 row-start-1 text-sm text-muted"
         aria-hidden="true"
@@ -43,10 +42,6 @@
       <span class="col-start-1 row-start-1 text-sm text-muted">
         {{ description }}
       </span>
-    </span>
-
-    <span v-else class="mt-1 block text-sm text-muted">
-      {{ description }}
     </span>
   </button>
 </template>
@@ -61,7 +56,7 @@ withDefaults(
     disabled?: boolean;
     // * Visible only while active; its space is always reserved.
     badge?: string;
-    // * Every line the description can be, when its height must not change with state.
+    // * Every line the description can be; the tallest reserves the row.
     descriptionVariants?: string[];
   }>(),
   { disabled: false }

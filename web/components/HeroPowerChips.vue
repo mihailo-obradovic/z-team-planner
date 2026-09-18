@@ -18,31 +18,18 @@
         :swap-key="sonarFormIcon"
         :color="monsterForm ? 'primary' : 'neutral'"
         :active="monsterForm"
-        :confirmation="
-          () =>
-            confirmationText({
-              kind: 'monster-form',
-              form: monsterForm ? 'mega-bat' : 'hybrid'
-            })
-        "
+        :confirmation="monsterFormConfirmation"
         @click="toggleMonsterForm"
       />
     </span>
 
     <span key="starting" class="flex">
       <TooltipButton
-        :text="`${powers[0]!.name}: ${powers[0]!.description}`"
+        :text="startingTooltip"
         :icon="POWER_ICONS[0]"
         :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
         :active="powerStates.startingRevealed"
-        :confirmation="
-          () =>
-            confirmationText({
-              kind: 'starting',
-              name: powers![0]!.name,
-              revealed: powerStates.startingRevealed
-            })
-        "
+        :confirmation="startingConfirmation"
         @click="handleToggleStartingPower"
       />
     </span>
@@ -53,69 +40,24 @@
       class="flex"
     >
       <TooltipButton
-        :text="`${power.name}: ${power.description}`"
+        :text="powerTooltip(power)"
         :icon="POWER_ICONS[index + 1]!"
         :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
         :active="trainablePowerActive(index)"
         :disabled="trainablesLocked"
-        :confirmation="
-          () =>
-            confirmationText({
-              kind: 'upgrade',
-              name: power.name,
-              trained: trainablePowerActive(index)
-            })
-        "
+        :confirmation="() => upgradeConfirmation(power, index)"
         @click="() => handleToggleTrainablePower(index)"
       />
     </span>
 
-    <span v-if="showFlambaeSupernova" key="supernova" class="flex">
+    <span v-if="specialPower?.revealed" :key="specialPower.kind" class="flex">
       <TooltipButton
-        text="Supernova: Set Combat and Mobility to 10"
-        icon="i-lucide-flame"
-        :color="specialPowerState ? 'primary' : 'neutral'"
-        :active="specialPowerState > 0"
-        :confirmation="
-          () =>
-            confirmationText({ kind: 'supernova', on: specialPowerState > 0 })
-        "
-        @click="handleToggleSpecialPower"
-      />
-    </span>
-
-    <span v-if="showCoupeEnPointe" key="en-pointe" class="flex">
-      <TooltipButton
-        :text="coupeTooltip"
-        :icon="coupeIcon"
-        :swap-key="coupeIcon"
-        :color="specialPowerState ? 'primary' : 'neutral'"
-        :active="specialPowerState > 0"
-        :confirmation="
-          () =>
-            confirmationText({
-              kind: 'en-pointe',
-              state: specialPowerState as 0 | 1 | 2,
-              bonus: coupeBonus
-            })
-        "
-        @click="handleToggleSpecialPower"
-      />
-    </span>
-
-    <span v-if="showGolemSpreadThin" key="spread-thin" class="flex">
-      <TooltipButton
-        :text="golemTooltip"
-        icon="i-lucide-expand"
-        :color="specialPowerState ? 'primary' : 'neutral'"
-        :active="specialPowerState > 0"
-        :confirmation="
-          () =>
-            confirmationText({
-              kind: 'spread-thin',
-              slots: specialPowerState as 0 | 1 | 2 | 3
-            })
-        "
+        :text="specialPower.chipTooltip"
+        :icon="specialPower.icon"
+        :swap-key="specialPower.swapKey"
+        :color="specialPower.active ? 'primary' : 'neutral'"
+        :active="specialPower.active"
+        :confirmation="specialPowerConfirmation"
         @click="handleToggleSpecialPower"
       />
     </span>
@@ -123,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { HERO_POWERS, SPECIAL_POWER_MECHANICS } from '@/types/hero';
+import { HERO_POWERS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
@@ -136,7 +78,6 @@ const {
   toggleStartingPower,
   toggleTrainablePower,
   ep8RecruitIds,
-  getSpecialPowerState,
   toggleSpecialPower,
   monsterForm,
   toggleMonsterForm
@@ -144,9 +85,11 @@ const {
 
 const { trainablesLocked } = useHeroDerived(() => props.heroId);
 
-const powerStates = computed(() => getPowerState(props.heroId));
+const { specialPower, specialPowerConfirmation } = useHeroSpecialPower(
+  () => props.heroId
+);
 
-const specialPowerState = computed(() => getSpecialPowerState(props.heroId));
+const powerStates = computed(() => getPowerState(props.heroId));
 
 const powers = computed(() => HERO_POWERS[props.heroId]);
 
@@ -164,6 +107,46 @@ function trainableSlot(index: number): 1 | 2 {
   return index === 0 ? 1 : 2;
 }
 
+const sonarFormIcon = computed(() =>
+  monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user'
+);
+
+const sonarFormTooltip = computed(() =>
+  monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form'
+);
+
+function monsterFormConfirmation(): string | null {
+  return confirmationText({
+    kind: 'monster-form',
+    form: monsterForm.value ? 'mega-bat' : 'hybrid'
+  });
+}
+
+const startingTooltip = computed(() => powerTooltip(powers.value?.[0]));
+
+function startingConfirmation(): string | null {
+  return confirmationText({
+    kind: 'starting',
+    name: powers.value?.[0]?.name ?? '',
+    revealed: powerStates.value.startingRevealed
+  });
+}
+
+function powerTooltip(power: HeroPowerDefinition | undefined): string {
+  return power ? `${power.name}: ${power.description}` : '';
+}
+
+function upgradeConfirmation(
+  power: HeroPowerDefinition,
+  index: number
+): string | null {
+  return confirmationText({
+    kind: 'upgrade',
+    name: power.name,
+    trained: trainablePowerActive(index)
+  });
+}
+
 function trainablePowerActive(index: number) {
   return powerStates.value.trainableSelected === trainableSlot(index);
 }
@@ -179,69 +162,4 @@ function handleToggleTrainablePower(index: number) {
 function handleToggleSpecialPower() {
   toggleSpecialPower(props.heroId);
 }
-
-const showFlambaeSupernova = computed(
-  () => props.heroId === 'flambae' && powerStates.value.trainableSelected === 2
-);
-
-const showCoupeEnPointe = computed(
-  () => props.heroId === 'coupe' && powerStates.value.startingRevealed
-);
-
-const coupeBonus = computed(() =>
-  powerStates.value.trainableSelected === 2
-    ? SPECIAL_POWER_MECHANICS.coupe.upgradeBonus
-    : SPECIAL_POWER_MECHANICS.coupe.baseBonus
-);
-
-const coupeTooltip = computed(() => {
-  const bonus = `+${coupeBonus.value}`;
-
-  if (specialPowerState.value === 1) {
-    return `En Pointe: ${bonus} Combat (active)`;
-  }
-
-  if (specialPowerState.value === 2) {
-    return `En Pointe: ${bonus} Mobility (active)`;
-  }
-
-  return `En Pointe: Click to activate ${bonus} Combat or Mobility`;
-});
-
-const showGolemSpreadThin = computed(
-  () => props.heroId === 'golem' && powerStates.value.trainableSelected === 1
-);
-
-// * Labelled by slot count, since slots are what the player picks at dispatch.
-const golemTooltip = computed(() => {
-  const slots = specialPowerState.value;
-
-  if (slots === 0) {
-    return 'Spread Thin: Click to fill 1–3 empty slots';
-  }
-
-  const percent = slots * SPECIAL_POWER_MECHANICS.golem.percentPerSlot * 100;
-
-  return `Spread Thin: +${slots} slot${slots > 1 ? 's' : ''} (+${percent}%)`;
-});
-
-const coupeIcon = computed(() => {
-  if (specialPowerState.value === 1) {
-    return 'i-lucide-sword';
-  }
-
-  if (specialPowerState.value === 2) {
-    return 'i-lucide-footprints';
-  }
-
-  return 'i-lucide-sparkles';
-});
-
-const sonarFormIcon = computed(() =>
-  monsterForm.value ? 'i-lucide-zap' : 'i-lucide-user'
-);
-
-const sonarFormTooltip = computed(() =>
-  monsterForm.value ? 'Mega Bat Form' : 'Hybrid Form'
-);
 </script>

@@ -38,11 +38,7 @@
         >
           <u-icon
             v-if="outcome !== null"
-            :name="
-              outcome === 'certain'
-                ? 'i-lucide-check-circle-2'
-                : 'i-lucide-x-circle'
-            "
+            :name="outcomeIcon"
             class="size-6 shrink-0 text-neutral-100"
             aria-hidden="true"
           />
@@ -60,7 +56,6 @@
 </template>
 
 <script setup lang="ts">
-// * Each swatch mirrors how StatRadar draws its series.
 const LEGEND = [
   {
     label: 'Required',
@@ -127,6 +122,10 @@ const outcome = computed<'certain' | 'doomed' | null>(() => {
 
   return estimate <= 0 ? 'doomed' : null;
 });
+
+const outcomeIcon = computed(() =>
+  outcome.value === 'certain' ? 'i-lucide-check-circle-2' : 'i-lucide-x-circle'
+);
 
 const outcomeClass = computed(() => {
   if (outcome.value === 'certain') {

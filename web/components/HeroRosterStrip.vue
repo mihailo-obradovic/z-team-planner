@@ -38,7 +38,6 @@ import type { Hero, HeroId } from '@/types/hero';
 
 type StripVariant = 'rail' | 'ribbon';
 
-// * Structural, so the strip needn't import an auto-imported component for its type.
 type RosterRegion = { bringIntoView: (target: HTMLElement) => void };
 
 const STRIP_CLASS: Record<StripVariant, string> = {

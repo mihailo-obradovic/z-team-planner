@@ -125,7 +125,7 @@ const { synergyPairColumns, ep8Recruits, showEp8Recruits, getEffectiveStats } =
   useHeroPlanner();
 
 const { hero } = useHeroDerived(() => props.heroId);
-// * The overview grid's order, since the rail is a shortcut to those cards.
+
 const rosterOrder = computed(() => {
   const paired = synergyPairColumns.value.flatMap((column) => [
     column.top,
@@ -135,7 +135,6 @@ const rosterOrder = computed(() => {
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
 
-// * Axis order starts at Combat, the apex, and runs clockwise, putting Intellect opposite Vigor and Charisma opposite Mobility.
 const radarAxes = computed(() =>
   RADAR_STAT_ORDER.map((stat) => ({
     key: stat,
@@ -160,7 +159,6 @@ function handleSelect(heroId: HeroId) {
   emit('select', heroId);
 }
 
-// * Follows every change of the open hero, including ones the app makes.
 function followMarkedHero() {
   rosterRail.value?.follow();
   rosterRibbon.value?.follow();

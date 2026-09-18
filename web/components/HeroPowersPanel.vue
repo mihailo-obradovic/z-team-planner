@@ -51,13 +51,13 @@
             />
 
             <HeroPowerCard
-              v-if="specialAbility"
-              :icon="specialAbility.icon"
-              :name="specialAbility.name"
-              :description="specialAbility.description"
-              :description-variants="specialAbility.descriptionVariants"
-              :active="specialAbility.active"
-              :disabled="specialAbility.disabled"
+              v-if="specialPower"
+              :icon="specialPower.icon"
+              :name="specialPower.name"
+              :description="specialPower.description"
+              :description-variants="specialPower.descriptionVariants"
+              :active="specialPower.active"
+              :disabled="specialPower.locked"
               badge="Active"
               @click="handleToggleSpecialPower"
             />
@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import HeroPowerCard from '@/components/HeroPowerCard.vue';
 
-import { HERO_POWERS, SPECIAL_POWER_MECHANICS } from '@/types/hero';
+import { HERO_POWERS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
@@ -83,7 +83,6 @@ const {
   getPowerState,
   toggleStartingPower,
   toggleTrainablePower,
-  getSpecialPowerState,
   toggleSpecialPower,
   monsterForm,
   toggleMonsterForm,
@@ -98,7 +97,7 @@ const {
   trainablesLocked
 } = useHeroDerived(() => props.heroId);
 
-const { specialAbility, handleToggleSpecialPower } = useSpecialAbility();
+const { specialPower } = useHeroSpecialPower(() => props.heroId);
 
 const displayPowers = computed(() => HERO_POWERS[props.heroId] ?? []);
 
@@ -108,7 +107,7 @@ const hasEffects = computed(
   () =>
     (flightInfo.value && flightShown.value) ||
     props.heroId === 'sonar' ||
-    !!specialAbility.value
+    !!specialPower.value
 );
 
 function isPowerActive(power: HeroPowerDefinition): boolean {
@@ -155,99 +154,11 @@ function handleToggleFlight() {
   toggleFlight(props.heroId);
 }
 
-function useSpecialAbility() {
-  const specialAbility = computed(() => {
-    const mechanics =
-      SPECIAL_POWER_MECHANICS[
-        props.heroId as keyof typeof SPECIAL_POWER_MECHANICS
-      ];
-
-    if (!mechanics) {
-      return null;
-    }
-
-    const state = getSpecialPowerState(props.heroId);
-
-    if (mechanics.type === 'supernova') {
-      const description = 'Combat and Mobility set to 10 after two successes.';
-
-      return {
-        name: 'Supernova',
-        description,
-        descriptionVariants: [description],
-        icon: 'i-lucide-flame',
-        active: state > 0,
-        disabled: powerState.value.trainableSelected !== 2
-      };
-    }
-
-    if (mechanics.type === 'en-pointe') {
-      const alaSecondeTrained = powerState.value.trainableSelected === 2;
-      const bonus = `+${alaSecondeTrained ? mechanics.upgradeBonus : mechanics.baseBonus}`;
-
-      return {
-        name: 'En Pointe',
-        description: enPointeDescription(bonus, state),
-        descriptionVariants: [0, 1, 2].map((each) =>
-          enPointeDescription(bonus, each)
-        ),
-        icon:
-          state === 1
-            ? 'i-lucide-sword'
-            : state === 2
-              ? 'i-lucide-footprints'
-              : 'i-lucide-sparkles',
-        active: state > 0,
-        disabled: false
-      };
-    }
-
-    if (mechanics.type === 'spread-thin') {
-      const states = Array.from(
-        { length: mechanics.max + 1 },
-        (_, each) => each
-      );
-
-      return {
-        name: 'Spread Thin',
-        description: spreadThinDescription(state),
-        descriptionVariants: states.map(spreadThinDescription),
-        icon: 'i-lucide-expand',
-        active: state > 0,
-        disabled: powerState.value.trainableSelected !== 1
-      };
-    }
-
-    return null;
-  });
-
-  // * One source, so the shown line and the reserved variants can't drift.
-  function spreadThinDescription(state: number): string {
-    if (state === 0) {
-      return 'Expands into each empty slot, raising every stat 25% per slot.';
-    }
-
-    const slots = state === 1 ? '1 slot' : `${state} slots`;
-    const percent = state * SPECIAL_POWER_MECHANICS.golem.percentPerSlot * 100;
-
-    return `Expanded into ${slots} — every stat up ${percent}%.`;
+function handleToggleSpecialPower() {
+  if (specialPower.value?.locked) {
+    return;
   }
 
-  function enPointeDescription(bonus: string, state: number): string {
-    const statLabel =
-      state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
-
-    return `${bonus} ${statLabel} when placed in a specific slot.`;
-  }
-
-  function handleToggleSpecialPower() {
-    if (specialAbility.value?.disabled) {
-      return;
-    }
-
-    toggleSpecialPower(props.heroId);
-  }
-
-  return { specialAbility, handleToggleSpecialPower };
+  toggleSpecialPower(props.heroId);
 }
 </script>

@@ -1,12 +1,6 @@
 <template>
   <div class="flex items-center gap-2">
-    <div
-      :class="
-        block && isViewingSharedBuild
-          ? 'flex min-w-0 flex-1 basis-0 items-center gap-2'
-          : 'contents'
-      "
-    >
+    <div :class="clusterClass">
       <template v-if="isViewingSharedBuild">
         <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
           Viewing shared build
@@ -117,6 +111,13 @@ const saveLabel = computed(() =>
 );
 
 const saveLabelled = computed(() => props.labelled && !props.block);
+
+// * The shared-build branch is a row of its own in the action bar; everywhere else the controls sit directly in the bar's own row.
+const clusterClass = computed(() =>
+  props.block && isViewingSharedBuild.value
+    ? 'flex min-w-0 flex-1 basis-0 items-center gap-2'
+    : 'contents'
+);
 
 function openSaveShared() {
   saveSharedOpen.value = true;

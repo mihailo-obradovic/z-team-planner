@@ -4,6 +4,13 @@ import { MISSION_TEMPLATE_COUNT } from '@/types/mission';
 import type { StatName } from '@/types/hero';
 import type { MissionTemplate } from '@/types/mission';
 
+type MissionThresholdEdit = {
+  template: number;
+  kind: 'xp' | 'fail';
+  stat: StatName;
+  value: number | null;
+};
+
 // * Every write is guarded: an out-of-range template, stat value or index is a silent no-op (feature 015).
 export function useMissionTemplates() {
   const { missionTemplates, missionActiveTemplate } = usePlannerState();
@@ -25,12 +32,13 @@ export function useMissionTemplates() {
   }
 
   // * Both condition columns are configurable on any template. `null` unsets.
-  function setMissionThreshold(
-    template: number,
-    kind: 'xp' | 'fail',
-    stat: StatName,
-    value: number | null
-  ) {
+  // * One options object: four positional arguments read as nothing at a call site, and three of these are numbers or short unions.
+  function setMissionThreshold({
+    template,
+    kind,
+    stat,
+    value
+  }: MissionThresholdEdit) {
     if (!isTemplateIndex(template)) {
       return;
     }

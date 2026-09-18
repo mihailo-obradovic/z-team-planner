@@ -3,7 +3,7 @@
     <IconButton
       icon="i-lucide-minus"
       :label="`Decrease ${label}`"
-      :disabled="value === null || (!unsettable && value <= 0)"
+      :disabled="decreaseDisabled"
       @click="handleDecrease"
     />
 
@@ -39,6 +39,11 @@ const props = withDefaults(
 const emit = defineEmits<{
   change: [value: number | null];
 }>();
+
+// * An unsettable value steps down to the dash; a required one stops at zero.
+const decreaseDisabled = computed(
+  () => props.value === null || (!props.unsettable && props.value <= 0)
+);
 
 function handleDecrease() {
   step(-1);
