@@ -84,13 +84,19 @@
     <div class="flex justify-between gap-2 p-3 sm:gap-3">
       <!-- ! Shrinkable because the portrait is the only part that degrades gracefully below ~328px; the stat steppers are tap targets and must not shrink. -->
       <div class="flex w-27 min-w-0 shrink flex-col gap-2">
-        <HeroPortrait
-          :hero-id="heroId"
-          usage="card"
-          :alt="hero.name"
-          class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+        <button
+          type="button"
+          class="block w-full cursor-pointer"
+          :aria-label="`View ${hero.name}`"
           @click="handleViewDetail"
-        />
+        >
+          <HeroPortrait
+            :hero-id="heroId"
+            usage="card"
+            :alt="hero.name"
+            class="aspect-square w-full border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+          />
+        </button>
 
         <HeroPowerChips :hero-id="heroId" />
       </div>

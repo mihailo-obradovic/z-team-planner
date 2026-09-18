@@ -1,13 +1,19 @@
 <template>
   <!-- * w-27 is the chip box's 108px, the width four chips need. -->
   <div class="flex w-27 shrink-0 flex-col gap-2 lg:w-56">
-    <HeroPortrait
-      :hero-id="heroId"
-      usage="synergy"
-      :alt="hero.name"
-      class="aspect-square w-full cursor-pointer border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+    <button
+      type="button"
+      class="block w-full cursor-pointer"
+      :aria-label="`View ${hero.name}`"
       @click="handleViewDetail"
-    />
+    >
+      <HeroPortrait
+        :hero-id="heroId"
+        usage="synergy"
+        :alt="hero.name"
+        class="aspect-square w-full border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+      />
+    </button>
 
     <HeroPowerChips :hero-id="heroId" />
   </div>
