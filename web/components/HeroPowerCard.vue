@@ -13,17 +13,19 @@
     :aria-pressed="active"
   >
     <!-- ! `min-w-0` lets the name shrink, so `flex-wrap` can drop the badge to its own line. -->
+    <!-- ! The badge is always laid out and only hidden while inactive: mounting it wrapped the row and grew the card 24px at 320 and 1024. -->
     <span class="flex flex-wrap items-center gap-2">
       <u-icon :name="icon" class="size-4 shrink-0" />
 
       <span class="min-w-0 font-medium">{{ name }}</span>
 
       <u-badge
-        v-if="active && badge"
+        v-if="badge"
         :label="badge"
         size="xs"
         variant="subtle"
         class="shrink-0"
+        :class="active ? undefined : 'invisible'"
       />
     </span>
 
@@ -57,7 +59,7 @@ withDefaults(
     description: string;
     active: boolean;
     disabled?: boolean;
-    // * Shown only while active.
+    // * Visible only while active; its space is always reserved.
     badge?: string;
     // * Every line the description can be, when its height must not change with state.
     descriptionVariants?: string[];

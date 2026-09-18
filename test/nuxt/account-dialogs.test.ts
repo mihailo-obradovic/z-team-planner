@@ -71,6 +71,19 @@ async function openDialog() {
   );
 }
 
+// * The summary reserves its row with invisible, aria-hidden copies of every variant, so assertions read only what is shown.
+function shownText(page: Awaited<ReturnType<typeof openDialog>>): string {
+  const clone = document.createElement('div');
+
+  clone.innerHTML = page.html();
+
+  clone.querySelectorAll('[aria-hidden="true"]').forEach((ghost) => {
+    ghost.remove();
+  });
+
+  return clone.textContent ?? '';
+}
+
 describe('AccountDialogs', () => {
   beforeEach(() => {
     fetchMeSpy.mockReset();
@@ -86,10 +99,10 @@ describe('AccountDialogs', () => {
 
     const page = await openDialog();
 
-    await vi.waitFor(() => expect(page.text()).toContain('the 3 builds'));
+    await vi.waitFor(() => expect(shownText(page)).toContain('the 3 builds'));
     // * The share links are the part a stranger notices, so the warning is only shown when there is something to warn about.
-    expect(page.text()).toContain('share links will stop working');
-    expect(page.text()).toContain(
+    expect(shownText(page)).toContain('share links will stop working');
+    expect(shownText(page)).toContain(
       'Builds saved in this browser are not affected'
     );
   });
@@ -100,9 +113,9 @@ describe('AccountDialogs', () => {
     const page = await openDialog();
 
     await vi.waitFor(() =>
-      expect(page.text()).toContain('There are no builds saved to it')
+      expect(shownText(page)).toContain('There are no builds saved to it')
     );
-    expect(page.text()).not.toContain('share links will stop working');
+    expect(shownText(page)).not.toContain('share links will stop working');
   });
 
   it('counts one build in the singular', async () => {

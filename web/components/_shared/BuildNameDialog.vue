@@ -8,6 +8,11 @@
           autofocus
           @keydown.enter="handleConfirm"
         />
+
+        <!-- ! An empty help line holds the error's place: without it an error mounting mid-typing moved the confirm button 14px. -->
+        <template #help>
+          <span aria-hidden="true">&nbsp;</span>
+        </template>
       </u-form-field>
     </template>
 
