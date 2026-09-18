@@ -135,6 +135,23 @@ const rosterOrder = computed(() => {
   return showEp8Recruits.value ? [...paired, ...ep8Recruits.value] : paired;
 });
 
+// * Axis order starts at Combat, the apex, and runs clockwise, putting Intellect opposite Vigor and Charisma opposite Mobility.
+const radarAxes = computed(() =>
+  RADAR_STAT_ORDER.map((stat) => ({
+    key: stat,
+    label: stat,
+    icon: STAT_ICONS[stat],
+    value: props.heroId ? getEffectiveStats(props.heroId)[stat] : 0
+  }))
+);
+
+const longestHeroName = computed(() =>
+  rosterOrder.value.reduce(
+    (longest: string, rosterHero) =>
+      rosterHero.name.length > longest.length ? rosterHero.name : longest,
+    ''
+  )
+);
 function handleClose() {
   emit('close');
 }
@@ -183,22 +200,4 @@ watch(
 onMounted(() => {
   requestAnimationFrame(followMarkedHero);
 });
-
-// * Axis order starts at Combat, the apex, and runs clockwise, putting Intellect opposite Vigor and Charisma opposite Mobility.
-const radarAxes = computed(() =>
-  RADAR_STAT_ORDER.map((stat) => ({
-    key: stat,
-    label: stat,
-    icon: STAT_ICONS[stat],
-    value: props.heroId ? getEffectiveStats(props.heroId)[stat] : 0
-  }))
-);
-
-const longestHeroName = computed(() =>
-  rosterOrder.value.reduce(
-    (longest: string, rosterHero) =>
-      rosterHero.name.length > longest.length ? rosterHero.name : longest,
-    ''
-  )
-);
 </script>

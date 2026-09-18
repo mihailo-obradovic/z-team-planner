@@ -37,6 +37,11 @@ const authStore = useAuthStore();
 const { isSignedIn, activeAccountBuildId } = storeToRefs(authStore);
 const { setActiveAccountBuildId } = authStore;
 
+const { data: accountBuilds, isPending: accountBuildsPending } =
+  useFetchBuilds();
+
+const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
+
 const { localBuilds, activeBuildId, activeBuildName, loadLocalBuild } =
   useLocalBuilds();
 
@@ -59,11 +64,6 @@ const isMenuOpen = computed({
     buildMenuTier.value = open ? props.tier : null;
   }
 });
-
-const { data: accountBuilds, isPending: accountBuildsPending } =
-  useFetchBuilds();
-
-const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
 
 const activeAccountBuild = computed(() =>
   accountBuilds.value?.items.find(

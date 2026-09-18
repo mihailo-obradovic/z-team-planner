@@ -55,6 +55,13 @@ const toast = useToast();
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 
+const { mutate: importBuilds, isLoading: isImporting } = useImportBuilds({
+  onSuccess: (report) => {
+    reportOutcome(report);
+    close();
+  }
+});
+
 const { localBuilds } = useLocalBuilds();
 
 const isOpen = ref(false);
@@ -71,13 +78,6 @@ const intro = computed(
     `You have ${plural(localBuilds.value.length, 'build')} saved in this browser. ` +
     'Keep them in your account and they follow you to other devices — the copies here stay either way.'
 );
-
-const { mutate: importBuilds, isLoading: isImporting } = useImportBuilds({
-  onSuccess: (report) => {
-    reportOutcome(report);
-    close();
-  }
-});
 
 function plural(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;

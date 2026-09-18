@@ -98,11 +98,11 @@ const {
   trainablesLocked
 } = useHeroDerived(() => props.heroId);
 
+const { specialAbility, handleToggleSpecialPower } = useSpecialAbility();
+
 const displayPowers = computed(() => HERO_POWERS[props.heroId] ?? []);
 
 const powerState = computed(() => getPowerState(props.heroId));
-
-const { specialAbility, handleToggleSpecialPower } = useSpecialAbility();
 
 const hasEffects = computed(
   () =>

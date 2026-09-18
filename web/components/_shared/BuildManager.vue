@@ -93,6 +93,13 @@ const toast = useToast();
 
 const { activeAccountBuildId } = storeToRefs(useAuthStore());
 
+const { mutate: patchBuild } = useUpdateBuild({
+  onSuccess: (updated, { payload }) => {
+    updateSavedSnapshot(payload.data);
+    toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
+  }
+});
+
 const plannerState = usePlannerState();
 
 const { localBuilds, saveLocalBuild, backToMyBuild } = useLocalBuilds();
@@ -104,13 +111,6 @@ const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 const { saveSharedOpen, openNewBuild } = useBuildDialogs();
 
 const { handleShare } = useShareFlow();
-
-const { mutate: patchBuild } = useUpdateBuild({
-  onSuccess: (updated, { payload }) => {
-    updateSavedSnapshot(payload.data);
-    toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
-  }
-});
 
 const saveLabel = computed(() =>
   hasUnsavedChanges.value ? 'Save — unsaved changes' : 'Save'

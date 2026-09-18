@@ -45,13 +45,6 @@ import {
 
 const toast = useToast();
 
-const { accountSaveOpen, accountSaveName, accountDeleteOpen } =
-  useBuildDialogs();
-
-const plannerState = usePlannerState();
-
-const { updateSavedSnapshot } = useUnsavedChanges();
-
 const authStore = useAuthStore();
 const { activeAccountBuildId } = storeToRefs(authStore);
 const { setActiveAccountBuildId } = authStore;
@@ -79,6 +72,13 @@ const { mutate: deleteBuild, isLoading: isDeleting } = useDeleteBuild({
     toast.add({ title: 'Build deleted', color: 'success' });
   }
 });
+
+const { accountSaveOpen, accountSaveName, accountDeleteOpen } =
+  useBuildDialogs();
+
+const plannerState = usePlannerState();
+
+const { updateSavedSnapshot } = useUnsavedChanges();
 
 const externalErrors = useExternalErrors(useValidationErrors(createError));
 

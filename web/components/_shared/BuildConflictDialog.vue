@@ -35,18 +35,7 @@ import { useCreateBuild } from '@/services/queries/useBuildQueries';
 
 const toast = useToast();
 
-const { conflictOpen, conflictBuild } = useBuildDialogs();
-
-const { loadAccountBuild } = useBuildMode();
-const plannerState = usePlannerState();
-
 const { setActiveAccountBuildId } = useAuthStore();
-
-const { updateSavedSnapshot } = useUnsavedChanges();
-
-const savedElsewhereAt = computed(() =>
-  formatTimestamp(conflictBuild.value?.updated_at)
-);
 
 const { mutate: createBuild } = useCreateBuild({
   onSuccess: (created, { data }) => {
@@ -55,6 +44,17 @@ const { mutate: createBuild } = useCreateBuild({
     toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
   }
 });
+
+const { conflictOpen, conflictBuild } = useBuildDialogs();
+
+const { loadAccountBuild } = useBuildMode();
+const plannerState = usePlannerState();
+
+const { updateSavedSnapshot } = useUnsavedChanges();
+
+const savedElsewhereAt = computed(() =>
+  formatTimestamp(conflictBuild.value?.updated_at)
+);
 
 async function handleReloadTheirs() {
   if (!conflictBuild.value) {
