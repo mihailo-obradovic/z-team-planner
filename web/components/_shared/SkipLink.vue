@@ -11,6 +11,8 @@
 </template>
 
 <script setup lang="ts">
+import { MAIN_CONTENT_ID } from '@/types/header';
+
 // ! Focus moves by script rather than by the fragment: the router would otherwise put the id into the planner's URL.
 function handleSkip(event: MouseEvent) {
   event.preventDefault();

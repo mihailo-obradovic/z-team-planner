@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { MAIN_CONTENT_ID } from '@/utils/mainContent';
+import { MAIN_CONTENT_ID } from '@/types/header';
 
 // * The skip link and the landmark it jumps to live in different files, so a rename that reaches only one of them would leave the link pointing at nothing.
 

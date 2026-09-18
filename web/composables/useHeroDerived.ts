@@ -5,9 +5,9 @@ import {
   MAX_BONUS_POINTS,
   MAX_FLIGHT_TRAININGS,
   MAX_LEVEL_UPS,
-  MAX_POWER_TRAININGS
+  MAX_POWER_TRAININGS,
+  FLIGHT_SCHOOL_HEROES
 } from '@/types/hero';
-import { isFlightTrainable } from '@/utils/isFlightTrainable';
 
 import type { Hero, HeroId, HeroStats, StatName } from '@/types/hero';
 
@@ -134,6 +134,11 @@ export function useHeroDerived(heroId: MaybeRefOrGetter<HeroId | null>) {
         trainingsUsed.value >= MAX_POWER_TRAININGS)
     );
   });
+
+  // * Every other hero's flight is settled by their own data — innate, power-driven, or absent — so no control on a card can toggle it.
+  function isFlightTrainable(heroId: HeroId): boolean {
+    return (FLIGHT_SCHOOL_HEROES as readonly HeroId[]).includes(heroId);
+  }
 
   // * Sonar's stats are read under whichever form is active, so the stat a row displays is not always the stat it is named after.
   function resolvedStat(stat: StatName): StatName {

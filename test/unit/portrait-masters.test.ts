@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { HEROES } from '@/types/hero';
-import { heroPortraitSrc } from '@/utils/heroPortraitSrc';
+import { heroPortraitSrc } from '@/utils/heroDisplay';
 
-import type { SonarForm } from '@/utils/heroPortraitSrc';
+import type { SonarForm } from '@/utils/heroDisplay';
 
 // * Feature 021: one lossless master per portrait at the bust's native size — 450 to 512 on a side, square but for Sonar's monster bust, which the game publishes at 450×452. The file is what Vercel resizes from, so a lossy master would be encoded twice, and a padded one would show its margin wherever the box is filled edge to edge.
 const SMALLEST_MASTER = 450;

@@ -109,7 +109,7 @@ Not role-specific.
 
 - `web/config/portraits.ts` — the widths and `portraitScreens()`; `web/components/HeroPortrait.vue` — the one `NuxtImg` for portraits.
 - `nuxt.config.ts` — the `image` block and the cache TTL under `nitro`; `public/images/portraits/` — the masters.
-- `web/utils/heroPortraitSrc.ts` — the path contract, untouched; `operations.md` — the cache reset.
+- `web/utils/heroDisplay.ts` — the path contract, untouched; `operations.md` — the cache reset.
 
 ## Dependencies
 

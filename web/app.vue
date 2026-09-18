@@ -98,6 +98,8 @@
 </template>
 
 <script setup lang="ts">
+import { MAIN_CONTENT_ID } from '@/types/header';
+
 const { name: title, description } = useSiteConfig();
 
 const { loadInitialBuild } = useInitialBuild();
