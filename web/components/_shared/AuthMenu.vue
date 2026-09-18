@@ -72,9 +72,7 @@ const { isSignedIn, isResolved, isSignInUnavailable, user } =
 
 const { signIn, signOut } = useAuth();
 
-const { openBuildMenu } = useBuildDialogs();
-
-const { deleteAccountOpen } = useAccountDialogs();
+const { openBuildMenu, deleteAccountOpen } = useDialogs();
 
 const accountName = computed(() => {
   const { displayName, email } = user.value ?? {};

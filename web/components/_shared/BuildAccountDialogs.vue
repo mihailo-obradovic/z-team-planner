@@ -73,8 +73,7 @@ const { mutate: deleteBuild, isLoading: isDeleting } = useDeleteBuild({
   }
 });
 
-const { accountSaveOpen, accountSaveName, accountDeleteOpen } =
-  useBuildDialogs();
+const { accountSaveOpen, accountSaveName, accountDeleteOpen } = useDialogs();
 
 const plannerState = usePlannerState();
 

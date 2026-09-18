@@ -114,7 +114,7 @@ Every status goes through feature 006's central policy; this feature only decide
 
 - `web/services/builds.api.ts`, `web/services/queries/useBuildQueries.ts`, `web/services/queries/chainOnSettled.ts`.
 - `web/components/_shared/BuildManager.vue`, `web/components/_shared/BuildMenu.vue` (the account list), `web/components/_shared/BuildDialogs.vue`, `web/components/_shared/BuildNameDialog.vue` (the name form the save, create and rename dialogs share).
-- `web/composables/useBuildDialogs.ts` (the conflict dialog's state), `web/composables/useBuildNameForm.ts`, `web/composables/useApiErrorWatcher.ts`.
+- `web/composables/useDialogs.ts` (the conflict dialog's state), `web/composables/useBuildNameForm.ts`, `web/composables/useApiErrorWatcher.ts`.
 
 ## Dependencies
 

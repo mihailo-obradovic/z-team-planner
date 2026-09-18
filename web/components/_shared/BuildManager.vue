@@ -108,7 +108,7 @@ const { isViewingSharedBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
-const { saveSharedOpen, openNewBuild } = useBuildDialogs();
+const { saveSharedOpen, openNewBuild } = useDialogs();
 
 const { handleShare } = useShareFlow();
 

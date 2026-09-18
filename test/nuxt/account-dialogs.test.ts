@@ -60,7 +60,7 @@ async function openDialog() {
           email: 'alice@example.com',
           displayName: 'Alice'
         });
-        useAccountDialogs().deleteAccountOpen.value = true;
+        useDialogs().deleteAccountOpen.value = true;
         // * The query cache outlives a mount, so without this every test after the first would read the first one's profile instead of its own.
         void useQueryCache().invalidateQueries({ key: ['me'] });
 
@@ -140,7 +140,7 @@ describe('AccountDialogs', () => {
     await vi.waitFor(() => expect(deleteMeSpy).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(signOutSpy).toHaveBeenCalledOnce());
     expect(toasts[0]?.title).toBe('Your account has been deleted');
-    expect(useAccountDialogs().deleteAccountOpen.value).toBe(false);
+    expect(useDialogs().deleteAccountOpen.value).toBe(false);
   });
 
   it('leaves the user signed in when the delete fails', async () => {
@@ -161,6 +161,6 @@ describe('AccountDialogs', () => {
 
     // ! The account still exists — signing out here would strand the user outside an account they still have (feature 004, Error Handling: 503, nothing deleted).
     expect(signOutSpy).not.toHaveBeenCalled();
-    expect(useAccountDialogs().deleteAccountOpen.value).toBe(true);
+    expect(useDialogs().deleteAccountOpen.value).toBe(true);
   });
 });

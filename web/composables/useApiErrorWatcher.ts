@@ -9,7 +9,7 @@ export function useApiErrorWatcher(
   const route = useRoute();
   const toast = useToast();
   const { resetUser } = useAuthStore();
-  const { openConflict } = useBuildDialogs();
+  const { openConflict } = useDialogs();
 
   function showToast(message: string) {
     toast.add({ title: message, color: 'error' });

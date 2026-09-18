@@ -55,7 +55,7 @@ const {
   openNewBuild,
   openRename,
   openAccountSave
-} = useBuildDialogs();
+} = useDialogs();
 
 // * One open state shared by every tier's instance, so only the visible one is live.
 const isMenuOpen = computed({

@@ -2,7 +2,8 @@ import { CloudBuildSchema, type CloudBuild } from '@/types/api';
 
 import type { HeaderTier } from '@/types/header';
 
-export function useBuildDialogs() {
+// * Every overlay whose openers sit outside it: the build dialogs, and the delete-account dialog the profile menu raises from any header tier. A dialog with one nearby opener keeps its own `defineModel('open')` instead.
+export function useDialogs() {
   const buildMenuTier = useState<HeaderTier | null>(
     'build-menu-open-tier',
     () => null
@@ -19,6 +20,8 @@ export function useBuildDialogs() {
     'build-dialog-account-delete',
     () => false
   );
+
+  const deleteAccountOpen = useState('account-dialog-delete', () => false);
 
   const conflictOpen = useState('build-dialog-conflict', () => false);
   const conflictBuild = useState<CloudBuild | null>(
@@ -69,6 +72,7 @@ export function useBuildDialogs() {
     accountSaveName,
     accountDeleteOpen,
     openAccountSave,
+    deleteAccountOpen,
     conflictOpen,
     conflictBuild,
     openConflict,

@@ -68,7 +68,7 @@ const {
   renameOpen,
   newBuildName,
   renameBuildName
-} = useBuildDialogs();
+} = useDialogs();
 
 const { r$: nameForm } = useBuildNameForm(newBuildName, { requireName: false });
 

@@ -45,7 +45,7 @@ const { mutate: createBuild } = useCreateBuild({
   }
 });
 
-const { conflictOpen, conflictBuild } = useBuildDialogs();
+const { conflictOpen, conflictBuild } = useDialogs();
 
 const { loadAccountBuild } = useBuildMode();
 const plannerState = usePlannerState();

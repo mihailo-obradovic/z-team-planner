@@ -52,7 +52,7 @@ const { isSignedIn } = storeToRefs(useAuthStore());
 
 const { signOut } = useAuth();
 
-const { deleteAccountOpen } = useAccountDialogs();
+const { deleteAccountOpen } = useDialogs();
 
 const { data: me, isPending } = useFetchMe({
   enabled: () => isSignedIn.value && deleteAccountOpen.value
