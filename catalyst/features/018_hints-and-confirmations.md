@@ -112,7 +112,7 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 
 ## Entry Points
 
-- `web/composables/useInputMode.ts`: the reactive mode.
+- `web/composables/ui/useInputMode.ts`: the reactive mode.
 - `web/components/_shared/TooltipButton.vue`: the single wrapper under every card chip; gains the mode switch and the confirmation rendering.
 - `web/components/hero/HeroPowerChips.vue`, `web/components/hero/HeroCard.vue` (flight): supply the confirmation text per chip from the resulting state.
 - `web/utils/confirmationText.ts`: the pure wording function, unit-tested.

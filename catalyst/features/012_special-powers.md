@@ -99,9 +99,9 @@ Not role-specific.
 
 ## Entry Points
 
-- `web/composables/useHeroPowerTraining.ts`: `toggleSpecialPower`, `getSpecialPowerBonus`, `allSpecialPowerBonuses`.
+- `web/composables/hero/useHeroPowerTraining.ts`: `toggleSpecialPower`, `getSpecialPowerBonus`, `allSpecialPowerBonuses`.
 - `web/types/hero.ts`: `SPECIAL_POWER_MECHANICS`.
-- `web/composables/useHeroSpecialPower.ts` (the one reading both surfaces take: `revealed` puts the chip on the card, `locked` greys the panel's effect row); `web/components/hero/HeroPowerChips.vue` (the chip), `web/components/hero/HeroPowersPanel.vue` (the effect row) and `web/components/hero/HeroPairTotals.vue` (the pair total).
+- `web/composables/hero/useHeroSpecialPower.ts` (the one reading both surfaces take: `revealed` puts the chip on the card, `locked` greys the panel's effect row); `web/components/hero/HeroPowerChips.vue` (the chip), `web/components/hero/HeroPowersPanel.vue` (the effect row) and `web/components/hero/HeroPairTotals.vue` (the pair total).
 - `scripts/export-game-data.ts` → `shared/game-data.json` → `app/services/validation.py`.
 
 ## Dependencies
