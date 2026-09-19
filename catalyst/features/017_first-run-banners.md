@@ -116,7 +116,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Entry Points
 
-- `web/components/_shared/FirstRunBanners.vue` — the region and both banners, and the `first-run-banner` transition name.
+- `web/components/shell/FirstRunBanners.vue` — the region and both banners, and the `first-run-banner` transition name.
 - `web/assets/css/motion.css` — the arrival: the row's height, the body's travel, and their reduced-motion guard.
 - `web/app.vue` — where the region mounts, inside `<ClientOnly>`, below `<u-main>` and above the mobile build bar.
 

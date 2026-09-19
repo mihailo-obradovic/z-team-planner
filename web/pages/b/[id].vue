@@ -72,7 +72,8 @@
 </template>
 
 <script setup lang="ts">
-import HeroCard from '@/components/HeroCard.vue';
+import PrivacyLink from '@/components/shell/PrivacyLink.vue';
+import HeroCard from '@/components/hero/HeroCard.vue';
 
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 import { useFetchSharedBuild } from '@/services/queries/useSharedQueries';

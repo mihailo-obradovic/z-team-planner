@@ -109,7 +109,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Entry Points
 
 - API: `app/routes/shared.py` (the route and its limiter dependency), `app/utils/ratelimit.py`, `app/repositories/builds.py` (`get_public`), `app/schemas/builds.py` (`PublicBuildOut`).
-- Web: `web/pages/b/[id].vue`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/_shared/BuildManager.vue` (**Share**).
+- Web: `web/pages/b/[id].vue`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
 - `nuxt.config.ts`: the `/b/**` route rule that turns SSR off.
 
 ## Dependencies

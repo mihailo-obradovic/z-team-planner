@@ -57,7 +57,6 @@ const {
   openAccountSave
 } = useDialogs();
 
-// * One open state shared by every tier's instance, so only the visible one is live.
 const isMenuOpen = computed({
   get: () => buildMenuTier.value === props.tier,
   set: (open: boolean) => {
@@ -167,7 +166,6 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   return [localBuildItems, account, accountActions, management];
 });
 
-// * Picking a new id lets the watcher below load it once fetched; picking the open one reloads it in place.
 async function openAccountBuild(id: string) {
   if (id !== activeAccountBuildId.value) {
     setActiveAccountBuildId(id);
@@ -179,6 +177,7 @@ async function openAccountBuild(id: string) {
 
   if (opened) {
     await loadAccountBuild(opened.data);
+
     updateSavedSnapshot();
   }
 }
@@ -186,6 +185,7 @@ async function openAccountBuild(id: string) {
 watch(openedAccountBuild, async (cloudBuild) => {
   if (cloudBuild) {
     await loadAccountBuild(cloudBuild.data);
+
     updateSavedSnapshot();
   }
 });

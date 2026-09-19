@@ -16,7 +16,7 @@ function read(path: string): string {
 describe('skip link', () => {
   it('is the shell’s first element, and the landmark carries the id it targets', () => {
     const shell = read('app.vue');
-    const link = read('components/_shared/SkipLink.vue');
+    const link = read('components/shell/SkipLink.vue');
 
     expect(shell.indexOf('<SkipLink />')).toBeLessThan(
       shell.indexOf('<u-header')

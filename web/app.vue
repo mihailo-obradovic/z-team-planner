@@ -82,11 +82,11 @@
         </div>
       </template>
 
-      <BuildDialogs />
+      <LocalBuildDialogs />
 
-      <BuildAccountDialogs />
+      <CloudBuildDialogs />
 
-      <BuildConflictDialog />
+      <CloudBuildConflictDialog />
 
       <FirstLoginOffer />
     </ClientOnly>
@@ -98,6 +98,20 @@
 </template>
 
 <script setup lang="ts">
+import SkipLink from '@/components/shell/SkipLink.vue';
+import BudgetCounters from '@/components/shell/BudgetCounters.vue';
+import BuildManager from '@/components/build/BuildManager.vue';
+import AuthMenu from '@/components/account/AuthMenu.vue';
+import StorySetupButton from '@/components/shell/StorySetupButton.vue';
+import LoadingRing from '@/components/shell/LoadingRing.vue';
+import FirstRunBanners from '@/components/shell/FirstRunBanners.vue';
+import LocalBuildDialogs from '@/components/build/LocalBuildDialogs.vue';
+import CloudBuildDialogs from '@/components/build/CloudBuildDialogs.vue';
+import CloudBuildConflictDialog from '@/components/build/CloudBuildConflictDialog.vue';
+import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
+import AccountDialogs from '@/components/account/AccountDialogs.vue';
+import StorySetupDrawer from '@/components/shell/StorySetupDrawer.vue';
+
 import { MAIN_CONTENT_ID } from '@/types/header';
 
 const { name: title, description } = useSiteConfig();

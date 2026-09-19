@@ -105,8 +105,8 @@ No failure mode reaches the user: a browser that runs no transition renders the 
 
 ## Entry Points
 
-- `web/components/HeroCard.vue`: the header-row icons and the bonus button.
-- `web/components/HeroPowerChips.vue`: the chip row's fade, move and the Coupé and Sonar swaps.
+- `web/components/hero/HeroCard.vue`: the header-row icons and the bonus button.
+- `web/components/hero/HeroPowerChips.vue`: the chip row's fade, move and the Coupé and Sonar swaps.
 - `annexes/design-system.md` §11: the named-pattern rows, and the note allowing a fade and a move on one list.
 
 ## Dependencies

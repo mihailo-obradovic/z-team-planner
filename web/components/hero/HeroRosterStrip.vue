@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import HeroPortrait from '@/components/HeroPortrait.vue';
+import HeroPortrait from '@/components/hero/HeroPortrait.vue';
 
 import type { Hero, HeroId } from '@/types/hero';
 

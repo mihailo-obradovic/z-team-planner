@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
-import SynergyPairCard from '@/components/SynergyPairCard.vue';
+import SynergyPairCard from '@/components/synergy/SynergyPairCard.vue';
 
 import { DEFAULT_EP3_CUT, DEFAULT_EP4_HIRE, STAT_NAMES } from '@/types/hero';
 

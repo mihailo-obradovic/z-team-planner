@@ -99,11 +99,11 @@
 </template>
 
 <script setup lang="ts">
-import HeroPortrait from '@/components/HeroPortrait.vue';
-import HeroRosterStrip from '@/components/HeroRosterStrip.vue';
-import HeroStatsPanel from '@/components/HeroStatsPanel.vue';
-import HeroPowersPanel from '@/components/HeroPowersPanel.vue';
-import HeroNotesPanel from '@/components/HeroNotesPanel.vue';
+import HeroPortrait from '@/components/hero/HeroPortrait.vue';
+import HeroRosterStrip from '@/components/hero/HeroRosterStrip.vue';
+import HeroStatsPanel from '@/components/hero/HeroStatsPanel.vue';
+import HeroPowersPanel from '@/components/hero/HeroPowersPanel.vue';
+import HeroNotesPanel from '@/components/hero/HeroNotesPanel.vue';
 
 import type { HeroId } from '@/types/hero';
 

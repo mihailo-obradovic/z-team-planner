@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import SynergyHeroPortrait from '@/components/SynergyHeroPortrait.vue';
+import SynergyHeroPortrait from '@/components/synergy/SynergyHeroPortrait.vue';
 
 import { STAT_NAMES } from '@/types/hero';
 

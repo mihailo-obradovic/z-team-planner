@@ -2,7 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import AuthMenu from '@/components/_shared/AuthMenu.vue';
+import AuthMenu from '@/components/account/AuthMenu.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 const toasts: { title?: string }[] = [];

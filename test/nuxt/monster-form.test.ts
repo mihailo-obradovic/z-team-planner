@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
-import HeroCard from '@/components/HeroCard.vue';
+import HeroCard from '@/components/hero/HeroCard.vue';
 
 // * Coverage for catalyst/features/012_special-powers.md: Sonar's form is one shared display state across every surface, never serialized (lifted for feature 014).
 

@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import HeroPortrait from '@/components/HeroPortrait.vue';
+import HeroPortrait from '@/components/hero/HeroPortrait.vue';
 import MissionTeamSlot from '@/components/mission/MissionTeamSlot.vue';
 
 import { GOLEM_COPY_SLOT } from '@/types/mission';

@@ -54,7 +54,6 @@ type Notice = {
   link?: { to: string; label: string };
 };
 
-// * Array order is stacking order.
 const NOTICES: Notice[] = [
   {
     key: 'z-team-spoiler-acknowledged',
@@ -76,7 +75,6 @@ const NOTICES: Notice[] = [
 
 const region = useTemplateRef<HTMLElement>('region');
 
-// * Client-only, so setup already knows what storage holds and the first paint is right.
 const pending = ref<Notice[]>(
   NOTICES.filter((notice) => !isAcknowledged(notice.key))
 );

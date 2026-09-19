@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import HeroPowerCard from '@/components/HeroPowerCard.vue';
+import HeroPowerCard from '@/components/hero/HeroPowerCard.vue';
 
 import { HERO_POWERS } from '@/types/hero';
 

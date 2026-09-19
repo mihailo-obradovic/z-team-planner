@@ -3,7 +3,7 @@ import { useQueryCache } from '@pinia/colada';
 import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import AccountDialogs from '@/components/_shared/AccountDialogs.vue';
+import AccountDialogs from '@/components/account/AccountDialogs.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 const fetchMeSpy = vi.fn<() => Promise<unknown>>();

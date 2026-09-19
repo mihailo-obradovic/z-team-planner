@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
-import HeroCard from '@/components/HeroCard.vue';
-import HeroPowersPanel from '@/components/HeroPowersPanel.vue';
+import HeroCard from '@/components/hero/HeroCard.vue';
+import HeroPowersPanel from '@/components/hero/HeroPowersPanel.vue';
 
 import type { HeroId } from '@/types/hero';
 

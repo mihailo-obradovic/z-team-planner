@@ -69,6 +69,8 @@
 </template>
 
 <script setup lang="ts">
+import BuildMenu from '@/components/build/BuildMenu.vue';
+
 import { useUpdateBuild } from '@/services/queries/useBuildQueries';
 
 import type { HeaderTier } from '@/types/header';

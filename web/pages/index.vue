@@ -111,9 +111,10 @@
 </template>
 
 <script setup lang="ts">
-import HeroCard from '@/components/HeroCard.vue';
-import SynergyPairCard from '@/components/SynergyPairCard.vue';
-import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
+import PrivacyLink from '@/components/shell/PrivacyLink.vue';
+import HeroCard from '@/components/hero/HeroCard.vue';
+import SynergyPairCard from '@/components/synergy/SynergyPairCard.vue';
+import HeroDetailDialog from '@/components/hero/HeroDetailDialog.vue';
 import MissionTemplatesPanel from '@/components/mission/MissionTemplatesPanel.vue';
 import MissionRequirementsPanel from '@/components/mission/MissionRequirementsPanel.vue';
 import MissionMathPanel from '@/components/mission/MissionMathPanel.vue';

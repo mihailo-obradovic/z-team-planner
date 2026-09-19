@@ -131,8 +131,8 @@
 </template>
 
 <script setup lang="ts">
-import HeroPortrait from '@/components/HeroPortrait.vue';
-import HeroPowerChips from '@/components/HeroPowerChips.vue';
+import HeroPortrait from '@/components/hero/HeroPortrait.vue';
+import HeroPowerChips from '@/components/hero/HeroPowerChips.vue';
 
 import {
   STAT_NAMES,

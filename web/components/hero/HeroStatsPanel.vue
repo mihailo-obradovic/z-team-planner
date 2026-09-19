@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import HeroPairTotals from '@/components/HeroPairTotals.vue';
+import HeroPairTotals from '@/components/hero/HeroPairTotals.vue';
 
 import { MAX_STAT_VALUE, STAT_NAMES } from '@/types/hero';
 

@@ -116,7 +116,7 @@ No error states. An out-of-budget action is a silent no-op, exactly as feature 0
 
 ## Entry Points
 
-- `web/components/HeroDetailDialog.vue` — the dialog; its panels are the `Hero*Panel.vue` files.
+- `web/components/hero/HeroDetailDialog.vue` — the dialog; its panels are the `Hero*Panel.vue` files.
 - `web/components/_shared/StatRadar.vue` — the chart (decision 008).
 - `web/pages/index.vue` — mounts it and owns the open hero.
 
