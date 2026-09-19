@@ -102,8 +102,8 @@ Not role-specific.
 - `web/pages/index.vue`: the `#synergy-pairs` tab slot.
 - The pair card and portrait-block components under `web/components/`.
 - `web/components/_shared/StatRadar.vue`: consumed unchanged, single series, `max` 10.
-- `web/composables/useHeroEpisodeSetup.ts`: `synergyPairColumns` — the derived pair source.
-- The shared pair-total computation in `web/composables/useHeroPowerTraining.ts`, which the dialog also calls.
+- `web/composables/hero/useHeroEpisodeSetup.ts`: `synergyPairColumns` — the derived pair source.
+- The shared pair-total computation in `web/composables/hero/useHeroPowerTraining.ts`, which the dialog also calls.
 
 ## Dependencies
 

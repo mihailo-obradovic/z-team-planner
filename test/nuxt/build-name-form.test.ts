@@ -2,9 +2,9 @@ import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, ref } from 'vue';
 import { describe, expect, it } from 'vitest';
 
-import { useBuildNameForm } from '@/composables/useBuildNameForm';
-import { useExternalErrors } from '@/composables/useExternalErrors';
-import { useValidationErrors } from '@/composables/useValidationErrors';
+import { useBuildNameForm } from '@/composables/data/useBuildNameForm';
+import { useExternalErrors } from '@/composables/data/useExternalErrors';
+import { useValidationErrors } from '@/composables/data/useValidationErrors';
 
 type NameForm = ReturnType<typeof useBuildNameForm>['r$'];
 

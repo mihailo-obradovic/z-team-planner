@@ -16,10 +16,12 @@
       <Transition name="glyph-swap" mode="out-in">
         <span :key="swapKey" class="flex items-center justify-center">
           <u-icon v-if="icon" :name="icon" class="size-4 shrink-0" />
+
           <slot v-else />
         </span>
       </Transition>
     </template>
+
     <slot v-if="swapKey === undefined" />
   </u-button>
 </template>

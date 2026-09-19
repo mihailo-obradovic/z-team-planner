@@ -9,6 +9,7 @@
     preserveAspectRatio="xMidYMid meet"
   >
     <title :id="`${uid}-title`">{{ title }}</title>
+
     <desc :id="`${uid}-desc`">{{ description }}</desc>
 
     <!-- * Drawn outermost first, so the spokes and the data sit above them. -->
@@ -159,6 +160,29 @@ const ICON_BOX = 24;
 const ICON_RADIUS = 17;
 const ICON_OFFSET = 28;
 
+// * A quarter turn back from due east puts axis 0 at the apex, so nothing downstream rotates.
+const START_ANGLE = -Math.PI / 2;
+
+const targetValues = computed(() => props.axes.map((axis) => axis.value));
+
+const referenceTargets = computed(() => props.reference ?? []);
+
+const uid = useId();
+
+const displayedValues = useTweenedValues(targetValues, props.durationMs);
+
+const displayedReference = useTweenedValues(referenceTargets, props.durationMs);
+
+const displayedFailAt = useTweenedValues(
+  computed(() => props.failAt ?? []),
+  props.durationMs
+);
+
+const displayedXpAt = useTweenedValues(
+  computed(() => props.xpAt ?? []),
+  props.durationMs
+);
+
 const rings = computed(() => {
   const values: number[] = [];
 
@@ -169,16 +193,7 @@ const rings = computed(() => {
   return values;
 });
 
-const uid = useId();
-
-// * A quarter turn back from due east puts axis 0 at the apex, so nothing downstream rotates.
-const START_ANGLE = -Math.PI / 2;
-
 const step = computed(() => (2 * Math.PI) / props.axes.length);
-
-const targetValues = computed(() => props.axes.map((axis) => axis.value));
-
-const displayedValues = useTweenedValues(targetValues, props.durationMs);
 
 const description = computed(() =>
   props.axes.map((axis) => `${axis.label} ${axis.value}`).join(', ')
@@ -227,10 +242,6 @@ const dataPoints = computed(() =>
   dataVertices.value.map((point) => `${point.x},${point.y}`).join(' ')
 );
 
-const referenceTargets = computed(() => props.reference ?? []);
-
-const displayedReference = useTweenedValues(referenceTargets, props.durationMs);
-
 const referencePoints = computed(() => {
   if (!props.reference) {
     return null;
@@ -244,16 +255,6 @@ const referencePoints = computed(() => {
     })
     .join(' ');
 });
-
-const displayedFailAt = useTweenedValues(
-  computed(() => props.failAt ?? []),
-  props.durationMs
-);
-
-const displayedXpAt = useTweenedValues(
-  computed(() => props.xpAt ?? []),
-  props.durationMs
-);
 
 // * Follows the tween, so an edited threshold slides along its axis.
 const thresholdMarkers = computed(() => {

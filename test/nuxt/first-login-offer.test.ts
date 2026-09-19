@@ -2,7 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import FirstLoginOffer from '@/components/_shared/FirstLoginOffer.vue';
+import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 import type { ImportBuildsPayload } from '@/types/api';

@@ -35,13 +35,13 @@ const props = withDefaults(
   { size: 'xs' }
 );
 
-const mode = useInputMode();
-
 // * Shared across chips, so tapping one closes another's line instead of stacking.
 const activeHolder = useState<symbol | null>(
   'tooltip-button-active-holder',
   () => null
 );
+const mode = useInputMode();
+
 const holderId = Symbol('tooltip-button');
 
 const shownText = ref<string | null>(null);

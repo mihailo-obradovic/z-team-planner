@@ -6,7 +6,7 @@ import { STAT_NAMES } from '@/types/hero';
 
 import type { HeroStats } from '@/types/hero';
 import type { SerializedBuild } from '@/types/build';
-import type { PlannerState } from '@/composables/usePlannerState';
+import type { PlannerState } from '@/composables/build/usePlannerState';
 
 const FLAT_REQS = Object.fromEntries(
   STAT_NAMES.map((stat) => [stat, 5])

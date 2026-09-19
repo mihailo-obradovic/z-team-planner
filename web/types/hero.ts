@@ -478,6 +478,26 @@ export const SPECIAL_POWER_MECHANICS = {
   }
 } as const satisfies Partial<Record<HeroId, unknown>>;
 
+// * A hero's special power as both surfaces draw it (feature 012). Presence and enablement are separate on purpose: the chip row shows a power only once it is `revealed`, while the dialog's card is always drawn and greys while `locked`.
+type SpecialPowerFace = {
+  name: string;
+  icon: string;
+  // * Set only where the icon itself changes with state, so the glyph swaps rather than cuts.
+  swapKey?: string;
+  state: number;
+  active: boolean;
+  locked: boolean;
+  revealed: boolean;
+  description: string;
+  descriptionVariants: string[];
+  chipTooltip: string;
+};
+
+export type HeroSpecialPower =
+  | ({ kind: 'supernova' } & SpecialPowerFace)
+  | ({ kind: 'en-pointe'; bonus: 1 | 3 } & SpecialPowerFace)
+  | ({ kind: 'spread-thin' } & SpecialPowerFace);
+
 export const HERO_FLIGHT = {
   coupe: {
     name: "En L'air",

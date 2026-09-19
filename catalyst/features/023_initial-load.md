@@ -112,7 +112,7 @@ Not role-specific. The wait is identical signed in and signed out, since waiting
 ## Entry Points
 
 - `web/app.vue`: owns the booting state, the `onMounted` sequence it already ran, and the head entries.
-- `web/components/_shared/LoadingRing.vue`: the ring and the layer that centres it.
+- `web/components/shell/LoadingRing.vue`: the ring and the layer that centres it.
 - `web/assets/css/main.css`: the boot rules keyed off the flag.
 - `web/assets/css/motion.css`: the ring's keyframes and its reduced-motion guard.
 - `catalyst/annexes/design-system.md` §11: the ring as a named pattern.

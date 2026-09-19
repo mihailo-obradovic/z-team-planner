@@ -19,60 +19,32 @@
       </div>
 
       <!-- * The legend always lists every series, so a threshold appearing changes the chart, not the layout. -->
-      <ul class="grid grid-cols-2 gap-x-10 gap-y-2">
+      <ul class="grid grid-cols-2 gap-x-8 gap-y-2">
         <li
+          v-for="series in LEGEND"
+          :key="series.label"
           class="flex items-center gap-3 font-heading text-label text-toned uppercase"
         >
-          <span
-            class="inline-block w-6 border-t-2 border-dashed border-accented"
-            aria-hidden="true"
-          />
-          Required
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span class="inline-block size-3 bg-primary" aria-hidden="true" />
-          Your team
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span
-            class="inline-block size-3 rounded-full border border-accented bg-error"
-            aria-hidden="true"
-          />
-          Fail at
-        </li>
-        <li
-          class="flex items-center gap-3 font-heading text-label text-toned uppercase"
-        >
-          <span
-            class="inline-block size-3 rounded-full border border-accented bg-warning"
-            aria-hidden="true"
-          />
-          2×XP at
+          <span :class="series.swatch" aria-hidden="true" />
+          {{ series.label }}
         </li>
       </ul>
 
       <p class="flex items-center gap-3">
         <!-- * Fixed width, so the panel doesn't breathe as the estimate moves; the certain outcomes add a marker so colour is never the only signal. -->
         <span
-          class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-0.5 text-center font-heading text-2xl font-bold transition-colors duration-150"
+          class="flex w-36 items-center justify-center gap-2 border-2 px-2 py-1 text-center font-heading text-2xl font-bold transition-colors duration-(--duration-baseline)"
           :class="outcomeClass"
         >
           <u-icon
             v-if="outcome !== null"
-            :name="
-              outcome === 'certain'
-                ? 'i-lucide-check-circle-2'
-                : 'i-lucide-x-circle'
-            "
+            :name="outcomeIcon"
             class="size-6 shrink-0 text-neutral-100"
             aria-hidden="true"
           />
           {{ displayedEstimate }}%
         </span>
+
         <span
           class="font-heading text-base tracking-label text-dimmed uppercase"
         >
@@ -84,7 +56,21 @@
 </template>
 
 <script setup lang="ts">
-import { STAT_ICONS, RADAR_STAT_ORDER } from '@/utils/statIcons';
+const LEGEND = [
+  {
+    label: 'Required',
+    swatch: 'inline-block w-6 border-t-2 border-dashed border-accented'
+  },
+  { label: 'Your team', swatch: 'inline-block size-3 bg-primary' },
+  {
+    label: 'Fail at',
+    swatch: 'inline-block size-3 rounded-full border border-accented bg-error'
+  },
+  {
+    label: '2×XP at',
+    swatch: 'inline-block size-3 rounded-full border border-accented bg-warning'
+  }
+];
 
 const {
   missionActiveTemplate,
@@ -136,6 +122,10 @@ const outcome = computed<'certain' | 'doomed' | null>(() => {
 
   return estimate <= 0 ? 'doomed' : null;
 });
+
+const outcomeIcon = computed(() =>
+  outcome.value === 'certain' ? 'i-lucide-check-circle-2' : 'i-lucide-x-circle'
+);
 
 const outcomeClass = computed(() => {
   if (outcome.value === 'certain') {

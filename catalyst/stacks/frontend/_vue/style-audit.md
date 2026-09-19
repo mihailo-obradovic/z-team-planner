@@ -20,6 +20,7 @@ For each file, verify and fix:
 ### Template
 
 - Audit against `vue-style.md` → **Template** (tag casing, sibling blank lines, `:key` discipline, `v-if`/`v-for` separation, shallow conditionals, utility-first CSS).
+- Bindings name values: flag a binding, interpolation or `v-if` carrying three or more operands, a string built from more than one lookup, an object or array literal, a non-null assertion, or a binding the formatter wrapped onto a second line. Vue's `:class`/`:style` syntax, a slot map prop, and listeners are outside this check.
 - Icon-only interactive elements have an accessible name on the control and `aria-hidden` on the icon. Decorative SVGs are `aria-hidden`.
 
 ### Script — imports and the auto-import boundary
@@ -62,7 +63,7 @@ Everything else in this document is safe to fix directly.
 
 - File names per `../_common/component-naming.md` — PascalCase, no `*Section` suffix or brand prefix, self-describing basenames, kebab-case folders.
 - Auto-import tag resolution per `component-naming.md`: flag a nested file under the registered directory whose generated tag stutters (`_shared/users/UserCard.vue` → `<UsersUserCard>`).
-- Events and handlers per `vue-style.md` → **Event and handler naming**: imperative emit names, camelCase in `defineEmits` and at the call site (flag kebab-case listeners), every emit declared, `handle*` matched one-to-one against the event, `defineModel` rather than a hand-rolled `modelValue` prop plus `update:modelValue` emit, a callback prop where an emit belongs, handlers named for intent rather than input device, inline expressions confined to forwarding and binding, and an `event` parameter (flag `e`).
+- Events and handlers per `vue-style.md` → **Event and handler naming**: imperative emit names, camelCase in `defineEmits` and at the call site (flag kebab-case listeners), every emit declared, `handle*` matched one-to-one against the event, `defineModel` rather than a hand-rolled `modelValue` prop plus `update:modelValue` emit, a callback prop where an emit belongs, handlers named for intent rather than input device, listeners bound to a handler by name (flag any call expression or statement; an arrow is allowed only to pass a `v-for` item or slot prop, and only to forward it), and an `event` parameter (flag `e`).
 - The registered shared-components directory is `@/components/_shared/` per `component-naming.md`: cross-check the framework's registration config (e.g. `components.dirs` in `nuxt.config.ts`) and flag a registered directory named anything else (`shared/`, `ui/`, `common/`) unless a convention annex records the deviation.
 
 ### Accessibility

@@ -4,7 +4,7 @@ import {
   STAT_NAMES
 } from '@/types/hero';
 
-import { RADAR_STAT_ORDER } from '@/utils/statIcons';
+import { RADAR_STAT_ORDER } from '@/utils/heroDisplay';
 import { radarCoverage } from '@/utils/radarCoverage';
 
 import type { HeroId, HeroStats, StatName, SynergyLevel } from '@/types/hero';

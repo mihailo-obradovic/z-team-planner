@@ -5,191 +5,28 @@
     </div>
 
     <div class="flex flex-col gap-2 p-3">
-      <!-- * The whole card selects, while the header button stays the accessible control. -->
-      <section
+      <MissionTemplateCard
         v-for="(template, index) in missionTemplates"
         :key="index"
-        class="cursor-pointer border-2 border-accented"
-        :class="index === activeIndex ? 'bg-muted' : 'bg-default'"
-        @click="setMissionActiveTemplate(index)"
-      >
-        <button
-          type="button"
-          class="flex w-full cursor-pointer items-center gap-2 px-3 py-1"
-          :aria-pressed="index === activeIndex"
-          @click="setMissionActiveTemplate(index)"
-        >
-          <u-icon
-            :name="
-              index === activeIndex ? 'i-lucide-circle-dot' : 'i-lucide-circle'
-            "
-            class="size-4 shrink-0"
-            :class="index === activeIndex ? 'text-warning-500' : 'text-dimmed'"
-          />
-          <span
-            class="font-heading text-base font-bold tracking-label uppercase"
-          >
-            Template #{{ index + 1 }}
-          </span>
-        </button>
-
-        <!-- * Both bodies stay mounted in `0fr`/`1fr` rows, so a selection animates the card's height. -->
-        <!-- ! `inert` on the collapsed half, or its controls stay focusable and in the accessibility tree. -->
-        <div
-          class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
-          :class="index === activeIndex ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'"
-          :inert="index === activeIndex"
-        >
-          <div class="min-h-0 overflow-hidden">
-            <ul class="flex flex-wrap gap-2 border-t border-muted px-3 py-2">
-              <li
-                v-for="stat in STAT_NAMES"
-                :key="stat"
-                class="flex items-center gap-1 border border-accented bg-default px-2 py-0.5 text-toned"
-              >
-                <u-icon :name="STAT_ICONS[stat]" class="size-4 shrink-0" />
-                <span class="font-heading text-base font-bold">
-                  {{ template.req[stat] }}
-                </span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div
-          class="grid transition-[grid-template-rows] duration-250 ease-in-out motion-reduce:transition-none"
-          :class="index === activeIndex ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
-          :inert="index !== activeIndex"
-        >
-          <div class="min-h-0 overflow-hidden">
-            <div
-              class="hidden gap-1 border-t border-muted px-3 pt-2 @max-[28.5rem]:flex"
-              role="group"
-              aria-label="Template columns"
-            >
-              <u-button
-                v-for="option in COLUMN_VIEWS"
-                :key="option.value"
-                size="xs"
-                variant="subtle"
-                color="secondary"
-                :active="columnView === option.value"
-                :aria-pressed="columnView === option.value"
-                @click="setColumnView(option.value)"
-              >
-                {{ option.label }}
-              </u-button>
-            </div>
-
-            <div
-              class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2 @max-[28.5rem]:gap-x-2"
-              :class="
-                columnView === 'req'
-                  ? '@max-[28.5rem]:grid-cols-[1fr_auto]'
-                  : '@max-[28.5rem]:grid-cols-[1fr_auto_auto]'
-              "
-            >
-              <span class="font-heading text-tag text-dimmed uppercase"
-                >Stat</span
-              >
-              <span
-                class="text-center font-heading text-tag text-dimmed uppercase"
-                :class="reqColumnClass"
-              >
-                REQ
-              </span>
-              <span
-                class="text-center font-heading text-tag text-dimmed uppercase"
-                :class="conditionColumnClass"
-              >
-                2×XP ≥
-              </span>
-              <span
-                class="text-center font-heading text-tag text-dimmed uppercase"
-                :class="conditionColumnClass"
-              >
-                Fail ≥
-              </span>
-
-              <template v-for="stat in STAT_NAMES" :key="stat">
-                <!-- * The label steps down a size rather than leaving, so the wordmark survives an iPhone SE. -->
-                <span
-                  class="flex items-center gap-2 font-heading text-base tracking-label text-toned uppercase @max-[28.5rem]:gap-1 @max-[28.5rem]:text-sm"
-                >
-                  <u-icon
-                    :name="STAT_ICONS[stat]"
-                    class="size-4 shrink-0 @max-[28.5rem]:size-3.5"
-                  />
-                  <span :class="wordmarkClass">{{ stat }}</span>
-                </span>
-
-                <MissionValueStepper
-                  :value="template.req[stat]"
-                  :label="`template ${index + 1} required ${stat}`"
-                  :class="reqColumnClass"
-                  @change="setMissionReq(index, stat, $event ?? 0)"
-                />
-
-                <MissionValueStepper
-                  :value="template.xp[stat] ?? null"
-                  :label="`template ${index + 1} double XP threshold for ${stat}`"
-                  unsettable
-                  :class="conditionColumnClass"
-                  @change="setMissionThreshold(index, 'xp', stat, $event)"
-                />
-
-                <MissionValueStepper
-                  :value="template.fail[stat] ?? null"
-                  :label="`template ${index + 1} fail threshold for ${stat}`"
-                  unsettable
-                  :class="conditionColumnClass"
-                  @change="setMissionThreshold(index, 'fail', stat, $event)"
-                />
-              </template>
-            </div>
-          </div>
-        </div>
-      </section>
+        v-model:column-view="columnView"
+        :template="template"
+        :index="index"
+        :active="index === activeIndex"
+        @select="() => setMissionActiveTemplate(index)"
+      />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import MissionValueStepper from '@/components/mission/MissionValueStepper.vue';
-
-import { STAT_NAMES } from '@/types/hero';
-import { STAT_ICONS } from '@/utils/statIcons';
+import MissionTemplateCard from '@/components/mission/MissionTemplateCard.vue';
 
 const {
   missionTemplates,
-  missionActiveTemplate,
-  setMissionActiveTemplate,
-  setMissionReq,
-  setMissionThreshold
+  missionActiveTemplate: activeIndex,
+  setMissionActiveTemplate
 } = useHeroPlanner();
 
-const activeIndex = computed(() => missionActiveTemplate.value);
-
-// * A plain ref, not planner state: the build document must never carry a layout choice.
-const COLUMN_VIEWS = [
-  { value: 'req', label: 'Requirements' },
-  { value: 'conditions', label: 'Conditions' }
-] as const;
-
-const columnView = ref<(typeof COLUMN_VIEWS)[number]['value']>('req');
-
-function setColumnView(value: (typeof COLUMN_VIEWS)[number]['value']) {
-  columnView.value = value;
-}
-
-const reqColumnClass = computed(() =>
-  columnView.value === 'req' ? '' : '@max-[28.5rem]:hidden'
-);
-const conditionColumnClass = computed(() =>
-  columnView.value === 'conditions' ? '' : '@max-[28.5rem]:hidden'
-);
-
-const wordmarkClass = computed(() =>
-  columnView.value === 'conditions' ? '@max-[20rem]:hidden' : ''
-);
+// * A plain ref, not planner state: the build document must never carry a layout choice. It lives here rather than in a card, since every card's toggle moves the same columns.
+const columnView = ref<'req' | 'conditions'>('req');
 </script>

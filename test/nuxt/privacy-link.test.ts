@@ -1,7 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { describe, expect, it } from 'vitest';
 
-import PrivacyLink from '@/components/_shared/PrivacyLink.vue';
+import PrivacyLink from '@/components/shell/PrivacyLink.vue';
 
 // * Placement — last in each planner tab and after the shared build — is walked in a browser (feature 010, Verification): the planner page is not mounted in tests, and a page-level Pinia Colada query never resolves under mountSuspended (shared-build.test.ts).
 describe('PrivacyLink', () => {

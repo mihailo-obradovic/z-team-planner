@@ -206,11 +206,36 @@ describe('mission templates and settings', () => {
       (entry) => ({ ...entry, xp: {}, fail: {} })
     );
 
-    planner.setMissionThreshold(0, 'xp', 'combat', 7);
-    planner.setMissionThreshold(0, 'fail', 'vigor', 9);
-    planner.setMissionThreshold(2, 'xp', 'mobility', 6);
-    planner.setMissionThreshold(2, 'fail', 'vigor', 11);
-    planner.setMissionThreshold(3, 'fail', 'combat', 5);
+    planner.setMissionThreshold({
+      template: 0,
+      kind: 'xp',
+      stat: 'combat',
+      value: 7
+    });
+    planner.setMissionThreshold({
+      template: 0,
+      kind: 'fail',
+      stat: 'vigor',
+      value: 9
+    });
+    planner.setMissionThreshold({
+      template: 2,
+      kind: 'xp',
+      stat: 'mobility',
+      value: 6
+    });
+    planner.setMissionThreshold({
+      template: 2,
+      kind: 'fail',
+      stat: 'vigor',
+      value: 11
+    });
+    planner.setMissionThreshold({
+      template: 3,
+      kind: 'fail',
+      stat: 'combat',
+      value: 5
+    });
 
     const templates = state.missionTemplates.value;
 
@@ -219,7 +244,12 @@ describe('mission templates and settings', () => {
     expect(templates[2]!.xp.mobility).toBe(6);
     expect(templates[2]!.fail.vigor).toBeUndefined();
 
-    planner.setMissionThreshold(0, 'xp', 'combat', null);
+    planner.setMissionThreshold({
+      template: 0,
+      kind: 'xp',
+      stat: 'combat',
+      value: null
+    });
 
     expect(state.missionTemplates.value[0]!.xp.combat).toBeUndefined();
   });

@@ -133,8 +133,8 @@ No error states; a predicate that can never be satisfied under the current episo
 ## Entry Points
 
 - `web/utils/heroNotes.ts` — the `HERO_NOTES` and `HERO_ADVISORIES` catalogues (copy + predicates).
-- `web/composables/useHeroNotes.ts` — `useHeroNotes(heroId)`, evaluating the catalogue against live planner state; follows the `useHeroDerived` precedent.
-- `web/components/HeroNotesPanel.vue` — renders the panel's content from `useHeroNotes`.
+- `web/composables/hero/useHeroNotes.ts` — `useHeroNotes(heroId)`, evaluating the catalogue against live planner state; follows the `useHeroDerived` precedent.
+- `web/components/hero/HeroNotesPanel.vue` — renders the panel's content from `useHeroNotes`.
 
 ## Dependencies
 

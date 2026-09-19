@@ -214,12 +214,76 @@ function handleDeleteButtonClick() {
     @updateItem="handleUpdateItem"
   />
 
-  <!-- ✅ inline expression that only binds an argument -->
-  <v-btn @click="handleSelect(user)">Pick</v-btn>
+  <!-- ✅ a loop item only the template holds, passed through an arrow -->
+  <v-btn v-for="user in users" :key="user.id" @click="() => handleSelect(user)">
+    Pick
+  </v-btn>
 
-  <!-- ❌ kebab-case at the call site; ❌ logic inline -->
+  <!-- ❌ a call, not a handler; ❌ kebab-case at the call site; ❌ logic inline -->
+  <v-btn @click="handleSelect(user)">Pick</v-btn>
   <UserCard @update-item="handleUpdateItem" @click="dirty ? save() : close()" />
+
+  <!-- ❌ the arrow carries a prop the script can read, and a fallback that belongs in a handler -->
+  <v-btn @click="() => remove(props.userId ?? 0)">Remove</v-btn>
 </template>
+```
+
+A value the script can already read gets a named handler, even when the handler is one line.
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ userId: number }>();
+
+const emit = defineEmits<{ remove: [id: number] }>();
+
+// ✅ bound as `@click="handleRemove"`
+function handleRemove() {
+  emit('remove', props.userId);
+}
+</script>
+```
+
+## Bindings name values
+
+A binding is read for what it renders. The threshold is one ternary: past that, the value gets a name.
+
+```vue
+<template>
+  <!-- ✅ a name, an optional chain with a fallback, and a single ternary -->
+  <UserCard
+    :name="user.name"
+    :alt="user.title ?? ''"
+    :icon="isOpen ? 'chevron-up' : 'chevron-down'"
+  />
+
+  <!-- ❌ three operands; ❌ a string built from two lookups; ❌ an object literal; ❌ a non-null assertion -->
+  <UserCard
+    v-if="draftCount > 0 || hasInvites || isOwner"
+    :title="`${plan.name}: ${plan.description}`"
+    :confirmation="
+      () => confirm({ kind: 'plan', name: plan!.name, active: isActive })
+    "
+  />
+</template>
+
+<script setup lang="ts">
+// ✅ each one named for what it means
+const hasSomethingToShow = computed(
+  () => draftCount.value > 0 || hasInvites.value || isOwner.value
+);
+
+const planTitle = computed(
+  () => `${plan.value.name}: ${plan.value.description}`
+);
+
+function planConfirmation() {
+  return confirm({
+    kind: 'plan',
+    name: plan.value.name,
+    active: isActive.value
+  });
+}
+</script>
 ```
 
 ## Template casing and `v-for` / `v-if`

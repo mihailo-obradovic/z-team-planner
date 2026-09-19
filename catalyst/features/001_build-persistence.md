@@ -101,7 +101,7 @@ Not role-specific.
 
 - `web/utils/buildDocument.ts`: the format and its omission rules — the protected part. `buildUrlCodec.ts` does `?build=`; `useLocalBuilds`/`useBuildMode`/`useInitialBuild` drive it.
 - `web/types/build.ts`: the serialization contract (`SerializedBuild`, `SavedBuild`).
-- `web/components/_shared/BuildManager.vue`: all user-facing controls and dialogs.
+- `web/components/build/BuildManager.vue` and its `BuildMenu.vue`: all user-facing controls and dialogs.
 - `web/app.vue`: calls `initialize()` and `setupBeforeUnload()` on mount.
 
 ## Dependencies

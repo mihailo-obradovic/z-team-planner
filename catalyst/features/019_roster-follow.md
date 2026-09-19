@@ -102,7 +102,7 @@ No failure mode reaches the user. A strip that has not laid out, a missing tile,
 
 ## Entry Points
 
-- `web/components/HeroDetailDialog.vue`: the two strips, their tile refs, and the watcher that calls the follow.
+- `web/components/hero/HeroRosterStrip.vue`: one strip, its tile refs, and the follow on click; `web/components/hero/HeroDetailDialog.vue`: the two strip instances and the watcher that asks both to follow.
 - `web/components/_shared/ScrollRegion.vue`: `bringIntoView`, the mechanism (feature 013).
 
 ## Dependencies

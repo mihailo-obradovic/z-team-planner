@@ -2,7 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import BuildManager from '@/components/_shared/BuildManager.vue';
+import BuildManager from '@/components/build/BuildManager.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 // ! Its own file rather than another block in build-manager.test.ts. The query cache and the

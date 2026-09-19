@@ -1,7 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import FirstRunBanners from '@/components/_shared/FirstRunBanners.vue';
+import FirstRunBanners from '@/components/shell/FirstRunBanners.vue';
 import { HEROES } from '@/types/hero';
 
 import type { VueWrapper } from '@vue/test-utils';

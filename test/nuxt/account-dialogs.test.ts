@@ -3,7 +3,7 @@ import { useQueryCache } from '@pinia/colada';
 import { defineComponent, h } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import AccountDialogs from '@/components/_shared/AccountDialogs.vue';
+import AccountDialogs from '@/components/account/AccountDialogs.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 const fetchMeSpy = vi.fn<() => Promise<unknown>>();
@@ -60,7 +60,7 @@ async function openDialog() {
           email: 'alice@example.com',
           displayName: 'Alice'
         });
-        useAccountDialogs().deleteAccountOpen.value = true;
+        useDialogs().deleteAccountOpen.value = true;
         // * The query cache outlives a mount, so without this every test after the first would read the first one's profile instead of its own.
         void useQueryCache().invalidateQueries({ key: ['me'] });
 
@@ -69,6 +69,19 @@ async function openDialog() {
     }),
     { global: { stubs: STUBS } }
   );
+}
+
+// * The summary reserves its row with invisible, aria-hidden copies of every variant, so assertions read only what is shown.
+function shownText(page: Awaited<ReturnType<typeof openDialog>>): string {
+  const clone = document.createElement('div');
+
+  clone.innerHTML = page.html();
+
+  clone.querySelectorAll('[aria-hidden="true"]').forEach((ghost) => {
+    ghost.remove();
+  });
+
+  return clone.textContent ?? '';
 }
 
 describe('AccountDialogs', () => {
@@ -86,10 +99,10 @@ describe('AccountDialogs', () => {
 
     const page = await openDialog();
 
-    await vi.waitFor(() => expect(page.text()).toContain('the 3 builds'));
+    await vi.waitFor(() => expect(shownText(page)).toContain('the 3 builds'));
     // * The share links are the part a stranger notices, so the warning is only shown when there is something to warn about.
-    expect(page.text()).toContain('share links will stop working');
-    expect(page.text()).toContain(
+    expect(shownText(page)).toContain('share links will stop working');
+    expect(shownText(page)).toContain(
       'Builds saved in this browser are not affected'
     );
   });
@@ -100,9 +113,9 @@ describe('AccountDialogs', () => {
     const page = await openDialog();
 
     await vi.waitFor(() =>
-      expect(page.text()).toContain('There are no builds saved to it')
+      expect(shownText(page)).toContain('There are no builds saved to it')
     );
-    expect(page.text()).not.toContain('share links will stop working');
+    expect(shownText(page)).not.toContain('share links will stop working');
   });
 
   it('counts one build in the singular', async () => {
@@ -127,7 +140,7 @@ describe('AccountDialogs', () => {
     await vi.waitFor(() => expect(deleteMeSpy).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(signOutSpy).toHaveBeenCalledOnce());
     expect(toasts[0]?.title).toBe('Your account has been deleted');
-    expect(useAccountDialogs().deleteAccountOpen.value).toBe(false);
+    expect(useDialogs().deleteAccountOpen.value).toBe(false);
   });
 
   it('leaves the user signed in when the delete fails', async () => {
@@ -148,6 +161,6 @@ describe('AccountDialogs', () => {
 
     // ! The account still exists — signing out here would strand the user outside an account they still have (feature 004, Error Handling: 503, nothing deleted).
     expect(signOutSpy).not.toHaveBeenCalled();
-    expect(useAccountDialogs().deleteAccountOpen.value).toBe(true);
+    expect(useDialogs().deleteAccountOpen.value).toBe(true);
   });
 });

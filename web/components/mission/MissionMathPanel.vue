@@ -29,6 +29,7 @@
                 <b>{{ row.have }}</b
                 ><span class="text-muted">/{{ row.need }}</span>
               </span>
+
               <u-icon
                 :name="row.met ? 'i-lucide-check' : 'i-lucide-x'"
                 class="size-5 shrink-0"
@@ -52,6 +53,7 @@
             >
               Radar coverage
             </dt>
+
             <dd class="font-heading text-xl font-bold">
               {{ coveragePercent }}%
             </dd>
@@ -63,6 +65,7 @@
             >
               Synergy level
             </dt>
+
             <dd class="flex items-center gap-2">
               <div class="flex gap-1" role="group" aria-label="Synergy level">
                 <IconButton
@@ -72,11 +75,12 @@
                   :active="missionSynergyLevel === level"
                   :disabled="!missionTeamHasPair"
                   color="secondary"
-                  @click="setMissionSynergyLevel(level)"
+                  @click="() => setMissionSynergyLevel(level)"
                 >
                   {{ level }}
                 </IconButton>
               </div>
+
               <span class="w-14 text-right font-heading text-xl font-bold">
                 +{{ synergyPercent }}%
               </span>
@@ -105,6 +109,7 @@
             >
               Reattempt
             </dt>
+
             <dd class="font-heading text-lg text-toned">
               {{ reattemptNote }}
             </dd>
@@ -116,6 +121,7 @@
             >
               Fail check
             </dt>
+
             <dd>
               <u-badge
                 v-if="hasFailThresholds"
@@ -125,6 +131,7 @@
               >
                 {{ failed ? `${missionSuccess.failedStat} fail` : 'Safe' }}
               </u-badge>
+
               <span v-else class="font-heading text-base font-bold text-dimmed">
                 —
               </span>
@@ -137,6 +144,7 @@
             >
               Double XP bonus
             </dt>
+
             <dd>
               <u-badge
                 v-if="missionXpFulfilled !== null"
@@ -146,6 +154,7 @@
               >
                 {{ missionXpFulfilled ? 'Fulfilled' : 'Not fulfilled' }}
               </u-badge>
+
               <span v-else class="font-heading text-base font-bold text-dimmed">
                 —
               </span>
@@ -159,8 +168,6 @@
 
 <script setup lang="ts">
 import { STAT_NAMES } from '@/types/hero';
-import { STAT_ICONS } from '@/utils/statIcons';
-
 import type { SynergyLevel } from '@/types/hero';
 
 const SYNERGY_LEVELS: SynergyLevel[] = [0, 1, 2, 3];

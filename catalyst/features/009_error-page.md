@@ -97,7 +97,7 @@ The page is itself the error path, so it has none of its own: it takes no input 
 ## Entry Points
 
 - `web/error.vue`: the page. Nuxt renders it for any fatal error, replacing the route.
-- `web/composables/useApiErrorWatcher.ts`: the one caller that raises a `404` deliberately (feature 006's `showNotFoundPage`), and the source of "Build not found".
+- `web/composables/data/useApiErrorWatcher.ts`: the one caller that raises a `404` deliberately (feature 006's `showNotFoundPage`), and the source of "Build not found".
 
 ## Dependencies
 

@@ -134,7 +134,12 @@ describe('the estimate', () => {
   it('fails at 0% when a FAIL ≥ stat is met, past synergy and reattempt', () => {
     planner.setMissionActiveTemplate(2);
     setAllReqs(3);
-    planner.setMissionThreshold(2, 'fail', 'charisma', 8);
+    planner.setMissionThreshold({
+      template: 2,
+      kind: 'fail',
+      stat: 'charisma',
+      value: 8
+    });
     planner.fillMissionSlot(0, 'malevola');
     planner.fillMissionSlot(1, 'punch-up');
     planner.fillMissionSlot(2, 'prism');
@@ -143,7 +148,12 @@ describe('the estimate', () => {
     expect(success().failedStat).toBe('charisma');
     expect(success().estimate).toBe(0);
 
-    planner.setMissionThreshold(2, 'fail', 'charisma', null);
+    planner.setMissionThreshold({
+      template: 2,
+      kind: 'fail',
+      stat: 'charisma',
+      value: null
+    });
 
     expect(success().failedStat).toBe(null);
     expect(success().estimate).toBeGreaterThan(0);
@@ -155,7 +165,12 @@ describe('the 2×XP light', () => {
     expect(planner.missionXpFulfilled.value).toBe(null);
 
     planner.setMissionActiveTemplate(1);
-    planner.setMissionThreshold(1, 'xp', 'combat', 7);
+    planner.setMissionThreshold({
+      template: 1,
+      kind: 'xp',
+      stat: 'combat',
+      value: 7
+    });
 
     expect(planner.missionXpFulfilled.value).toBe(false);
 
@@ -167,7 +182,12 @@ describe('the 2×XP light', () => {
     expect(success().estimate).toBeLessThan(1);
 
     // * A second threshold must hold too.
-    planner.setMissionThreshold(1, 'xp', 'intellect', 9);
+    planner.setMissionThreshold({
+      template: 1,
+      kind: 'xp',
+      stat: 'intellect',
+      value: 9
+    });
 
     expect(planner.missionXpFulfilled.value).toBe(false);
   });

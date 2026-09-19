@@ -18,7 +18,7 @@ import type {
   SynergyLevel
 } from '@/types/hero';
 import type { MissionSlot, MissionTemplate } from '@/types/mission';
-import type { PlannerState } from '@/composables/usePlannerState';
+import type { PlannerState } from '@/composables/build/usePlannerState';
 import type { SerializedBuild, SerializedMissionTemplate } from '@/types/build';
 
 export function serializeBuild(state: PlannerState): SerializedBuild {

@@ -2,7 +2,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
 
-import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
+import HeroDetailDialog from '@/components/hero/HeroDetailDialog.vue';
 
 import type { HeroId } from '@/types/hero';
 

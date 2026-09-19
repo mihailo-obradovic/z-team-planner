@@ -10,7 +10,7 @@
     "preinstall": "npx only-allow pnpm",
     "postinstall": "nuxt prepare",
     "game-data:export": "node scripts/export-game-data.ts",
-    "lint": "oxlint",
+    "lint": "oxlint && node scripts/check-sfc-size.ts",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

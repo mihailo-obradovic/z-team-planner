@@ -103,7 +103,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 
 ## Entry Points
 
-- `web/utils/fetcher.ts`, `web/utils/handleApiError.ts`, `web/composables/useAppQuery.ts`, `useAppMutation.ts`.
+- `web/utils/fetcher.ts`, `web/utils/handleApiError.ts`, `web/composables/data/useAppQuery.ts`, `useAppMutation.ts`.
 - `web/services/me.api.ts`, `web/services/queries/useMeQueries.ts`, `web/services/queries/chainOnSettled.ts`, `web/types/api.ts`.
 - `web/stores/useAuthStore.ts`, `web/plugins/firebase.client.ts`.
 

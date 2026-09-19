@@ -13,6 +13,7 @@ The authoritative style rules for Vue code in any Catalyst Vue frontend (Vue 3 +
 - **Never put `v-if` and `v-for` on the same element** — filter in a `computed` and iterate the result.
 - `v-for` always has a stable, unique `:key`. Never the array index unless the list is static and never reordered.
 - Break complex trees into subcomponents; use slots for composition rather than passing render flags.
+- **A binding names a value; it does not compute one.** An expression in a binding, an interpolation or a `v-if` may be a property path, an optional chain with a fallback, a call forwarding values the template holds, or a single two-branch ternary over such names and literals. Anything past that is given a name in the script — a computed for component-wide state, a function where the value depends on a `v-for` item — because a template is read for what is rendered, not for how a value was worked out. Five things always move out: a condition of three or more operands, a string built from more than one lookup, an object or array literal, a non-null assertion (the template is asserting what the script declined to narrow), and any expression the formatter wraps onto a second line. Two shapes are not computations and stay: Vue's own `:class` and `:style` array and object syntax, and a UI library's slot map prop, as long as each entry inside is itself a name or a single ternary. Listeners are governed by the rule above, wrapped arrow included.
 - **Emit names** are the event, not the handler — naming rules in [Event and handler naming](#event-and-handler-naming).
 
 ## Script
@@ -55,7 +56,7 @@ Always `<script setup lang="ts">`. Use the **`@/` alias, never `~/`**.
 - **The parent's handler is the matching `handle*`** — `@save` → `handleSave`, one handler per event.
 - **`defineModel` over a hand-rolled pair** — never declare a `modelValue` prop and emit `update:modelValue` by hand. A named model emits `update:<name>`.
 - **A handler with no matching emit is named for intent, not input device** — `handleSubmit`, not `handleButtonClick`. Add the subject only to separate two handlers of the same intent (`handleSearchInput`, `handleFilterInput`). The `handle*` prefix is what pairs a handler with its event, so where there is no event to pair with, a bare intent verb is equally correct: `openPicker`, `closeDialog`, `confirmDelete`, `step`. Prefix or verb, the name states the intent — and a set of such handlers reads better paired than prefixed (`closeDelete`/`confirmDelete` over `handleCloseDelete`/`handleConfirmDelete`). What is never allowed is the input device.
-- **An inline template expression only forwards or binds** — `@click="handleSelect(user.id)"`. A statement, a branch, or an `await` moves into a named `handle*` (section 16).
+- **A listener binds a handler by name** — `@click="handleSave"`, never a call such as `@click="handleSelect(user.id)"` and never a statement. The one exception is a value only the template holds, a `v-for` item or a slot prop: the listener is then an arrow that passes it and nothing more, `@click="() => handleSelect(user)"` or `@change="(value) => handleChange(stat, value)"`. A value the script can already read, such as a prop or a literal, is not that exception, so it gets its own named handler. Any branch, fallback, or `await` belongs in the handler (section 16), never in the arrow.
 - **The event parameter is `event`**, never `e`.
 
 ## Style
@@ -67,6 +68,15 @@ Always `<script setup lang="ts">`. Use the **`@/` alias, never `~/`**.
 ## SFC block order
 
 `<template>` → `<script setup>` → `<style scoped>`. Keep the order identical in every file.
+
+## Component size
+
+Counted on the whole `.vue` file after formatting — template, script, and style together — so the number is what `wc -l` prints.
+
+- **Over 300 lines is a soft limit.** The file is not wrong, but it is due for structure. First extract coherent template subtrees into child components. Then group each remaining feature group — the state, handlers, and watchers that change together — into a local composable at the bottom of the script (§21), destructured at §14. Single-member leftovers stay top-level.
+- **Over 450 lines is a hard limit,** enforced by the lint run. Split until under, child components first.
+- **A child must be a coherent subtree** with a self-describing name and a narrow prop boundary. A split done only to get under a number produces a child with no name and a wide prop list; a file that cannot be split that way stays over 300 with composables as its only remedy.
+- **A `composables/` file** is created only when a second consumer exists or a template split alone cannot reach 450. One-use logic stays beside its template.
 
 ## General rules
 

@@ -2,7 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import App from '@/app.vue';
-import LoadingRing from '@/components/_shared/LoadingRing.vue';
+import LoadingRing from '@/components/shell/LoadingRing.vue';
 
 import type { VueWrapper } from '@vue/test-utils';
 
@@ -38,9 +38,9 @@ const stubs = {
   BuildManager: true,
   AuthMenu: true,
   StorySetupButton: true,
-  BuildDialogs: true,
-  BuildAccountDialogs: true,
-  BuildConflictDialog: true,
+  LocalBuildDialogs: true,
+  CloudBuildDialogs: true,
+  CloudBuildConflictDialog: true,
   FirstLoginOffer: true,
   FirstRunBanners: true,
   AccountDialogs: true,

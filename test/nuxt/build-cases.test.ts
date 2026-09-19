@@ -169,12 +169,12 @@ async function replay(document: SerializedBuild): Promise<SerializedBuild> {
       STAT_NAMES.forEach((stat, index) => {
         const value = values?.[index] ?? 0;
 
-        planner.setMissionThreshold(
+        planner.setMissionThreshold({
           template,
           kind,
           stat,
-          value > 0 ? value : null
-        );
+          value: value > 0 ? value : null
+        });
       });
     }
   });

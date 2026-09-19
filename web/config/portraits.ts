@@ -25,6 +25,17 @@ export const PORTRAIT_WIDTHS: Record<PortraitUsage, number> = {
   panel: 256
 };
 
+// * Only the overview's cards are eager: it is the landing tab and its first pairs are in view on load. Every other usage renders in a dialog, a later tab, or the picker, where the image addon requires lazy.
+export const PORTRAIT_LOADING: Record<PortraitUsage, 'eager' | 'lazy'> = {
+  header: 'lazy',
+  ribbon: 'lazy',
+  rail: 'lazy',
+  card: 'eager',
+  tile: 'lazy',
+  synergy: 'lazy',
+  panel: 'lazy'
+};
+
 // ! The module's own `screens` default (`sm` 640 … `2xl` 1536) is merged under whatever is set here, and every surviving value joins Vercel's allowed `sizes` — five widths the app never renders. Reusing those five keys for our own widths is what leaves the allowlist equal to what the app asks for; the keys themselves are inert, since nothing here uses a `sizes` string.
 const MODULE_SCREEN_KEYS = ['sm', 'md', 'lg', 'xl', '2xl'];
 

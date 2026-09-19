@@ -3,9 +3,9 @@ import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h, nextTick } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useAppMutation } from '@/composables/useAppMutation';
-import { useAppQuery } from '@/composables/useAppQuery';
-import { useApiErrorWatcher } from '@/composables/useApiErrorWatcher';
+import { useAppMutation } from '@/composables/data/useAppMutation';
+import { useAppQuery } from '@/composables/data/useAppQuery';
+import { useApiErrorWatcher } from '@/composables/data/useApiErrorWatcher';
 
 const toastAdd = vi.fn<(payload: { title: string; color: string }) => void>();
 

@@ -19,7 +19,9 @@ export default {
     // * Changes: a plate's heading is the title role — condensed, uppercase, tracked (annex §2). font-semibold is dropped because text-title carries its own 800 weight.
     // * Default: 'text-highlighted font-semibold'
     title: 'text-highlighted font-heading text-title uppercase',
-    description: 'mt-1 text-muted text-sm',
+    // * Changes: the description is for assistive technology only. Every dialog here explains itself in its body, so a visible line under the title would repeat it — but reka-ui points `aria-describedby` at this element whether or not it renders, and warns when nothing answers it.
+    // * Default: 'mt-1 text-muted text-sm'
+    description: 'sr-only',
     // * Changes: the close button is a flex child of the plate band, not an overlay. Upstream pins it `absolute top-4 end-4`, which was written against upstream's taller band — against the 40px `min-h-10` band here it sits 12px low, and `end-4` overhangs the title's `sm:px-6` rail. `static` returns it to the flow (and with it, `top`/`end` stop applying at all — the app.config string is merged onto the default, not swapped for it), so the band's own `items-center` centres it and the band's own inline padding places it, at any band height.
     // * Default: 'absolute top-4 end-4'
     close: 'static ms-auto'

@@ -4,7 +4,7 @@ import { defineComponent, h } from 'vue';
 import type { VueWrapper } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import BuildManager from '@/components/_shared/BuildManager.vue';
+import BuildManager from '@/components/build/BuildManager.vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 const fetchBuildsSpy = vi.fn<() => Promise<unknown>>();

@@ -2,8 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h, nextTick } from 'vue';
 
-import HeroCard from '@/components/HeroCard.vue';
-import HeroDetailDialog from '@/components/HeroDetailDialog.vue';
+import HeroCard from '@/components/hero/HeroCard.vue';
+import HeroDetailDialog from '@/components/hero/HeroDetailDialog.vue';
+
+import { HERO_POWERS, MAX_POWER_TRAININGS } from '@/types/hero';
 
 import type { HeroId, StatName } from '@/types/hero';
 
@@ -139,5 +141,70 @@ describe('hero derived values', () => {
     // * Nine level-ups plus one bonus level is ten spends, so the hero reads level 11.
     expect(await cardText('golem')).toContain('Lv. 11');
     expect(await dialogText('golem')).toContain('Level 11');
+  });
+});
+
+describe('trainable power lock', () => {
+  async function derived(heroId: HeroId) {
+    let instance!: ReturnType<typeof useHeroDerived>;
+
+    mounted.push(
+      await mountSuspended(
+        defineComponent({
+          setup() {
+            instance = useHeroDerived(() => heroId);
+
+            return () => h('div');
+          }
+        })
+      )
+    );
+
+    return instance;
+  }
+
+  it('locks both upgrades until the starting power is revealed', async () => {
+    const p = await planner();
+    const golem = await derived('golem');
+
+    expect(golem.trainablesLocked.value).toBe(true);
+
+    p.toggleStartingPower('golem');
+
+    expect(golem.trainablesLocked.value).toBe(false);
+  });
+
+  it('leaves a trained hero free to switch upgrades once every training is spent', async () => {
+    const p = await planner();
+    // * Only heroes that can train count: a one-power hero and the episode 8 recruits spend nothing.
+    const trainable = (Object.keys(HERO_POWERS) as HeroId[]).filter(
+      (id) => HERO_POWERS[id]!.length > 1 && !p.ep8RecruitIds.value.has(id)
+    );
+    const trainees = trainable.slice(0, MAX_POWER_TRAININGS);
+
+    for (const id of trainees) {
+      p.toggleStartingPower(id);
+      p.toggleTrainablePower(id, 1);
+    }
+
+    expect(p.trainingsUsed.value).toBe(MAX_POWER_TRAININGS);
+
+    const trained = await derived(trainees[0]!);
+
+    expect(trained.trainablesLocked.value).toBe(false);
+
+    const untrained = trainable[MAX_POWER_TRAININGS]!;
+
+    p.toggleStartingPower(untrained);
+
+    const waiting = await derived(untrained);
+
+    expect(waiting.trainablesLocked.value).toBe(true);
+  });
+
+  it('locks everything for a closed dialog', async () => {
+    const closed = await derived(null as unknown as HeroId);
+
+    expect(closed.trainablesLocked.value).toBe(true);
   });
 });

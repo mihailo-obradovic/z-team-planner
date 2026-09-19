@@ -1,7 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import HeroPortrait from '@/components/HeroPortrait.vue';
+import HeroPortrait from '@/components/hero/HeroPortrait.vue';
 
 // * Feature 021: a usage site names its width once and gets an x1/x2 srcset at exactly that width, at the one quality and format, from the hero's own master. IPX serves the test environment, so the URLs are its `/_ipx/<modifiers>/<path>` form.
 

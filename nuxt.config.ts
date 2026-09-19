@@ -7,6 +7,11 @@ export default defineNuxtConfig({
     dirs: ['@/components/_shared']
   },
 
+  // * Composables are grouped by subject like the components are; Nuxt scans only the top level of `composables/` without this.
+  imports: {
+    dirs: ['@/composables/**']
+  },
+
   css: ['@/assets/css/main.css'],
 
   runtimeConfig: {
