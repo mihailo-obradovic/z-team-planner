@@ -1,5 +1,9 @@
 <template>
-  <u-modal v-model:open="isOpen" title="Keep your builds?">
+  <u-modal
+    v-model:open="isOpen"
+    title="Keep your builds?"
+    description="Copy the builds in this browser into your account."
+  >
     <template #body>
       <div class="flex flex-col gap-4">
         <p class="text-sm text-muted">

@@ -24,7 +24,11 @@
       />
     </TransitionGroup>
 
-    <u-modal v-model:open="pickerOpen" title="Pick a hero">
+    <u-modal
+      v-model:open="pickerOpen"
+      title="Pick a hero"
+      description="Choose the hero for this mission slot."
+    >
       <template #body>
         <div v-if="missionCandidates.length" class="grid grid-cols-3 gap-3">
           <button

@@ -11,7 +11,11 @@
     @confirm="handleSave"
   />
 
-  <u-modal v-model:open="accountDeleteOpen" title="Delete from your account">
+  <u-modal
+    v-model:open="accountDeleteOpen"
+    title="Delete from your account"
+    description="Removes this build from your account and stops its share link."
+  >
     <template #body>
       <p class="text-sm text-muted">
         Delete
@@ -37,6 +41,8 @@
 </template>
 
 <script setup lang="ts">
+import BuildNameDialog from '@/components/build/BuildNameDialog.vue';
+
 import {
   useCreateBuild,
   useDeleteBuild,

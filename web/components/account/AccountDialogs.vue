@@ -1,5 +1,9 @@
 <template>
-  <u-modal v-model:open="deleteAccountOpen" title="Delete your account">
+  <u-modal
+    v-model:open="deleteAccountOpen"
+    title="Delete your account"
+    description="Removes your account and every build saved to it."
+  >
     <template #body>
       <div class="flex flex-col gap-4">
         <!-- ! Every variant reserves the row: the count arrives after the dialog opens, just above the Delete button. -->

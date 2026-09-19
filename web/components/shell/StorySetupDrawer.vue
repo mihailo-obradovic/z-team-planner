@@ -1,5 +1,10 @@
 <template>
-  <u-slideover v-model:open="open" side="right" title="Story setup">
+  <u-slideover
+    v-model:open="open"
+    side="right"
+    title="Story setup"
+    description="Episode choices and the shared training budgets."
+  >
     <template #body>
       <div class="flex flex-col gap-4">
         <u-form-field label="Episode 3: Cut" size="xl">

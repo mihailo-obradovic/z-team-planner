@@ -21,7 +21,11 @@
     @confirm="confirmNewBuild"
   />
 
-  <u-modal v-model:open="deleteOpen" title="Delete build">
+  <u-modal
+    v-model:open="deleteOpen"
+    title="Delete build"
+    description="Removes this build from this browser."
+  >
     <template #body>
       <p class="text-sm text-muted">
         Are you sure you want to delete "{{ activeBuildName }}"?
@@ -49,6 +53,8 @@
 </template>
 
 <script setup lang="ts">
+import BuildNameDialog from '@/components/build/BuildNameDialog.vue';
+
 const toast = useToast();
 
 const {

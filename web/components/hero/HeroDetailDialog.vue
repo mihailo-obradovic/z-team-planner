@@ -1,5 +1,10 @@
 <template>
-  <u-modal :open="!!heroId" fullscreen @update:open="handleClose">
+  <u-modal
+    :open="!!heroId"
+    fullscreen
+    :description="`Stats, powers and notes for ${hero?.name ?? 'this hero'}.`"
+    @update:open="handleClose"
+  >
     <!-- * The thumbnail names the hero below `lg`, where the large portrait is not drawn. -->
     <!-- * The roster rail and the radar stay outside the keyed fade: the rail is stable and the radar has its own tween. -->
     <template #title>

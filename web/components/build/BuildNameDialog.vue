@@ -1,5 +1,5 @@
 <template>
-  <u-modal v-model:open="open" :title="title">
+  <u-modal v-model:open="open" :title="title" description="Name this build.">
     <template #body>
       <u-form-field label="Build name" :error="error">
         <u-input

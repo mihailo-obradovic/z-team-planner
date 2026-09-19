@@ -1,5 +1,9 @@
 <template>
-  <u-modal v-model:open="conflictOpen" title="This build changed elsewhere">
+  <u-modal
+    v-model:open="conflictOpen"
+    title="This build changed elsewhere"
+    description="Choose whether to keep the other device's version or your own."
+  >
     <template #body>
       <div class="flex flex-col gap-3">
         <p class="text-sm text-muted">
