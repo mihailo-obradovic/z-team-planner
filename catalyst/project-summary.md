@@ -1,12 +1,16 @@
 # z-team-planner
 
-Catalyst version: 1.13.2
+Catalyst version: 1.15.0
 
 ## Project Purpose
 
 This project provides a build calculator for the game **Dispatch** (AdHoc Studio) to players planning their Z-Team. It displays the whole roster with per-hero controls for stat leveling, power training, and flight capability, computes synergy pairs and team-wide totals, and lets setup flags mirror the story's roster changes (who was cut in episode 3, who was hired in episode 4). Builds persist in the browser (localStorage) and are shareable via a URL parameter; signing in with Google additionally saves builds to a FastAPI backend on Neon Postgres, where they follow the user across devices and share by live link (decision 004). The game-mechanics reference all hero data is transcribed from is `context/game-mechanics.md`.
 
-Context documents: `context/product-description.md`, `context/game-mechanics.md` (project-specific — loads on game-data or mechanics work), `context/design-reference.md` (project-specific — loads on UI styling or UI feature work), `context/glossary.md` (project-specific — loads when naming or reading anything that handles a build) (`references/context-documents.md`)
+Context documents: `context/product-description.md` (product vision and intent, behind this purpose paragraph); `context/game-mechanics.md` (project-specific — adding or changing hero data, powers, synergy pairs, or any rule whose correctness is defined by the game Dispatch; the reference all game data is transcribed from); `context/design-reference.md` (project-specific — styling or restyling UI, drafting or reviewing a UI feature document, or judging whether an interface change fits the product's look; the approved redesign the interface is built to); `context/glossary.md` (project-specific — naming a type, function, or variable that handles a build, reading code where "build" appears, or discussing one in a feature or decision document; the four meanings of the word and the term for each) (`references/project-documents.md`)
+
+Convention annexes: `annexes/design-system.md` — styling anything, adding or changing a token, picking a size, shadow or spacing value, or building a new component. Styling values come from it — a raw hex or an off-scale px in a component is a defect; colour is named through the seven semantic aliases, never a ramp name (`references/project-documents.md`)
+
+Agent adapters: `agents/domain.md`, `agents/issue-tracker.md`, `agents/triage-labels.md` — loads when the `mattpocock-skills` pipeline is in play: domain docs, the Workflowy issue tracker, and the triage labels, each redirected into this bundle (decision 002, `references/agent-skills.md`)
 
 ## Feature Index
 
@@ -58,7 +62,7 @@ One line per record: type, status, title, link.
 
 ## Domain Decision Index
 
-Present only when the project has standing cross-cutting domain/method decisions (e.g. "negative values are signal, never clipped") — pre-resolved judgment calls the agent follows and never re-litigates (`references/domain-decisions.md`). One line each: decision + short rationale. A local decision graduates here when it proves cross-cutting.
+Present only when the project has standing cross-cutting domain/method decisions (e.g. "negative values are signal, never clipped") — pre-resolved judgment calls the agent follows and never re-litigates (`references/project-documents.md`). One line each: decision + short rationale. A local decision graduates here when it proves cross-cutting.
 
 | Decision                                                  | Rationale                                                                                                                                                                                                                                   |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -85,6 +89,7 @@ One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices,
 | backend         | python-fastapi                                                                                          |
 | persistence     | postgres (hosted on Neon)                                                                               |
 | identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
+| maintenance     | renovate — decision 009 (no automerge, weekly, both lockfiles in scope)                                 |
 
 ## Status Values
 

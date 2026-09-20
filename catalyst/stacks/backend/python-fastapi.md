@@ -4,7 +4,7 @@
 **Tool:** Python 3.11+ · FastAPI · SQLAlchemy · Pydantic
 **Requires:** _lang/python
 
-The default backend module. Names the tools and binds the Universal Rules to them; it never restates a Universal Rule. Swap it for another backend module by decision record — the Universal Rules bind the replacement unchanged.
+The Python backend module. Names the tools and binds the Universal Rules to them; it never restates a Universal Rule. Swap it for another backend module by decision record — the Universal Rules bind the replacement unchanged.
 
 ## Runtime
 

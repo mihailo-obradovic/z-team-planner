@@ -8,7 +8,7 @@
     move-class="chip-move"
     enter-active-class="chip-entering"
     leave-active-class="chip-leaving"
-    @beforeLeave="pinLeaving"
+    @before-leave="pinLeaving"
     class="relative flex h-6 items-center justify-center gap-1"
   >
     <span v-if="heroId === 'sonar'" key="sonar-form" class="flex">

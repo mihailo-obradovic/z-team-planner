@@ -1,9 +1,9 @@
 # Nuxt Client State
 
 **Layer:** Frontend
-**Tool:** Pinia
+**Tool:** Pinia · `useState`
 
-Pinia holds **client state** — what the app knows that no server owns. Server state belongs to Pinia Colada (`data-layer.md`), and the line between them is the first thing to get right: a store that caches server data has just built a second, worse cache with no invalidation.
+**Client state** is what the app knows that no server owns, and it has three homes: `useState`, a shared composable, and a Pinia store. Server state belongs to Pinia Colada (`data-layer.md`), and the line between them is the first thing to get right: a store that caches server data has just built a second, worse cache with no invalidation.
 
 ## What belongs in a store
 
@@ -18,6 +18,18 @@ What does not:
 - **Anything the API owns.** A user list, a resource being edited, a paginated table — that is Pinia Colada's, and it already handles caching, revalidation, and invalidation.
 - **State one component uses.** A plain `ref` in that component is the right answer; a store is not tidier, it is just wider.
 - **State shared by exactly two adjacent components.** Lift it to the parent first. Reach for a store when lifting stops being reasonable.
+
+**There is a third option between the two, and it is the one most often wanted: `useState`.** A store and a local `ref` are not the only choices, and treating them as such pushes every shared flag into a store that has no business holding it.
+
+| Reach for      | When                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| a local `ref`  | One component owns it                                                                                                                      |
+| **`useState`** | Shared, but the key is part of no public contract and it needs no actions, no getters, and no devtools story — a dialog's open flag, a tab |
+| a Pinia store  | It needs a mutation discipline, derived getters, or to be read from outside a component                                                    |
+
+A dozen `useState` keys beside one small store is a healthy shape, not a smell. The question is never "is this shared?" but **"does this need what a store provides?"**
+
+`useState` is also what gives a composable a shared identity — see below.
 
 The one deliberate exception is a **form draft**: an explicit local copy of server-owned data, held as client state until submit — the exception the Universal Rules (Client And UI) name.
 
@@ -62,11 +74,26 @@ const { setUser, resetUser } = useAuthStore();
 
 Never wrap a store value in a local property that only re-exposes it (`const currentUser = computed(() => authStore.user)`) — it adds a name, a layer, and nothing else. Nor a local handle the members are then read off (`const authStore = useAuthStore()`, then `authStore.resetUser()`): that is the same layer without the name. The split binds **every file that consumes a store** — composables, plugins, and services as much as components. Section 11 of `../_vue/vue-style.md` fixes where it sits in an SFC's script.
 
+## Composables
+
+A composable is the third home for shared state, and it has four rules of its own.
+
+- **Identity comes from `useState`, never a bare `ref`.** A `ref` declared inside a composable body is a **new instance per caller** — the first caller never notices, and the second one exposes it, usually as two components disagreeing about the same flag. A `ref` at module scope shares identity but leaks between requests on a server. `useState` with a key is the one form that is shared and request-safe.
+- **The owning composable declares every key's initial value**, at its definition. A key initialised by whichever caller happens to run first has a value that depends on render order.
+- **Composables that call each other declare a direction.** Write down which may call which and keep it acyclic; two composables that each reach for the other recurse the moment both are used on one page.
+- **Return state read-only, exactly as a store does**, and let the owning module do the orchestration. A caller that mutates another module's state is a second writer to an invariant that module is responsible for; a sequence of callers each doing part of an operation means no single place can be read to know what the operation is.
+
 ## Stores do not call the API
 
 A store action does not fetch. The query layer calls the service, then calls the store action with the result (`data-layer.md` — "store side effects belong to the query layer's internal hook"). A store never has a loading state, an error state, or a retry — Pinia Colada owns those.
 
 Where a store genuinely must trigger a fetch — priming the session at startup — that lives in a plugin that calls the service and hands the result to the action, not in the action itself (`routing.md`).
+
+**A plugin wiring an optional third-party capability never throws.** Absent configuration and a failed initialisation are both ordinary deployment states — a preview build without the keys, a service the project runs without. A plugin that throws on either takes the whole app down for a capability the app was designed to live without.
+
+Instead: log once for a developer, record an **unavailable** state the UI already models, and provide `null` so every downstream consumer degrades on a single check rather than a try-catch each.
+
+**Widen an existing state rather than add a flag.** A capability that is configured, unavailable, or ready is one state with three values; a separate `isAvailable` boolean beside it is a second source of truth whose only future is being deleted when someone notices they can disagree.
 
 ## File layout
 

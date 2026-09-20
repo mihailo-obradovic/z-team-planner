@@ -21,11 +21,15 @@ Named after the service file, one per service file. It holds three things:
 **A query-key const.** Hierarchical keys for every query, declared `as const`. Queries only — mutations take no `key`: in Pinia Colada it is optional and exists solely for mutation-cache introspection, which nothing in this project uses.
 
 ```ts
+export const USERS_ROOT = ['users'] as const;
+
 export const usersQueryKeys = {
   fetchUsers: ['users', 'fetch'],
   fetchUser: ['users', 'get']
 } as const;
 ```
+
+**Each resource declares a root key beside its map, and mutations invalidate the root.** Invalidation matches a key and all its children, so one `invalidateQueries({ key: USERS_ROOT })` covers every query the resource has or will ever have. The alternative — each mutation listing the keys it affects — means every new query is a sweep through every existing mutation to find the ones that should now mention it, and the miss is silent: a stale list nobody invalidated.
 
 Parameterized keys append their params in the composable: `key: () => [...usersQueryKeys.fetchUser, id.value]`.
 
@@ -44,7 +48,21 @@ export function useFetchUser(
 }
 ```
 
-**Cache invalidation in `onSettled`.** Mutations invalidate every affected key; components never patch cached lists by hand.
+**Cache invalidation in `onSettled`.** Mutations invalidate the resource root; components never patch cached lists by hand. A mutation composable also passes the caller's own `onSettled` through, and the two run in a fixed order — internal first, then the caller's — which is pinned once in an exported helper rather than rewritten per mutation:
+
+```ts
+export function chainOnSettled<TData, TVars, TError>(
+  internal: OnSettled<TData, TVars, TError>,
+  callerHook: OnSettled<TData, TVars, TError> | undefined
+): OnSettled<TData, TVars, TError> {
+  return async (data, error, vars, context) => {
+    await internal(data, error, vars, context);
+    await callerHook?.(data, error, vars, context);
+  };
+}
+```
+
+Both `await`s matter: without them a caller's hook can run against a cache that has not finished invalidating.
 
 ## The options passthrough
 
@@ -123,9 +141,36 @@ For TypeScript narrowing, read through the grouped `state` object: inside `state
 
 When a query's params aren't available yet (route not resolved, parent query still pending), pass a reactive `enabled` instead of guarding at the call site: `enabled: () => id.value != null`. A disabled query holds `pending` and fires as soon as the condition turns true.
 
+**`enabled` carries authorization too, not only parameter readiness.** A user-scoped query is enabled on the session being _resolved and authenticated_, and that condition is declared **in the composable**, so no caller can forget it:
+
+```ts
+enabled: () => session.status.value === 'signed-in' && id.value != null;
+```
+
+This is where a three-state session earns its keep (`client-state.md`): with only a boolean, "not signed in" and "not known yet" are the same value, so the query either fires before the session resolves and 401s, or is suppressed for a user who turns out to be signed in. `unknown` keeps "not yet" distinct from "no".
+
 ### Invalidation semantics
 
 `invalidateQueries({ key })` matches the key **and all its children** — `['users']` hits `['users', 'fetch']` and every `['users', 'get', id]`. Pass `exact: true` to match a single entry. Invalidation marks matching entries stale and refetches the **active** ones (currently mounted); inactive entries refetch when next used. That is why mutations can invalidate broadly without triggering a request storm.
+
+**An identity change is eviction, not invalidation.** When a session ends, invalidating user-scoped queries is not enough: the wrappers set `placeholderData`, so an invalidated entry keeps showing the previous data while it refetches — the outgoing user's data, on screen, to whoever is there now. The entries have to be cancelled and removed. The query layer names its user-scoped roots in one place and clears them together:
+
+```ts
+const USER_SCOPED_ROOTS = [USERS_ROOT, meQueryKeys.fetchMe];
+
+export function clearUserScopedCache(pinia?: Pinia): void {
+  const queryCache = useQueryCache(pinia);
+
+  for (const key of USER_SCOPED_ROOTS) {
+    for (const entry of queryCache.getEntries({ key })) {
+      queryCache.cancel(entry);
+      queryCache.remove(entry);
+    }
+  }
+}
+```
+
+**Cancel before remove**, or an in-flight request lands after the removal and repopulates what was just cleared. The **optional `pinia` argument** is not decoration: the trigger is a plugin or an auth SDK subscription that outlives component setup, where the active Pinia instance cannot be inferred and has to be passed.
 
 ### Mutation state and cache writes
 
@@ -139,3 +184,4 @@ When a query's params aren't available yet (route not resolved, parent query sti
 - **No try-catch around queries and mutations.** Errors are handled centrally. Opt out of the toast per call with `errorHandling: { suppressToasts: 'all' }`.
 - Success toasts, navigation, and closing dialogs go in the page-level `onSuccess` passed to the composable.
 - Trigger mutations with `mutate` (fire-and-forget) rather than `mutateAsync`, unless the result is needed inline.
+- **"Do X only after the save succeeds" is a second named mutation with its own `onSuccess`** — never `mutateAsync` in a `try`/`catch` in a component. Sequencing two operations by awaiting one and calling the other puts the ordering, the failure handling, and the rollback question inside a component, which is where none of them belong.

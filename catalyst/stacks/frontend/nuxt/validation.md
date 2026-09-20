@@ -26,6 +26,12 @@ export type User = z.infer<typeof UserSchema>;
 
 - **Response-only schemas** — a `{ status: string }` acknowledgement used in one service file — stay at the top of that service file rather than polluting `@/types/`.
 - **Request and form payload types stay hand-written.** They describe what the UI sends, not what the server returns, so there is no response to infer them from and no runtime parsing to do.
+- **A field whose type is owned outside the schema wraps the existing guard with `z.custom<T>(guard)`** rather than restating the shape in Zod. This is the one carve-out from inferring the type from the schema: where a format is already validated on non-Zod paths — a URL codec, a stored payload, a conflict dialog — restating it gives two definitions that drift, and the drift is silent because each one passes its own tests. One guard, called from every entry point including the schema.
+
+```ts
+data: z.custom<SerializedBuild>(isSerializedBuild);
+```
+
 - Parsing happens once, at the service boundary (`data-layer.md`). A parse failure is a programming or contract error, not a user-facing one: log the Zod issue and throw a generic message rather than surfacing schema internals.
 
 ## Regle — requests only
@@ -107,3 +113,14 @@ A validation failure the form could have caught belongs on the field that caused
 Where the `frontend/ui` choice provides inputs with an error-message prop, pass Regle's `$errors` array straight to it — it is already `string[]`.
 
 Where it does not, the project owns a small presenter component with a **fixed minimum height** — a message that appears and disappears without one shifts every field below it while the user is mid-form. The `headless` choice carries the component (`ui/headless.md`, The field-error presenter); a choice whose inputs reserve the line already solves it.
+
+**A choice with an error prop has not necessarily reserved the line.** Nuxt UI renders the error and the help text in the _same_ position — the error block is a `v-if` and the help block its `v-else-if` (`FormField.vue`, verified on `@nuxt/ui` 4.4.0) — so the row exists only while one of them has content, and passing the error alone still shifts everything below it the moment the message mounts. The answer is cheaper than a presenter: give the field a help line that renders a non-breaking space behind `aria-hidden`, and the error swaps into a row that was always there.
+
+```vue
+<!-- ! An empty help line holds the error's place: without it an error mounting mid-typing moves the button below. -->
+<template #help>
+  <span aria-hidden="true">&nbsp;</span>
+</template>
+```
+
+Declaring the slot is not enough on its own — an empty block has no height, so the slot has to render something. Measured before the fix: an over-long name mounted the error and moved the confirm button 14.5px, at 1440 and 320 alike, mid-typing.

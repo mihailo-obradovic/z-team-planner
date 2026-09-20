@@ -1,6 +1,6 @@
 # Design System — z-team-planner
 
-The project's own design system, instantiated from `stacks/frontend/nuxt/design-system.md` (decision 003) and owned by this repository. The template stays pristine; this file is the contract. Where a value here disagrees with the mockups in `context/design-reference.md`, this file wins.
+The project's own design system, instantiated from `stacks/frontend/_common/design-system.md` (decision 003) and owned by this repository. The template stays pristine; this file is the contract. Where a value here disagrees with the mockups in `context/design-reference.md`, this file wins.
 
 **Loads when:** styling anything, adding or changing a token, picking a size, shadow, or spacing value, or building a new component.
 

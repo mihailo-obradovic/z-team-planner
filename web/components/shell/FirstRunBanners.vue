@@ -1,6 +1,6 @@
 <template>
   <div ref="region" class="shrink-0">
-    <TransitionGroup name="first-run-banner" appear @beforeLeave="sealLeaving">
+    <TransitionGroup name="first-run-banner" appear @before-leave="sealLeaving">
       <div
         v-for="notice in pending"
         :key="notice.key"

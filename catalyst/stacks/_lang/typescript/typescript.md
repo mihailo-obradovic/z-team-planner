@@ -19,4 +19,17 @@ The annotation convention for deliberate deviations, footguns, and to-dos is not
 
 ## Node Version
 
-The Node major is pinned at the repository root: `mise.toml` holds it (`[tools]` / `node = "<major>"`), and `package.json` mirrors it as `"engines": { "node": ">=<major>" }` once one exists, so the version manager and CI read the same pin. A new project defaults to the latest LTS; the pin is the project's own from spawn onward. Keep `mise.toml` the only pin file — a repo migrating from `.nvmrc` or `.node-version` deletes it in the same change that adds `mise.toml`. Bumping the pin is a deliberate act, not routine maintenance: an update that drops a supported runtime belongs to the decision record that owns the choice (the maintenance module's rule, when adopted). Never float the pin (`lts/*`, `latest`) — a pin that moves on its own is not a pin.
+The Node major is pinned at the repository root: `mise.toml` holds it (`[tools]` / `node = "<major>"`), and `package.json` mirrors it as `"engines": { "node": ">=<major>" }` once one exists, so the version manager and CI read the same pin — a CI job reads the pin file rather than restating the version (`../../ci/github-actions.md`). A new project defaults to the latest LTS; the pin is the project's own from spawn onward. Keep `mise.toml` the only pin file — a repo migrating from `.nvmrc` or `.node-version` deletes it in the same change that adds `mise.toml`. Bumping the pin is a deliberate act, not routine maintenance: an update that drops a supported runtime belongs to the decision record that owns the choice (the maintenance module's rule, when adopted). Never float the pin (`lts/*`, `latest`) — a pin that moves on its own is not a pin.
+
+## Package Manager
+
+**The package manager is pinned exactly in `packageManager`** — `pnpm@10.30.1`, never a range. A lockfile written by a second tool, or by a second version of the same tool, is a lockfile the next install disagrees with. The exact pin is what makes Corepack install the one the project was tested against.
+
+**`pnpm-workspace.yaml` exists even in a single-package repository**, because it is the only home for pnpm settings `package.json` cannot hold. Two earn their place:
+
+- **The install cooldown**, which is a supply-chain control rather than a preference.
+- **Build-script approvals** (`ignoredBuiltDependencies`), where each entry is a deliberate row saying "this dependency's install script is not run". Never a pasted list.
+
+**That list goes stale silently, in both directions.** A dependency can leave the tree or drop its install script, leaving an entry that approves nothing, while a newly added one raises the warning that a fresh install prints and an incremental one does not. Re-check whenever dependencies move: install into a temp copy of the repo and read `pnpm ignored-builds`, which should report `None`.
+
+pnpm 11 replaces the setting with `allowBuilds: { <pkg>: false }`; the rule is unchanged, only the key.

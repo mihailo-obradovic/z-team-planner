@@ -1,6 +1,6 @@
 # Design Reference — Dispatch-styled redesign
 
-A **context document** (`references/context-documents.md`), project-specific: the approved visual redesign this app's interface is built to. Background, never a contract — the measured values live in `annexes/design-system.md`, and where the two disagree the annex wins. This file explains the intent and points at the pictures.
+A **context document** (`references/project-documents.md`), project-specific: the approved visual redesign this app's interface is built to. Background, never a contract — the measured values live in `annexes/design-system.md`, and where the two disagree the annex wins. This file explains the intent and points at the pictures.
 
 **Loads when:** styling or restyling UI, drafting or reviewing a UI feature document, or judging whether an interface change fits the product's look.
 

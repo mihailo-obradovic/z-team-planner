@@ -37,9 +37,26 @@ render_build(build, "public")
 Two boundaries:
 
 - **Booleans inside an options object are permitted** — the key names them, which is the whole objection answered. `{ replace: true }` reads. What an options object must still not carry is a set of booleans whose illegal combinations type-check; two flags with three legal states are one union, not two booleans.
+- **A component's props are an options object** — they are keyed at every call site, so `<UserCard compact />` names its own argument and the carve-out above covers it. A single boolean prop is fine. What is not fine is the same illegal-combination trap: two boolean props with three legal states between them are one union, not two booleans, and the union usually already exists as the component's tier or variant.
 - **A third-party signature is converted at its boundary, once.** An SDK that takes a boolean keeps taking one; the project's own code speaks the union up to the call, and the conversion happens in the function that touches the SDK.
 
 A union also extends. A third state added to a boolean means changing every signature it passes through; added to a union it means one more member.
+
+## Same-typed positional parameters become an object
+
+**Two or more parameters of the same type, positionally, are a type hole.** A transposed pair type-checks, so the compiler cannot tell you what a reviewer cannot see either: nothing distinguishes the second `string` from the third.
+
+```ts
+// * Incorrect — swap any two and it still compiles
+function serialise(id: string, name: string, owner: string) { … }
+
+// * Correct
+function serialise(build: { id: string; name: string; owner: string }) { … }
+```
+
+The threshold is **two or more same-typed**, not a count of parameters — three parameters of three different types are fine, and two of the same type are not.
+
+An object also stops the growth that makes this urgent: a signature reached eight same-typed parameters, and adding a ninth meant editing every call site to keep the order right. Adding a key edits nothing.
 
 ## Principal export first
 
@@ -135,3 +152,6 @@ Three boundaries:
 - **A server reading its own clock is the rule working, not an exception to it.** `datetime` in a model or a repository is where a timestamp is supposed to come from; this rule constrains the client that would otherwise invent one.
 - **Monotonic time is not wall-clock time.** `performance.now()` measures elapsed duration, cannot be compared across processes, and is untouched.
 - **A delay is not a timestamp.** `setTimeout` and its relatives take durations, and nothing here applies to them.
+- **An id is not a timestamp either.** `Date.now()` is sometimes reached for as a unique-enough key; the replacement there is `crypto.randomUUID()`, not `Temporal`. The ban lists `Date.now()` and offers only `Temporal`, which is the wrong answer for an id.
+
+A polyfill is **imported inside the one boundary module that needs it**, never installed as a global shim: imported, it lands in the chunk that formats a timestamp, while a shim lands in the entry bundle every visitor downloads.

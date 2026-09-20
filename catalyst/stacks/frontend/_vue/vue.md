@@ -6,11 +6,11 @@ Shared Vue-general conventions for any Vue-based frontend module — SFC style, 
 
 ## Module Documents
 
-| Document                | What it holds                                                                                                                                         | Load                                                                    |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `vue-style.md`          | The authoritative Vue & TypeScript style rules — template, the 21-point script section order, event and handler naming, style blocks, SFC block order | When writing or reviewing Vue code                                      |
-| `vue-style-examples.md` | Worked SFC examples for the rules that code disambiguates                                                                                             | When a rule's application is unclear                                    |
-| `component-naming.md`   | The Vue-side additions to `../_common/component-naming.md` — auto-import name resolution, tag casing, where shared components live                    | When creating or renaming component files                               |
-| `style-audit.md`        | The audit procedure — count violations against the style guide, fix, re-check against the baseline                                                    | When auditing Vue files (via the `audit-vue-style` wrapper or directly) |
+| Document                | What it holds                                                                                                                                                         | Load                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `vue-style.md`          | The authoritative Vue & TypeScript style rules — template, the 21-point script section order, event and handler naming, style blocks, SFC block order, component size | When writing or reviewing Vue code                                      |
+| `vue-style-examples.md` | Worked SFC examples for the rules that code disambiguates                                                                                                             | When a rule's application is unclear                                    |
+| `component-naming.md`   | The Vue-side additions to `../_common/component-naming.md` — auto-import name resolution, tag casing, where shared components live                                    | When creating or renaming component files                               |
+| `style-audit.md`        | The audit procedure — count violations against the style guide, fix, re-check against the baseline                                                                    | When auditing Vue files (via the `audit-vue-style` wrapper or directly) |
 
 Performance work leans on the language-level rules in `../../_lang/typescript/performance.md`; there is no Vue-specific rule set.

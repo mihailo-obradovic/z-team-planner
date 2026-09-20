@@ -23,11 +23,11 @@ The marker is the token after the comment opener, so it carries into every comme
 
 **`// *` is the default: every prose comment carries a marker.** A comment that is not an alert, a question, or a to-do is a descriptive note and gets `// *`. An unmarked comment is reserved for disabled code, never prose. A comment stays on a single line however long — never hard-wrapped to a column; split only when it genuinely carries separate thoughts. Editors soft-wrap.
 
-**Documentation blocks are not used.** No `/** ... */` JSDoc, no PHPDoc, no banner rules (`// ====`) and no divider comments (`// ---`). Every comment is a marked line comment, symbol documentation included — a note on an exported function, a type member, or an interface field is a `// *` line above it like any other.
+**Documentation blocks are not used.** No `/** … */` JSDoc, no PHPDoc, no banner or divider comments. Every comment is a marked line comment, symbol documentation included: a note above a function is a `// *` like any other note. A doc block is a second comment grammar describing what the signature already states, and it rots in the one way a line comment does not — nobody reads a stale `@param` as wrong, they read it as documentation.
 
-The cost is real and accepted: an editor renders a JSDoc block as a hover tooltip and in autocomplete, and a `// *` line above the same member gets neither. It buys one comment style with one marker vocabulary, and removes the standing judgement call of _"is this note documentation or a comment?"_ — a question with no stable answer, which is why the two styles drift apart in the same file.
+**The boundary is runtime consumption, not appearance.** If a tool reads the text _when the program runs_, it is not a comment and this rule does not reach it. Python docstrings stay, because they are string literals the interpreter keeps and frameworks publish — FastAPI puts a handler's docstring into the OpenAPI schema. JSDoc fails the same test: nothing reads it at runtime.
 
-The boundary is **runtime consumption, not appearance**: if a tool reads the text when the program runs, it is not a comment and this rule does not reach it. A Python docstring is the case that matters here — it is a `__doc__` string, and FastAPI publishes a route handler's docstring as that endpoint's description in the OpenAPI schema. Docstrings stay. JSDoc fails the same test, because nothing in this project reads it.
+Editor-time consumption does not count. A tooltip is appearance, so `@deprecated` does not earn a doc block — it is a `// !` line like any other alert.
 
 ---
 
@@ -74,6 +74,14 @@ For deviations from an upstream default, the point is that a reader (and a revie
   ```ts
   // ! Do not alias here — @/ isn't resolvable during this module's SSR load
   ```
+
+- **Mark a deliberate omission** — where correctness depends on something _not_ happening, put a `// !` at the point a reader would add the call:
+
+  ```ts
+  // ! Deliberately does not refresh here — the caller already holds a fresher value
+  ```
+
+  An absent call is the hardest kind of intent to preserve: a refactor that adds it breaks nothing visibly and passes review, because there is nothing on the line to argue with.
 
 ---
 

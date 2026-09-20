@@ -17,7 +17,7 @@
             :key="localBuild.id"
             :model-value="selected.includes(localBuild.id)"
             :label="localBuild.name"
-            @update:modelValue="(value) => handleToggle(localBuild.id, value)"
+            @update:model-value="(value) => handleToggle(localBuild.id, value)"
           />
         </div>
 

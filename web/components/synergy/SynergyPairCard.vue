@@ -22,12 +22,12 @@
         >
           <SynergyHeroPortrait
             :hero-id="top.id"
-            @viewDetail="handleViewTopDetail"
+            @view-detail="handleViewTopDetail"
           />
 
           <SynergyHeroPortrait
             :hero-id="bottom.id"
-            @viewDetail="handleViewBottomDetail"
+            @view-detail="handleViewBottomDetail"
           />
         </div>
 

@@ -2,6 +2,8 @@
 
 Worked example of `operations.md` for the fictional QA automation platform. Per the Operations Runbook rule, a project with stateful infrastructure keeps one — a section per component, three parts each: **Operate** (paste-ready inspection commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts never live here — only how to run what is already built.
 
+**Status:** the database and the broker are deployed and carry real data. The worker fleet runs in staging only; its section below is written ahead of production and marked where it has not been exercised. No recovery drill here has been performed against production data — every `Last performed` reading _never_ is debt that comes due before the first real user's data lands.
+
 ## PostgreSQL
 
 ### Operate

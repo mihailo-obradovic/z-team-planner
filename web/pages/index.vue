@@ -23,7 +23,7 @@
             >
               <HeroCard
                 :hero-id="pair.top.id"
-                @viewDetail="() => handleViewDetail(pair.top.id)"
+                @view-detail="() => handleViewDetail(pair.top.id)"
               />
 
               <u-separator color="secondary" decorative>
@@ -38,7 +38,7 @@
 
               <HeroCard
                 :hero-id="pair.bottom.id"
-                @viewDetail="() => handleViewDetail(pair.bottom.id)"
+                @view-detail="() => handleViewDetail(pair.bottom.id)"
               />
             </div>
           </div>
@@ -60,7 +60,7 @@
                 v-for="hero in ep8Recruits"
                 :key="hero.id"
                 :hero-id="hero.id"
-                @viewDetail="() => handleViewDetail(hero.id)"
+                @view-detail="() => handleViewDetail(hero.id)"
               />
             </div>
           </div>
@@ -75,7 +75,7 @@
             :key="pair.topId"
             :top="pair.top"
             :bottom="pair.bottom"
-            @viewDetail="handleViewDetail"
+            @view-detail="handleViewDetail"
           />
         </div>
 
@@ -94,7 +94,7 @@
 
           <MissionTeamPanel
             class="col-span-full justify-self-center @max-[77rem]:justify-self-stretch"
-            @viewDetail="handleViewDetail"
+            @view-detail="handleViewDetail"
           />
         </div>
 

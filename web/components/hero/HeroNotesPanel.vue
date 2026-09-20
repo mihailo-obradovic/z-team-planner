@@ -18,7 +18,7 @@
           enter-active-class="notes-entering"
           leave-active-class="notes-leaving"
           aria-label="Notes"
-          @beforeLeave="pinLeaving"
+          @before-leave="pinLeaving"
           class="relative col-start-1 row-start-1 flex list-inside list-disc flex-col gap-2 self-start text-base marker:text-muted"
         >
           <li v-if="heroNote" key="note" class="text-muted">

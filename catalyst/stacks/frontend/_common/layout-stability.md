@@ -69,6 +69,25 @@ A whole section appearing or vanishing is the largest jump of the four, and the 
 
 Decide it deliberately, on one question: **does the control that removes the block sit above it?** If it does, the user's pointer is above the collapse and the jump is tolerable. If the control sits below the block, or inside it, removing it drags the rest of the page up under the finger that just tapped — reserve, or move the control.
 
+## Values that are not known yet
+
+The four cases above are about a value that changes. This one is about a value that has not arrived — a signed-in user read from an auth SDK, a feature flag, remote config, anything resolved asynchronously. The first render happens before the answer exists, and what goes in that gap decides whether the page settles or pops.
+
+**Render nothing, and the space collapses**, then re-expands when the answer lands — the mount-and-unmount jump above, on every page load rather than on a user action. **Render one of the real states as a guess** and the guess is wrong for some users, so they watch the UI correct itself: a header that shows a sign-in button for a moment to someone who is already signed in reads as being signed out and back in.
+
+**Model the not-yet-known as a state of its own**, beside the real ones, and give it the reserved placeholder this document already describes: the element keeps its space, and is `invisible`, `aria-hidden`, and removed from the tab order until it has something to say.
+
+```ts
+// ✅ the ignorance is a state, so every render has something honest to draw
+type SessionStatus = 'unknown' | 'anonymous' | 'signed-in';
+```
+
+It costs one member in a union and buys a layout that never moves after the answer arrives.
+
+**Where a framework renders twice — a server or build pass, then hydration — the same state is what keeps the two passes identical.** Frameworks offer a client-only escape hatch for this, and it is the right tool for **a value the server cannot know and the client knows at once**, such as a viewport width or a stored preference. It is the wrong tool when **the client's first render is as ignorant as the server's**, because deferring to the client defers to a client that does not know either — which is how a control renders nothing, then flashes signed-out, then settles on signed-in.
+
+The test is not "does the server know this?" but **"does the client know it on its first render?"** Where both answers are no, the ignorance is real, and it belongs in the model rather than behind a boundary.
+
 ## Checking it
 
 Measure; do not eyeball. Record the element's height in **every** state at the project's narrowest and widest supported widths — the reflow band is usually neither extreme, because the narrowest width wraps every variant the same and the widest wraps none of them. A change that is invisible at 320px and on a desktop can still be a full line of jump at 393px.

@@ -39,6 +39,14 @@ Never reuse a basename in different folders. Each filename must be unambiguous w
 ❌ contact/Card.tsx + services/Card.tsx, layout/Logo.vue + layout/home/Logo.vue
 ```
 
+## Group by subject
+
+A components directory is grouped by **subject** — the thing the components are about (`hero/`, `mission/`, `account/`, `build/`) — not by shape (`cards/`, `dialogs/`, `forms/`). A flat directory is right while it is small and stops being right somewhere around a dozen files: past that, nothing tells a reader which components belong together, and every addition makes the next one harder to place.
+
+Shape folders fail because most components have more than one shape over their life and because the question a reader arrives with is "what touches the hero?", never "what are the dialogs?". Five to seven subject folders is the usual landing place for an app-sized directory.
+
+The auto-registered directory is the exception and stays flat: it holds primitives, which belong to no subject. Everything outside it is imported explicitly, which is also what keeps a subject folder out of the generated tag name — the framework tier's naming document has the mechanism.
+
 ## Folder segment casing
 
 **kebab-case** for multi-word segments inside `@/components/`.
