@@ -14,6 +14,11 @@ export default defineNuxtConfig({
 
   css: ['@/assets/css/main.css'],
 
+  app: {
+    // * A page arrives the way a tab does (feature 010): the tab fade on enter, the leaving page cut. `out-in` keeps the two from overlapping.
+    pageTransition: { enterActiveClass: 'tab-fade', mode: 'out-in' }
+  },
+
   runtimeConfig: {
     public: {
       apiBaseUrl: '',

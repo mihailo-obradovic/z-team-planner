@@ -60,6 +60,7 @@ Non-goals:
 - Following it renders `/privacy`: a headed document, styled as a panel like the rest of the app, scrolling inside the page rather than growing it.
 - The page states, in the app's plain register: first, that it is a non-profit fan project made in free time by a single maintainer, that every in-game asset is AdHoc Studio's property, and that the GitHub issues page is where to ask; that without signing in nothing leaves the browser and no data is shared; what the localStorage keys hold — the two build keys, the first-login offer flag, and feature 017's two acknowledgement flags; that a `?build=` link carries build data inside the URL; how signing in works — optional, Google through Firebase Authentication — and that the app then holds the six `users` fields and nothing else from the Google account; that builds saved to the account are stored until deleted; that an account build's share link is readable by anyone holding it; the processors, named without regions; that backups hold a deleted row for at most 30 days; how to delete everything — the profile menu's **Delete account**, which is immediate and total.
 - **Back to the planner** returns the visitor to `/`, matching the error page's single-way-back shape.
+- Following the link, or **Back to the planner**, looks like switching tabs: the leaving page is cut and the arriving one fades in with feature 015's tab fade, set once as the app's route transition. The planner opts out, since its tab content already fades on mount. Under reduced motion it is a cut, as the tabs are.
 - The page never claims a protection the app does not have. If a fact changes in its source feature, this page changes in the same change.
 
 ## Roles And Access
@@ -74,6 +75,8 @@ Not role-specific. The page is public and identical for every visitor — anonym
 | open a share link `/b/{id}`                 | the same **Privacy** line after the build                             | client-rendered page, same line          |
 | open an unknown route                       | error page, no **Privacy** line                                       | feature 009 keeps one way back           |
 | follow the link                             | `/privacy` renders the policy with a last-updated date                | prerendered, no API call                 |
+| follow the link, then go back               | the old page is cut, the new one fades in as a tab does, at its top   | feature 015 tab fade, `out-in`           |
+| the same under reduced motion               | a cut, as the tabs are                                                | the tab fade's own guard                 |
 | request `/privacy` with the API unreachable | page renders in full                                                  | no runtime dependency                    |
 | view `/privacy` at 320px                    | text wraps, nothing exceeds the viewport, the page scrolls internally | annex §13 base tier                      |
 | a fact changes in feature 004               | this page and 004 change in the same commit                           | Same-Change Rule                         |
@@ -110,8 +113,8 @@ Not role-specific. The page is public and identical for every visitor — anonym
 ## Entry Points
 
 - `web/pages/privacy.vue` — the route and its content.
-- `web/pages/index.vue`, `web/pages/b/[id].vue` — the page-end **Privacy** line, last in each page's column.
-- `nuxt.config.ts` — the `routeRules` prerender entry for `/privacy`, beside `/`.
+- `web/pages/index.vue`, `web/pages/b/[id].vue` — the page-end **Privacy** line, last in each page's column. Each page keeps one root node, a comment included, or the route transition has nothing to animate and the next page mounts blank.
+- `nuxt.config.ts` — the `routeRules` prerender entry for `/privacy`, beside `/`, and the `app.pageTransition` line naming the tab fade; the planner's page meta opts out of the fade, not of the wrapper.
 
 ## Dependencies
 
@@ -128,6 +131,7 @@ Not role-specific. The page is public and identical for every visitor — anonym
 
 - `test/nuxt/privacy-page.test.ts`: the route renders; the **Privacy** line is present on `/` and `/b/{id}` in both auth states and points at `/privacy`; the page contains the retention window, the deletion path and the issues link.
 - `test/unit/panel-surface.test.ts` (existing): any `panel` this feature adds carries `bg-default`.
+- `test/nuxt/page-transition.test.ts`: the built config names the tab fade, `out-in`, and the planner route opts out; the fade is walked live.
 - Live browser walk at 320px and desktop, per the Examples table; `curl` of the prerendered `/` shows the link without JavaScript; the deployed URL confirmed reachable before it is entered in the consent screen.
 
 ## Verification
@@ -135,6 +139,8 @@ Not role-specific. The page is public and identical for every visitor — anonym
 By test (`privacy-page`, `privacy-link`, `first-run-banners`): the unnamed-maintainer line and the issues link, every localStorage key, the 30-day window and **Delete account**, the AdHoc Studio credit, the date, the single way back; the page-end component is one link to `/privacy`; the storage notice alone links there. Suite green; oxlint, `nuxt typecheck` and `validate.py` clean. A production build prerendered `/privacy` with the date and the credit in its static HTML.
 
 Live in Chrome, signed out: the **Privacy** line is the last element of every tab panel, the server-rendered `/` links to `/privacy` before hydration, and the line follows overflowing content to the scroll end or sits at the region's bottom when it does not. `/privacy` made zero API calls and rendered the date, the contact link and a 44px **Back to the planner**; at 320 nothing crosses the viewport. `/b/{id}` carried the line last and an unknown route rendered "Page not found" with no privacy link. Entering the deployed URL in the consent screen is stage 2's external step (decision 007).
+
+Route fade, live in Chrome: the planner was cut and `/privacy` faded in over the tab fade's 250ms, at its top; **Back to the planner** cut the policy and the planner's tab content faded in, once. The planner page had two root nodes, which mounted `/privacy` blank until it was wrapped. Reduced motion is by inspection: the tab fade's guard cancels the animation.
 
 ## Agent Change Rules
 
