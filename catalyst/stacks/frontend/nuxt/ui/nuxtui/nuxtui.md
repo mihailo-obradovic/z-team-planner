@@ -65,7 +65,7 @@ The copy is oxfmt-canonical like every other document here, per the no-ignore-pa
 
 The vendor step, and every later re-sync: clone `skills/nuxt-ui/` at the `v4` branch tip, normalize it through oxfmt with this repo's config, diff against `.claude/skills/nuxt-ui/` (first vendor: land it wholesale), and apply upstream's changes while re-applying the one prescribed deviation — a note above `SKILL.md`'s intro that points at this section and subordinates upstream guidance to the `catalyst/` documents. Record the pin in this document in the same change:
 
-Upstream: https://github.com/nuxt/ui — `skills/nuxt-ui/` (branch `v4`) · commit: `<sha>` · synced: `<date>`
+Upstream: https://github.com/nuxt/ui — `skills/nuxt-ui/` (branch `v4`) · commit: `a581357a7890b07b7446273769491929fc24779b` · synced: `2026-09-20`
 
 Local deviations from upstream:
 
