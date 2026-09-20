@@ -173,6 +173,13 @@
     }
 }
 
+/* * The vendored themes put Tailwind's `animate-spin` on their loading icons (button, input, select, switch, dropdown-menu) with no prop to disable it, so it is cancelled here the same way: the icon stays drawn and only stops turning. */
+@media (prefers-reduced-motion: reduce) {
+    .animate-spin {
+        animation: none;
+    }
+}
+
 /* * First-run banners (feature 017): row height and body share one duration so main and banner settle together. */
 .first-run-banner {
     grid-template-rows: 1fr;
