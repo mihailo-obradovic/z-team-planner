@@ -14,9 +14,9 @@ A spawn keeps its whole rule set in one bundle directory, `<project>/catalyst/`,
 
 Catalyst's own layout is the bundle layout with the bundle at the repository root, so the same checks read both.
 
-Catalyst checks: `VERSION` matches the newest changelog entry (R1), `CLAUDE.md` imports `AGENTS.md` (R2), changelog shape (R3), examples follow the current templates (R4, feature/decision/experiment examples), the Flow Index in `prime-directive.md` points at exactly the `workflows/` shards that exist, every `workflows/`, `references/`, and `conventions/` shard carries its **Trigger:** header, and every `references/` and `conventions/` shard is reachable from an always-loaded document (R6), stack documents carry their contract headers — layer/tool for modules, category/tool for addon docs and payloads, `**Tier:**` for shared-tier docs, YAML `title:` frontmatter for `rules/` files (R7), the context-document catalog agrees across its four mirrors — the Catalog table, `CONTEXT_DOCS` in the scaffolder, the `templates/` stub, and the load-trigger bullet (R8), shared-tier wiring is closed both ways — every `**Requires:**` value resolves to an existing tier, every tier is required by some module (R9), the generated-skill registry (`SKILLS` in the scaffolder) points at existing documents and agrees with `references/agent-skills.md` in both directions (R10), the editor-extension registries (`EDITOR_EXTENSIONS` and `UNWANTED_EXTENSIONS`) do the same against `conventions/editor-setup.md` (R11), the template's markdown is oxfmt-canonical — `pnpm dlx oxfmt --check` tracking `oxfmt@latest` passes, skipped with a note when pnpm is absent (R12), every backticked document path in prose resolves to a document the template has (R13), the scaffolder's copy lists (`MANIFEST`, `EXPERIMENT_FILES`, `HOOKS_SUPPORT`) name files that exist and agree with the file/directory split the upgrader relies on (R14), `tools/hooks/README.md`'s table matches the hooks on disk and their `catalyst-requires:` headers (R15), and `sync_rules.py`'s hardcoded lists match the tree it syncs — every `rules/` payload known to the tool, every router carrying its `Upstream:` line, every deviation present and explained in its router's Provenance table (R16), `architecture.md`'s Stack Modules table links documents that exist and links every document a spawn can select (R17), its Shared tiers paragraph enumerates exactly the tier directories on disk (R18), and `COVERAGE.md`'s document and rule counts match the tree for every row naming one module (R19).
+Catalyst checks: `VERSION` matches the newest changelog entry (R1), `CLAUDE.md` imports `AGENTS.md` (R2), changelog shape (R3), examples follow the current templates (R4, feature/decision/experiment examples), the Flow Index in `prime-directive.md` points at exactly the `workflows/` shards that exist, every `workflows/`, `references/`, and `conventions/` shard carries its **Trigger:** header, and every `references/` and `conventions/` shard is reachable from an always-loaded document (R6), stack documents carry their contract headers — layer/tool for modules, category/tool for addon docs and payloads, `**Tier:**` for shared-tier docs, YAML `title:` frontmatter for `rules/` files (R7), the context-document catalog agrees across its three mirrors — the Catalog table (which carries the load trigger), `CONTEXT_DOCS` in the scaffolder, and the `templates/` stub (R8), shared-tier wiring is closed both ways — every `**Requires:**` value resolves to an existing tier, every tier is required by some module (R9), the generated-skill registry (`SKILLS` in the scaffolder) points at existing documents and agrees with `references/agent-skills.md` in both directions (R10), the editor registries (`EDITOR_EXTENSIONS`, `UNWANTED_EXTENSIONS`, and `EDITOR_SETTINGS`) do the same against `conventions/editor-setup.md` (R11), the template's markdown is oxfmt-canonical — `pnpm dlx oxfmt --check` tracking `oxfmt@latest` passes, skipped with a note when pnpm is absent (R12), every backticked document path in prose resolves to a document the template has (R13), the scaffolder's copy lists (`MANIFEST`, `EXPERIMENT_FILES`, `HOOKS_SUPPORT`) name files that exist and agree with the file/directory split the upgrader relies on (R14), `tools/hooks/README.md`'s table matches the hooks on disk and their `catalyst-requires:` headers (R15), and `sync_rules.py`'s hardcoded lists match the tree it syncs — every `rules/` payload known to the tool, every router carrying its `Upstream:` line, every deviation present and explained in its router's Provenance table (R16), `architecture.md`'s Stack Modules table links documents that exist and links every document a spawn can select (R17), its Shared tiers paragraph enumerates exactly the tier directories on disk (R18), and `COVERAGE.md`'s document and rule counts match the tree for every row naming one module (R19).
 
-Project checks (features, decision records, and experiments alike): index <-> files (P1), statuses (P2), template sections for new/changed documents only (P3, diff-aware), unique numbering (P4), Protected Areas rows point to existing documents (P5), a soft Catalyst-version drift note when the project's stamp lags (P6, note only), the size budgets (P7, diff-aware — a hard error over a feature's maximum, a note over a target), a soft note when Open Questions are not empty past the drafting gate (P8, diff-aware note), a soft note when a project with features has no operations.md (P9, note), a soft note when numbered documents exist but their folder's _template.md is not in the bundle — an unadopted flow (P10, note), an error when a present `KNOWN_FAKES.md` holds no register rows — absence is the healthy state, an empty register is deleted, not kept (P11), and the generated `.claude/skills/` wrappers at the repository root point into documents the bundle has (P12).
+Project checks (features, decision records, and experiments alike): index <-> files (P1), statuses (P2), template sections for new/changed documents only (P3, diff-aware), unique numbering (P4), Protected Areas rows point to existing documents (P5), a soft Catalyst-version drift note when the project's stamp lags (P6, note only), the size budgets (P7, diff-aware — a hard error over a feature's maximum, a note over a target), a soft note when Open Questions are not empty past the drafting gate (P8, diff-aware note), a soft note when a project with features has no operations.md (P9, note), a soft note when numbered documents exist but their folder's _template.md is not in the bundle — an unadopted flow (P10, note), an error when a present `KNOWN_FAKES.md` holds no register rows — absence is the healthy state, an empty register is deleted, not kept (P11), the generated `.claude/skills/` wrappers at the repository root point into documents the bundle has (P12), no stack document in the bundle carries an unfilled vendored-upstream pin — a `<sha>` or `<date>` placeholder means the document's day-zero vendor step never ran (P13), and a root config an optional layer owns has a matching Technical Stack row (P14, note).
 
 Exit code is non-zero when any error is found. Notes never block.
 
@@ -181,7 +181,7 @@ def scaffolder_context_docs(path: Path) -> dict[str, bool] | None:
 
 
 def catalog_defaults(text: str) -> dict[str, bool]:
-    """The Catalog table of references/context-documents.md as name -> scaffold default (`on`/`off`)."""
+    """The Catalog table of references/project-documents.md as name -> scaffold default (`on`/`off`)."""
     rows: dict[str, bool] = {}
     in_section = False
     for line in text.splitlines():
@@ -203,8 +203,8 @@ _FENCE_RE = re.compile(r"^```.*?^```", re.M | re.S)
 # A backticked path pointing at a document. Only `.md`: a stack document names the source files a project will write (`core/config.py`, `@/utils/signupAction.ts`) as often as it names a document, and those are the project's to create.
 _PATH_RE = re.compile(r"`([^`\s]+\.md)`")
 
-# Documents a spawn writes for itself, so the template legitimately has no copy — naming one is a pointer to where it would live, not a broken link (references/known-fakes.md, references/operations-runbook.md).
-PROJECT_AUTHORED = {"KNOWN_FAKES.md", "operations.md"}
+# Documents a spawn writes for itself, so the template legitimately has no copy — naming one is a pointer to where it would live, not a broken link (references/project-documents.md; release notes: versioning.md).
+PROJECT_AUTHORED = {"KNOWN_FAKES.md", "operations.md", "release-notes.md"}
 
 
 def doc_paths(text: str) -> set[str]:
@@ -474,27 +474,25 @@ def check_catalyst(root: Path) -> None:
             if f"{folder}/{path.name}" not in always_loaded:
                 error(f"{folder}/{path.name}: exists but no always-loaded document points to it")
 
-    # R8: the context-document catalog is mirrored in four places (references/context-documents.md, "Adding a context document") — the Catalog table, CONTEXT_DOCS in the scaffolder, a templates/<name>.md stub, and a load-trigger bullet in prime-directive.md. Drift is invisible otherwise: a default that disagrees silently changes what every spawn ships.
-    catalog_path = root / "references" / "context-documents.md"
+    # R8: the context-document catalog is mirrored in three places (references/project-documents.md, "Adding a context document") — the Catalog table, CONTEXT_DOCS in the scaffolder, a templates/<name>.md stub, and a load-trigger bullet in prime-directive.md. Drift is invisible otherwise: a default that disagrees silently changes what every spawn ships.
+    catalog_path = root / "references" / "project-documents.md"
     if catalog_path.exists():
         catalog = catalog_defaults(read(catalog_path))
         scaffolder = scaffolder_context_docs(root / "tools" / "new_project.py")
         if scaffolder is None:
-            error("tools/new_project.py: CONTEXT_DOCS not found or not a literal list — references/context-documents.md's Catalog cannot be checked for parity")
+            error("tools/new_project.py: CONTEXT_DOCS not found or not a literal list — references/project-documents.md's Catalog cannot be checked for parity")
         else:
             for name in sorted(set(catalog) - set(scaffolder)):
-                error(f"references/context-documents.md: Catalog lists `{name}` but CONTEXT_DOCS in tools/new_project.py does not — a spawn never offers it")
+                error(f"references/project-documents.md: Catalog lists `{name}` but CONTEXT_DOCS in tools/new_project.py does not — a spawn never offers it")
             for name in sorted(set(scaffolder) - set(catalog)):
-                error(f"tools/new_project.py: CONTEXT_DOCS has `{name}` but the Catalog in references/context-documents.md has no row for it")
+                error(f"tools/new_project.py: CONTEXT_DOCS has `{name}` but the Catalog in references/project-documents.md has no row for it")
             for name in sorted(set(catalog) & set(scaffolder)):
                 if catalog[name] != scaffolder[name]:
                     error(f"context document `{name}`: the Catalog says {'on' if catalog[name] else 'off'} but CONTEXT_DOCS says default={scaffolder[name]}")
             for name in sorted(set(catalog) | set(scaffolder)):
                 if not (root / "templates" / f"{name}.md").is_file():
                     error(f"templates/{name}.md: context document `{name}` has no template stub — a spawn that opts into it would copy nothing")
-                # Soft: a stale load trigger changes nothing a spawn ships, but the document is then loaded by no rule.
-                if f"context/{name}.md" not in prime:
-                    note(f"prime-directive.md: no Context Loading bullet for `context/{name}.md` — the document would be copied but never loaded")
+                # The trigger lives in the Catalog's own "Loads when" column, and a project records which documents it has in project-summary.md — Context Loading points at that line rather than naming documents, so there is no per-document bullet to check here.
 
     # R10: generated-skill parity. Every SKILLS entry in the scaffolder must point at documents the template actually has — a `needs` path that does not exist means the wrapper can never be generated, a `points_at` path that does not exist is a pointer into nothing — and every skill must be named in references/agent-skills.md, so the wrapper mechanism stays documented alongside its inventory.
     skills = scaffolder_literal(root / "tools" / "new_project.py", "SKILLS")
@@ -552,17 +550,33 @@ def check_catalyst(root: Path) -> None:
         for ident in sorted(table_names(setup_text, "Unwanted extensions") - {e.get("id") for e in unwanted}):
             error(f"conventions/editor-setup.md: rejects `{ident}`, which is not in UNWANTED_EXTENSIONS — no spawn writes it")
 
+    # R11 a third time, for the settings registry. These differ in kind from the two above: a recommendation an editor ignores costs nothing, while a formatOnSave mapped to the wrong formatter rewrites every file on save. So an entry whose gate does not exist is a setting no spawn ever receives, and a key absent from the document is a generated setting nothing explains — the drift that matters most is the one nobody can read.
+    settings = scaffolder_literal(root / "tools" / "new_project.py", "EDITOR_SETTINGS")
+    if settings is None:
+        error("tools/new_project.py: EDITOR_SETTINGS not found or not a literal list — the generated .vscode/settings.json cannot be checked (R11)")
+    elif setup_shard.is_file():
+        setup_text = read(setup_shard)
+        for group, needs in settings:
+            for rel in needs:
+                if not (root / rel).exists():
+                    error(f"tools/new_project.py: EDITOR_SETTINGS gate {rel} does not exist in the template — those settings could never be written")
+            for key in group:
+                # A per-language formatter row is documented once as `[<lang>]`, not nine times.
+                documented = key.startswith("[") or f"`{key}`" in setup_text or f"`{key}:" in setup_text
+                if not documented:
+                    error(f"conventions/editor-setup.md: setting `{key}` is not in the table — every generated setting is documented")
+
     # R13: every backticked document path resolves. Pointing at a document is how the bundle routes work — a shard nobody can open is guidance that silently never loads, and a rename leaves the old name behind in prose no rule ever reads. A path resolves relative to the repository root or to the document naming it (both forms are in use), with a leading `catalyst/` stripped: root-facing documents address the bundle the way a project sees it.
     known = {p.name for p in root.rglob("*") if p.is_file()}
     for path in sorted(root.rglob("*.md")):
-        # CHANGELOG.md and TODO.md are the two documents that legitimately name files the tree does not have: history keeps the old names, and a TODO describes what has not been written yet. `examples/` documents a fictional project's own features and decisions. `.claude/` is harness configuration, not bundle documents.
+        # CHANGELOG.md and TODO.md are the two documents that legitimately name files the tree does not have: history keeps the old names, and a TODO describes what has not been written yet — and a root `PLAN-*.md` handoff (untracked, gitignored) names what its steps will create. `examples/` documents a fictional project's own features and decisions. `.claude/` is harness configuration, not bundle documents.
         if any(part in (".git", ".claude", "node_modules", "examples") for part in path.parts):
             continue
-        if path.name in ("CHANGELOG.md", "TODO.md"):
+        if path.name in ("CHANGELOG.md", "TODO.md") or (path.parent == root and path.name.startswith("PLAN-")):
             continue
         for ref in sorted(doc_paths(read(path))):
             target = ref[len(BUNDLE) + 1:] if ref.startswith(f"{BUNDLE}/") else ref
-            # `context/` exists only in a spawn that opted in, and the project-authored documents are the project's to write (references/known-fakes.md, references/operations-runbook.md). A leading numbered segment is an upstream documentation tree, cited in a Provenance section rather than pointed at.
+            # `context/` exists only in a spawn that opted in, and the project-authored documents are the project's to write (references/project-documents.md). A leading numbered segment is an upstream documentation tree, cited in a Provenance section rather than pointed at.
             if target.startswith("context/") or Path(target).name in PROJECT_AUTHORED:
                 continue
             if re.match(r"^\d+-", target):
@@ -702,6 +716,59 @@ def check_catalyst(root: Path) -> None:
 # --- project checks ----------------------------------------------------------
 
 
+# A vendored upstream pin, and the placeholders that mean nobody has filled it in (P13).
+PIN_LINE = re.compile(r"^Upstream:.*$", re.MULTILINE)
+PIN_PLACEHOLDERS = ("`<sha>`", "`<date>`")
+
+
+def check_vendor_pins(project: Path) -> None:
+    """P13: a stack document in the bundle asks for a vendored upstream and its pin is still a placeholder.
+
+    The pin records what was vendored and when. A `<sha>` still sitting there means the vendor step the document calls day-zero never happened — the project is running without the skill it was told to install, and nothing else notices. Only a project is checked: in the Catalyst repo the placeholder is the template's own correct text.
+    """
+    # In the Catalyst repo the placeholder IS the correct text — the pin is filled in by the spawn that vendors, not by the template.
+    if is_catalyst_repo(project) or not (stacks := project / "stacks").is_dir():
+        return
+
+    for doc in sorted(stacks.rglob("*.md")):
+        for line in PIN_LINE.findall(read(doc)):
+            unfilled = [ph for ph in PIN_PLACEHOLDERS if ph in line]
+            if unfilled:
+                rel = doc.relative_to(project)
+                error(
+                    f"{project}/{rel}: vendored upstream pin is unfilled ({', '.join(unfilled)}) — "
+                    "the vendor step in that document has not been run, or its pin was not recorded (P13)"
+                )
+
+
+# A root config file that only exists because some optional layer was adopted, and the word its Technical Stack row would carry (P14). Root configs sit outside the bundle, so this reads the repository root the project passes in.
+LAYER_CONFIGS = {
+    "renovate.json": "renovate",
+    ".renovaterc.json": "renovate",
+    "vercel.json": "vercel",
+    "docker-compose.yml": "docker-compose",
+    "docker-compose.yaml": "docker-compose",
+}
+
+
+def check_layer_configs(project: Path, summary: str, repo_root: Path | None) -> None:
+    """P14: a root config an optional layer owns, with nothing about it in Technical Stack.
+
+    The config is evidence the layer was adopted; the table is where a reader finds out. A layer running with no row is invisible to every later reader — the stack answers "what does this project run?" and quietly omits a bot that opens PRs against it, or a deployment target. A note rather than an error: the config may predate the bundle, and adopting the layer properly is the project's own call.
+    """
+    if repo_root is None:
+        return
+    stack = "\n".join(section_body(summary, "Technical Stack")).lower()
+    if not stack:
+        return
+    for filename, tool in sorted(LAYER_CONFIGS.items()):
+        if (repo_root / filename).is_file() and tool not in stack:
+            note(
+                f"{project}/project-summary.md: {filename} is in the repository but Technical Stack names no {tool} row — "
+                "an adopted layer nobody can find from the stack table"
+            )
+
+
 def index_rows(summary: str, heading: str, folder: str, status_col: int) -> dict[str, str]:
     """Links -> status from the table under `heading` (repo-relative link)."""
     rows: dict[str, str] = {}
@@ -773,6 +840,9 @@ def check_project(project: Path, check_all: bool, repo_root: Path | None = None)
         ("Experiment Index", "experiments", 3, EXPERIMENT_STATUSES,
          project / "experiments" / "_template.md"),
     ]
+    check_vendor_pins(project)
+    check_layer_configs(project, summary, repo_root)
+
     changed = changed_docs(project)
     if changed is None and not check_all:
         note(f"{project}: not a git repo — diff-aware checks (P3, P7, P8) skipped")

@@ -36,7 +36,7 @@ Before adding any runtime dependency, framework, package pattern, build plugin, 
 
 ## Documentation Boundaries
 
-This file holds technical structure and dependency choices; everything else routes per the file index (`AGENTS.md`) and Context Loading (`prime-directive.md`). One ownership rule lives here: a project's cross-cutting convention annexes are owned and indexed by this file (`references/convention-annexes.md`) — distinct from `conventions/`, Catalyst's own always-applied set that arrives with the bundle and upgrades with it.
+This file holds technical structure and dependency choices; everything else routes per the file index (`AGENTS.md`) and Context Loading (`prime-directive.md`). One ownership rule lives here: a project's cross-cutting convention annexes are owned and indexed by this file (`references/project-documents.md`) — distinct from `conventions/`, Catalyst's own always-applied set that arrives with the bundle and upgrades with it.
 
 ### Convention Annexes
 
@@ -44,7 +44,7 @@ This file holds technical structure and dependency choices; everything else rout
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `annexes/design-system.md` | Colour ramps and the semantic aliases behind them, the type scale, spacing, control heights, radius, elevation, z-index, motion, iconography, imagery, and the per-element values components are checked against. | Styling anything, adding or changing a token, picking a size, shadow or spacing value, or building a new component. |
 
-Instantiated from `stacks/frontend/nuxt/design-system.md` by decision 003; the template stays pristine and the annex is the contract. Its load trigger is listed in `prime-directive.md` (Context Loading).
+Instantiated from `stacks/frontend/_common/design-system.md` by decision 003; the template stays pristine and the annex is the contract. Its load trigger is listed in `prime-directive.md` (Context Loading).
 
 ## Universal Rules
 
@@ -196,15 +196,15 @@ A module is a single `<module>.md` or a `<module>/` directory: nested choice dir
 
 This table lists what **this project** runs — pruned from the template's full catalogue to the modules the bundle carries, since a bundle must never reference documents its repository does not contain. Layers the project has declined are named without a link; adopting one later copies its document in from the Catalyst template by decision record.
 
-| Layer                      | Module                                                                                                                                                                                                                                                                                        |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Backend                    | [python-fastapi](stacks/backend/python-fastapi.md) — adopted by decision 004                                                                                                                                                                                                                  |
-| Frontend                   | [nuxt](stacks/frontend/nuxt/nuxt.md) (Vue) — UI: [nuxtui](stacks/frontend/nuxt/ui/nuxtui/nuxtui.md); addons: [ssr](stacks/frontend/nuxt/addons/ssr.md), [image](stacks/frontend/nuxt/addons/image.md); design system instantiated from [design-system](stacks/frontend/nuxt/design-system.md) |
-| Persistence                | [postgres](stacks/database/postgres.md), hosted on Neon — adopted by decision 004                                                                                                                                                                                                             |
-| Identity (optional)        | Firebase Authentication — the template's `keycloak` module **swapped** by decision 004, which is the contract; no module document in this bundle                                                                                                                                              |
-| Background work (optional) | declined (`celery` in the template) — no work outside the request/response cycle                                                                                                                                                                                                              |
-| Deployment (optional)      | declined (`docker-compose` in the template) — a managed database and a hosted IdP leave no multi-service run to orchestrate (decision 004)                                                                                                                                                    |
-| Maintenance (optional)     | `renovate` — decision 009 (adopted; no automerge, weekly, both lockfiles in scope)                                                                                                                                                                                                            |
+| Layer                      | Module                                                                                                                                                                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Backend                    | [python-fastapi](stacks/backend/python-fastapi.md) — adopted by decision 004                                                                                                                                                                                                                     |
+| Frontend                   | [nuxt](stacks/frontend/nuxt/nuxt.md) (Vue) — UI: [nuxtui](stacks/frontend/nuxt/ui/nuxtui/nuxtui.md); addons: [ssr](stacks/frontend/nuxt/addons/ssr.md), [image](stacks/frontend/nuxt/addons/image.md); design system instantiated from [design-system](stacks/frontend/_common/design-system.md) |
+| Persistence                | [postgres](stacks/database/postgres.md), hosted on Neon — adopted by decision 004                                                                                                                                                                                                                |
+| Identity (optional)        | Firebase Authentication — the template's `keycloak` module **swapped** by decision 004, which is the contract; no module document in this bundle                                                                                                                                                 |
+| Background work (optional) | declined (`celery` in the template) — no work outside the request/response cycle                                                                                                                                                                                                                 |
+| Deployment (optional)      | declined (`docker-compose` in the template) — a managed database and a hosted IdP leave no multi-service run to orchestrate (decision 004)                                                                                                                                                       |
+| Maintenance (optional)     | `renovate` — decision 009 (adopted; no automerge, weekly, both lockfiles in scope)                                                                                                                                                                                                               |
 
 ### Approved Dependencies Beyond The Modules
 

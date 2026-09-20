@@ -27,3 +27,9 @@ Releasing the **template**, in the Catalyst repository — every file named here
 5. Commit, then tag `vX.Y.Z` — the tag is load-bearing: the upgrader reads spawn-time file contents from it. The optional `post-commit`/`post-merge` hooks tag automatically (`sh tools/hooks/install.sh`); pushing tags (`git push --tags`) stays deliberate.
 
 Template build-out runs on `enhancement/<topic>-<date>` branches, merged into `master` when the topic is done; the changelog entry is the record. The branch classes in `prime-directive.md` (Feature Branches) govern projects built with Catalyst, not Catalyst itself.
+
+## Release Notes
+
+For the **project**, not the template — the one document-type rule that lives here rather than in `references/`, because it is the project's own versioning story. Applies to a deployable that ships to people who do not read this repo's history (operators, another team, a client). A project nobody deploys to skips them entirely. Optional, adopted per project.
+
+Such a deployable keeps `release-notes.md` — per release: version, date, a short Overview, then Added / Changed / Fixed. Any release that changes the database schema carries an explicit **Database** line naming the migration and the change; shipping a schema change without it is unfinished work. Release notes describe the release for its consumers; they never replace feature documents or decision records.

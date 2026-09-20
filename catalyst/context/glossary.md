@@ -2,7 +2,7 @@
 
 **Trigger:** naming a type, function, or variable that handles a build; reading code where "build" appears; or writing a feature or decision document that discusses one.
 
-The project's domain language. A glossary and nothing else — no implementation detail, no rules. Where a term maps onto a type, the type is named as a pointer, never as the definition.
+A **context document** (`references/project-documents.md`), project-specific: the project's domain language, never a contract — when it disagrees with a feature document or `architecture.md`, the contract wins and this file is updated to catch up. A glossary and nothing else — no implementation detail, no rules. Where a term maps onto a type, the type is named as a pointer, never as the definition.
 
 ## Builds
 

@@ -42,7 +42,7 @@ What becomes better, what gets riskier or harder, and any follow-ups this create
 
 ## Contracts Touched
 
-Pointers to documents updated in the same change (`architecture.md` sections, folder `CLAUDE.md`s, feature docs). Never restate their content. Operational commands and recovery drills land in the project's `operations.md` (`references/operations-runbook.md`), updated in the same change — never inline here; this record keeps the why, the runbook keeps the how-to-run.
+Pointers to documents updated in the same change (`architecture.md` sections, folder `CLAUDE.md`s, feature docs). Never restate their content. Operational commands and recovery drills land in the project's `operations.md` (`references/project-documents.md`), updated in the same change — never inline here; this record keeps the why, the runbook keeps the how-to-run.
 
 ## Open Questions
 

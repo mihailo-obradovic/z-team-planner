@@ -3,7 +3,7 @@
 **Layer:** Frontend
 **Tool:** CSS flexbox · Nuxt layouts
 
-How a page gets its height. The shell owns the viewport and `main` is the only scrolling region; this document owns the whole chain — the shell half a project wires once, and the page half every page lives under. It is the module's answer to viewport height: `design-system.md` §4 holds the token values and defers here, and no page, layout, or component computes viewport height any other way.
+How a page gets its height. The shell owns the viewport and `main` is the only scrolling region; this document owns the whole chain — the shell half a project wires once, and the page half every page lives under. It is the module's answer to viewport height: `../_common/design-system.md` §4 holds the token values and defers here, and no page, layout, or component computes viewport height any other way.
 
 ## The height chain
 
@@ -40,11 +40,13 @@ In CSS, links 2 and 3:
 }
 ```
 
-Where the `frontend/ui` choice brings Tailwind, the same links are `flex h-full flex-col` on the layout, `shrink-0` on header and footer, `flex min-h-0 flex-1` on the row, and `flex min-h-0 flex-1 flex-col overflow-y-auto` on `main`. A choice that ships its own layout engine states its form of links 2 and 3 in its own document, and the rest of this one holds unchanged.
+Where the `frontend/ui` choice brings Tailwind, the same links are `flex h-full flex-col` on the layout, `shrink-0` on header and footer, `flex min-h-0 flex-1` on the row, and `flex min-h-0 flex-1 flex-col overflow-y-auto` on `main`. A choice that ships its own layout engine states its form of links 2 and 3 in its own document, and the rest of this one holds unchanged — Nuxt UI's are in [`ui/nuxtui/nuxtui.md`](ui/nuxtui/nuxtui.md), The height chain's middle links.
 
 The chain already subtracts the header and the footer. **Nothing below it does that arithmetic again**: no `100vh`, no `100dvh`, and above all no `calc(100vh - <header> - <footer>)`. A header-height token, where the ui choice provides one, exists so the header can _set_ its height — not so a page can subtract it. The moment a page hardcodes that sum it is wrong on the next chrome change, and wrong at once on any breakpoint where the footer wraps.
 
-**Viewport units outside the chain.** A surface rendered without the layout — a pre-mount splash, a standalone error page — has no chain to inherit and sizes itself with `100dvh`, never `100vh`, so mobile browser chrome does not clip it. That is the only place a viewport unit is correct.
+**Viewport units outside the chain.** The carve-out is for a surface rendered **outside the framework's root element** — a pre-mount splash painted before the app mounts, or a static error document the framework never renders. It has no chain to inherit, so it sizes itself with `100dvh`, never `100vh`, and mobile browser chrome does not clip it. That is the only place a viewport unit is correct.
+
+**A framework error page is not that surface.** Under Nuxt, `error.vue` still mounts inside `#__nuxt`, so it inherits links 1 and 2 and is simply the column's only child — its own scrolling region, `flex min-h-0 flex-1 flex-col overflow-y-auto`, exactly as `main` would be. A `100dvh` there is the double arithmetic this document forbids everywhere else, and it is wrong for the same reason. What the error page _does_ owe is independence from the shell, which is a different axis from height and lives with the error policy (`error-handling.md`).
 
 ## The two kinds of page
 
@@ -73,7 +75,7 @@ Nested columns repeat the pattern: an intermediate wrapper that contains a scrol
 ## What a page must not do
 
 - **Never introduce a second scrolling region in the page frame.** `overflow-y: auto` on the page root gives two nested scrollbars and a wheel that stops at the wrong boundary; the scroll belongs on the inner region or on `main`, never in between.
-- **Never set a fixed pixel height on a content region** to make it fit — the height comes from the chain (`design-system.md`, §4 Sizing).
+- **Never set a fixed pixel height on a content region** to make it fit — the height comes from the chain (`../_common/design-system.md`, §4 Sizing).
 - **Never measure.** Reading an element's box to derive a height re-encodes, at runtime, the arithmetic the chain exists to remove: it is wrong for one frame on every layout change, and silently wrong whenever the measurement runs before the thing above it settles. The chain calculates nothing.
 - **Never reach up.** A page that needs the layout to change asks for it in the layout, not with a positioned element escaping `main`.
 

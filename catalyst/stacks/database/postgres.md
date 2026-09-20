@@ -3,7 +3,7 @@
 **Layer:** Database
 **Tool:** PostgreSQL
 
-The default database module. It only names the tool — the persistence rules (versioned forward-only migrations, transaction boundaries, database-enforced invariants, tested backups) are Universal Rules and are not restated here.
+The PostgreSQL database module. It only names the tool — the persistence rules (versioned forward-only migrations, transaction boundaries, database-enforced invariants, tested backups) are Universal Rules and are not restated here.
 
 - PostgreSQL is the operational database.
 - The migration _tool_ lives with the backend language, not here: the pairing table below names it per backend. A different backend module brings its own migration tool against the same PostgreSQL.

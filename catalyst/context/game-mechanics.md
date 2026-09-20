@@ -1,6 +1,6 @@
 # Game Mechanics — Dispatch
 
-A **context document** (`references/context-documents.md`), project-specific: the reference for the game **Dispatch** that every hero stat, power, synergy pair, and rule in this app is transcribed from. The game itself is the upstream source of truth; when in-game behavior disagrees with this file, the file is corrected. Never change game data from memory — check it against this document.
+A **context document** (`references/project-documents.md`), project-specific: the reference for the game **Dispatch** that every hero stat, power, synergy pair, and rule in this app is transcribed from. The game itself is the upstream source of truth; when in-game behavior disagrees with this file, the file is corrected. Never change game data from memory — check it against this document.
 
 **Loads when:** adding or changing hero data, powers, synergy pairs, dispatch/scoring rules, or any feature whose correctness is defined by the game — and when drafting or reviewing a feature document that encodes game mechanics.
 

@@ -14,9 +14,11 @@ Routing conventions for the SPA posture. The `ssr` addon adds server-side concer
 
 ## Layouts
 
-- Layouts live in `@/layouts/`; `default.vue` applies where a page names none.
-- An **empty layout** — a bare centered slot with no navigation — is worth having from the start for login, error, and standalone pages. Retrofitting one means unpicking chrome from the default layout later.
-- App-wide chrome (header, navigation, footer) belongs to a layout, never to individual pages.
+- **App-wide chrome belongs above the pages, never to an individual page.** Where it lives is the question below.
+- **A layout directory is earned, not assumed.** `app.vue` holds the chrome until the app has **two shells**, or **a route that must shed the chrome**. Before that, `layouts/default.vue` is indirection with exactly one implementation: a file, an import, and a name to learn, all of which resolve to "the chrome".
+- Once earned, layouts live in `@/layouts/` and `default.vue` applies where a page names none.
+- An **empty layout** — a bare centered slot with no navigation — is the second shell worth reaching for first: login and standalone pages. Retrofitting one means unpicking chrome from the default layout later.
+- **An error page needs no layout at all.** Nuxt renders `error.vue` in place of the app rather than inside `<NuxtPage>`, so it sheds the chrome by construction — the fatal-page rules are in [`error-handling.md`](error-handling.md), When the failure was the page.
 
 ## Middleware is a thin adapter
 

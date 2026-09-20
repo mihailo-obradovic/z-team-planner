@@ -14,17 +14,16 @@ Start with: `AGENTS.md`/`CLAUDE.md`, `prime-directive.md`, `architecture.md` and
 - `decisions/<nnn>_<type>_<decision>.md` — when the task touches what a record decided (same triggers as features).
 - `experiments/<nnn>_<experiment>.md` — when running or extending an experiment the Experiment Index points to; the index in `project-summary.md` (statuses + findings) is the fast orientation. Opt-in at spawn — a project without `experiments/` declined; the upgrader offers adoption once and records a refusal in `.catalyst-declined` rather than re-asking.
 - `workflows/<flow>.md` — the steps for a trigger-fired flow, when the Flow Index below says it fires; the locked invariant is already in the Flow Index here.
-- `references/<topic>.md` — a conditional document-type rule: `references/operations-runbook.md`, `references/known-fakes.md`, `references/release-notes.md`, `references/domain-decisions.md`, `references/convention-annexes.md`, `references/folder-documents.md`, `references/context-documents.md`, `references/agent-skills.md`. Loaded when that document type applies to the project or task.
+- `references/<topic>.md` — a conditional document-type rule: `references/project-documents.md` (the documents a project keeps for itself — `context/`, `annexes/`, Domain Decisions, `KNOWN_FAKES.md`, `operations.md`), `references/folder-documents.md`, `references/agent-skills.md`. Loaded when that document type applies to the project or task. A project's release notes are covered in `versioning.md`.
 - `conventions/<doc>.md` — an always-applied cross-cutting convention, Catalyst's own, arriving with the bundle: `conventions/code-annotations.md`, `conventions/code-style.md`, `conventions/editor-setup.md`, `conventions/mold.md`. Loaded when the task matches the document's trigger.
-- `context/<doc>.md` — optional background depth behind the `project-summary.md` purpose thumbnail; loaded when it exists in the project _and_ the task matches its declared trigger. Never a behavior contract; rules and the full catalog: `references/context-documents.md`. Current documents:
-  - `context/product-description.md` — product-shaping work: drafting or estimating a feature document, a product-motivated decision record, Init Design input-gathering, brownfield prioritization, an experiment's Success Bar or graduation, or a task touching product scope, phases, or priorities. Not Minor edits, Incident stabilization, Bootstrap, or Parallel execution.
-  - `context/brand-description.md` — user-facing design work: UI feature drafting and browser verification, a frontend/UX decision record, the Init Design UI-module choice, or copy/voice/tone work.
-  - `context/game-mechanics.md` — project-specific: adding or changing hero data, powers, synergy pairs, or any rule whose correctness is defined by the game Dispatch; the reference all game data is transcribed from.
-  - `context/design-reference.md` — project-specific: styling or restyling UI, drafting or reviewing a UI feature document, or judging whether an interface change fits the product's look; the approved redesign the interface is built to.
-  - `context/glossary.md` — project-specific: naming a type, function, or variable that handles a build, reading code where "build" appears, or discussing one in a feature or decision document; the four meanings of the word and the term for each.
-- `annexes/design-system.md` — project-specific convention annex (`references/convention-annexes.md`): styling anything, adding or changing a token, picking a size, shadow or spacing value, or building a new component. Styling values come from it — a raw hex or an off-scale px in a component is a defect; colour is named through the seven semantic aliases, never a ramp name.
-- `operations.md` — the project's operator runbook, when operating live infrastructure or when an infra change must update it (rules: `references/operations-runbook.md`).
-- `KNOWN_FAKES.md` — the project's register of unavoidable placeholder or synthetic data, when introducing, touching, or removing such data (rules: `references/known-fakes.md`). A project with no fabricated data has no such file.
+- `context/<doc>.md` — optional background depth behind the `project-summary.md` purpose thumbnail; loaded when the task matches its declared trigger. Never a behavior contract; rules and the template's catalog: `references/project-documents.md`.
+- `annexes/<doc>.md` — the project's own cross-cutting convention guides, loaded when the task matches the trigger the project declared (`references/project-documents.md`).
+- `agents/<doc>.md` — adapter documents routing a third-party skill pipeline into this bundle, loaded when that pipeline is in play (`references/agent-skills.md`).
+
+  **Which of these a project has, and what each one's trigger is, lives in one place: the three lines under `project-summary.md`'s purpose paragraph.** That file is project-owned and already mandatory-loaded, so a project adds a trigger without editing a template-owned document — this list would otherwise be the likeliest conflict on every upgrade.
+
+- `operations.md` — the project's operator runbook, when operating live infrastructure or when an infra change must update it (rules: `references/project-documents.md`).
+- `KNOWN_FAKES.md` — the project's register of unavoidable placeholder or synthetic data, when introducing, touching, or removing such data (rules: `references/project-documents.md`). A project with no fabricated data has no such file.
 - `stacks/<layer>/…` — at init design when choosing a layer's module, or when a task changes one; the project's Technical Stack table in `project-summary.md` says which modules and addons apply. Module shape, shared tiers, and per-rule `rules/` routing: `architecture.md` (Stack Modules).
 - `examples/<type>/…` — a worked sample of a document type, when its rules document points at one and the shape is not already clear.
 - `versioning.md` — when releasing the template or setting a project's `Catalyst version` stamp.
@@ -36,7 +35,7 @@ Relevant feature unclear → check `project-summary.md` first; still unclear →
 
 A real project is spawned with `python3 tools/new_project.py`: the scaffolder asks its questions (stack modules with nested choices and addon picks, the project's own versioning, experiments, `context/` documents, hooks — opt-ins default to no), copies the rule set, and instantiates `project-summary.md`. A fresh repository also gets the spawn commit on a new `master` — the default branch (`master` in a fresh spawn) is what every default-branch reference in these rules means; an adopted repository keeps whatever default it already has (`main` included). Day zero starts with Init Design (Flow Index).
 
-- **The whole rule set lands in one directory, `catalyst/`**, byte-identical to the template's. At the root the spawn writes only what a tool looks for there: the generated `CLAUDE.md`/`AGENTS.md` pointers, the generated `.claude/skills/` wrappers, `.gitignore` (appended to), and the editor and toolchain setup — `.editorconfig`, `.vscode/extensions.json` (`conventions/editor-setup.md`), plus `mise.toml` and the OXC configs `.oxlintrc.json`/`.oxfmtrc.json` for Node-based stacks (`stacks/_lang/typescript/toolchain.md`) — written once and the project's own from then on. The project's own `VERSION` and `CHANGELOG.md`, when it keeps them, also stay at the root.
+- **The whole rule set lands in one directory, `catalyst/`**, byte-identical to the template's. At the root the spawn writes only what a tool looks for there: the generated root `AGENTS.md` (the one bundle pointer) and the `CLAUDE.md` that points at it, the generated `.claude/skills/` wrappers, `.gitignore` (appended to), and the editor and toolchain setup — `.editorconfig`, `.vscode/extensions.json` and `.vscode/settings.json` (`conventions/editor-setup.md`), plus `mise.toml` and the OXC configs `.oxlintrc.json`/`.oxfmtrc.json` for Node-based stacks (`stacks/_lang/typescript/toolchain.md`) — written once and the project's own from then on. The project's own `VERSION` and `CHANGELOG.md`, when it keeps them, also stay at the root.
 - The bundle holds the rule documents the File Index (`AGENTS.md`) names. The copy manifest enforces the invariant: a project must never reference Catalyst files its own repository does not contain — the opt-in experiments flow and the per-project hooks are the named exceptions, so pointers to `experiments/`, `workflows/experiments.md`, and `tools/hooks/` bind only projects that carry them.
 - **Catalyst can be adopted into an existing repository**: the scaffolder turns additive — nothing is overwritten, existing root files gain a marked `catalyst:begin`/`catalyst:end` block, and git is left alone so the user reviews the diff and commits it themselves. Adopting the _codebase_ that comes with it is a separate flow (`workflows/brownfield.md`).
 - A project owns its context and its copy of the rules; the copied `architecture.md` is the project's own from spawn onward and evolves through its decision records. Its own documents are written **inside the bundle** too — `catalyst/features/`, `catalyst/decisions/`, `catalyst/experiments/`, `catalyst/context/`, never root-level directories; that is where the validator resolves them, so a root-level `features/` silently fails every check.
@@ -65,7 +64,7 @@ Size budget: target ≤9,600 characters, hard max 14,400 — total characters, s
 - Fixes are never decision records: a fix either restores documented behavior (the regression test is the artifact) or changes it (feature document update).
 - Infra delivered inside a feature is documented by that feature — no separate record.
 - Created from `decisions/_template.md` as `decisions/<nnn>_<type>_<decision>.md` (own numbering); target ≤4,800 characters. It records context, decision, scope, consequences, and verification, and points to the contracts it touched (`architecture.md`, feature and folder docs — updated in the same change). It never duplicates rules; contracts stay the single source of truth.
-- A record runs through the Feature Workflow with the record as the document: statuses `Proposed` → `Accepted` (flipped on the default branch at approval, Open Questions emptied) → `Implemented` map to the feature gates; the branch is `decision/<nnn>-<slug>`; the Verification section plays the Examples role as the acceptance evidence. `Superseded by <nnn>` when a later record replaces it. Worked sample: `examples/decisions/001_infra_request_tracing.md`.
+- A record runs through the Feature Workflow with the record as the document: statuses `Proposed` → `Accepted` (flipped on the default branch at approval, Open Questions emptied) → `Implemented` map to the feature gates; the branch is `decision/<nnn>-<slug>`; the Verification section plays the Examples role as the acceptance evidence. `Superseded by <nnn>` when a later record replaces it. Worked sample: `examples/decisions/002_infra_sanctum-session-spa.md`.
 
 ### Project Summary
 
@@ -98,7 +97,7 @@ An explicitly requested feature (e.g. a prompt starting `feature: <name>`) alway
 
 Plan mode and brainstorming are the baseline; hosts often install richer pipelines (e.g. Claude Code's `feature-dev` plugin). Whatever is installed, the weights route the same way as above, and the adopting repository's entry document (`AGENTS.md`/`CLAUDE.md`) records the concrete mapping for its installed tools.
 
-A project also carries generated `.claude/skills/` wrappers — thin pointers into the bundle's stack docs. How they are generated, and how they rank against installed plugins and similarly-named third-party skills, is `references/agent-skills.md`.
+A project also carries generated `.claude/skills/` wrappers — thin pointers into the bundle's procedure and convention documents; module documents are reached through their Load cells, not wrappers. How they are generated, and how they rank against installed plugins and similarly-named third-party skills, is `references/agent-skills.md`.
 
 Two constraints hold on every route:
 
@@ -121,13 +120,15 @@ Implementing a supplied document: if it does not follow the template, propose a 
 
 ### Bug Fixes
 
-No fix without a root cause. Reproduce or gather evidence first; read the matching feature document when documented behavior is affected; add a regression test when practical; ship the smallest root-cause fix, no unrelated refactors. A fix that changes intended behavior updates the feature document in the same change (never a decision record — see Decision Records). `Minor`/`Easy` fixes skip planning but never skip investigation or verification. A fix is `Minor` only when intended durable behavior does not change.
+No fix without a root cause. Reproduce or gather evidence first; read the matching feature document when documented behavior is affected; add a regression test when practical — **confirmed failing on the pre-fix code**, and Verification records that it was, since a regression test nobody watched fail is a test of the fix rather than of the bug; ship the smallest root-cause fix, no unrelated refactors. A fix that changes intended behavior updates the feature document in the same change (never a decision record — see Decision Records), and **adds the Examples rows for the new behavior, the failure branch included** — the row is what the regression test is written from, so a missing failure row is a missing test. `Minor`/`Easy` fixes skip planning but never skip investigation or verification. A fix is `Minor` only when intended durable behavior does not change.
 
 A **live system users depend on** that is down or materially broken is Incident Response — see the Flow Index.
 
 ### Refactors
 
 Preserve documented behavior unless the user explicitly changes it: read the feature document first, identify invariants and examples, add characterization tests when important behavior is untested, keep changes aligned with `architecture.md`, and never hide behavior changes inside a refactor — these rules hold whether the refactor is decision-record work (boundary-moving, type `refactor`) or `Minor` (small and local).
+
+**Split the structural move from the call-site rewrite, in that order.** A structural change and a rewrite of everything that called it in one diff means neither can be reviewed: the move is invisible under the rewrite, and the rewrite is unverifiable while the ground is shifting.
 
 ### Flow Index
 
@@ -152,7 +153,7 @@ A behavior change and its feature document change together — same change, same
 
 Never fabricate data to make code run. When a schema, token, credential, or data source is missing or unclear, stop and ask — or fetch a real sample — before writing against it; never assume an integration behaves as documented without checking. This generalizes the bug-fix "never guess" (Bug Fixes) to every task that touches data or integration.
 
-Where placeholder or synthetic data is genuinely unavoidable to make progress, it is flagged loudly at runtime (not silent) and recorded with a removal plan. A project carrying such data keeps a register of it (`KNOWN_FAKES.md`: what is fake, why, how it is removed — rules: `references/known-fakes.md`); a project with no fabricated data has no such file. The register is a consequence of this rule, never a standing requirement.
+Where placeholder or synthetic data is genuinely unavoidable to make progress, it is flagged loudly at runtime (not silent) and recorded with a removal plan. A project carrying such data keeps a register of it (`KNOWN_FAKES.md`: what is fake, why, how it is removed — rules: `references/project-documents.md`); a project with no fabricated data has no such file. The register is a consequence of this rule, never a standing requirement.
 
 ### Document Validation
 
@@ -160,7 +161,7 @@ Before any commit that touches documents, run the validator and resolve findings
 
 ### Feature Branches
 
-Feature work (`Easy`/`Medium`/`Hard`), decision-record work, experiment work, and non-`Minor` bug fixes run on their own branch: `feature/<nnn>-<slug>`, `decision/<nnn>-<slug>`, `experiment/<nnn>-<slug>`, or `fix/<slug>`.
+Feature work (`Easy`/`Medium`/`Hard`), decision-record work, experiment work, and non-`Minor` bug fixes run on their own branch: `feature/<nnn>-<slug>`, `decision/<nnn>-<slug>`, `experiment/<nnn>-<slug>`, or `fix/<slug>`. A follow-up named in an `Implemented` record's Consequences runs on `refactor/<slug>`: the record is the approval, so there is no new document and no number — weight is estimated and confirmed as usual and is never `Minor`, commit approval is one step at a time as always, and **the merge edits that Consequences line to say the follow-up is discharged.** Without that last part the record goes on advertising work that is already done.
 
 - Commit the draft document (feature, decision record, or experiment) and its `project-summary.md` row on the default branch before branching — this reserves the number and keeps the index authoritative. The approval flip (`Draft` → `Approved`, `Proposed` → `Accepted`, an experiment's `Proposed` → `Running`) lands there too, before the branch exists.
 - All implementation commits, doc updates, and the remaining status flips happen on the branch; merge back only after verification passes (fast-forward is fine); delete the merged branch. Unmerged work is not done — and finished, verified work is merged promptly: a done branch left sitting drifts from the default branch and misleads the parallel independence check.
@@ -178,7 +179,7 @@ An approved plan runs one step at a time, never batched. A step is the smallest 
 - Approval of the commit is approval to continue: commit, then start the next step in the same turn — never stop again to ask whether to proceed.
 - A step that grows past its plan, or a plan that turns out wrong, stops for a re-plan; a step is never widened silently.
 - Verification is per step, not saved for the end; the Feature Workflow's Examples walk still gates the final status flip.
-- A project keeping release notes appends its entry per step and commits the changelog once, when the branch is done (`references/release-notes.md`).
+- A project keeping release notes appends its entry per step and commits the changelog once, when the branch is done (`versioning.md`).
 
 ## Quality
 

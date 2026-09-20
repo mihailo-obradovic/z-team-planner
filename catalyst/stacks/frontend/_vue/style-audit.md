@@ -8,6 +8,8 @@ Audit Vue SFCs (and composable/util `.ts` files) for conformance to the style gu
 
 **Target:** the target files/directory given by the caller. If the target is a directory, audit all `.vue` files in it recursively (and `.ts` files for composables/utils/stores). If it is a single file, audit just that file.
 
+**This audit is the only enforcement the template's template rules have.** oxlint reads no `.vue` template block — it ships no equivalent of `v-on-event-hyphenation`, `custom-event-name-casing` or `v-on-handler-style`, and none of the Vue rules it does carry inspects markup. So every rule about the template — tag casing, listener casing, listeners binding by name, bindings naming values, `:key` discipline, the reserved landmark and skip link — passes `pnpm lint` regardless. A project that has not run this audit has not checked them.
+
 ## What to Check
 
 For each file, verify and fix:
@@ -63,7 +65,7 @@ Everything else in this document is safe to fix directly.
 
 - File names per `../_common/component-naming.md` — PascalCase, no `*Section` suffix or brand prefix, self-describing basenames, kebab-case folders.
 - Auto-import tag resolution per `component-naming.md`: flag a nested file under the registered directory whose generated tag stutters (`_shared/users/UserCard.vue` → `<UsersUserCard>`).
-- Events and handlers per `vue-style.md` → **Event and handler naming**: imperative emit names, camelCase in `defineEmits` and at the call site (flag kebab-case listeners), every emit declared, `handle*` matched one-to-one against the event, `defineModel` rather than a hand-rolled `modelValue` prop plus `update:modelValue` emit, a callback prop where an emit belongs, handlers named for intent rather than input device, listeners bound to a handler by name (flag any call expression or statement; an arrow is allowed only to pass a `v-for` item or slot prop, and only to forward it), and an `event` parameter (flag `e`).
+- Events and handlers per `vue-style.md` → **Event and handler naming**: imperative emit names, camelCase in `defineEmits` and kebab-case at the call site (flag a camelCase listener), every emit declared, `handle*` matched one-to-one against the event, `defineModel` rather than a hand-rolled `modelValue` prop plus `update:modelValue` emit, a callback prop where an emit belongs, handlers named for intent rather than input device, listeners bound to a handler by name (flag any call expression or statement; an arrow is allowed only to pass a `v-for` item or slot prop, and only to forward it), and an `event` parameter (flag `e`).
 - The registered shared-components directory is `@/components/_shared/` per `component-naming.md`: cross-check the framework's registration config (e.g. `components.dirs` in `nuxt.config.ts`) and flag a registered directory named anything else (`shared/`, `ui/`, `common/`) unless a convention annex records the deviation.
 
 ### Accessibility

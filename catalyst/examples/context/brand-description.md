@@ -1,6 +1,6 @@
 # Brand Description
 
-Reference sample for a fictional project — **Roster**, the community sports-club membership app, one of three tools the fictional **Meridian Sports Association** publishes for its affiliated clubs alongside Fixtures and the public Club Finder. Not a real project; illustrative only. Roster keeps this file because the brand is the Association's and not Roster's: a volunteer moving between the three tools must not notice the seam. A standalone app keeps no such file — its own design system is its whole brand (`references/context-documents.md`). A context document records design intent, not behavior; it is never a contract.
+Reference sample for a fictional project — **Roster**, the community sports-club membership app, one of three tools the fictional **Meridian Sports Association** publishes for its affiliated clubs alongside Fixtures and the public Club Finder. Not a real project; illustrative only. Roster keeps this file because the brand is the Association's and not Roster's: a volunteer moving between the three tools must not notice the seam. A standalone app keeps no such file — its own design system is its whole brand (`references/project-documents.md`). A context document records design intent, not behavior; it is never a contract.
 
 ## Voice And Tone
 

@@ -160,6 +160,21 @@ const { data: user } = useFetchUser(computed(() => props.userId));
 </script>
 ```
 
+A prop with a default takes `withDefaults`, always — the type says what the prop is, the second argument says only what it falls back to.
+
+```vue
+<script setup lang="ts">
+// ✅ the optional prop is typed optional, and its fallback is in one place
+const props = withDefaults(
+  defineProps<{ tier?: HeaderTier; rows?: number }>(),
+  {
+    tier: 'labelled',
+    rows: 10
+  }
+);
+</script>
+```
+
 ## Event and handler naming
 
 The emit is declared and listened for under the same camelCase name, and the parent's handler matches it.
@@ -207,11 +222,11 @@ function handleDeleteButtonClick() {
 ```vue
 <!-- parent -->
 <template>
-  <!-- ✅ same spelling as the declaration; handler matches the event -->
+  <!-- ✅ declared camelCase, listened kebab-case; handler matches the event -->
   <UserCard
     :user="user"
     @select="handleSelect"
-    @updateItem="handleUpdateItem"
+    @update-item="handleUpdateItem"
   />
 
   <!-- ✅ a loop item only the template holds, passed through an arrow -->
@@ -219,9 +234,9 @@ function handleDeleteButtonClick() {
     Pick
   </v-btn>
 
-  <!-- ❌ a call, not a handler; ❌ kebab-case at the call site; ❌ logic inline -->
+  <!-- ❌ a call, not a handler; ❌ camelCase at the call site; ❌ logic inline -->
   <v-btn @click="handleSelect(user)">Pick</v-btn>
-  <UserCard @update-item="handleUpdateItem" @click="dirty ? save() : close()" />
+  <UserCard @updateItem="handleUpdateItem" @click="dirty ? save() : close()" />
 
   <!-- ❌ the arrow carries a prop the script can read, and a fallback that belongs in a handler -->
   <v-btn @click="() => remove(props.userId ?? 0)">Remove</v-btn>

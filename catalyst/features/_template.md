@@ -124,6 +124,8 @@ Required test cases and where they live:
 
 The evidence, not the plan (Tests above is the plan). Filled at implementation, before the status flips to `Active`: what actually ran and what it showed, 2–5 lines — commands/suites and results, live walks (browser, stack) and what they proved, and any remaining risks. Empty while the document is a draft.
 
+**Appended per dated walk, never rewritten.** Each later fix or change adds its own dated entry; the earlier ones stay, because what a walk proved at the time is the evidence a reader is checking against. When the document nears its size budget, trim older walks to one line each rather than deleting them.
+
 ## Agent Change Rules
 
 Before changing this feature, an agent must:

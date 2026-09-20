@@ -18,11 +18,35 @@ The project therefore installs **`@iconify-json/lucide`** as a dev dependency, w
 
 This is not a contradiction of the "never add `@nuxt/icon` yourself" rule below. The **module** is Nuxt UI's to own; the **collection data** it resolves against is the project's choice, and is exactly the `<icon set>` the design system's Iconography section asks each project to record. One icon set, product-wide — a second collection is a Dependency Change and a design-system violation both, with a single carve-out: Lucide ships no logos, so brand marks may come from `@iconify-json/simple-icons` under the Iconography section's brand-mark exception.
 
+## The height chain's middle links
+
+`../../page-layout.md` owns the chain and asks a choice that ships its own layout engine to state **links 2 and 3** in its own document. Nuxt UI's are these, and the rest of that document holds unchanged.
+
+**Link 2 is the stylesheet, not a component.** `UApp` renders no element of its own, so there is nothing between `#__nuxt` and the page to be the layout column — `#__nuxt` is that column, declared beside link 1's pin:
+
+```css
+html,
+body,
+#__nuxt {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* * UApp renders no element of its own, so #__nuxt is the layout column */
+#__nuxt {
+  display: flex;
+  flex-direction: column;
+}
+```
+
+**Link 3 is `UMain`'s vendored config** — `min-h-0 flex flex-1 flex-col overflow-y-auto` on `base`. Upstream ships `min-h-[calc(100vh-var(--ui-header-height))]` there, which is exactly the double arithmetic the chain forbids: the chain has already subtracted the header. The config **out-ranks** it rather than deleting it, because a vendored config extends the upstream theme (`customization.md`, Vendored defaults, not deltas) — `min-h-0` wins the `min-height` group and upstream's `calc` stops mattering. Putting it here rather than on each page is what stops every page reciting the same four classes.
+
 ## Module Documents
 
-| Document                               | What it holds                                    | Load                                                                                            |
-| -------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| [`customization.md`](customization.md) | How a component's theme is overridden, and where | When changing what a component looks like, importing a component's defaults, or adding a colour |
+| Document                               | What it holds                                                                                                    | Load                                                                                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`customization.md`](customization.md) | How a component's theme is overridden, and where                                                                 | When changing what a component looks like, importing a component's defaults, or adding a colour |
+| [`composition.md`](composition.md)     | How a page is assembled from components — overlays, dialogs, breakpoint tiers, reserved cells, read-only regions | When composing a page from components, or adding an overlay                                     |
 
 ## AI Tooling
 
