@@ -2,7 +2,7 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`). The nightly backup workflow now exists; stage 2 stays shut on the gates still open — the restore rehearsal, and Firebase's authorized domain plus its published consent screen. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`). The nightly backup workflow exists and its restore has been rehearsed. Stage 2 stays shut on the one gate still open: Firebase's authorized domain and its published consent screen. Neon `main` carries the schema at revision `182ad318ac94` and no rows.
 
 ## Vercel hosting
 
@@ -118,15 +118,21 @@ neon branches create --name ci-<sha> --expires-at <rfc3339>   # throwaway CI bra
 
 Two tiers. Neon's own instant restore covers the last **6 hours** on the Free plan (Launch: up to 7 days) — enough for "undo the last bad migration", not for losing the project. The nightly dump (next section) is the real backup.
 
-Restore from a dump, on a scratch branch first:
+Restore from a dump, on a scratch branch first. Fetching the dump uses the read-only recovery token, not CI's (next section).
 
 ```bash
-neon branches create --name restore-test
-gpg --decrypt ztp-<date>.sql.gz.gpg | gunzip | psql "$(neon connection-string --branch restore-test)"
-psql "$(neon connection-string --branch restore-test)" -c 'select count(*) from users; select count(*) from builds;'
+neon branches create --name restore-test                # or the console, if the CLI stalls
+aws s3api get-object --bucket ztp-backups --key ztp-<date>.sql.gz.gpg ztp-<date>.sql.gz.gpg
+aws s3api get-object --bucket ztp-backups --key ztp-<date>.manifest.json ztp-<date>.manifest.json
+psql "$SCRATCH_URL" -c 'drop schema public cascade' -c 'create schema public'
+gpg --decrypt ztp-<date>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_STOP=1
 ```
 
-Compare counts with the dump's manifest, then either promote the branch or repeat against `main`. Rehearsed: **never** — first rehearsal due before the first real user, then after every material schema change.
+**Empty the scratch branch before restoring.** A Neon branch is a copy of its parent, so it arrives holding the schema already and the dump's `CREATE TABLE` statements collide with it. A real recovery restores into an empty database; a drill that skips the wipe tests nothing.
+
+Then take the same census the manifest carries and compare the two objects whole — table names and counts together, not a couple of hand-picked tables. Matching, the branch can be promoted or the restore repeated against `main`.
+
+Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored into a scratch branch and matched against its manifest. Note what that does and does not prove: the schema was at revision `182ad318ac94` with **zero rows**, because sign-in did not exist yet. Decrypt, decompress, apply and verify are proven; restoring volume is not. Due again after every material schema change, and worth repeating once real rows exist.
 
 ### Quirks
 
@@ -134,6 +140,7 @@ Compare counts with the dump's manifest, then either promote the branch or repea
 - Free-plan computes suspend after 5 minutes idle and this cannot be disabled. A pool that held a socket across the suspend gets `SSL SYSCALL error: EOF detected`; the engine runs `pool_pre_ping=True`, `pool_recycle=240` (not 300 — that races the boundary) and `connect_timeout=10`.
 - Always spell the driver: `postgresql+psycopg://`. A bare `postgresql://` means psycopg2 on SQLAlchemy 2.0 and psycopg 3 on 2.1 — the driver would swap on a routine bump.
 - Free-plan ceilings: 0.5 GB storage, 10 branches, 100 CU-hours per month. Expired CI branches free their slot; a forgotten `restore-test` branch does not.
+- **`neonctl` can hang rather than fail when its stored token needs refreshing** — no prompt, no error, just a call that never returns. It stalled the stage 2 setup once. The console is the fallback for anything the CLI will not answer, and `neon auth` is the fix.
 
 ## Nightly backup (GitHub Actions → Cloudflare R2)
 
@@ -155,7 +162,14 @@ Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<dat
 
 ### Recovery
 
-The restore drill is the Neon section's. The decryption key's private half lives outside the repository and outside GitHub, in the password-manager entry **"z-team-planner backup GPG key"**, which also carries the fingerprint in its notes — losing that entry makes every dump unreadable. Only the public half is a repository secret, so CI can encrypt but never read a dump back.
+The restore drill is the Neon section's. Two credentials make it possible, and **neither is reachable through GitHub** — a disaster is the wrong moment to discover that recovery depends on the CI provider being up.
+
+| Password-manager entry                       | What it is                                  | Why not CI's                                                             |
+| -------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
+| `z-team-planner backup GPG key`              | the private half, plus the fingerprint      | only the public half is a repository secret, so CI can encrypt, never read |
+| `z-team-planner R2 read-only recovery token` | account id and an S3 key pair, read-only    | CI's token is write-capable and was displayed once; this one cannot delete a backup while restoring it |
+
+Lose the GPG entry and every dump ever taken is unreadable.
 
 ### Quirks
 
