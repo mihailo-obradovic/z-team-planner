@@ -84,6 +84,17 @@ pnpm test:coverage   # the whole suite with a V8 coverage report in coverage/
 
 CI (`.github/workflows/ci.yml`) runs lint, format check, typecheck and tests for both applications on every push and pull request, Renovate opens dependency PRs on Mondays, and security fixes as soon as an advisory lands; none of them merges without a person.
 
+### The pre-commit hook
+
+Optional, and per clone. It runs the Catalyst document validator and then `oxfmt --check`, blocking the commit if either objects:
+
+```bash
+git config core.hooksPath .githooks    # activate
+git config --unset core.hooksPath      # undo
+```
+
+Worth the two seconds because the failure it catches is invisible locally: `oxfmt` reflows Markdown tables, so a hand-edited document passes the validator and fails CI. `core.hooksPath` replaces `.git/hooks` wholesale, so `.githooks/pre-commit` calls the Catalyst hook itself rather than letting the symlink there do it.
+
 `uv run pytest -m "not integration"` skips the tests that need Docker. `uv run python -m scripts.reset_db --yes` drops the development database schema and migrates it back up; it refuses unless `APP_ENV` is `development`. `pnpm run game-data:export` regenerates `shared/game-data.json` from `web/types/hero.ts` — the fixture the API validates saved builds against; a test fails if the committed copy has drifted.
 
 `app/CLAUDE.md` is the orientation map for the service, and `web/CLAUDE.md` for the app.

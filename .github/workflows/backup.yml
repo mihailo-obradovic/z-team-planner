@@ -5,15 +5,13 @@ on:
     # * 03:00 UTC. Clear of the Thursday 01:00–02:00 Neon maintenance window.
     - cron: '0 3 * * *'
   workflow_dispatch:
-  # * migrate.yml calls this before touching the schema, so a dispatched migration
-  # * always has a dump from minutes earlier rather than from last night.
+  # * migrate.yml calls this before touching the schema, so a dispatched migration always has a dump from minutes earlier rather than from last night.
   workflow_call:
 
 # * Nothing from this repository is read: no checkout, no token, no write scope.
 permissions: {}
 
-# * A manual run must never overlap the nightly one — two pg_dumps would wake the same
-# * compute and race on the same object names.
+# * A manual run must never overlap the nightly one — two pg_dumps would wake the same compute and race on the same object names.
 concurrency:
   group: backup
   cancel-in-progress: false
@@ -24,15 +22,12 @@ jobs:
     timeout-minutes: 15
 
     env:
-      # ! The DIRECT endpoint, plain `postgresql://`. pg_dump is not SQLAlchemy, so no
-      # ! `+psycopg` prefix here — and the pooled endpoint is PgBouncer in transaction
-      # ! mode, where session-scoped tools break (operations.md, Neon Postgres → Quirks).
+      # ! The DIRECT endpoint, plain `postgresql://`. pg_dump is not SQLAlchemy, so no `+psycopg` prefix here — and the pooled endpoint is PgBouncer in transaction mode, where session-scoped tools break (operations.md, Neon Postgres → Quirks).
       DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
       BUCKET: ztp-backups
       # * Matches feature 004's declared retention for personal data held in backups.
       RETENTION_DAYS: '30'
-      # ! Neon runs Postgres 18 and pg_dump refuses a server newer than itself. The
-      # ! runner's preinstalled client is older, so the matching major is installed below.
+      # ! Neon runs Postgres 18 and pg_dump refuses a server newer than itself. The runner's preinstalled client is older, so the matching major is installed below.
       PG_VERSION: '18'
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -56,8 +51,7 @@ jobs:
           set -euo pipefail
           printf '%s' "$BACKUP_GPG_PUBLIC_KEY" | gpg --batch --import
           FPR=$(gpg --list-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')
-          # * Only the public half is ever here, so "ultimate" grants nothing but the
-          # * right to encrypt to it without an interactive trust prompt.
+          # * Only the public half is ever here, so "ultimate" grants nothing but the right to encrypt to it without an interactive trust prompt.
           printf '%s:6:\n' "$FPR" | gpg --batch --import-ownertrust
           echo "GPG_RECIPIENT=${FPR}" >> "$GITHUB_ENV"
 
@@ -77,14 +71,10 @@ jobs:
           test -s "$DUMP_FILE"
 
       - name: Write the manifest
-        # * Row counts are what the restore drill compares against, so they must travel
-        # * with the dump. Counts are not personal data; the manifest stays plaintext.
+        # * Row counts are what the restore drill compares against, so they must travel with the dump. Counts are not personal data; the manifest stays plaintext.
         run: |
           set -euo pipefail
-          # * A census of every public table, not a hard-coded list: a backup must not
-          # * start failing because a migration renamed something. query_to_xml is the
-          # * one way plain SQL can count a table whose name it only learns at runtime.
-          # * alembic_version rides along, so the manifest also records the revision.
+          # * A census of every public table, not a hard-coded list: a backup must not start failing because a migration renamed something. query_to_xml is the one way plain SQL can count a table whose name it only learns at runtime. alembic_version rides along, so the manifest also records the revision.
           counts=$("$PGBIN/psql" "$DATABASE_URL" -Atc \
             "select coalesce(json_object_agg(relname, row_count), '{}'::json)
              from (
@@ -97,9 +87,7 @@ jobs:
                join pg_namespace ns on ns.oid = c.relnamespace
                where c.relkind = 'r' and ns.nspname = 'public'
              ) s")
-          # ! A backup that captures nothing must never report success. Once the schema
-          # ! exists, alembic_version is always in the census, so its absence means the
-          # ! schema is gone — the one failure mode a green nightly job would hide.
+          # ! A backup that captures nothing must never report success. Once the schema exists, alembic_version is always in the census, so its absence means the schema is gone — the one failure mode a green nightly job would hide.
           if ! printf '%s' "$counts" | jq -e 'has("alembic_version")' >/dev/null; then
             echo "::error::no alembic_version table — the database has no schema, so this dump is empty"
             exit 1
@@ -134,7 +122,6 @@ jobs:
               done
 
       - name: Destroy the local copies
-        # ! This repository is public. A dump holds user emails, so it never becomes a
-        # ! workflow artifact and never outlives the job.
+        # ! This repository is public. A dump holds user emails, so it never becomes a workflow artifact and never outlives the job.
         if: always()
         run: rm -f ztp-*.sql.gz.gpg ztp-*.manifest.json

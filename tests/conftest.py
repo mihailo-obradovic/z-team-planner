@@ -67,8 +67,7 @@ def isolated_env(monkeypatch: pytest.MonkeyPatch) -> None:
     ! trip config.py's emulator guard before the assertion under test is ever reached.
     """
     # * Replacing model_config drops `env_file`, which is what closes the `.env` path.
-    # * Both classes, because each reads `.env` on its own — MigrationSettings is not a
-    # * subclass, so patching Settings alone would leave the migration path leaking.
+    # * Both classes, because each reads `.env` on its own — MigrationSettings is not a subclass, so patching Settings alone would leave the migration path leaking.
     for cls in (Settings, MigrationSettings):
         monkeypatch.setattr(
             f"app.core.config.{cls.__name__}.model_config", {"extra": "ignore"}

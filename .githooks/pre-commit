@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+# * Project pre-commit: the Catalyst document validator, then the formatter CI enforces.
+# * Project-owned rather than an edit to catalyst/tools/hooks/pre-commit, because that file belongs to the Catalyst bundle and is replaced on upgrade, and a pnpm-shaped check is this project's business rather than the template's. The bundled hook is invoked below unmodified, so the validator keeps exactly one definition.
+# * Activation is per clone and opt-in: `git config core.hooksPath .githooks`, undone with `git config --unset core.hooksPath` (README, The pre-commit hook).
+# ! core.hooksPath replaces .git/hooks wholesale, so the Catalyst hook symlinked there stops firing by itself. That is why it is called below rather than left alone.
+
+set -eu
+
+if [ -x catalyst/tools/hooks/pre-commit ]; then
+    sh catalyst/tools/hooks/pre-commit
+fi
+
+# * The whole tree, exactly as ci.yml runs it, rather than only staged files — that is the check which has to pass. Hand-edited Markdown is the usual offender: oxfmt reflows tables, and a clean validator run says nothing at all about formatting.
+if command -v pnpm >/dev/null 2>&1 && [ -f package.json ]; then
+    if ! output=$(pnpm run --silent format:check 2>&1); then
+        printf '%s\n' "$output" | tail -20
+        echo
+        echo "pre-commit: formatting check failed."
+        echo "            Run 'pnpm run format', stage the result, and commit again."
+        exit 1
+    fi
+else
+    echo "pre-commit: pnpm not found — skipping the format check"
+fi

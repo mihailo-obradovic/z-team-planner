@@ -98,9 +98,7 @@ def test_downgrade_removes_the_table(container_env: None) -> None:
 def test_migrations_run_without_any_firebase_configuration(
     container_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # * What the dispatchable migration workflow relies on: it carries the direct URL and
-    # * nothing else, so env.py must never reach for the application's other settings.
-    # * Without this, running a schema change would mean a Firebase private key in CI.
+    # * What the dispatchable migration workflow relies on: it carries the direct URL and nothing else, so env.py must never reach for the application's other settings. Without this, running a schema change would mean a Firebase private key in CI.
     from app.core.config import get_migration_settings
 
     for name in (
