@@ -34,7 +34,8 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
 - **Preview deployments are off, and the switch is a dashboard project setting** — production-only building, set in the project's build/deployment settings. Nothing in the repository turns them off, which is the whole hazard: this setting reverted once and nobody noticed until a Renovate PR carried a failing Vercel check. Confirm it by pushing any branch other than `master` and looking for the absence of a Vercel check — not a skipped one, none at all. It moved out of Settings → Git at some point, so hunt by setting name rather than by path.
 - **Why previews are not turned off in the repository.** `vercel.json`'s `git.deploymentEnabled` takes a bare `false`, which stops production deploying too; its per-branch form would need every future branch listed. The older Ignored Build Step (`[ "$VERCEL_ENV" != "production" ]`, exit 0 to skip) works, but it lets Vercel create the deployment and start the build before aborting it, so the deployments list fills with aborted builds. Both are also read from a project's Root Directory, and once the API project exists both projects are rooted there — see the `vercel.json` note above.
 - **A preview build cannot succeed here even by accident.** The Firebase `NUXT_PUBLIC_*` variables are scoped to Production, so a preview build reaches `nuxt.config.ts`'s `ready` guard with none of them and fails on `Missing required public runtime config`. That is the guard working — a build without config is not a deployable artifact — but it means a stray preview always shows up as a red check rather than a quiet one.
-- **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`.
+- **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`. Only the _function_ region is `fra1`; builds still run in `iad1` and that is fine, since no build talks to the database.
+- **`[tool.vercel] entrypoint` is `module:object`, never a file path.** `app/asgi.py` looks obviously right and fails the build with `no matching module file was found`; the value is `app.asgi:app`. The first API deployment ever attempted is what found this — the setting had been written but never exercised.
 - **Alembic never runs on Vercel.** Migrations are manual, from a workstation, against the direct endpoint — the Neon section's commands.
 - Vercel's **Neon marketplace integration is not used**: it injects a single `DATABASE_URL`, and this project needs the pooled and direct endpoints separately. Both variables are set by hand.
 
@@ -224,7 +225,7 @@ firebase emulators:start --only auth                    # local emulator on port
 
 ### Recovery
 
-Firebase is a vendor: there is no restore, only export. The documented `auth:export` / `auth:import` round-trip is the exit path, together with the stored Google subject. Exercised: **never** — first export due with the first real user, then quarterly.
+Firebase is a vendor: there is no restore, only export. The documented `auth:export` / `auth:import` round-trip is the exit path, together with the stored Google subject. Exercised: **21 September 2026**, returning zero users — sign-in had never been available, so this proves the command, the project id and the output format, nothing about volume. Quarterly from here, and again once real accounts exist.
 
 ### Quirks
 

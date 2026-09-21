@@ -33,8 +33,10 @@ dev = [
 
 # * Vercel's FastAPI runtime looks for a module-level `app`; app/main.py exports a factory
 # * on purpose, so the entrypoint is the shim written for exactly this (decision 007).
+# ! `module:object`, never a file path. A path builds nowhere and fails with
+# ! "no matching module file was found" (operations.md, Vercel hosting → Quirks).
 [tool.vercel]
-entrypoint = "app/asgi.py"
+entrypoint = "app.asgi:app"
 
 [tool.ruff]
 # * catalyst/ is the vendored Catalyst bundle — decision 004 verified its documents and tools
