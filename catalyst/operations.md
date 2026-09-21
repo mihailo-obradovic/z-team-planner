@@ -2,11 +2,13 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`). The nightly backup workflow exists and its restore has been rehearsed. Stage 2 stays shut on the one gate still open: Firebase's authorized domain and its published consent screen. Neon `main` carries the schema at revision `182ad318ac94` and no rows.
+Status note: **stage 2 is live** (21 September 2026). The planner is at <https://z-team-planner.vercel.app> and the API at <https://z-team-planner-api.vercel.app>, with Google sign-in enabled. Decision 007's four gates all passed first: the nightly backup workflow runs, its restore has been rehearsed, Firebase has the live domain authorized with a published consent screen, and the privacy page is reachable. Neon `main` is production at revision `182ad318ac94`. A real Google sign-in was completed on the live site the same day.
 
 ## Vercel hosting
 
-Two projects from this one repository, both with the repository root as their Root Directory: **`z-team-planner`** (Nuxt preset) and **`z-team-planner-api`** (FastAPI preset, region `fra1`, install command `uv sync --locked`). Production branch is `master`; preview deployments are off. Decision 007 holds the why and the staging — the API project is not created until its gate passes.
+Two projects from this one repository, both with the repository root as their Root Directory: **`z-team-planner`** (Nuxt preset) and **`z-team-planner-api`** (FastAPI preset, region `fra1`, install command `uv sync --locked`). Production branch is `master`; preview deployments are off. Decision 007 holds the why and the staging; both projects exist and are live as of stage 2.
+
+The API project also carries **Vercel Authentication switched off explicitly**. The frontend project has it on, and a project that inherited it would answer every browser call with a login page instead of JSON.
 
 ### Operate
 
@@ -83,6 +85,18 @@ uv run pytest                                           # -m "not integration" w
 uv run python -m scripts.reset_db --yes                 # drop + migrate, development only
 METRICS_ENABLED=true uv run uvicorn app.main:create_app --factory   # then GET /metrics
 ```
+
+Against the deployed service, where there is no process to start and no shell to start it in:
+
+```bash
+curl -sS https://z-team-planner-api.vercel.app/healthz          # liveness
+curl -sS -i https://z-team-planner-api.vercel.app/readyz        # readiness; allow ~1.1s on a cold Neon
+vercel logs <deployment-url>                                    # runtime logs for one deployment
+vercel env ls production                                        # what the next build will read (link the API project first)
+vercel promote <deployment-url>                                 # roll back by making an earlier deployment production
+```
+
+`reset_db` has no deployed equivalent and must never gain one: it drops the schema. Production schema changes are Alembic, run by hand from a workstation against the direct endpoint (the Neon section).
 
 Grepping one request across the logs: every line carries `[req <id>]`, and the id is either the caller's `X-Request-ID` or one generated at the edge.
 
@@ -215,7 +229,9 @@ Spark plan, Google sign-in only. Firebase holds identities; the app's own `users
 
 ### Operate
 
-The API needs two variables: `FIREBASE_PROJECT_ID` (the issuer and audience every token is checked against) and `FIREBASE_SERVICE_ACCOUNT_FILE` (the key, kept outside this public repository). In development the emulator replaces the key — set `FIREBASE_AUTH_EMULATOR_HOST` instead, and the SDK stops checking signatures.
+The API needs two variables: `FIREBASE_PROJECT_ID` (the issuer and audience every token is checked against) and the service-account key. Locally that is `FIREBASE_SERVICE_ACCOUNT_FILE`, a path to a key kept outside this public repository; on Vercel there is no filesystem to keep one on, so the whole key travels as `FIREBASE_SERVICE_ACCOUNT_JSON` instead. The two are mutually exclusive and setting both stops the process. In development the emulator replaces the key — set `FIREBASE_AUTH_EMULATOR_HOST` instead, and the SDK stops checking signatures.
+
+Authorized domains include `z-team-planner.vercel.app` and the consent screen is published, so sign-in is open to anyone rather than capped at named test users. The app-domain links that publishing requires live on **Google Auth Platform → Branding**, which is a different page from the **Audience** page that carries the publish button.
 
 ```bash
 firebase auth:export users.json --format=json           # full user list, round-trippable

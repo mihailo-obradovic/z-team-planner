@@ -66,7 +66,7 @@ Present only when the project has standing cross-cutting domain/method decisions
 
 | Decision                                                  | Rationale                                                                                                                                                                                                                                   |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No backward compatibility before the first public release | The live site is pre-release until stage 2 (decision 007) enables sign-in, so no build document is promised in the wild: formats change without migrations, version bumps, or decoding of earlier shapes. The obligation starts at stage 2. |
+| Backward compatibility is owed from 21 September 2026 | Stage 2 (decision 007) enabled sign-in on that date, so build documents now exist in accounts and in shared links. A format change from here needs a migration or a decoder for earlier shapes; it can no longer simply be made. Before that date nothing was promised in the wild, which is why earlier formats have neither. |
 
 ## Protected Areas
 
