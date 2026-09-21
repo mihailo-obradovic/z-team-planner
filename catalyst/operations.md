@@ -151,7 +151,7 @@ aws s3api list-objects-v2 --bucket ztp-backups --prefix ztp-   # what is in the 
 aws s3api get-object --bucket ztp-backups --key ztp-<date>.sql.gz.gpg ztp-<date>.sql.gz.gpg
 ```
 
-Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<date>.manifest.json` carrying the row counts the restore drill compares against.
+Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<date>.manifest.json`. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` rides along, so the manifest also records which revision the dump was taken at.
 
 ### Recovery
 
@@ -165,6 +165,7 @@ The restore drill is the Neon section's. The decryption key's private half lives
 - **`NEON_DIRECT_URL` is spelled `postgresql://`, not `postgresql+psycopg://`.** That prefix is SQLAlchemy's; `pg_dump` and `psql` reject it. This is the one place in the project where the bare scheme is correct.
 - Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the previous nights untouched.
 - The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
+- **A missing `alembic_version` fails the job on purpose.** A dump of a database with no schema is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for. If this fires, the schema is gone — check `main` before re-running anything.
 
 ## GitHub repository security
 
