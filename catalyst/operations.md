@@ -2,7 +2,7 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`); the nightly backup workflow is still not built, and stage 2 stays shut until it is. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
+Status note: **stage 1 is live at <https://z-team-planner.vercel.app>** (30 August 2026) — the planner alone, with no API project in existence and sign-in unavailable. The API and its Neon database run locally only (`decisions/005_bootstrap_api.md`). The nightly backup workflow now exists; stage 2 stays shut on the gates still open — the restore rehearsal, and Firebase's authorized domain plus its published consent screen. A recovery drill marked _never_ is a debt that comes due before the first real user's data lands.
 
 ## Vercel hosting
 
@@ -141,21 +141,30 @@ A scheduled workflow runs `pg_dump` against the direct endpoint, encrypts with a
 
 ### Operate
 
+R2 speaks the S3 API, so the `aws` CLI drives it — every call needs the account's R2 endpoint and a region the service ignores but the SDK demands.
+
 ```bash
 gh workflow run backup.yml                              # trigger out of schedule
 gh run list --workflow backup.yml --limit 5             # last runs
-wrangler r2 object list ztp-backups --prefix ztp-       # what is in the bucket
-wrangler r2 object get ztp-backups/ztp-<date>.sql.gz.gpg --file ztp-<date>.sql.gz.gpg
+export AWS_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com AWS_DEFAULT_REGION=auto
+aws s3api list-objects-v2 --bucket ztp-backups --prefix ztp-   # what is in the bucket
+aws s3api get-object --bucket ztp-backups --key ztp-<date>.sql.gz.gpg ztp-<date>.sql.gz.gpg
 ```
+
+Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<date>.manifest.json` carrying the row counts the restore drill compares against.
 
 ### Recovery
 
-The restore drill is the Neon section's. The decryption key's private half lives outside the repository and outside GitHub — losing it makes every dump unreadable. Key location and the drill date are recorded here when the workflow lands.
+The restore drill is the Neon section's. The decryption key's private half lives outside the repository and outside GitHub, in the password-manager entry **"z-team-planner backup GPG key"**, which also carries the fingerprint in its notes — losing that entry makes every dump unreadable. Only the public half is a repository secret, so CI can encrypt but never read a dump back.
 
 ### Quirks
 
 - A dump holds user emails: personal data. Retention follows the accounts feature document; the workflow prunes dumps older than that window on every run, so the bucket never becomes a shadow copy with its own retention.
 - R2's free tier is far beyond two small tables; the thing that grows is the number of dumps, not their size. Pruning is what keeps it free.
+- **The client's major version must match Neon's server**, which is why the job installs `postgresql-client-18` from PGDG rather than using the runner's own. `pg_dump` refuses a server newer than itself, and the failure names the versions — read it before suspecting the connection.
+- **`NEON_DIRECT_URL` is spelled `postgresql://`, not `postgresql+psycopg://`.** That prefix is SQLAlchemy's; `pg_dump` and `psql` reject it. This is the one place in the project where the bare scheme is correct.
+- Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the previous nights untouched.
+- The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
 
 ## GitHub repository security
 

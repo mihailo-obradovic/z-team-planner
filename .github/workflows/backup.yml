@@ -1,0 +1,124 @@
+name: backup
+
+on:
+  schedule:
+    # * 03:00 UTC. Clear of the Thursday 01:00–02:00 Neon maintenance window.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+  # TODO Remove before merging. GitHub only offers workflow_dispatch for workflows that
+  # TODO already exist on the default branch, so this is the only way to prove the job
+  # TODO runs before master carries it.
+  push:
+    branches: [refactor/backup-workflow]
+
+# * Nothing from this repository is read: no checkout, no token, no write scope.
+permissions: {}
+
+# * A manual run must never overlap the nightly one — two pg_dumps would wake the same
+# * compute and race on the same object names.
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # ! The DIRECT endpoint, plain `postgresql://`. pg_dump is not SQLAlchemy, so no
+      # ! `+psycopg` prefix here — and the pooled endpoint is PgBouncer in transaction
+      # ! mode, where session-scoped tools break (operations.md, Neon Postgres → Quirks).
+      DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
+      BUCKET: ztp-backups
+      # * Matches feature 004's declared retention for personal data held in backups.
+      RETENTION_DAYS: "30"
+      # ! Neon runs Postgres 18 and pg_dump refuses a server newer than itself. The
+      # ! runner's preinstalled client is older, so the matching major is installed below.
+      PG_VERSION: "18"
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      # * R2 ignores the region but the SDK demands one.
+      AWS_DEFAULT_REGION: auto
+      AWS_ENDPOINT_URL: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+
+    steps:
+      - name: Install the matching PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          yes '' | sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+          sudo apt-get install -y "postgresql-client-${PG_VERSION}"
+          echo "PGBIN=/usr/lib/postgresql/${PG_VERSION}/bin" >> "$GITHUB_ENV"
+
+      - name: Trust the backup encryption key
+        env:
+          BACKUP_GPG_PUBLIC_KEY: ${{ secrets.BACKUP_GPG_PUBLIC_KEY }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$BACKUP_GPG_PUBLIC_KEY" | gpg --batch --import
+          FPR=$(gpg --list-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')
+          # * Only the public half is ever here, so "ultimate" grants nothing but the
+          # * right to encrypt to it without an interactive trust prompt.
+          printf '%s:6:\n' "$FPR" | gpg --batch --import-ownertrust
+          echo "GPG_RECIPIENT=${FPR}" >> "$GITHUB_ENV"
+
+      - name: Name today's objects
+        run: |
+          STAMP=$(date -u +%Y-%m-%d)
+          echo "DUMP_FILE=ztp-${STAMP}.sql.gz.gpg" >> "$GITHUB_ENV"
+          echo "MANIFEST_FILE=ztp-${STAMP}.manifest.json" >> "$GITHUB_ENV"
+
+      - name: Dump and encrypt
+        run: |
+          set -euo pipefail
+          : "${DATABASE_URL:?NEON_DIRECT_URL secret is not set}"
+          "$PGBIN/pg_dump" "$DATABASE_URL" --no-owner --no-acl --format=plain \
+            | gzip \
+            | gpg --batch --encrypt --recipient "$GPG_RECIPIENT" --output "$DUMP_FILE"
+          test -s "$DUMP_FILE"
+
+      - name: Write the manifest
+        # * Row counts are what the restore drill compares against, so they must travel
+        # * with the dump. Counts are not personal data; the manifest stays plaintext.
+        run: |
+          set -euo pipefail
+          counts=$("$PGBIN/psql" "$DATABASE_URL" -Atc \
+            "select json_build_object(
+               'users', (select count(*) from users),
+               'builds', (select count(*) from builds),
+               'idempotency_keys', (select count(*) from idempotency_keys))")
+          jq -n \
+            --argjson counts "$counts" \
+            --arg taken_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg dump "$DUMP_FILE" \
+            --argjson bytes "$(stat -c %s "$DUMP_FILE")" \
+            '{taken_at: $taken_at, dump: $dump, encrypted_bytes: $bytes, rows: $counts}' \
+            > "$MANIFEST_FILE"
+          cat "$MANIFEST_FILE"
+
+      - name: Upload to R2
+        run: |
+          set -euo pipefail
+          aws s3api put-object --bucket "$BUCKET" --key "$DUMP_FILE" --body "$DUMP_FILE"
+          aws s3api put-object --bucket "$BUCKET" --key "$MANIFEST_FILE" --body "$MANIFEST_FILE"
+
+      - name: Prune dumps past the retention window
+        # * Only after a successful upload: a failed dump must never shrink the set.
+        run: |
+          set -euo pipefail
+          threshold=$(date -u -d "-${RETENTION_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)
+          aws s3api list-objects-v2 --bucket "$BUCKET" --prefix ztp- \
+            --query "Contents[?LastModified<'${threshold}'].Key" --output text \
+            | tr '\t' '\n' \
+            | while read -r key; do
+                [ -n "$key" ] || continue
+                echo "pruning $key"
+                aws s3api delete-object --bucket "$BUCKET" --key "$key"
+              done
+
+      - name: Destroy the local copies
+        # ! This repository is public. A dump holds user emails, so it never becomes a
+        # ! workflow artifact and never outlives the job.
+        if: always()
+        run: rm -f ztp-*.sql.gz.gpg ztp-*.manifest.json
