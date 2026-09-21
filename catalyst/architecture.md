@@ -238,15 +238,15 @@ Packages this project runs that the adopted stack modules' Approved Libraries do
 
 ### Approved CI Actions
 
-The GitHub Actions the pipeline uses. Actions are not packages and carry no lockfile row, so they are recorded here under the same rule; each is pinned to a major tag, which Renovate moves.
+The GitHub Actions the workflows use. Actions are not packages and carry no lockfile row, so they are recorded here under the same rule; each is pinned to a major tag, which Renovate moves. `Used by` is `workflow: job`, because the repository has more workflows than `ci.yml` — `backup.yml` deliberately uses no actions at all, since it checks nothing out and needs no token.
 
-| Action               | Job  | Why it is needed                                                                                                                                     | Approved by      |
-| -------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `actions/checkout`   | both | The source has to be on the runner.                                                                                                                  | decision 005     |
-| `jdx/mise-action`    | web  | `mise.toml` is the only Node pin and `actions/setup-node` cannot read it, so the toolchain is installed from the pin file itself rather than a copy. | user, 2026-09-03 |
-| `pnpm/action-setup`  | web  | Installs the exact pnpm named in `packageManager`.                                                                                                   | decision 005     |
-| `actions/cache`      | web  | Caches the pnpm store keyed to the lockfile — the caching that left with `actions/setup-node`.                                                       | user, 2026-09-03 |
-| `astral-sh/setup-uv` | api  | Installs uv, which then provisions the interpreter from `.python-version`.                                                                           | decision 005     |
+| Action               | Used by                        | Why it is needed                                                                                                                                     | Approved by      |
+| -------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `actions/checkout`   | `ci: web`, `ci: api`, `migrate: migrate` | The source has to be on the runner.                                                                                                        | decision 005     |
+| `jdx/mise-action`    | `ci: web`                      | `mise.toml` is the only Node pin and `actions/setup-node` cannot read it, so the toolchain is installed from the pin file itself rather than a copy. | user, 2026-09-03 |
+| `pnpm/action-setup`  | `ci: web`                      | Installs the exact pnpm named in `packageManager`.                                                                                                   | decision 005     |
+| `actions/cache`      | none                           | Approved for caching the pnpm store, then superseded: `pnpm/action-setup` does it with `cache: true`. Kept as a standing approval, not a current use. | user, 2026-09-03 |
+| `astral-sh/setup-uv` | `ci: api`, `migrate: migrate`  | Installs uv, which then provisions the interpreter from `.python-version`.                                                                           | decision 005     |
 
 `temporal-polyfill` is imported inside `web/utils/formatTimestamp.ts` rather than installed as a global shim, and its class API is kept deliberately over the smaller `fns` entrypoint: it is the shape `Temporal` will have natively, so reaching Baseline means deleting one import and this dependency with no change to calling code. The extra bundle weight is accepted as temporary.
 
