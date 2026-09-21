@@ -41,7 +41,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^5.0.1",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.5.0",
     "oxfmt": "^0.64.0",
