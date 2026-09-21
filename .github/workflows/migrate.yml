@@ -1,0 +1,87 @@
+name: migrate
+
+# ! The only thing in this repository that changes the production schema. It is
+# ! dispatch-only on purpose: nothing about a push should migrate a database.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "migrate" to confirm running against production'
+        required: true
+        type: string
+
+permissions: {}
+
+# * Two schema changes at once is not a thing Alembic's advisory lock should have to
+# * settle, and the backup this calls must not overlap itself either.
+concurrency:
+  group: migrate
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the confirmation
+        env:
+          # * Through env rather than inline, so the input cannot be read as shell.
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [ "$CONFIRM" != "migrate" ]; then
+            echo "::error::confirmation was '$CONFIRM'; type exactly: migrate"
+            exit 1
+          fi
+          echo "confirmed"
+
+  backup:
+    needs: guard
+    # * The real nightly workflow, not a copy of it: a dump taken any other way is one
+    # * the restore drill has never rehearsed.
+    uses: ./.github/workflows/backup.yml
+    secrets: inherit
+
+  migrate:
+    needs: backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Resolve the direct URL
+        env:
+          # ! Spelled `postgresql://` because pg_dump needs it that way, and this one
+          # ! secret serves both workflows. SQLAlchemy needs the driver named instead.
+          NEON_DIRECT_URL: ${{ secrets.NEON_DIRECT_URL }}
+        run: |
+          set -euo pipefail
+          : "${NEON_DIRECT_URL:?NEON_DIRECT_URL secret is not set}"
+          url="postgresql+psycopg://${NEON_DIRECT_URL#postgresql://}"
+          # ! GitHub masks the exact secret string, and this is a different string.
+          # ! Without the mask, anything that echoed it would print it in clear text.
+          echo "::add-mask::$url"
+          echo "DATABASE_URL_DIRECT=$url" >> "$GITHUB_ENV"
+
+      - name: Show the revision before
+        run: uv run alembic current
+
+      - name: Upgrade to head
+        # * Always head, never a chosen revision and never a downgrade: migrations are
+        # * forward-only in production and a rollback is a new migration
+        # * (architecture.md, Persistence).
+        run: uv run alembic upgrade head
+
+      - name: Show the revision after
+        run: uv run alembic current

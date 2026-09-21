@@ -5,6 +5,9 @@ on:
     # * 03:00 UTC. Clear of the Thursday 01:00–02:00 Neon maintenance window.
     - cron: "0 3 * * *"
   workflow_dispatch:
+  # * migrate.yml calls this before touching the schema, so a dispatched migration
+  # * always has a dump from minutes earlier rather than from last night.
+  workflow_call:
 
 # * Nothing from this repository is read: no checkout, no token, no write scope.
 permissions: {}

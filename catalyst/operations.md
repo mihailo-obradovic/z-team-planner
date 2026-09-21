@@ -131,8 +131,10 @@ One Neon project, one long-lived `dev` branch besides `main`, CI branches create
 neon branches list                                      # branches, their computes, expiry
 neon connection-string --branch dev                     # direct endpoint (migrations)
 neon connection-string --branch dev --pooled            # pooled endpoint (the API)
+gh workflow run migrate.yml -f confirm=migrate          # the normal route: backs up, then upgrades to head
+gh run list --workflow migrate.yml --limit 5            # how the last dispatches went
 uv run alembic current                                  # applied revision (env.py reads DATABASE_URL_DIRECT itself)
-uv run alembic upgrade head                             # apply migrations — direct endpoint only
+uv run alembic upgrade head                             # the manual fallback — direct endpoint only
 neon branches create --name ci-<sha> --expires-at <rfc3339>   # throwaway CI branch, ≤30 days
 ```
 
@@ -159,6 +161,9 @@ Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored in
 ### Quirks
 
 - The pooled endpoint is PgBouncer in transaction mode: `SET`, `LISTEN/NOTIFY`, temp tables and session-level advisory locks are unsupported, and **advisory locks fail silently**. Alembic must never see the pooled URL.
+- **`migrate.yml` takes a backup before it migrates**, by calling `backup.yml` rather than copying its steps — a dump taken any other way is one the restore drill has never rehearsed. A failed backup stops the migration. It refuses to run unless the dispatch input is exactly `migrate`, and it only ever goes to `head`: forward-only, so a rollback is a new migration and there is no downgrade path.
+- **One secret, two spellings.** `NEON_DIRECT_URL` is stored as plain `postgresql://` because `pg_dump` rejects anything else; `migrate.yml` rewrites it to `postgresql+psycopg://` for SQLAlchemy and immediately re-masks it. GitHub only masks the exact stored string, so the rewritten one would print in clear text if any step echoed it.
+- **Migrations read `MigrationSettings`, not `Settings`.** That is why the workflow needs one secret instead of the application's four, and why a Firebase key never reaches a job that authenticates nobody.
 - Free-plan computes suspend after 5 minutes idle and this cannot be disabled. A pool that held a socket across the suspend gets `SSL SYSCALL error: EOF detected`; the engine runs `pool_pre_ping=True`, `pool_recycle=240` (not 300 — that races the boundary) and `connect_timeout=10`.
 - Always spell the driver: `postgresql+psycopg://`. A bare `postgresql://` means psycopg2 on SQLAlchemy 2.0 and psycopg 3 on 2.1 — the driver would swap on a routine bump.
 - Free-plan ceilings: 0.5 GB storage, 10 branches, 100 CU-hours per month. Expired CI branches free their slot; a forgotten `restore-test` branch does not.
