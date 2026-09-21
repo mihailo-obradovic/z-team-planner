@@ -7,7 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from app.core.config import Settings, get_settings
+from app.core.config import (
+    MigrationSettings,
+    Settings,
+    get_migration_settings,
+    get_settings,
+)
 
 try:
     from testcontainers.postgres import PostgresContainer
@@ -62,18 +67,25 @@ def isolated_env(monkeypatch: pytest.MonkeyPatch) -> None:
     ! trip config.py's emulator guard before the assertion under test is ever reached.
     """
     # * Replacing model_config drops `env_file`, which is what closes the `.env` path.
-    monkeypatch.setattr("app.core.config.Settings.model_config", {"extra": "ignore"})
-    # * Derived from the model rather than listed, so a setting added later is covered too.
-    for name in Settings.model_fields:
+    # * Both classes, because each reads `.env` on its own — MigrationSettings is not a
+    # * subclass, so patching Settings alone would leave the migration path leaking.
+    for cls in (Settings, MigrationSettings):
+        monkeypatch.setattr(
+            f"app.core.config.{cls.__name__}.model_config", {"extra": "ignore"}
+        )
+    # * Derived from the models rather than listed, so a setting added later is covered too.
+    for name in {*Settings.model_fields, *MigrationSettings.model_fields}:
         monkeypatch.delenv(name.upper(), raising=False)
 
 
 @pytest.fixture(autouse=True)
 def _clear_settings_cache() -> Iterator[None]:
-    # * get_settings is lru_cached, so without this a Settings built by one test leaks into every later one.
+    # * Both are lru_cached, so without this a settings object built by one test leaks into every later one.
     get_settings.cache_clear()
+    get_migration_settings.cache_clear()
     yield
     get_settings.cache_clear()
+    get_migration_settings.cache_clear()
 
 
 @pytest.fixture
@@ -171,5 +183,7 @@ def container_env(
     monkeypatch.setenv("FIREBASE_PROJECT_ID", FIREBASE_PROJECT)
     monkeypatch.setenv("FIREBASE_SERVICE_ACCOUNT_FILE", str(service_account_file))
     get_settings.cache_clear()
+    get_migration_settings.cache_clear()
     yield
     get_settings.cache_clear()
+    get_migration_settings.cache_clear()

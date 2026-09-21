@@ -3,7 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings, get_settings
+from app.core.config import (
+    MigrationSettings,
+    Settings,
+    get_migration_settings,
+    get_settings,
+)
 
 
 def test_valid_environment_builds(base_env: dict[str, str]) -> None:
@@ -88,3 +93,29 @@ def test_no_credential_at_all_refuses_to_start(
     monkeypatch.delenv("FIREBASE_SERVICE_ACCOUNT_FILE")
     with pytest.raises(ValidationError, match="required unless"):
         Settings()  # pyright: ignore[reportCallIssue]
+
+
+def test_migration_settings_need_only_the_direct_url(
+    base_env: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # * A schema change touches the database and nothing else. Requiring the Firebase
+    # * credential here is how a private key ends up in a job that authenticates nobody.
+    for name in (
+        "DATABASE_URL",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_SERVICE_ACCOUNT_FILE",
+    ):
+        monkeypatch.delenv(name)
+    assert (
+        get_migration_settings().database_url_direct == base_env["DATABASE_URL_DIRECT"]
+    )
+
+
+def test_migration_settings_refuse_a_bare_postgresql_url(
+    base_env: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # * The driver check is the reason migrations read through config.py at all rather
+    # * than off os.environ: a bare URL swaps driver at the SQLAlchemy 2.1 bump.
+    monkeypatch.setenv("DATABASE_URL_DIRECT", "postgresql://u:p@host/neondb")
+    with pytest.raises(ValidationError, match="spell the driver explicitly"):
+        MigrationSettings()  # pyright: ignore[reportCallIssue]

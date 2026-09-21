@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.core.config import get_settings
+from app.core.config import get_migration_settings
 
 # * Importing the package registers every model on Base.metadata, which is what autogenerate diffs against.
 from app.models import Base
@@ -16,7 +16,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # ! DATABASE_URL_DIRECT, never DATABASE_URL. The pooled endpoint is PgBouncer in transaction mode, where session-level advisory locks — which Alembic uses — fail *silently* (operations.md, Neon Postgres → Quirks).
-config.set_main_option("sqlalchemy.url", get_settings().database_url_direct)
+# * MigrationSettings, not Settings: a migration needs the database and nothing else, so the dispatchable workflow carries one secret rather than the application's four.
+config.set_main_option("sqlalchemy.url", get_migration_settings().database_url_direct)
 
 target_metadata = Base.metadata
 

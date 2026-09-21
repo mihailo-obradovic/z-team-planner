@@ -52,10 +52,7 @@ class Settings(BaseSettings):
     @field_validator("database_url", "database_url_direct")
     @classmethod
     def _driver_is_explicit(cls, value: str, /) -> str:
-        if not value.startswith(_REQUIRED_DRIVER):
-            msg = f"must start with {_REQUIRED_DRIVER!r} — spell the driver explicitly"
-            raise ValueError(msg)
-        return value
+        return _require_explicit_driver(value)
 
     @model_validator(mode="after")
     def _refuse_emulator_outside_development(self) -> Settings:
@@ -103,6 +100,39 @@ class Settings(BaseSettings):
         return self
 
 
+class MigrationSettings(BaseSettings):
+    """What Alembic reads — the direct endpoint, and deliberately nothing else.
+
+    A schema change touches the database and no other system, so `Settings` is the
+    wrong shape for it: requiring the Firebase credential to run a migration is how a
+    private key ends up in a CI job that authenticates nobody. Migrations still read
+    through this module rather than off `os.environ`, because the driver check below
+    is exactly as load-bearing here as it is for the application (`architecture.md`,
+    Configuration And Secrets).
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # ! The direct endpoint, never the pooled one. Alembic's advisory lock fails silently against PgBouncer in transaction mode (operations.md, Neon Postgres → Quirks).
+    database_url_direct: str
+
+    @field_validator("database_url_direct")
+    @classmethod
+    def _driver_is_explicit(cls, value: str, /) -> str:
+        return _require_explicit_driver(value)
+
+
+def _require_explicit_driver(value: str, /) -> str:
+    if not value.startswith(_REQUIRED_DRIVER):
+        msg = f"must start with {_REQUIRED_DRIVER!r} — spell the driver explicitly"
+        raise ValueError(msg)
+    return value
+
+
 @lru_cache
 def get_settings() -> Settings:
     """The process-wide settings, resolved once.
@@ -112,3 +142,10 @@ def get_settings() -> Settings:
     """
     # * Every field is populated from the environment, which pyright cannot see.
     return Settings()  # pyright: ignore[reportCallIssue]
+
+
+@lru_cache
+def get_migration_settings() -> MigrationSettings:
+    """The settings Alembic's `env.py` resolves its URL from."""
+    # * Populated from the environment, which pyright cannot see.
+    return MigrationSettings()  # pyright: ignore[reportCallIssue]

@@ -92,3 +92,23 @@ def test_downgrade_removes_the_table(container_env: None) -> None:
         engine.dispose()
     # * Left at head so the ordering of tests in this module cannot strand the database empty.
     command.upgrade(config, "head")
+
+
+@pytest.mark.integration
+def test_migrations_run_without_any_firebase_configuration(
+    container_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # * What the dispatchable migration workflow relies on: it carries the direct URL and
+    # * nothing else, so env.py must never reach for the application's other settings.
+    # * Without this, running a schema change would mean a Firebase private key in CI.
+    from app.core.config import get_migration_settings
+
+    for name in (
+        "DATABASE_URL",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_SERVICE_ACCOUNT_FILE",
+    ):
+        monkeypatch.delenv(name)
+    get_migration_settings.cache_clear()
+
+    command.upgrade(_alembic_config(), "head")
