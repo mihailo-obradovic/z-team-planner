@@ -41,6 +41,7 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
   ```
 
   The terse equivalent `[ "$VERCEL_ENV" != "production" ]` **skips production too**. The API project shipped with it briefly and its first git-triggered production deploy came back `Canceled` with a `0ms` build, which reads like an infrastructure hiccup rather than a config error. A skipped build is not a failed one: nothing goes red, and the old deployment just stays live.
+
 - **Why previews are not turned off in the repository.** `vercel.json`'s `git.deploymentEnabled` takes a bare `false`, which stops production deploying too; its per-branch form would need every future branch listed. The older Ignored Build Step (`[ "$VERCEL_ENV" != "production" ]`, exit 0 to skip) works, but it lets Vercel create the deployment and start the build before aborting it, so the deployments list fills with aborted builds. Both are also read from a project's Root Directory, and once the API project exists both projects are rooted there — see the `vercel.json` note above.
 - **A preview build cannot succeed here even by accident.** The Firebase `NUXT_PUBLIC_*` variables are scoped to Production, so a preview build reaches `nuxt.config.ts`'s `ready` guard with none of them and fails on `Missing required public runtime config`. That is the guard working — a build without config is not a deployable artifact — but it means a stray preview always shows up as a red check rather than a quiet one.
 - **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`. Only the _function_ region is `fra1`; builds still run in `iad1` and that is fine, since no build talks to the database.
@@ -191,10 +192,10 @@ Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<dat
 
 The restore drill is the Neon section's. Two credentials make it possible, and **neither is reachable through GitHub** — a disaster is the wrong moment to discover that recovery depends on the CI provider being up.
 
-| Password-manager entry                       | What it is                                  | Why not CI's                                                             |
-| -------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
-| `z-team-planner backup GPG key`              | the private half, plus the fingerprint      | only the public half is a repository secret, so CI can encrypt, never read |
-| `z-team-planner R2 read-only recovery token` | account id and an S3 key pair, read-only    | CI's token is write-capable and was displayed once; this one cannot delete a backup while restoring it |
+| Password-manager entry                       | What it is                               | Why not CI's                                                                                           |
+| -------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `z-team-planner backup GPG key`              | the private half, plus the fingerprint   | only the public half is a repository secret, so CI can encrypt, never read                             |
+| `z-team-planner R2 read-only recovery token` | account id and an S3 key pair, read-only | CI's token is write-capable and was displayed once; this one cannot delete a backup while restoring it |
 
 Lose the GPG entry and every dump ever taken is unreadable.
 

@@ -3,7 +3,7 @@ name: backup
 on:
   schedule:
     # * 03:00 UTC. Clear of the Thursday 01:00–02:00 Neon maintenance window.
-    - cron: "0 3 * * *"
+    - cron: '0 3 * * *'
   workflow_dispatch:
   # * migrate.yml calls this before touching the schema, so a dispatched migration
   # * always has a dump from minutes earlier rather than from last night.
@@ -30,10 +30,10 @@ jobs:
       DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
       BUCKET: ztp-backups
       # * Matches feature 004's declared retention for personal data held in backups.
-      RETENTION_DAYS: "30"
+      RETENTION_DAYS: '30'
       # ! Neon runs Postgres 18 and pg_dump refuses a server newer than itself. The
       # ! runner's preinstalled client is older, so the matching major is installed below.
-      PG_VERSION: "18"
+      PG_VERSION: '18'
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       # * R2 ignores the region but the SDK demands one.

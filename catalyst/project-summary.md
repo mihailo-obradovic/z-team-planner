@@ -64,8 +64,8 @@ One line per record: type, status, title, link.
 
 Present only when the project has standing cross-cutting domain/method decisions (e.g. "negative values are signal, never clipped") — pre-resolved judgment calls the agent follows and never re-litigates (`references/project-documents.md`). One line each: decision + short rationale. A local decision graduates here when it proves cross-cutting.
 
-| Decision                                                  | Rationale                                                                                                                                                                                                                                   |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decision                                              | Rationale                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Backward compatibility is owed from 21 September 2026 | Stage 2 (decision 007) enabled sign-in on that date, so build documents now exist in accounts and in shared links. A format change from here needs a migration or a decoder for earlier shapes; it can no longer simply be made. Before that date nothing was promised in the wild, which is why earlier formats have neither. |
 
 ## Protected Areas
