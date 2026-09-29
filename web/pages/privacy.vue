@@ -94,7 +94,7 @@
 
         <p>
           The app and its API run on Vercel, the database is on Neon, and
-          encrypted nightly backups are kept on Cloudflare R2.
+          encrypted backups are kept on Cloudflare R2.
         </p>
       </section>
 
