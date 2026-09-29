@@ -105,14 +105,3 @@ No protected area of its own — the backend contracts this layer calls are prot
 ## Verification
 
 Frontend unit suite green (`web/utils/*.spec.ts`). The two-layer chain, wrapper behavior (placeholderData, conditional error wiring), and `onSettled` invalidation traced against source. Composable/service test gaps stand as recorded.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

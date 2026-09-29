@@ -125,14 +125,3 @@ Not role-specific; visibility follows the auth store (feature 004).
 ## Verification
 
 By test: the single `401` retry, and a persistently failing one stopping at two requests rather than recursing; every row of the central policy, the `412` and `422` non-toast paths included, with `WeakSet` dedup; previous data held across a key change; the store's `unknown` start, both resolutions, and actions as its only mutation path. In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request at all, and sign-in issued exactly one call per user-scoped query. All four verbs exit 0. Unverified: sign-in through Google itself. A Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`, which is why feature 007's page is browser-verified. The surfaces built on this layer carry their own evidence — features 007 and 008.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

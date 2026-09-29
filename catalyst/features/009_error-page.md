@@ -114,14 +114,3 @@ The page is itself the error path, so it has none of its own: it takes no input 
 ## Verification
 
 By test (`test/nuxt/error-page.test.ts`): the opted-in heading, both fallbacks, the ignored `statusMessage`, the no-status case, heading-never-equals-supporting-line, and `clearError({ redirect: '/' })`. oxlint, `nuxt typecheck` and oxfmt clean. In a browser against a production build and the real API: `/b/<unknown id>` gave `404` / "Build not found" with the URL still on the share link; `/nonsense` gave `404` / "Page not found" with `/nonsense` nowhere on the page; **Back to the planner** landed on `/` with the planner mounted. Remaining risk: the `500` and no-status branches are proven by test only — nothing in the app raises them today.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

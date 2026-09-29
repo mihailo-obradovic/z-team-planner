@@ -154,14 +154,3 @@ No error states; a predicate that can never be satisfied under the current episo
 ## Verification
 
 `test/unit/hero-notes.test.ts`: every advisory boundary, declaration order, Waterboy's two exclusive notes. `test/nuxt/hero-detail-dialog.test.ts`: a fixture Golem render matches the exact 5-line order; the panel class is identical at zero vs. several advisories. `nuxt typecheck` clean. Live in Chrome: a 4-advisory Golem scrolls with the edge affordance, geometry unchanged from a hero with none.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

@@ -152,14 +152,3 @@ The success model, the slot effects and the illusion lifecycle are exercised cas
 ## Verification
 
 Walked in the browser by the user, who confirmed the Examples against the running app. The responsive layout is verified separately in feature 016.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

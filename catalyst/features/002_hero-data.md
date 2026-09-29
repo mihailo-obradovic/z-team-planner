@@ -100,14 +100,3 @@ Not role-specific.
 ## Verification
 
 All 11 heroes' starting stats programmatically compared against the `context/game-mechanics.md` table — exact match, no extra ids. Power names, descriptions and synergy pairs spot-checked against the reference's Hero Training and Synergy sections. oxlint and vue-tsc pass.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

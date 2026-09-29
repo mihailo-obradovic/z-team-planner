@@ -136,14 +136,3 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 ## Verification
 
 `test/unit/confirmationText.test.ts`, `test/nuxt/tooltip-button.test.ts` and `test/nuxt/input-mode.test.ts` pass, alongside the whole suite, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`. The user tested manually against a dev server, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

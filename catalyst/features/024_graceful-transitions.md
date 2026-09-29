@@ -129,14 +129,3 @@ No failure mode reaches the user: a browser that runs no transition renders the 
 Suite, lint, typecheck and format clean. Walked at 1905 and 375, the Examples table row by row — including a reset running both motions at once, two fast bonus presses re-targeting rather than queueing, and the chip row's neighbours travelling while the arriving or leaving chip holds its own x.
 
 Not covered: Sonar's chip, and a machine with reduced motion set rather than emulated.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

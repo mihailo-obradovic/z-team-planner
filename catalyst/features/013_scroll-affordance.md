@@ -148,14 +148,3 @@ No failure mode reaches the user. A region whose observers never fire renders wi
 `test/unit/scrollEdges.test.ts` covers the edges and the bring-into-view offset; `pnpm typecheck`, `pnpm lint` and `pnpm format:check` clean.
 
 Walked in Chromium from 320×640@2× to 1280×620, reading the computed border colours per region at the top, mid-scroll and the end: every region gave trailing-only, both, then leading-only, and at `end - 0.6px` still read as the end. The mobile ribbon mirrors it horizontally with portraits clipping under the rules. Regions that do not overflow, and regions below the width where their `overflow` applies, carry none; the `UModal` body keeps its own 2px accented border. The stats panel does not overflow at any width for any hero, so its path is covered by the unit suite rather than a live rule. `bringIntoView`'s live evidence is [feature 019](019_roster-follow.md)'s walk, its only caller. The iOS device check is outstanding — no local WebKit.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

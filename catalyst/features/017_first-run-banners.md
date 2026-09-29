@@ -140,14 +140,3 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass.
 
 Remaining risk: at 320 the two banners take roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Shortening the copy is the lever if it annoys.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

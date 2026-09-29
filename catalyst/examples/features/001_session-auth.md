@@ -112,14 +112,3 @@ Not role-specific — no auth endpoint is role-gated; registration cannot set a 
 ## Verification
 
 Backend suite green: `php artisan test` passes including all auth tests; frontend redirect-logic specs pass. Endpoint table, config values, and redirect rules verified line-by-line against the source. `route:cache` succeeds.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

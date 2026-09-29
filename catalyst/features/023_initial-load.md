@@ -141,14 +141,3 @@ Vitest's Nuxt environment mounts client-side and never hydrates, so it cannot pr
 The four cases under Tests pass; suite, typecheck, lint, format and build clean. The built `/` serves the flag, the ring, the withheld wrapper and the head block, and `/privacy` serves none of it.
 
 Walked on the preview and a dev server: the reveal clears every region in one tick, a flag forced on hides `main` while it keeps its height and shows the wash through, and dev `/` loads with no hydration-mismatch warning. The reduced-motion guard and the scripting-disabled undo were read from the built stylesheet and the served HTML.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.
