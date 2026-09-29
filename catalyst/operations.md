@@ -141,17 +141,19 @@ neon branches create --name ci-<sha> --expires-at <rfc3339>   # throwaway CI bra
 
 ### Recovery
 
-Two tiers. Neon's own instant restore covers the last **6 hours** on the Free plan (Launch: up to 7 days) — enough for "undo the last bad migration", not for losing the project. The nightly dump (next section) is the real backup.
+Two tiers. Neon's own instant restore covers the last **6 hours** on the Free plan (Launch: up to 7 days) — enough for "undo the last bad migration", not for losing the project. The dumps in R2 (next section) are the real backup.
 
 Restore from a dump, on a scratch branch first. Fetching the dump uses the read-only recovery token, not CI's (next section).
 
 ```bash
 neon branches create --name restore-test                # or the console, if the CLI stalls
-aws s3api get-object --bucket ztp-backups --key ztp-<date>.sql.gz.gpg ztp-<date>.sql.gz.gpg
-aws s3api get-object --bucket ztp-backups --key ztp-<date>.manifest.json ztp-<date>.manifest.json
+aws s3api get-object --bucket ztp-backups --key ztp-<stamp>.sql.gz.gpg ztp-<stamp>.sql.gz.gpg
+aws s3api get-object --bucket ztp-backups --key ztp-<stamp>.manifest.json ztp-<stamp>.manifest.json
 psql "$SCRATCH_URL" -c 'drop schema public cascade' -c 'create schema public'
-gpg --decrypt ztp-<date>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_STOP=1
+gpg --decrypt ztp-<stamp>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_STOP=1
 ```
+
+**Choose the dump by its manifest, not by its position in the list.** To undo a migration, take the newest dump whose manifest says `"reason": "pre-migration"` and whose `taken_at` precedes the migration — a later nightly dump already holds the migrated schema.
 
 **Empty the scratch branch before restoring.** A Neon branch is a copy of its parent, so it arrives holding the schema already and the dump's `CREATE TABLE` statements collide with it. A real recovery restores into an empty database; a drill that skips the wipe tests nothing.
 
@@ -162,7 +164,7 @@ Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored in
 ### Quirks
 
 - The pooled endpoint is PgBouncer in transaction mode: `SET`, `LISTEN/NOTIFY`, temp tables and session-level advisory locks are unsupported, and **advisory locks fail silently**. Alembic must never see the pooled URL.
-- **`migrate.yml` takes a backup before it migrates**, by calling `backup.yml` rather than copying its steps — a dump taken any other way is one the restore drill has never rehearsed. A failed backup stops the migration. It refuses to run unless the dispatch input is exactly `migrate`, and it only ever goes to `head`: forward-only, so a rollback is a new migration and there is no downgrade path.
+- **`migrate.yml` takes a backup before it migrates**, by calling `backup.yml` rather than copying its steps — a dump taken any other way is one the restore drill has never rehearsed. It passes `reason: pre-migration`, which the manifest records. A failed backup stops the migration. It refuses to run unless the dispatch input is exactly `migrate`, and it only ever goes to `head`: forward-only, so a rollback is a new migration and there is no downgrade path.
 - **One secret, two spellings.** `NEON_DIRECT_URL` is stored as plain `postgresql://` because `pg_dump` rejects anything else; `migrate.yml` rewrites it to `postgresql+psycopg://` for SQLAlchemy and immediately re-masks it. GitHub only masks the exact stored string, so the rewritten one would print in clear text if any step echoed it.
 - **Migrations read `MigrationSettings`, not `Settings`.** That is why the workflow needs one secret instead of the application's four, and why a Firebase key never reaches a job that authenticates nobody.
 - Free-plan computes suspend after 5 minutes idle and this cannot be disabled. A pool that held a socket across the suspend gets `SSL SYSCALL error: EOF detected`; the engine runs `pool_pre_ping=True`, `pool_recycle=240` (not 300 — that races the boundary) and `connect_timeout=10`.
@@ -170,9 +172,9 @@ Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored in
 - Free-plan ceilings: 0.5 GB storage, 10 branches, 100 CU-hours per month. Expired CI branches free their slot; a forgotten `restore-test` branch does not.
 - **`neonctl` can hang rather than fail when its stored token needs refreshing** — no prompt, no error, just a call that never returns. It stalled the stage 2 setup once. The console is the fallback for anything the CLI will not answer, and `neon auth` is the fix.
 
-## Nightly backup (GitHub Actions → Cloudflare R2)
+## Backups (GitHub Actions → Cloudflare R2)
 
-A scheduled workflow runs `pg_dump` against the direct endpoint, encrypts with a repository-secret GPG key, and uploads to a private R2 bucket. Nothing is ever attached as a workflow artifact — this repository is public and artifacts are downloadable by anyone.
+A **backup run** executes `backup.yml` once and leaves one **dump** and one **manifest**. Three things start one, and the manifest's `reason` names which: the schedule (`nightly`), a dispatch of `backup.yml` (`manual`), or `migrate.yml` before it touches the schema (`pre-migration`). The run takes `pg_dump` against the direct endpoint, encrypts with a repository-secret GPG key, and uploads to a private R2 bucket. Nothing is ever attached as a workflow artifact — this repository is public and artifacts are downloadable by anyone.
 
 ### Operate
 
@@ -183,10 +185,10 @@ gh workflow run backup.yml                              # trigger out of schedul
 gh run list --workflow backup.yml --limit 5             # last runs
 export AWS_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com AWS_DEFAULT_REGION=auto
 aws s3api list-objects-v2 --bucket ztp-backups --prefix ztp-   # what is in the bucket
-aws s3api get-object --bucket ztp-backups --key ztp-<date>.sql.gz.gpg ztp-<date>.sql.gz.gpg
+aws s3api get-object --bucket ztp-backups --key ztp-<stamp>.sql.gz.gpg ztp-<stamp>.sql.gz.gpg
 ```
 
-Each night leaves two objects: `ztp-<date>.sql.gz.gpg` and a plaintext `ztp-<date>.manifest.json`. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` rides along, so the manifest also records which revision the dump was taken at.
+Every backup run leaves two objects of its own: `ztp-<stamp>.sql.gz.gpg` and a plaintext `ztp-<stamp>.manifest.json`. The stamp is the run's UTC start to the second, spelled `2026-09-21T103727Z`, so the list sorts chronologically and any number of runs can share a day. Dumps taken before 29 September 2026 carry the date alone; they age out with the rest. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` rides along as a row count: it proves the schema exists, and does not say which revision the dump was taken at.
 
 ### Recovery
 
@@ -205,8 +207,9 @@ Lose the GPG entry and every dump ever taken is unreadable.
 - R2's free tier is far beyond two small tables; the thing that grows is the number of dumps, not their size. Pruning is what keeps it free.
 - **The client's major version must match Neon's server**, which is why the job installs `postgresql-client-18` from PGDG rather than using the runner's own. `pg_dump` refuses a server newer than itself, and the failure names the versions — read it before suspecting the connection.
 - **`NEON_DIRECT_URL` is spelled `postgresql://`, not `postgresql+psycopg://`.** That prefix is SQLAlchemy's; `pg_dump` and `psql` reject it. This is the one place in the project where the bare scheme is correct.
-- Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the previous nights untouched.
+- Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the earlier dumps untouched.
 - The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
+- **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its 03:00 cron, so a nightly dump can land after a same-day migration.
 - **A missing `alembic_version` fails the job on purpose.** A dump of a database with no schema is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for. If this fires, the schema is gone — check `main` before re-running anything.
 
 ## GitHub repository security

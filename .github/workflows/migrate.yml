@@ -36,6 +36,8 @@ jobs:
     needs: guard
     # * The real nightly workflow, not a copy of it: a dump taken any other way is one the restore drill has never rehearsed.
     uses: ./.github/workflows/backup.yml
+    with:
+      reason: pre-migration
     secrets: inherit
 
   migrate:

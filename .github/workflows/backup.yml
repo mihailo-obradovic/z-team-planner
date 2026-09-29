@@ -7,11 +7,18 @@ on:
   workflow_dispatch:
   # * migrate.yml calls this before touching the schema, so a dispatched migration always has a dump from minutes earlier rather than from last night.
   workflow_call:
+    inputs:
+      reason:
+        # * Why the caller wants a dump. It lands in the manifest, so a recovery can pick the pre-migration dump by reading it instead of matching timestamps against migration runs.
+        description: 'Why this dump is being taken: pre-migration'
+        required: false
+        type: string
+        default: ''
 
 # * Nothing from this repository is read: no checkout, no token, no write scope.
 permissions: {}
 
-# * A manual run must never overlap the nightly one — two pg_dumps would wake the same compute and race on the same object names.
+# * A manual run must never overlap the nightly one — two pg_dumps would wake the same compute at once. Object names do not depend on it: every run stamps its own.
 concurrency:
   group: backup
   cancel-in-progress: false
@@ -55,11 +62,34 @@ jobs:
           printf '%s:6:\n' "$FPR" | gpg --batch --import-ownertrust
           echo "GPG_RECIPIENT=${FPR}" >> "$GITHUB_ENV"
 
-      - name: Name today's objects
+      - name: Name this run's objects
+        # ! The stamp carries the time, not the date alone. A day can hold several dumps, and keyed by date each would replace the last. The scheduled run starts hours late, so even one early migration shares its day with a later nightly.
+        env:
+          # * Through env rather than inline, so the input cannot be read as shell.
+          REASON_INPUT: ${{ inputs.reason }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          STAMP=$(date -u +%Y-%m-%d)
+          set -euo pipefail
+          # * One instant, two spellings: the key has no colons so it is safe in a shell, and the manifest's taken_at is the same moment in ISO-8601. Both sort chronologically.
+          now=$(date -u +%s)
+          STAMP=$(date -u -d "@${now}" +%Y-%m-%dT%H%M%SZ)
+          echo "TAKEN_AT=$(date -u -d "@${now}" +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
           echo "DUMP_FILE=ztp-${STAMP}.sql.gz.gpg" >> "$GITHUB_ENV"
           echo "MANIFEST_FILE=ztp-${STAMP}.manifest.json" >> "$GITHUB_ENV"
+          # ! A called workflow sees its caller's event, so a migration and a manual dispatch both arrive as workflow_dispatch. Only the input tells them apart.
+          case "$REASON_INPUT" in
+            '')
+              if [ "$EVENT_NAME" = "schedule" ]; then reason=nightly; else reason=manual; fi
+              ;;
+            pre-migration)
+              reason=pre-migration
+              ;;
+            *)
+              echo "::error::unknown reason '$REASON_INPUT'; the only value a caller may pass is: pre-migration"
+              exit 1
+              ;;
+          esac
+          echo "REASON=${reason}" >> "$GITHUB_ENV"
 
       - name: Dump and encrypt
         run: |
@@ -74,7 +104,7 @@ jobs:
         # * Row counts are what the restore drill compares against, so they must travel with the dump. Counts are not personal data; the manifest stays plaintext.
         run: |
           set -euo pipefail
-          # * A census of every public table, not a hard-coded list: a backup must not start failing because a migration renamed something. query_to_xml is the one way plain SQL can count a table whose name it only learns at runtime. alembic_version rides along, so the manifest also records the revision.
+          # * A census of every public table, not a hard-coded list: a backup must not start failing because a migration renamed something. query_to_xml is the one way plain SQL can count a table whose name it only learns at runtime. alembic_version rides along as a row count, which proves the schema exists and says nothing about which revision it is at.
           counts=$("$PGBIN/psql" "$DATABASE_URL" -Atc \
             "select coalesce(json_object_agg(relname, row_count), '{}'::json)
              from (
@@ -94,18 +124,20 @@ jobs:
           fi
           jq -n \
             --argjson counts "$counts" \
-            --arg taken_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg taken_at "$TAKEN_AT" \
+            --arg reason "$REASON" \
             --arg dump "$DUMP_FILE" \
             --argjson bytes "$(stat -c %s "$DUMP_FILE")" \
-            '{taken_at: $taken_at, dump: $dump, encrypted_bytes: $bytes, rows: $counts}' \
+            '{taken_at: $taken_at, reason: $reason, dump: $dump, encrypted_bytes: $bytes, rows: $counts}' \
             > "$MANIFEST_FILE"
           cat "$MANIFEST_FILE"
 
       - name: Upload to R2
+        # ! A dump is never replaced. If-None-Match makes R2 answer 412 when the key exists, so a collision fails the run instead of silently costing the earlier dump.
         run: |
           set -euo pipefail
-          aws s3api put-object --bucket "$BUCKET" --key "$DUMP_FILE" --body "$DUMP_FILE"
-          aws s3api put-object --bucket "$BUCKET" --key "$MANIFEST_FILE" --body "$MANIFEST_FILE"
+          aws s3api put-object --bucket "$BUCKET" --key "$DUMP_FILE" --body "$DUMP_FILE" --if-none-match '*'
+          aws s3api put-object --bucket "$BUCKET" --key "$MANIFEST_FILE" --body "$MANIFEST_FILE" --if-none-match '*'
 
       - name: Prune dumps past the retention window
         # * Only after a successful upload: a failed dump must never shrink the set.

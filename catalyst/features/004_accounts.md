@@ -92,7 +92,7 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 
 - Identity is Firebase Authentication (Spark plan, Google only — decision 004). The backend validates every token for signature, time bounds, issuer **and** audience through `firebase-admin`; `check_revoked` stays off.
 - The `users` row: `firebase_uid` (key), `google_sub` (captured from `firebase.identities` at first sight), `email`, `display_name`, `created_at`, `last_seen_at`. Copied, not read per request.
-- **Personal data declaration** — fields: the six above. Lawful basis: the user's request for an account (contract). Classification: personal. Retention: until the user deletes the account; a deleted row persists only in the encrypted nightly backups, which are pruned after **30 days**. Non-production environments hold no real user rows — the Firebase emulator and fixture users only.
+- **Personal data declaration** — fields: the six above. Lawful basis: the user's request for an account (contract). Classification: personal. Retention: until the user deletes the account; a deleted row persists only in the encrypted backups, which are pruned after **30 days**. Non-production environments hold no real user rows — the Firebase emulator and fixture users only.
 - `403` never leaks ownership: a build the caller does not own answers `404`.
 - `display_name` mirrors Google and is not editable; no avatar is stored.
 - The first-login offer caps at 50 builds and sends an `Idempotency-Key`; the endpoint's contract is feature 005's.
