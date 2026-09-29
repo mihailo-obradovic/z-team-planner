@@ -1,5 +1,7 @@
 import { useFetchSharedBuild } from '@/services/queries/useSharedQueries';
 
+import type { ErrorPageData } from '@/types/errorPage';
+
 const NOT_FOUND = 404;
 
 // * The shared read behind `/b/{id}`, with its failure made a page-level outcome: a share link that cannot load has nothing else to show (feature 007).
@@ -22,7 +24,12 @@ export function useSharedBuild(id: Ref<string>) {
       return;
     }
 
-    showError(createError({ statusCode, fatal: true }));
+    // * A read that never got an answer has no status, and says so rather than borrow a server's.
+    const data: ErrorPageData | undefined = statusCode
+      ? undefined
+      : { status: 'unknown' };
+
+    showError(createError({ statusCode, data, fatal: true }));
   });
 
   return query;

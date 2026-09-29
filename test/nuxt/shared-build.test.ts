@@ -105,7 +105,7 @@ describe('a shared read that fails', () => {
     return showErrorSpy.mock.calls[0]?.[0] as {
       statusCode?: number;
       fatal?: boolean;
-      data?: { heading?: string };
+      data?: { heading?: string; status?: 'unknown' };
     };
   }
 
@@ -117,6 +117,7 @@ describe('a shared read that fails', () => {
     await vi.waitFor(() => expect(showErrorSpy).toHaveBeenCalledOnce());
     expect(raisedError().statusCode).toBe(503);
     expect(raisedError().fatal).toBe(true);
+    expect(raisedError().data?.status).toBeUndefined();
     // * No opted-in heading, so the page uses its own "Something went wrong" (feature 009).
     expect(raisedError().data?.heading).toBeUndefined();
   });
@@ -139,6 +140,8 @@ describe('a shared read that fails', () => {
 
     await vi.waitFor(() => expect(showErrorSpy).toHaveBeenCalledOnce());
     expect(raisedError().data?.heading).toBeUndefined();
+    // ! Without this the page would show the 500 `createError` defaults to, for a server that never answered.
+    expect(raisedError().data?.status).toBe('unknown');
   });
 
   it('leaves a dead share link to the central policy', async () => {

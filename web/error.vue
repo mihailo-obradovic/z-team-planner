@@ -34,6 +34,8 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app';
 
+import type { ErrorPageData } from '@/types/errorPage';
+
 const props = defineProps<{ error: NuxtError }>();
 
 const NOT_FOUND_LINE =
@@ -41,13 +43,19 @@ const NOT_FOUND_LINE =
 const GENERIC_LINE =
   'Please try again. Anything saved on this device is untouched.';
 
+const errorData = computed(
+  () => props.error?.data as ErrorPageData | undefined
+);
+
 const isNotFound = computed(() => props.error?.statusCode === 404);
 
-const statusCode = computed(() => props.error?.statusCode || null);
+const statusCode = computed(() =>
+  errorData.value?.status === 'unknown' ? null : props.error?.statusCode || null
+);
 
 const heading = computed(
   () =>
-    (props.error?.data as { heading?: string } | undefined)?.heading ||
+    errorData.value?.heading ||
     (isNotFound.value ? 'Page not found' : 'Something went wrong')
 );
 
