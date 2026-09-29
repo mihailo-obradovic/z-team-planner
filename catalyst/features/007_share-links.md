@@ -16,7 +16,7 @@ An account build shares by a **live** link: `/b/{id}` always shows the owner's c
 
 | Input        | Type                | Source         | Constraints                                             |
 | ------------ | ------------------- | -------------- | ------------------------------------------------------- |
-| `{id}`       | UUIDv4 path segment | the share link | unguessable; unknown or deleted → `404`                 |
+| `{id}`       | UUIDv4 path segment | the share link | unguessable; unknown, deleted or malformed → `404`      |
 | bearer token | —                   | —              | **never** read: the only route with no `CurrentUserDep` |
 | caller IP    | socket peer         | the request    | the limiter's key; behind a proxy, the proxy            |
 
@@ -68,9 +68,11 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 | --------------------------------------------- | -------------------------------------------------- | ------------------------------- |
 | `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route       |
 | `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed    |
+| `GET /shared/not-a-uuid`                      | `404 not_found`, the same body                     | never a `422` naming the id     |
 | `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                 |
 | open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                                 |
 | open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
+| open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any      |
 | **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005)    |
 | **Save a copy** signed out                    | a local save                                       | feature 001                     |
 | **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
@@ -82,7 +84,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Business Rules
 
 - **Exposure**: id, name, document and `updated_at` only — never `owner_id`, never `created_at`.
-- **Access control** is the unguessable id and nothing else. No ownership check exists to fail, so there is no `403`: unknown, deleted and someone else's are one answer.
+- **Access control** is the unguessable id and nothing else. No ownership check exists to fail, so there is no `403`: unknown, deleted and someone else's are one answer. A malformed id joins them — the route takes the segment as text, so a mistyped link is a `404` too and never a `422`.
 - **Stopgap rate limit**: an in-process token bucket on `/shared/*`, 60 requests per minute per caller, stdlib only. It counts **per worker**, so N workers allow N × 60 and serverless instances make it inert in production (decision 007), and it keys on the socket peer, which behind a proxy is the proxy. Recorded in `operations.md`.
 - **Client-rendered** (`ssr: false` for `/b/**`): the page reads a per-request id at view time, and prerendering or server-rendering it would risk serving one viewer's build to the next.
 - Query key `['shared','get',id]`, no `enabled` gate on auth — the read works signed out, which is the point — and nothing here invalidates anything.
@@ -124,7 +126,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Tests
 
-- `tests/routes/test_shared.py`: the public shape carries no owner; `404` for both deleted and never-existed; the stopgap `429` on the 61st call.
+- `tests/routes/test_shared.py`: the public shape carries no owner; `404` for deleted, never-existed and malformed alike; the stopgap `429` on the 61st call.
 - `tests/utils/test_ratelimit.py`: capacity, refill, eviction and thread safety, against an injected clock rather than real sleeping.
 - `test/nuxt/shared-build.test.ts`: the page's three states — pending skeleton, build, 404.
 

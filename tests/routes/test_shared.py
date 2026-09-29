@@ -78,11 +78,14 @@ def test_an_unknown_id_is_the_same_answer(api: Api) -> None:
     assert api.client.get(f"{SHARED}/{uuid4()}").status_code == 404
 
 
-def test_an_id_that_is_not_a_uuid_is_refused(api: Api) -> None:
+def test_an_id_that_is_not_a_uuid_is_the_same_answer(api: Api) -> None:
+    unknown = api.client.get(f"{SHARED}/{uuid4()}")
+
     response = api.client.get(f"{SHARED}/not-a-uuid")
 
-    assert response.status_code == 422
-    assert response.json()["error"]["details"][0]["path"] == "build_id"
+    # ! Not a 422. A mistyped link and a dead one are one answer to a visitor, and a 422 here left the share page with nothing to render.
+    assert response.status_code == 404
+    assert response.json() == unknown.json()
 
 
 def test_too_many_reads_from_one_caller_are_refused(api: Api) -> None:
