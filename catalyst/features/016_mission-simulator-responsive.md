@@ -116,9 +116,9 @@ Not applicable — layout only, no failure modes of its own.
 
 ## Dependencies
 
-- Feature 015, whose layout is this feature's widest tier and whose panels it reflows.
+- Feature 015, whose layout is this feature's widest tier and whose panels it reflows. Read it before changing this feature.
 - Feature 014's `SynergyPairCard`, the precedent for container queries over viewport breakpoints here.
-- Design-system annex §14.2 and §14.3.
+- Design-system annex §14.2 and §14.3, updated in the same change when a threshold moves.
 - Feature 018 (hints and confirmations): the Copy marker's common-symbol status. Width tiers decide by room, not by device, and are not input-capability detection.
 
 ## Open Questions
@@ -126,19 +126,8 @@ Not applicable — layout only, no failure modes of its own.
 ## Tests
 
 - No unit tests: this feature changes no model, no state and no serialized value.
-- A measured browser walk is the verification, at the widths named below.
+- A measured browser walk is the verification, at the widths named below. A change re-runs it for the thresholds it touches, with both probes.
 
 ## Verification
 
 Measured in Chromium against the dev server. **Six real viewports** — 1280 / 1000 / 819 / 600 / 490 / 320: `scrollWidth === clientWidth` on the tab container and the document, nothing wider than the viewport, nothing inside a panel past that panel's border box, and layout per tier as the Examples state. **A container sweep** from 1240 down to 276 in 2px steps, both toggle views: no panel overflow, no grid wider than its container, no label cell squeezed under its own text, no control under 24 × 24; the math panel splits at a 726 container and not at 725, the Conditions wordmarks hold at 320 and go at 318. Both probes are needed — one against the viewport misses a panel clipping its own content, one against the border box misses a `1fr` cell crushing its text.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document and feature 015.
-2. Identify which threshold or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Re-run the measured walk for the thresholds touched, with both probes.
-5. Update this document and the design-system annex in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

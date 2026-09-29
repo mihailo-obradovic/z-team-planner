@@ -106,14 +106,3 @@ None reaches the user. A broken template is a build-time error in Nuxt, not a ru
 ## Verification
 
 Suite, typecheck, lint, format and production build clean. The dev server and the built server both put the template beside the app root on `/b/{id}`; the prerendered `/` and `/privacy` carry none of it. With scripts blocked the splash paints the ground edge to edge with the annex's ring — 32px, 4px stroke, primary over primary at 25%, once per 1.4s linear — centred, with no text and an empty app root; with reduced motion emulated the ring is drawn and its animation reads `none`. With scripts allowed the loader node is gone after load and the page's own state shows.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

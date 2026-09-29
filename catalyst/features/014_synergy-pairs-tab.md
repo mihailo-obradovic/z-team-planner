@@ -124,14 +124,3 @@ Not role-specific.
 By test (`vue-tsc` and `oxlint` clean): `test/nuxt/synergy-pairs.test.ts` proves the derived card set and the conditional swap, card values matching `getPairCombinedStats`, live update on a shared toggle, and the portrait click; `pair-stats.test.ts` the clamp-before-sum, the `min(slots, 2)` deduction, the Sonar swap on either side; `monster-form.test.ts` the shared form.
 
 Walked live in Chrome: the default setup renders 4 cards; toggling Golem's power on a synergy card pressed the overview card's chip in the same tick and back; a portrait click opened Golem's dialog with the synergy tab active under it and after close. The reflow was measured from 1400 down to 525px: stacking, spread, content-hug and desktop bands all behave, and the frame cap flips at exactly the width the row wraps. Remaining risk: WebKit is unverified locally — the container query needs a device check.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

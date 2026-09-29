@@ -121,14 +121,3 @@ Not role-specific.
 ## Verification
 
 By test: every case under Tests, including Combat 6 yielding +1 / +3 / +4 — the value where a floored tier and a repeated per-slot increment disagree. Walked live in Chrome: training Spread Thin adds a fourth chip and no more; clicking it stepped the card through `+1 slot (+25%)` → `+2 slots (+50%)` → `+3 slots (+75%)` with every stat matching the formula, the ones that never move included; the dialog's Effects row named the expansion while the Golem pair total counted him at two slots against his own rows' three, with the deduction note shown only while the power contributed. Frontend and backend validation suites, `vue-tsc` and `oxlint` pass.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

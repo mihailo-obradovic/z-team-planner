@@ -120,14 +120,3 @@ Not role-specific.
 ## Verification
 
 The Examples table walked live in Chrome: shared-mode open restored flight and episode cut with localStorage untouched; "Save as mine" persisted byte-identical data, stripped the URL param and exited shared mode; reload restored the active build; a stat edit raised the unsaved-changes badge and the beforeunload prompt; garbage and `v:2` params were rejected without error. Format omission, shaping, round trip and the URL codec are pinned by test. oxlint, vue-tsc and vitest pass.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

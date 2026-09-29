@@ -145,14 +145,3 @@ In a browser at 1680×1000: the rail matched the overview grid; raising Combat m
 Horizontal overflow is checked per engine as a scan for any element whose `scrollWidth` exceeds its `clientWidth`; the roster ribbon is the one permitted result. On WebKit a `viewBox`ed SVG has a min-content width of its intrinsic size where Chromium gives 0, so `grid-cols-[minmax(0,1fr)]` plus `min-w-0` on each grid item and on the radar SVG is what keeps the `overflow-y-auto` column from scrolling sideways. At 320px the hero card's portrait column shrinks rather than holding its fixed width.
 
 Not covered: `prefers-reduced-motion`. Notes are [022](022_hero-notes.md)'s.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

@@ -143,14 +143,3 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 By test: the six `401` cases and the emulator guard; `/me`'s shape and scoped `build_count`; `DELETE /me`'s cascade, its `503` with nothing deleted, and Firebase-before-row ordering; the popup outcomes; the store and the `401` refresh-retry.
 
 In a browser against the API, the Neon dev branch and the Auth emulator: the header resolved with no reflow; a new account created its row with `google_sub` captured; the offer kept 2 of 4 local builds, left all 4 local, never returned, and stayed unspent after an offline failure; **Delete account** named the count, took the builds and the Firebase user, and turned a live share link into a `404`. Not walked live: a Firebase outage, or a real Google consent screen.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

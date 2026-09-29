@@ -135,14 +135,3 @@ Every status goes through feature 006's central policy; this feature only decide
 ## Verification
 
 By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one; dirty tracking re-baselined on open and on save, and re-selecting the open build reloading its stored document (`build-manager.test.ts`, `build-manager-reopen.test.ts`). In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, `409` toasted the server's own limit message, and the first-login offer imported two of four local builds with one summary toast.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

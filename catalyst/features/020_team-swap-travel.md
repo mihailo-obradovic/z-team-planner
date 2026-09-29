@@ -129,14 +129,3 @@ No failure mode reaches the user: a browser that runs no transition renders the 
 `test/nuxt/mission-team.test.ts` passes: the hero's own DOM node lands in the new slot, an empty slot is rebuilt where the gap now is rather than following it, the post-swap slots are what the action alone produces, and focus moves to the card's other arrow only when the pressed one lands disabled. Suite, lint, format and typecheck clean.
 
 Walked at 1440 and 320, the Examples table row by row — including a Golem swap, a Prism swap dissolving her illusion, an interrupted press, four cards laid out at a constant row width throughout, and a reduced-motion pass.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

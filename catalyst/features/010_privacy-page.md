@@ -141,14 +141,3 @@ By test (`privacy-page`, `privacy-link`, `first-run-banners`): the unnamed-maint
 Live in Chrome, signed out: the **Privacy** line is the last element of every tab panel, the server-rendered `/` links to `/privacy` before hydration, and the line follows overflowing content to the scroll end or sits at the region's bottom when it does not. `/privacy` made zero API calls and rendered the date, the contact link and a 44px **Back to the planner**; at 320 nothing crosses the viewport. `/b/{id}` carried the line last and an unknown route rendered "Page not found" with no privacy link. Entering the deployed URL in the consent screen is stage 2's external step (decision 007).
 
 Route fade, live in Chrome: the planner was cut and `/privacy` faded in over the tab fade's 250ms, at its top; **Back to the planner** cut the policy and the planner's tab content faded in, once. The planner page had two root nodes, which mounted `/privacy` blank until it was wrapped. Reduced motion is by inspection: the tab fade's guard cancels the animation.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

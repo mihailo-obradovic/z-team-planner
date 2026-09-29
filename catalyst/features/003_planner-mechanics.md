@@ -137,14 +137,3 @@ Not role-specific.
 ## Verification
 
 Walked live in Chrome from 1600 down to 320: no horizontal overflow at any width, every hero card one identical box that does not reflow through reveal → trainable-2 → Supernova, the flight glyph present for exactly the `HERO_FLIGHT` five and absent on a medicated Phenomaman. `+1 bonus` left the level unchanged until the point was allocated, card and dialog agreeing; `Reset all trainings` zeroed all three budgets in one click and disabled itself. Pair markers sit between their cards at every tier and the recruit heading is a level-2 heading. Rules cross-checked against `context/game-mechanics.md`; oxlint, vue-tsc and vitest pass. Known gap: `HeroCard`'s steppers, per-hero reset and bonus `+` are unnamed.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

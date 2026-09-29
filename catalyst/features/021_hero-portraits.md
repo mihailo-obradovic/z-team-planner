@@ -133,14 +133,3 @@ Not role-specific.
 The three test files under Tests pass; `pnpm lint`, `pnpm typecheck` and `pnpm format:check` clean. Production walk: the markup requests only the declared widths at their densities and the wash's `2560`, all at `q=90`; a card's 2x returns `image/avif` with `x-vercel-cache` MISS then HIT, and `image/webp` without AVIF in `Accept`; browsers get `max-age=0, must-revalidate` under the one-year edge TTL; Coupé's 460px master answers `w=512` at 460×460 — no upscale; the module's own `sm`…`2xl` widths each return 400.
 
 Remaining risk: the Hobby image quota is not yet read into `operations.md`. Volume is bounded and cached for a year, but the first month is worth a look.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

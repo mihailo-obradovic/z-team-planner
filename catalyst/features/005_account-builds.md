@@ -134,14 +134,3 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 ## Verification
 
 All verbs exit 0; the API suite runs against real PostgreSQL and the Examples table is covered row by row. Some forty mutations were run against the validation rules; the six that survived became tests. The endpoints were walked live against the Neon dev branch and the Auth emulator. Remaining risk: no sign-in through Google itself. The public read is feature 007's evidence.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

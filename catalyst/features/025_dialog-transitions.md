@@ -148,14 +148,3 @@ No failure mode reaches the user. A browser that runs no transition renders the 
 ## Verification
 
 Suite, typecheck, lint and format clean. Walked at 1500 and 375, the Examples table row by row — including the name's direction agreeing with the rail both ways and on x at 375, an interrupted click measuring from the arriving hero, advisories firing and clearing without a line jumping, the stats column held still while every figure counted, and a reduced-motion pass where the transforms read `none` while the opacities still cross.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

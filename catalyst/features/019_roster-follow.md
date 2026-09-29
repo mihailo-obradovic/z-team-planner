@@ -124,14 +124,3 @@ No failure mode reaches the user. A strip that has not laid out, a missing tile,
 `test/nuxt/roster-follow.test.ts` against a `ScrollRegion` stub that records what it was asked to bring into view: opening asks both strips with the marked tile; a hero change asks with the new tile and never the one it replaced; the synergy partner control follows; a click follows the clicked tile even when it is already the open hero; nothing is asked when no hero is open. `test/unit/scrollEdges.test.ts` covers the arithmetic (feature 013). Lint, format and typecheck clean.
 
 Live in Chrome, rail at 1440×520 and ribbon at 320×640@2×: opening on the last hero scrolls the strip to its maximum with the tile whole — the clearance giving way at the end of the range; the partner control moved to an off-screen hero and the strip followed; a clipped tile scrolled by exactly its clipped amount plus the 8px gap; clicking an already-whole tile moved nothing. Throughout, the dialog's own scrolling column stayed at 0 and the page never scrolled sideways. Under emulated reduced motion the same click lands at the same maximum on the first sample and stays there; with the preference off it glides.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.

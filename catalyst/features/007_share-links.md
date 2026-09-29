@@ -131,14 +131,3 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Verification
 
 By test: the public shape carrying no owner and both its `404`s, against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the page's three states. In a browser against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it; **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. `/b/[id]` is browser-verified rather than component-verified because a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`. Remaining risk: the limiter is per process and inert in production.
-
-## Agent Change Rules
-
-Before changing this feature, an agent must:
-
-1. Read this feature document.
-2. Identify which documented behavior or invariant is affected.
-3. Confirm the Status is `Approved` (or later), or ask the user to approve the document first.
-4. Add or update tests for the changed behavior.
-5. Update this document in the same change if the intended behavior changes.
-6. Update `project-summary.md` if the feature summary or status changes.
