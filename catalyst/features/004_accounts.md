@@ -101,7 +101,7 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 
 - Google account with no display name → `display_name` falls back to the email's local part.
 - A user's Google email changes → the row updates on the next sign-in (the key is the uid, not the email).
-- Deletion while a share link is open in another tab → that tab's next request answers 404; the viewer sees "this build no longer exists".
+- Deletion while a share link is open in another tab → that tab's next request answers 404; the viewer sees "Build not found", which never says the build existed (feature 009).
 - Sign-in popup blocked by the browser → toast explaining it, no redirect fallback.
 
 ## Invariants
