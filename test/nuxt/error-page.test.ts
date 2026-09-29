@@ -13,7 +13,7 @@ const ErrorPage = (await import('@/error.vue')).default;
 async function mountWith(input: {
   statusCode?: number;
   statusMessage?: string;
-  data?: { heading?: string };
+  data?: { heading?: string; status?: 'unknown' };
 }) {
   return await mountSuspended(ErrorPage, {
     props: { error: createError(input) }
@@ -59,10 +59,12 @@ describe('the error page', () => {
     expect(page.text()).toContain('500');
   });
 
-  it('renders no code and the generic wording when there is no status', async () => {
-    const page = await mountWith({});
+  // ! `createError` turns a missing status into 500, so an absent `statusCode` cannot be observed here. The caller has to say the status is unknown, or a read that never reached a server is reported as a server fault.
+  it('renders no code when the caller says the status is unknown', async () => {
+    const page = await mountWith({ data: { status: 'unknown' } });
 
     expect(page.find('h1').text()).toBe('Something went wrong');
+    expect(page.text()).not.toContain('500');
     expect(page.text()).not.toContain('undefined');
   });
 

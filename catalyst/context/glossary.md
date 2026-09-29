@@ -19,6 +19,14 @@ A **local build** and a **cloud build** are never the same object, even when the
 
 A **shared build** is not a fifth stored thing — it is a projection of one cloud build, and it disappears when that cloud build is deleted.
 
+## Links
+
+**Share link** — the live link to a shared build. It always shows the owner's current build document, so an edit the owner saves is what the next visitor sees, with no new link.
+
+**Snapshot link** — a link carrying a build document inside itself. It shows what was shared at the moment of sharing and never changes; it needs no account and no cloud build.
+
+**Dead share link** — a share link that shows no shared build: the cloud build was deleted, never existed, or the link is malformed. The three are indistinguishable to the visitor by design. A share link that failed to load is not dead — the shared build may be there, and trying again may show it.
+
 ## Planner
 
 **Planner state** — the live, in-memory roster the user is manipulating. Exactly one exists at a time. Every build above is planner state at a moment, written down; loading any of them replaces it.

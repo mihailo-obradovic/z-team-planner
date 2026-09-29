@@ -76,15 +76,14 @@ import PrivacyLink from '@/components/shell/PrivacyLink.vue';
 import HeroCard from '@/components/hero/HeroCard.vue';
 
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
-import { useFetchSharedBuild } from '@/services/queries/useSharedQueries';
 
 const route = useRoute();
 const toast = useToast();
 
 const id = computed(() => route.params.id as string);
 
-// * A 404 becomes the error page rather than a toast — the central policy routes it that way for `/b/…` because a dead share link is a page-level outcome (feature 007).
-const { data: sharedBuild, isPending } = useFetchSharedBuild(id);
+// * Every failure of this read ends on the error page, so the template needs no third branch: a dead share link through the central policy, anything else through `useSharedBuild` (feature 007).
+const { data: sharedBuild, isPending } = useSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 const { synergyPairColumns } = useHeroPlanner();

@@ -16,7 +16,7 @@ An account build shares by a **live** link: `/b/{id}` always shows the owner's c
 
 | Input        | Type                | Source         | Constraints                                             |
 | ------------ | ------------------- | -------------- | ------------------------------------------------------- |
-| `{id}`       | UUIDv4 path segment | the share link | unguessable; unknown or deleted → `404`                 |
+| `{id}`       | UUIDv4 path segment | the share link | unguessable; unknown, deleted or malformed → `404`      |
 | bearer token | —                   | —              | **never** read: the only route with no `CurrentUserDep` |
 | caller IP    | socket peer         | the request    | the limiter's key; behind a proxy, the proxy            |
 
@@ -36,7 +36,7 @@ In scope:
 - `GET /api/v1/shared/{id}` — the public read, its shape and its `404`.
 - The stopgap rate limit on `/shared/*`.
 - **Share** copying the live link for an account build.
-- `/b/[id].vue`: pending skeleton, read-only planner, **Save a copy**, 404 page, `noindex`.
+- `/b/[id].vue`: pending skeleton, read-only planner, **Save a copy**, the error page for a dead link or a failed read, `noindex`.
 - The service and query composable behind that page.
 
 Non-goals:
@@ -56,6 +56,8 @@ Non-goals:
 - **Save a copy** creates an account build when signed in (`POST /builds`) and falls back to feature 001's local save when not. Either way the viewer gets their own copy; the owner's is untouched.
 - The owner opening their own link sees the same read-only page; editing happens through **My builds**.
 - Once the owner deletes the build the link is the 404 page, which never says the build existed.
+- A read that fails for any other reason — the limit, a server fault, no answer at all — is the error page too, in its generic wording (feature 009). The page never renders an empty region.
+- A read that fails behind a build already on screen changes nothing: what is rendered stays, silently.
 - Never indexed (`robots: noindex, nofollow`): an unlisted id is the only thing keeping it private.
 
 ## Roles And Access
@@ -68,9 +70,14 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 | --------------------------------------------- | -------------------------------------------------- | ------------------------------- |
 | `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route       |
 | `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed    |
+| `GET /shared/not-a-uuid`                      | `404 not_found`, the same body                     | never a `422` naming the id     |
 | `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                 |
 | open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                                 |
 | open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
+| open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any      |
+| open `/b/<id>`, the read answers `503`        | the error page: `503`, "Something went wrong"      | no toast                        |
+| open `/b/<id>`, the API unreachable           | the error page, "Something went wrong"             | no toast                        |
+| a build on screen, a later read answers `503` | the build stays; no page, no toast                 | nothing to lose by keeping it   |
 | **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005)    |
 | **Save a copy** signed out                    | a local save                                       | feature 001                     |
 | **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
@@ -82,7 +89,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Business Rules
 
 - **Exposure**: id, name, document and `updated_at` only — never `owner_id`, never `created_at`.
-- **Access control** is the unguessable id and nothing else. No ownership check exists to fail, so there is no `403`: unknown, deleted and someone else's are one answer.
+- **Access control** is the unguessable id and nothing else. No ownership check exists to fail, so there is no `403`: unknown, deleted and someone else's are one answer. A malformed id joins them — the route takes the segment as text, so a mistyped link is a `404` too and never a `422`.
 - **Stopgap rate limit**: an in-process token bucket on `/shared/*`, 60 requests per minute per caller, stdlib only. It counts **per worker**, so N workers allow N × 60 and serverless instances make it inert in production (decision 007), and it keys on the socket peer, which behind a proxy is the proxy. Recorded in `operations.md`.
 - **Client-rendered** (`ssr: false` for `/b/**`): the page reads a per-request id at view time, and prerendering or server-rendering it would risk serving one viewer's build to the next.
 - Query key `['shared','get',id]`, no `enabled` gate on auth — the read works signed out, which is the point — and nothing here invalidates anything.
@@ -103,13 +110,13 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Error Handling
 
 - `404` → the error page, not a toast: a dead share link is a page-level outcome, and the central policy (feature 006) routes `/b/…` that way specifically.
-- `429` → a toast naming the wait. `503` and `500` follow feature 005's envelope.
-- A response failing its Zod schema toasts generically and logs the issue (feature 006) — not a user error.
+- Every other failure of the read — `429`, `500`, `503`, no answer, a response failing its Zod schema (still logged, feature 006) — → the error page in its generic wording, raised by `useSharedBuild` and only while no build is on screen. The read silences its own toasts, so a `429` no longer names the wait.
+- Two raisers, deliberately: the central policy keys on the route path, and **Save a copy** posts from the same path, so sending more statuses to a page there would catch a failed save too.
 
 ## Entry Points
 
 - API: `app/routes/shared.py` (the route and its limiter dependency), `app/utils/ratelimit.py`, `app/repositories/builds.py` (`get_public`), `app/schemas/builds.py` (`PublicBuildOut`).
-- Web: `web/pages/b/[id].vue`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
+- Web: `web/pages/b/[id].vue`, `web/composables/build/useSharedBuild.ts`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
 - `nuxt.config.ts`: the `/b/**` route rule that turns SSR off.
 
 ## Dependencies
@@ -124,10 +131,10 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Tests
 
-- `tests/routes/test_shared.py`: the public shape carries no owner; `404` for both deleted and never-existed; the stopgap `429` on the 61st call.
+- `tests/routes/test_shared.py`: the public shape carries no owner; `404` for deleted, never-existed and malformed alike; the stopgap `429` on the 61st call.
 - `tests/utils/test_ratelimit.py`: capacity, refill, eviction and thread safety, against an injected clock rather than real sleeping.
-- `test/nuxt/shared-build.test.ts`: the page's three states — pending skeleton, build, 404.
+- `test/nuxt/shared-build.test.ts`: the pending skeleton; a failed read raising the error page with its status and no toast; a dead link left to the central policy; a rendered build kept when a later read fails.
 
 ## Verification
 
-By test: the public shape carrying no owner and both its `404`s, against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the page's three states. In a browser against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it; **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. `/b/[id]` is browser-verified rather than component-verified because a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`. Remaining risk: the limiter is per process and inert in production.
+By test: the public shape carrying no owner and its three `404`s — the malformed id's regression test failed with `422` before the fix — against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the pending skeleton, and the failed read's four outcomes, three of which failed before the fix. In a browser against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it; **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. `/b/[id]` is browser-verified rather than component-verified because a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`. On local dev after the fix: `/b/stage2probe` gave "Build not found", a well-formed id with the API stopped gave "Something went wrong" with no code, and a real build rendered read-only. Remaining risk: the limiter is per process and inert in production; a rendered build surviving a failed later read is proven by test only.

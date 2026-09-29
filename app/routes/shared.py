@@ -37,11 +37,20 @@ def rate_limited(request: Request) -> None:
     dependencies=[Depends(rate_limited)],
     summary="Read a shared build",
 )
-def read_shared_build(session: DbSession, build_id: UUID) -> PublicBuildOut:
-    build = builds_repo.get_public(session, build_id)
+def read_shared_build(session: DbSession, build_id: str) -> PublicBuildOut:
+    # ! A plain string, not `UUID`: FastAPI would answer a malformed id with a 422 naming the parameter, and a mistyped link must be the same answer as a dead one (feature 007).
+    parsed_id = parse_build_id(build_id)
+    build = builds_repo.get_public(session, parsed_id) if parsed_id else None
 
     if build is None:
-        # * The same answer for never-existed and deleted: a share link to a build its owner removed is simply gone.
+        # * The same answer for malformed, never-existed and deleted: a share link that shows no build is simply gone.
         raise AppError(ErrorCode.NOT_FOUND, "Build not found.", status_code=404)
 
     return PublicBuildOut.model_validate(build)
+
+
+def parse_build_id(build_id: str) -> UUID | None:
+    try:
+        return UUID(build_id)
+    except ValueError:
+        return None
