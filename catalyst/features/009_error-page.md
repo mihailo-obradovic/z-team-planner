@@ -10,7 +10,7 @@ Easy
 
 ## Purpose
 
-The app's own fatal-error page, replacing Nuxt's default: one screen, in the project's design system, that says what went wrong at the level the caller specified and offers exactly one way out. It serves both a dead share link (feature 007, with the wording feature 006 supplies) and an unknown route, where that wording would be wrong.
+The app's own fatal-error page, replacing Nuxt's default: one screen, in the project's design system, that says what went wrong at the level the caller specified and offers exactly one way out. It serves a dead share link (feature 007, with the wording feature 006 supplies), a share link whose read failed, and an unknown route, where the dead link's wording would be wrong.
 
 ## Inputs
 
@@ -65,6 +65,7 @@ Not role-specific. The page renders identically signed in and signed out, and re
 | `/b/<deleted id>` → feature 006's `showNotFoundPage()` | `404`, heading "Build not found", the not-there line, one action                       | heading opted into via `data`          |
 | `/nonsense` (no such route)                            | `404`, heading "Page not found", the not-there line, and no `/nonsense` anywhere on it | Nuxt's `statusMessage` is ignored      |
 | `createError({ statusCode: 500 })`                     | `500`, heading "Something went wrong", the retry line                                  |                                        |
+| `/b/<id>` whose read answered `503` (feature 007)      | `503`, heading "Something went wrong", the retry line                                  | raised with no opted-in heading        |
 | an error with no `statusCode`                          | no code shown, heading "Something went wrong", the retry line                          | must not render "undefined"            |
 | click "Back to the planner"                            | `/` renders the planner; local builds and the active build are as they were            | `clearError` with a redirect           |
 | a `404` on `/b/{id}` reached directly                  | the address bar still shows `/b/{id}`                                                  | `fatal: true` renders, never navigates |
@@ -98,6 +99,7 @@ The page is itself the error path, so it has none of its own: it takes no input 
 
 - `web/error.vue`: the page. Nuxt renders it for any fatal error, replacing the route.
 - `web/composables/data/useApiErrorWatcher.ts`: the one caller that raises a `404` deliberately (feature 006's `showNotFoundPage`), and the source of "Build not found".
+- `web/composables/build/useSharedBuild.ts`: raises every other failure of the shared read, with its status and no heading (feature 007).
 
 ## Dependencies
 

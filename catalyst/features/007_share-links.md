@@ -36,7 +36,7 @@ In scope:
 - `GET /api/v1/shared/{id}` — the public read, its shape and its `404`.
 - The stopgap rate limit on `/shared/*`.
 - **Share** copying the live link for an account build.
-- `/b/[id].vue`: pending skeleton, read-only planner, **Save a copy**, 404 page, `noindex`.
+- `/b/[id].vue`: pending skeleton, read-only planner, **Save a copy**, the error page for a dead link or a failed read, `noindex`.
 - The service and query composable behind that page.
 
 Non-goals:
@@ -56,6 +56,8 @@ Non-goals:
 - **Save a copy** creates an account build when signed in (`POST /builds`) and falls back to feature 001's local save when not. Either way the viewer gets their own copy; the owner's is untouched.
 - The owner opening their own link sees the same read-only page; editing happens through **My builds**.
 - Once the owner deletes the build the link is the 404 page, which never says the build existed.
+- A read that fails for any other reason — the limit, a server fault, no answer at all — is the error page too, in its generic wording (feature 009). The page never renders an empty region.
+- A read that fails behind a build already on screen changes nothing: what is rendered stays, silently.
 - Never indexed (`robots: noindex, nofollow`): an unlisted id is the only thing keeping it private.
 
 ## Roles And Access
@@ -73,6 +75,9 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 | open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                                 |
 | open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
 | open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any      |
+| open `/b/<id>`, the read answers `503`        | the error page: `503`, "Something went wrong"      | no toast                        |
+| open `/b/<id>`, the API unreachable           | the error page, "Something went wrong"             | no toast                        |
+| a build on screen, a later read answers `503` | the build stays; no page, no toast                 | nothing to lose by keeping it   |
 | **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005)    |
 | **Save a copy** signed out                    | a local save                                       | feature 001                     |
 | **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
@@ -105,13 +110,13 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Error Handling
 
 - `404` → the error page, not a toast: a dead share link is a page-level outcome, and the central policy (feature 006) routes `/b/…` that way specifically.
-- `429` → a toast naming the wait. `503` and `500` follow feature 005's envelope.
-- A response failing its Zod schema toasts generically and logs the issue (feature 006) — not a user error.
+- Every other failure of the read — `429`, `500`, `503`, no answer, a response failing its Zod schema (still logged, feature 006) — → the error page in its generic wording, raised by `useSharedBuild` and only while no build is on screen. The read silences its own toasts, so a `429` no longer names the wait.
+- Two raisers, deliberately: the central policy keys on the route path, and **Save a copy** posts from the same path, so sending more statuses to a page there would catch a failed save too.
 
 ## Entry Points
 
 - API: `app/routes/shared.py` (the route and its limiter dependency), `app/utils/ratelimit.py`, `app/repositories/builds.py` (`get_public`), `app/schemas/builds.py` (`PublicBuildOut`).
-- Web: `web/pages/b/[id].vue`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
+- Web: `web/pages/b/[id].vue`, `web/composables/build/useSharedBuild.ts`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
 - `nuxt.config.ts`: the `/b/**` route rule that turns SSR off.
 
 ## Dependencies
@@ -128,7 +133,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 - `tests/routes/test_shared.py`: the public shape carries no owner; `404` for deleted, never-existed and malformed alike; the stopgap `429` on the 61st call.
 - `tests/utils/test_ratelimit.py`: capacity, refill, eviction and thread safety, against an injected clock rather than real sleeping.
-- `test/nuxt/shared-build.test.ts`: the page's three states — pending skeleton, build, 404.
+- `test/nuxt/shared-build.test.ts`: the pending skeleton; a failed read raising the error page with its status and no toast; a dead link left to the central policy; a rendered build kept when a later read fails.
 
 ## Verification
 
