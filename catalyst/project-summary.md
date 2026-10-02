@@ -60,7 +60,7 @@ One line per record: type, status, title, link.
 | 008 | refactor    | Implemented | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                     |
 | 009 | tooling     | Implemented | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
 | 010 | infra       | Implemented | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
-| 011 | infra       | Proposed    | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
+| 011 | infra       | Accepted    | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
 
 ## Domain Decision Index
 

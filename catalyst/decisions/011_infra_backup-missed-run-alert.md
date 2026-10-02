@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Type
 
@@ -45,6 +45,8 @@ Better: a schedule that has stopped, for whatever reason, becomes an email withi
 
 Riskier: one more external account and one more secret. If healthchecks.io goes away, alerting goes silent rather than loud. Neither the backups nor this record's guarantee depend on it.
 
+The check is set up by hand in healthchecks.io's UI. This departs from `architecture.md` Observability, which says alert rules are versioned files that are never built by hand. `operations.md` states the check's two settings, and that statement is the versioned source of truth. Provisioning one check through the management API would add a second secret and a script, all for a two-field configuration.
+
 Maintainer console work: create the account and the check (period 1 day, grace 8 hours, email integration), then set the `HEALTHCHECKS_PING_URL` secret.
 
 ## Contracts Touched
@@ -54,8 +56,6 @@ Maintainer console work: create the account and the check (period 1 day, grace 8
 - `project-summary.md`: the ADR index.
 
 ## Open Questions
-
-- `architecture.md` Observability says alert rules are "versioned files in the repository, provisioned on startup — never hand-built in a monitoring UI". The check is configured by hand in healthchecks.io's UI. Proposed resolution: accept the deviation. `operations.md` states the check's two settings as the versioned source of truth, and provisioning a single check through healthchecks.io's management API would add a second secret and a script for a two-field configuration. The alternative is to provision it by a script.
 
 ## Verification
 
