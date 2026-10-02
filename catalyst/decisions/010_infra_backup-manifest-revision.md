@@ -46,3 +46,5 @@ Riskier: a stricter check means more ways for a nightly run to fail. Each one is
 ## Open Questions
 
 ## Verification
+
+The step's SQL ran against a scratch branch of production (`verify-010-manifest-revision`). The census reported `alembic_version: 1`, and the revision read `182ad318ac94`. With a second row inserted, the census reported 2; with the table emptied, it reported 0. The step's guard, run on those census shapes and on one with the table missing, passes only the single-row case.
