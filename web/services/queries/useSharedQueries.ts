@@ -13,6 +13,8 @@ export function useFetchSharedBuild(
   return useAppQuery<SharedBuild>({
     key: () => [...sharedQueryKeys.fetchSharedBuild, id.value],
     query: () => fetchSharedBuild(id.value),
+    // ! Never re-read while open: the owner's edits and deletion reach a share page on its next load, not over what is on screen (feature 007). A background read answering `404` would otherwise replace the build with the error page.
+    staleTime: Infinity,
     ...options
   });
 }

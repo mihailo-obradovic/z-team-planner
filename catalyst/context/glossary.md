@@ -21,7 +21,7 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 
 ## Links
 
-**Share link** — the live link to a shared build. It always shows the owner's current build document, so an edit the owner saves is what the next visitor sees, with no new link.
+**Share link** — the live link to a shared build. It always shows the owner's current build document, so an edit the owner saves is what the next visitor sees, with no new link. An open share page keeps the build document it loaded; the owner's edits and deletion reach it only on the next load — opening or reloading the link.
 
 **Snapshot link** — a link carrying a build document inside itself. It shows what was shared at the moment of sharing and never changes; it needs no account and no cloud build.
 
