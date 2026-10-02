@@ -53,11 +53,7 @@ const statusCode = computed(() =>
   errorData.value?.status === 'unknown' ? null : props.error?.statusCode || null
 );
 
-const heading = computed(
-  () =>
-    errorData.value?.heading ||
-    (isNotFound.value ? 'Page not found' : 'Something went wrong')
-);
+const heading = computed(() => errorHeading(props.error));
 
 const supportingLine = computed(() =>
   isNotFound.value ? NOT_FOUND_LINE : GENERIC_LINE
