@@ -210,8 +210,7 @@ Lose the GPG entry and every dump ever taken is unreadable.
 - Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the earlier dumps untouched.
 - The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
 - **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its 03:00 cron, so a nightly dump can land after a same-day migration.
-- **A missing `alembic_version` fails the job on purpose.** A dump of a database with no schema is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for. If this fires, the schema is gone — check `main` before re-running anything.
-- **So does an `alembic_version` without exactly one row.** History is linear and `migrate.yml` only goes to `head`, so none or several means a schema no migration left behind; the run stops rather than record a revision it cannot name. Run `uv run alembic current` against the direct endpoint before re-running.
+- **An `alembic_version` without exactly one row fails the job on purpose.** A missing table counts as zero. Zero means the schema is gone and the dump is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for: check `main` before re-running anything. Several rows means a schema no forward-only migration left behind: run `uv run alembic current` against the direct endpoint first.
 
 ## GitHub repository security
 
