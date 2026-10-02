@@ -159,7 +159,9 @@ gpg --decrypt ztp-<stamp>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_
 
 Then take the same census the manifest carries and compare the two objects whole — table names and counts together, not a couple of hand-picked tables — and check that `select version_num from alembic_version` on the branch returns the manifest's `revision`. Matching, the branch can be promoted or the restore repeated against `main`.
 
-Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored into a scratch branch and matched against its manifest. Note what that does and does not prove: the schema was at revision `182ad318ac94` with **zero rows**, because sign-in did not exist yet. Decrypt, decompress, apply and verify are proven; restoring volume is not. Due again after every material schema change, and worth repeating once real rows exist.
+**Delete the local files once the census is taken.** The dump and its plaintext hold user emails, and the commands above leave them in the working directory. Fetch into a `mktemp -d` that is removed on exit, and delete the `restore-test` branch with them.
+
+Rehearsed: **2 October 2026**, passing — dump `ztp-2026-10-02T100636Z` (a `manual` run), restored into a scratch branch: census identical to the manifest at 1 user, 3 builds, 3 idempotency keys, `version_num` equal to its `revision` `182ad318ac94`. The rows were seeded through the live site for the drill, so `main` held still between dump and restore, and a per-table content hash of the branch also matched `main`'s. Volume is still untested: the first rehearsal (21 September) restored the schema with zero rows. Due again after every material schema change.
 
 ### Quirks
 
