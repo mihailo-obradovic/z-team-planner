@@ -2,7 +2,7 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: **stage 2 is live** (21 September 2026). The planner is at <https://z-team-planner.vercel.app> and the API at <https://z-team-planner-api.vercel.app>, with Google sign-in enabled. Decision 007's four gates all passed first: the nightly backup workflow runs, its restore has been rehearsed, Firebase has the live domain authorized with a published consent screen, and the privacy page is reachable. Neon `main` is production at revision `182ad318ac94`. A real Google sign-in was completed on the live site the same day.
+Status note: **stage 2 is live** (21 September 2026). The planner is at <https://z-team-planner.vercel.app> and the API at <https://z-team-planner-api.vercel.app>, with Google sign-in enabled. Decision 007's four gates all passed first: the scheduled backup workflow runs, its restore has been rehearsed, Firebase has the live domain authorized with a published consent screen, and the privacy page is reachable. Neon `main` is production at revision `182ad318ac94`. A real Google sign-in was completed on the live site the same day.
 
 ## Vercel hosting
 
@@ -153,7 +153,7 @@ psql "$SCRATCH_URL" -c 'drop schema public cascade' -c 'create schema public'
 gpg --decrypt ztp-<stamp>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_STOP=1
 ```
 
-**Choose the dump by its manifest, not by its position in the list.** To undo a migration, take the newest dump whose manifest says `"reason": "pre-migration"` and whose `taken_at` precedes the migration — a later nightly dump already holds the migrated schema. Then confirm the choice: its `revision` must match the "Show the revision before" step of that `migrate.yml` run.
+**Choose the dump by its manifest, not by its position in the list.** To undo a migration, take the newest dump whose manifest says `"reason": "pre-migration"` and whose `taken_at` precedes the migration — a later scheduled dump already holds the migrated schema. Then confirm the choice: its `revision` must match the "Show the revision before" step of that `migrate.yml` run.
 
 **Empty the scratch branch before restoring.** A Neon branch is a copy of its parent, so it arrives holding the schema already and the dump's `CREATE TABLE` statements collide with it. A real recovery restores into an empty database; a drill that skips the wipe tests nothing.
 
@@ -174,7 +174,9 @@ Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored in
 
 ## Backups (GitHub Actions → Cloudflare R2)
 
-A **backup run** executes `backup.yml` once and leaves one **dump** and one **manifest**. Three things start one, and the manifest's `reason` names which: the schedule (`nightly`), a dispatch of `backup.yml` (`manual`), or `migrate.yml` before it touches the schema (`pre-migration`). The run takes `pg_dump` against the direct endpoint, encrypts with a repository-secret GPG key, and uploads to a private R2 bucket. Nothing is ever attached as a workflow artifact — this repository is public and artifacts are downloadable by anyone.
+A **backup run** executes `backup.yml` once and leaves one **dump** and one **manifest**. Three things start one, and the manifest's `reason` names which: the schedule (`scheduled`), a dispatch of `backup.yml` (`manual`), or `migrate.yml` before it touches the schema (`pre-migration`). The run takes `pg_dump` against the direct endpoint, encrypts with a repository-secret GPG key, and uploads to a private R2 bucket. Nothing is ever attached as a workflow artifact — this repository is public and artifacts are downloadable by anyone.
+
+The schedule fires once a day from a `17 3 * * *` cron, off the hour because top-of-the-hour crons queue longest. GitHub still starts it late under load: 5 to 7 hours late in the first ten runs (22 September to 1 October 2026, on a `0 3` cron). Nothing depends on the hour. The one window to avoid is Neon's Thursday 01:00–02:00 maintenance, which a 03:17 cron reaches only after a delay of more than 21 hours. The guarantee is one scheduled dump per day, not a dump at night.
 
 ### Operate
 
@@ -208,9 +210,9 @@ Lose the GPG entry and every dump ever taken is unreadable.
 - **The client's major version must match Neon's server**, which is why the job installs `postgresql-client-18` from PGDG rather than using the runner's own. `pg_dump` refuses a server newer than itself, and the failure names the versions — read it before suspecting the connection.
 - **`NEON_DIRECT_URL` is spelled `postgresql://`, not `postgresql+psycopg://`.** That prefix is SQLAlchemy's; `pg_dump` and `psql` reject it. This is the one place in the project where the bare scheme is correct.
 - Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the earlier dumps untouched.
-- The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
-- **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its 03:00 cron, so a nightly dump can land after a same-day migration.
-- **An `alembic_version` without exactly one row fails the job on purpose.** A missing table counts as zero. Zero means the schema is gone and the dump is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for: check `main` before re-running anything. Several rows means a schema no forward-only migration left behind: run `uv run alembic current` against the direct endpoint first.
+- A run's first call usually wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
+- **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its cron (above), so a scheduled dump can land after a same-day migration.
+- **An `alembic_version` without exactly one row fails the job on purpose.** A missing table counts as zero. Zero means the schema is gone and the dump is an empty file, and a scheduled run reporting success over one is the failure mode backups are famous for: check `main` before re-running anything. Several rows means a schema no forward-only migration left behind: run `uv run alembic current` against the direct endpoint first.
 
 ## GitHub repository security
 
