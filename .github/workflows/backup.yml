@@ -157,6 +157,20 @@ jobs:
                 aws s3api delete-object --bucket "$BUCKET" --key "$key"
               done
 
+      - name: Check in with the missed-run alert
+        # * Only a scheduled run checks in, so a manual or pre-migration dump cannot hide a schedule GitHub has skipped or disabled (decision 011). Keyed on the event rather than REASON so the failure ping below fires even when a run dies before REASON is set; a called run sees its caller's event, never `schedule`.
+        if: github.event_name == 'schedule'
+        env:
+          HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECKS_PING_URL }}
+        # ! A ping that cannot be delivered never fails the backup: the dump is already safe, and a missing ping becomes a false alert, the safe direction.
+        run: curl -fsS -m 10 --retry 5 -o /dev/null "$HEALTHCHECKS_PING_URL" || echo "::warning::missed-run alert ping not delivered"
+
+      - name: Report the failure to the missed-run alert
+        if: failure() && github.event_name == 'schedule'
+        env:
+          HEALTHCHECKS_PING_URL: ${{ secrets.HEALTHCHECKS_PING_URL }}
+        run: curl -fsS -m 10 --retry 5 -o /dev/null "${HEALTHCHECKS_PING_URL}/fail" || echo "::warning::missed-run alert failure ping not delivered"
+
       - name: Destroy the local copies
         # ! This repository is public. A dump holds user emails, so it never becomes a workflow artifact and never outlives the job.
         if: always()
