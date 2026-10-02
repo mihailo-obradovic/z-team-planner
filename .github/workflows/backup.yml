@@ -2,8 +2,8 @@ name: backup
 
 on:
   schedule:
-    # * 03:00 UTC. Clear of the Thursday 01:00–02:00 Neon maintenance window.
-    - cron: '0 3 * * *'
+    # * Off the hour, because top-of-the-hour crons queue longest. GitHub still starts it hours late (operations.md, Backups); only the Thursday 01:00–02:00 Neon maintenance window is to be avoided, and a delay would have to pass 21 hours to reach it.
+    - cron: '17 3 * * *'
   workflow_dispatch:
   # * migrate.yml calls this before touching the schema, so a dispatched migration always has a dump from minutes earlier rather than from last night.
   workflow_call:
@@ -18,7 +18,7 @@ on:
 # * Nothing from this repository is read: no checkout, no token, no write scope.
 permissions: {}
 
-# * A manual run must never overlap the nightly one — two pg_dumps would wake the same compute at once. Object names do not depend on it: every run stamps its own.
+# * A manual run must never overlap the scheduled one — two pg_dumps would wake the same compute at once. Object names do not depend on it: every run stamps its own.
 concurrency:
   group: backup
   cancel-in-progress: false
@@ -63,7 +63,7 @@ jobs:
           echo "GPG_RECIPIENT=${FPR}" >> "$GITHUB_ENV"
 
       - name: Name this run's objects
-        # ! The stamp carries the time, not the date alone. A day can hold several dumps, and keyed by date each would replace the last. The scheduled run starts hours late, so even one early migration shares its day with a later nightly.
+        # ! The stamp carries the time, not the date alone. A day can hold several dumps, and keyed by date each would replace the last. The scheduled run starts hours late, so even one early migration shares its day with a later scheduled dump.
         env:
           # * Through env rather than inline, so the input cannot be read as shell.
           REASON_INPUT: ${{ inputs.reason }}
@@ -79,7 +79,7 @@ jobs:
           # ! A called workflow sees its caller's event, so a migration and a manual dispatch both arrive as workflow_dispatch. Only the input tells them apart.
           case "$REASON_INPUT" in
             '')
-              if [ "$EVENT_NAME" = "schedule" ]; then reason=nightly; else reason=manual; fi
+              if [ "$EVENT_NAME" = "schedule" ]; then reason=scheduled; else reason=manual; fi
               ;;
             pre-migration)
               reason=pre-migration
@@ -117,7 +117,7 @@ jobs:
                join pg_namespace ns on ns.oid = c.relnamespace
                where c.relkind = 'r' and ns.nspname = 'public'
              ) s")
-          # ! A backup must name exactly one schema revision or fail. A missing table counts as zero rows: the schema is gone and the dump is empty — the one failure mode a green nightly job would hide. Several rows means a schema no forward-only migration left behind (decision 010).
+          # ! A backup must name exactly one schema revision or fail. A missing table counts as zero rows: the schema is gone and the dump is empty — the one failure mode a green scheduled run would hide. Several rows means a schema no forward-only migration left behind (decision 010).
           stamped=$(printf '%s' "$counts" | jq '.alembic_version // 0')
           if [ "$stamped" != 1 ]; then
             echo "::error::alembic_version holds $stamped rows, not 1 — no schema revision to record (0 means the schema is gone)"
