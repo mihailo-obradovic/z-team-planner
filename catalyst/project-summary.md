@@ -59,7 +59,7 @@ One line per record: type, status, title, link.
 | 007 | infra       | Implemented | Host on Vercel — two projects, one repository                                   | [007_infra_hosting-vercel](decisions/007_infra_hosting-vercel.md)                             |
 | 008 | refactor    | Implemented | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                     |
 | 009 | tooling     | Implemented | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
-| 010 | infra       | Accepted    | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
+| 010 | infra       | Implemented | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
 
 ## Domain Decision Index
 

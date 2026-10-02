@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -49,4 +49,4 @@ Riskier: a stricter check means more ways for a nightly run to fail. Each one is
 
 The step's SQL ran against a scratch branch of production (`verify-010-manifest-revision`). The census reported `alembic_version: 1`, and the revision read `182ad318ac94`. With a second row inserted, the census reported 2; with the table emptied, it reported 0. The step's guard, run on those census shapes and on one with the table missing, passes only the single-row case.
 
-Dispatched run 36976597881 from the branch passed and wrote `ztp-2026-10-02T070403Z`. Its manifest has `"revision": "182ad318ac94"`, which is production's `version_num`. The scratch branch has been deleted. Still to be proven by the next real migration: a `pre-migration` manifest whose revision matches that run's "revision before".
+Dispatched run 36977381393 (the final one-check code) passed and wrote `ztp-2026-10-02T071305Z`. Its manifest has `"revision": "182ad318ac94"`, which is production's `version_num`. The scratch branch has been deleted. Still to be proven by the next real migration: a `pre-migration` manifest whose revision matches that run's "revision before".
