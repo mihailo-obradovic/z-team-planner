@@ -143,6 +143,15 @@ neon branches create --name ci-<sha> --expires-at <rfc3339>   # throwaway CI bra
 
 Two tiers. Neon's own instant restore covers the last **6 hours** on the Free plan (Launch: up to 7 days) — enough for "undo the last bad migration", not for losing the project. The dumps in R2 (next section) are the real backup.
 
+Instant restore, inside the window: branch `main` as it stood at a timestamp, check the rows there, and only then reset `main` itself. `--parent` with a timestamp branches from the default branch; the reset keeps the pre-restore state under the preserve name, which takes one of the ten branch slots until it is deleted.
+
+```bash
+neon branches create --name pitr-test --parent <rfc3339>                         # main as it stood then
+neon branches restore main ^self@<rfc3339> --preserve-under-name main-before-restore   # the real reset, after the check
+```
+
+Rehearsed: **2 October 2026**, passing — a branch at `10:05:40Z` held the one build created at `10:05:33Z` and neither of the two created at `10:05:43Z` and `10:05:51Z`, with 1 of `main`'s 3 idempotency keys, at revision `182ad318ac94`; `main` kept all 3 builds. The in-place `restore` was not run against `main`.
+
 Restore from a dump, on a scratch branch first. Fetching the dump uses the read-only recovery token, not CI's (next section).
 
 ```bash
