@@ -141,6 +141,11 @@ export default defineNuxtConfig({
     enabled: false
   },
 
+  seo: {
+    // ! Its error titles carry the status, Nuxt's `Page not found: <path>` message, or the last path segment; `plugins/error-title.ts` titles the error page instead (feature 009).
+    fallbackTitle: false
+  },
+
   nitro: {
     vercel: {
       config: {
