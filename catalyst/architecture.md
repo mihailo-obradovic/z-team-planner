@@ -238,7 +238,7 @@ Packages this project runs that the adopted stack modules' Approved Libraries do
 
 ### Approved CI Actions
 
-The GitHub Actions the workflows use. Actions are not packages and carry no lockfile row, so they are recorded here under the same rule; each is pinned to a major tag, which Renovate moves. `Used by` is `workflow: job`, because the repository has more workflows than `ci.yml` — `backup.yml` deliberately uses no actions at all, since it checks nothing out and needs no token.
+The GitHub Actions the workflows use. Actions are not packages and carry no lockfile row, so they are recorded here under the same rule; each is pinned to a major tag, which Renovate moves. `Used by` is `workflow: job`, because the repository has more workflows than `ci.yml` — `backup.yml` deliberately uses no actions at all, since it checks nothing out and needs no token. Its one outbound call beyond Neon and R2 is a `curl` ping to healthchecks.io, the missed-run alert (decision 011).
 
 | Action               | Used by                                  | Why it is needed                                                                                                                                      | Approved by      |
 | -------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |

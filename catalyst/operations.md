@@ -189,6 +189,8 @@ A **backup run** executes `backup.yml` once and leaves one **dump** and one **ma
 
 The schedule fires once a day from a `17 3 * * *` cron, off the hour because top-of-the-hour crons queue longest. GitHub still starts it late under load: 5 to 7 hours late in the first ten runs (22 September to 1 October 2026, on a `0 3` cron). Nothing depends on the hour. The one window to avoid is Neon's Thursday 01:00–02:00 maintenance, which a 03:17 cron reaches only after a delay of more than 21 hours. The guarantee is one scheduled dump per day, not a dump at night.
 
+The **missed-run alert** watches that guarantee from outside GitHub (decision 011). Every scheduled run that finishes checks in with a healthchecks.io check, and a scheduled run that fails reports `/fail` there. The check is configured by hand, and these two settings are its source of truth: **period 1 day, grace 8 hours**, with alerts going to the maintainer's email. When 32 hours pass without a scheduled check-in, or a failure is reported, the email goes out. Manual and pre-migration runs never check in, so they cannot hide a stopped schedule. The ping URL is the repository secret `HEALTHCHECKS_PING_URL`. A ping that cannot be delivered only warns, and it never fails the run.
+
 ### Operate
 
 R2 speaks the S3 API, so the `aws` CLI drives it — every call needs the account's R2 endpoint and a region the service ignores but the SDK demands.
@@ -200,6 +202,8 @@ export AWS_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com AWS_DEFAUL
 aws s3api list-objects-v2 --bucket ztp-backups --prefix ztp-   # what is in the bucket
 aws s3api get-object --bucket ztp-backups --key ztp-<stamp>.sql.gz.gpg ztp-<stamp>.sql.gz.gpg
 ```
+
+The missed-run alert lives at healthchecks.io: its dashboard shows each scheduled check-in. To rehearse the alert by hand, run `curl -fsS "$HEALTHCHECKS_PING_URL/fail"`, then send a plain ping to reset it.
 
 Every backup run leaves two objects of its own: `ztp-<stamp>.sql.gz.gpg` and a plaintext `ztp-<stamp>.manifest.json`. The stamp is the run's UTC start to the second, spelled `2026-09-21T103727Z`, so the list sorts chronologically and any number of runs can share a day. Dumps taken before 29 September 2026 carry the date alone; they age out with the rest. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` stays in the census like any other table, and its one row's `version_num` is also the manifest's top-level `revision`: the schema the dump holds. Manifests written before 2 October 2026 have no `revision`; they age out with the rest.
 
@@ -221,6 +225,7 @@ Lose the GPG entry and every dump ever taken is unreadable.
 - **The client's major version must match Neon's server**, which is why the job installs `postgresql-client-18` from PGDG rather than using the runner's own. `pg_dump` refuses a server newer than itself, and the failure names the versions — read it before suspecting the connection.
 - **`NEON_DIRECT_URL` is spelled `postgresql://`, not `postgresql+psycopg://`.** That prefix is SQLAlchemy's; `pg_dump` and `psql` reject it. This is the one place in the project where the bare scheme is correct.
 - Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the earlier dumps untouched.
+- **GitHub disables a public repository's scheduled workflows after 60 days without activity**, and also skips scheduled runs now and then under load. In both cases nothing fails, so only the missed-run alert notices. After an alert, `gh run list --workflow backup.yml` shows whether the run failed or never started. If it never started, run `gh workflow enable backup.yml` and then dispatch a run, because the next scheduled one is up to a day away.
 - A run's first call usually wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
 - **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its cron (above), so a scheduled dump can land after a same-day migration.
 - **An `alembic_version` without exactly one row fails the job on purpose.** A missing table counts as zero. Zero means the schema is gone and the dump is an empty file, and a scheduled run reporting success over one is the failure mode backups are famous for: check `main` before re-running anything. Several rows means a schema no forward-only migration left behind: run `uv run alembic current` against the direct endpoint first.

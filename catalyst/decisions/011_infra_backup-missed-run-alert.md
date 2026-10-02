@@ -25,7 +25,7 @@ The backup becomes a dead-man's switch on healthchecks.io (free tier). It alerts
 - Only a run whose `reason` is `scheduled` pings, as its last step after the prune. Manual and pre-migration runs never ping, so a hand-taken dump cannot hide a broken schedule.
 - A scheduled run that fails pings `<url>/fail`, which alerts at once. That puts every backup alert in one channel, instead of the GitHub email that only reaches whoever last edited the cron.
 - The check has a 1-day period and an 8-hour grace, so it alerts about 32 hours after the last scheduled dump. The observed 5–7-hour start delay never trips it, and a skipped day trips it the same day.
-- A ping that cannot be delivered never fails the backup (`|| true`, three retries). The dump is already safe, and a missing ping turns into a false alert, which is the safe direction.
+- A ping that cannot be delivered never fails the backup (five retries, then a run warning). The dump is already safe, and a missing ping turns into a false alert, which is the safe direction.
 - The ping URL carries its own credential, so it is a repository secret, `HEALTHCHECKS_PING_URL`.
 
 Rejected:
@@ -59,10 +59,6 @@ Maintainer console work: create the account and the check (period 1 day, grace 8
 
 ## Verification
 
-To be proven in three steps:
+On 2026-10-02 the maintainer set the `HEALTHCHECKS_PING_URL` secret and checked by hand that the email alert works. healthchecks.io's test notification arrived. A `curl` to `<url>/fail` raised the failure alert, and a plain ping reset it, which also armed the check's 1-day clock.
 
-1. healthchecks.io's test notification reaches the maintainer's inbox.
-2. A `curl` to `<url>/fail` from a shell raises the failure alert, and a plain ping resets it.
-3. The first scheduled run after merge shows its success ping on the dashboard.
-
-The record stays `Accepted` until step 3 is seen.
+Still to be seen: the first scheduled run after master is pushed checks in on the dashboard, and a dispatched run skips both ping steps. The record stays `Accepted` until the scheduled check-in is seen.
