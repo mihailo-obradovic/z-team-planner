@@ -153,11 +153,11 @@ psql "$SCRATCH_URL" -c 'drop schema public cascade' -c 'create schema public'
 gpg --decrypt ztp-<stamp>.sql.gz.gpg | gunzip | psql "$SCRATCH_URL" -v ON_ERROR_STOP=1
 ```
 
-**Choose the dump by its manifest, not by its position in the list.** To undo a migration, take the newest dump whose manifest says `"reason": "pre-migration"` and whose `taken_at` precedes the migration — a later nightly dump already holds the migrated schema.
+**Choose the dump by its manifest, not by its position in the list.** To undo a migration, take the newest dump whose manifest says `"reason": "pre-migration"` and whose `taken_at` precedes the migration — a later nightly dump already holds the migrated schema. Then confirm the choice: its `revision` must match the "Show the revision before" step of that `migrate.yml` run.
 
 **Empty the scratch branch before restoring.** A Neon branch is a copy of its parent, so it arrives holding the schema already and the dump's `CREATE TABLE` statements collide with it. A real recovery restores into an empty database; a drill that skips the wipe tests nothing.
 
-Then take the same census the manifest carries and compare the two objects whole — table names and counts together, not a couple of hand-picked tables. Matching, the branch can be promoted or the restore repeated against `main`.
+Then take the same census the manifest carries and compare the two objects whole — table names and counts together, not a couple of hand-picked tables — and check that `select version_num from alembic_version` on the branch returns the manifest's `revision`. Matching, the branch can be promoted or the restore repeated against `main`.
 
 Rehearsed: **21 September 2026**, passing — dump `ztp-2026-09-21`, restored into a scratch branch and matched against its manifest. Note what that does and does not prove: the schema was at revision `182ad318ac94` with **zero rows**, because sign-in did not exist yet. Decrypt, decompress, apply and verify are proven; restoring volume is not. Due again after every material schema change, and worth repeating once real rows exist.
 
@@ -188,7 +188,7 @@ aws s3api list-objects-v2 --bucket ztp-backups --prefix ztp-   # what is in the 
 aws s3api get-object --bucket ztp-backups --key ztp-<stamp>.sql.gz.gpg ztp-<stamp>.sql.gz.gpg
 ```
 
-Every backup run leaves two objects of its own: `ztp-<stamp>.sql.gz.gpg` and a plaintext `ztp-<stamp>.manifest.json`. The stamp is the run's UTC start to the second, spelled `2026-09-21T103727Z`, so the list sorts chronologically and any number of runs can share a day. Dumps taken before 29 September 2026 carry the date alone; they age out with the rest. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` rides along as a row count: it proves the schema exists, and does not say which revision the dump was taken at.
+Every backup run leaves two objects of its own: `ztp-<stamp>.sql.gz.gpg` and a plaintext `ztp-<stamp>.manifest.json`. The stamp is the run's UTC start to the second, spelled `2026-09-21T103727Z`, so the list sorts chronologically and any number of runs can share a day. Dumps taken before 29 September 2026 carry the date alone; they age out with the rest. The manifest is a census of every table in `public` with its exact row count — taken at runtime, so a renamed table changes the census instead of breaking the job — and it is what the restore drill compares against. `alembic_version` stays in the census like any other table, and its one row's `version_num` is also the manifest's top-level `revision`: the schema the dump holds. Manifests written before 2 October 2026 have no `revision`; they age out with the rest.
 
 ### Recovery
 
@@ -210,7 +210,7 @@ Lose the GPG entry and every dump ever taken is unreadable.
 - Pruning runs only after a successful upload, so a failed dump can never shrink the set. A run that fails mid-way leaves the earlier dumps untouched.
 - The first call of the night wakes a suspended Neon compute, so the dump step starts about a second slow. That is the Neon section's suspend behaviour, not a stalled job.
 - **A dump is never overwritten.** Both uploads send `If-None-Match: *`, so R2 answers `412 Precondition Failed` for a key that exists and the run fails. The stamp keeps runs apart; the guard makes a collision loud. A day routinely holds more than one dump: the scheduled run starts hours after its 03:00 cron, so a nightly dump can land after a same-day migration.
-- **A missing `alembic_version` fails the job on purpose.** A dump of a database with no schema is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for. If this fires, the schema is gone — check `main` before re-running anything.
+- **An `alembic_version` without exactly one row fails the job on purpose.** A missing table counts as zero. Zero means the schema is gone and the dump is an empty file, and a nightly job reporting success over one is the failure mode backups are famous for: check `main` before re-running anything. Several rows means a schema no forward-only migration left behind: run `uv run alembic current` against the direct endpoint first.
 
 ## GitHub repository security
 

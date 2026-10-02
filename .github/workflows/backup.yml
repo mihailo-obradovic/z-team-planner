@@ -104,7 +104,7 @@ jobs:
         # * Row counts are what the restore drill compares against, so they must travel with the dump. Counts are not personal data; the manifest stays plaintext.
         run: |
           set -euo pipefail
-          # * A census of every public table, not a hard-coded list: a backup must not start failing because a migration renamed something. query_to_xml is the one way plain SQL can count a table whose name it only learns at runtime. alembic_version rides along as a row count, which proves the schema exists and says nothing about which revision it is at.
+          # * A census of every public table, not a hard-coded list: a backup must not start failing because a migration renamed something. query_to_xml is the one way plain SQL can count a table whose name it only learns at runtime. alembic_version stays in it like any other table; its revision gets a field of its own below.
           counts=$("$PGBIN/psql" "$DATABASE_URL" -Atc \
             "select coalesce(json_object_agg(relname, row_count), '{}'::json)
              from (
@@ -117,18 +117,22 @@ jobs:
                join pg_namespace ns on ns.oid = c.relnamespace
                where c.relkind = 'r' and ns.nspname = 'public'
              ) s")
-          # ! A backup that captures nothing must never report success. Once the schema exists, alembic_version is always in the census, so its absence means the schema is gone — the one failure mode a green nightly job would hide.
-          if ! printf '%s' "$counts" | jq -e 'has("alembic_version")' >/dev/null; then
-            echo "::error::no alembic_version table — the database has no schema, so this dump is empty"
+          # ! A backup must name exactly one schema revision or fail. A missing table counts as zero rows: the schema is gone and the dump is empty — the one failure mode a green nightly job would hide. Several rows means a schema no forward-only migration left behind (decision 010).
+          stamped=$(printf '%s' "$counts" | jq '.alembic_version // 0')
+          if [ "$stamped" != 1 ]; then
+            echo "::error::alembic_version holds $stamped rows, not 1 — no schema revision to record (0 means the schema is gone)"
             exit 1
           fi
+          # * Which schema the dump holds, so a recovery can confirm it picked the dump from before a migration and the drill can confirm the restore landed there.
+          revision=$("$PGBIN/psql" "$DATABASE_URL" -Atc "select version_num from alembic_version")
           jq -n \
             --argjson counts "$counts" \
             --arg taken_at "$TAKEN_AT" \
             --arg reason "$REASON" \
+            --arg revision "$revision" \
             --arg dump "$DUMP_FILE" \
             --argjson bytes "$(stat -c %s "$DUMP_FILE")" \
-            '{taken_at: $taken_at, reason: $reason, dump: $dump, encrypted_bytes: $bytes, rows: $counts}' \
+            '{taken_at: $taken_at, reason: $reason, revision: $revision, dump: $dump, encrypted_bytes: $bytes, rows: $counts}' \
             > "$MANIFEST_FILE"
           cat "$MANIFEST_FILE"
 
