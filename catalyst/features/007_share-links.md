@@ -51,7 +51,7 @@ Non-goals:
 
 - **Share** on an account build copies `https://<web>/b/{id}`. A local build has no server id, so it keeps the `?build=` snapshot instead.
 - **Share** on an account build holding unsaved changes saves it first, then copies — the link resolves to the stored document, so copying before saving would hand out a build the sharer is not looking at. A save that fails copies nothing and reports itself through the central policy (a `412` opens feature 008's conflict dialog); the toast names the save, since it was not asked for explicitly.
-- Every open of the link shows the owner's **current** document — an edit the owner saves is visible on the next load, with no new link.
+- Every open of the link shows the owner's **current** document — an edit the owner saves is visible on the next load, with no new link. A load is opening or reloading the link; an open page never reads again, so returning to the tab or coming back from `/privacy` shows what was loaded.
 - A skeleton shows while the read is pending, then the planner read-only — one `inert` region rather than a disabled prop on forty controls; the page has no write path to the owner's build at all.
 - **Save a copy** creates an account build when signed in (`POST /builds`) and falls back to feature 001's local save when not. Either way the viewer gets their own copy; the owner's is untouched.
 - The owner opening their own link sees the same read-only page; editing happens through **My builds**.
@@ -78,6 +78,8 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 | open `/b/<id>`, the read answers `503`        | the error page: `503`, "Something went wrong"      | no toast                        |
 | open `/b/<id>`, the API unreachable           | the error page, "Something went wrong"             | no toast                        |
 | a build on screen, a later read answers `503` | the build stays; no page, no toast                 | nothing to lose by keeping it   |
+| a build on screen, owner deletes it, refocus  | the build stays; no page, no toast; reload → 404   | no background read              |
+| a build on screen, owner edits it, refocus    | the build on screen is unchanged; reload → edit    | no background read              |
 | **Save a copy** signed in                     | `POST /builds`; toast names the build              | may come back suffixed (005)    |
 | **Save a copy** signed out                    | a local save                                       | feature 001                     |
 | **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
@@ -93,12 +95,14 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 - **Stopgap rate limit**: an in-process token bucket on `/shared/*`, 60 requests per minute per caller, stdlib only. It counts **per worker**, so N workers allow N × 60 and serverless instances make it inert in production (decision 007), and it keys on the socket peer, which behind a proxy is the proxy. Recorded in `operations.md`.
 - **Client-rendered** (`ssr: false` for `/b/**`): the page reads a per-request id at view time, and prerendering or server-rendering it would risk serving one viewer's build to the next.
 - Query key `['shared','get',id]`, no `enabled` gate on auth — the read works signed out, which is the point — and nothing here invalidates anything.
+- **Never re-read while open** (`staleTime: Infinity`): focus, reconnect and a remount in the same visit all keep what was loaded. Without it a background read answering `404` would put the 404 page over a rendered build, since the central policy cannot see what is on screen.
 
 ## Edge Cases
 
 - A `?build=` receiver who signs in gets no import offer for that snapshot — it is not one of their local builds. They use **Save a copy** like any viewer.
 - **Save a copy** of a name the viewer's account already uses comes back suffixed by feature 005's naming rule; the viewer sees the name the server returned.
 - A viewer already on the page when the owner deletes the build keeps what is rendered; the next load is the 404 page.
+- A viewer already on the page when the owner saves an edit keeps what is rendered; the next load shows the edit.
 
 ## Invariants
 
@@ -133,8 +137,8 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 - `tests/routes/test_shared.py`: the public shape carries no owner; `404` for deleted, never-existed and malformed alike; the stopgap `429` on the 61st call.
 - `tests/utils/test_ratelimit.py`: capacity, refill, eviction and thread safety, against an injected clock rather than real sleeping.
-- `test/nuxt/shared-build.test.ts`: the pending skeleton; a failed read raising the error page with its status and no toast; a dead link left to the central policy; a rendered build kept when a later read fails.
+- `test/nuxt/shared-build.test.ts`: the pending skeleton; a failed read raising the error page with its status and no toast; a dead link left to the central policy; a rendered build kept when a later read fails; a rendered build never read again on focus or remount, after a deletion or an edit.
 
 ## Verification
 
-By test: the public shape carrying no owner and its three `404`s — the malformed id's regression test failed with `422` before the fix — against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the pending skeleton, and the failed read's four outcomes, three of which failed before the fix. In a browser against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it; **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. `/b/[id]` is browser-verified rather than component-verified because a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`. On local dev after the fix: `/b/stage2probe` gave "Build not found", a well-formed id with the API stopped gave "Something went wrong" with no code, and a real build rendered read-only. Remaining risk: the limiter is per process and inert in production; a rendered build surviving a failed later read is proven by test only.
+By test: the public shape carrying no owner and its three `404`s — the malformed id's regression test failed with `422` before the fix — against real PostgreSQL; the limiter's capacity, refill and eviction under an injected clock; the pending skeleton, and the failed read's four outcomes, three of which failed before the fix. In a browser against the real API, the Neon dev branch and the Auth emulator: `/b/{id}` read-only with **Save a copy**, then the 404 page once the owner deleted it; **Share** on an account build holding unsaved changes issued the `PATCH` first, then copied `/b/{id}`, the planner clean afterwards and the toast naming the save. `/b/[id]` is browser-verified rather than component-verified because a Pinia Colada query inside a _page_ SFC does not activate under `mountSuspended`. On local dev after the fix: `/b/stage2probe` gave "Build not found", a well-formed id with the API stopped gave "Something went wrong" with no code, and a real build rendered read-only. After the background-read fix, whose three tests failed before it: on local dev, deleting a rendered build and refocusing the tab kept it with no new read, and a reload gave "Build not found"; an edit kept the old name on refocus and showed the new one on reload; **Privacy** and Back issued no read. Remaining risk: the limiter is per process and inert in production; a rendered build surviving a failed later read is proven by test only.

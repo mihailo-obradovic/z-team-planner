@@ -1,6 +1,7 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
+import { flushPromises } from '@vue/test-utils';
 import { defineComponent, h, ref } from 'vue';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useSharedBuild } from '@/composables/build/useSharedBuild';
 import { useFetchSharedBuild } from '@/services/queries/useSharedQueries';
@@ -23,6 +24,12 @@ const FAILED_ID_B = 'eeeeeeee-5555-4555-8555-eeeeeeeeeeee';
 const FAILED_ID_C = 'ffffffff-6666-4666-8666-ffffffffffff';
 const FAILED_ID_D = '11111111-7777-4777-8777-111111111111';
 const FAILED_ID_E = '22222222-8888-4888-8888-222222222222';
+const ON_SCREEN_ID_A = '33333333-9999-4999-8999-333333333333';
+const ON_SCREEN_ID_B = '44444444-aaaa-4aaa-8aaa-444444444444';
+const ON_SCREEN_ID_C = '55555555-bbbb-4bbb-8bbb-555555555555';
+
+// * An arbitrary epoch in milliseconds for the faked clock.
+const LOADED_AT = 1_790_000_000_000;
 
 mockNuxtImport('useRoute', () => () => ({
   path: `/b/${BUILD_ID}`,
@@ -48,6 +55,10 @@ const PUBLIC_BUILD = {
   data: { v: 1 as const },
   updated_at: '2026-08-26T08:00:00Z'
 };
+
+function apiFailure(statusCode: number, message: string) {
+  return { statusCode, data: { error: { code: 'x', message } } };
+}
 
 function harness(setup: () => unknown) {
   return defineComponent({
@@ -96,10 +107,6 @@ describe('a shared read that fails', () => {
     showErrorSpy.mockReset();
     toastSpy.mockReset();
   });
-
-  function apiFailure(statusCode: number, message: string) {
-    return { statusCode, data: { error: { code: 'x', message } } };
-  }
 
   function raisedError() {
     return showErrorSpy.mock.calls[0]?.[0] as {
@@ -177,6 +184,87 @@ describe('a shared read that fails', () => {
     await vi.waitFor(() => expect(query?.error.value).toBeTruthy());
     expect(showErrorSpy).not.toHaveBeenCalled();
     expect(query?.data.value?.id).toBe(FAILED_ID_E);
+  });
+});
+
+describe('a shared build already on screen', () => {
+  beforeEach(() => {
+    fetchSharedBuildSpy.mockReset();
+    showErrorSpy.mockReset();
+    // * Only the clock: Pinia Colada judges staleness by `Date.now()`, and faking timers too would stall the fetch itself.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(LOADED_AT);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // * Counted per id: harnesses from earlier tests in this file stay mounted, and their queries hear the same focus event.
+  function readsOf(id: string) {
+    return fetchSharedBuildSpy.mock.calls.filter(([read]) => read === id)
+      .length;
+  }
+
+  async function renderedBuild(id: string) {
+    fetchSharedBuildSpy.mockResolvedValueOnce({ ...PUBLIC_BUILD, id });
+
+    let query: ReturnType<typeof useSharedBuild> | undefined;
+
+    await mountSuspended(
+      harness(() => {
+        query = useSharedBuild(ref(id));
+      })
+    );
+    await vi.waitFor(() => expect(query?.data.value?.id).toBe(id));
+
+    // * Well past the library's 5-second default, so a default query would count as stale here.
+    vi.setSystemTime(LOADED_AT + 60_000);
+
+    return query!;
+  }
+
+  it('stays when the tab regains focus after the owner deleted it', async () => {
+    const query = await renderedBuild(ON_SCREEN_ID_A);
+    fetchSharedBuildSpy.mockImplementation((id) =>
+      id === ON_SCREEN_ID_A
+        ? Promise.reject(apiFailure(404, 'Build not found.'))
+        : Promise.resolve({ ...PUBLIC_BUILD, id })
+    );
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushPromises();
+
+    expect(readsOf(ON_SCREEN_ID_A)).toBe(1);
+    expect(showErrorSpy).not.toHaveBeenCalled();
+    expect(query.data.value?.id).toBe(ON_SCREEN_ID_A);
+  });
+
+  it('is unchanged when the tab regains focus after the owner edited it', async () => {
+    const query = await renderedBuild(ON_SCREEN_ID_B);
+    fetchSharedBuildSpy.mockImplementation((id) =>
+      Promise.resolve({
+        ...PUBLIC_BUILD,
+        id,
+        name: id === ON_SCREEN_ID_B ? 'Edited by the owner' : PUBLIC_BUILD.name
+      })
+    );
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushPromises();
+
+    expect(readsOf(ON_SCREEN_ID_B)).toBe(1);
+    expect(query.data.value?.name).toBe(PUBLIC_BUILD.name);
+  });
+
+  it('is not read again when the page remounts in the same visit', async () => {
+    await renderedBuild(ON_SCREEN_ID_C);
+
+    // * Privacy and Back: the page remounts while the cached build is still there (feature 007).
+    await mountSuspended(harness(() => useSharedBuild(ref(ON_SCREEN_ID_C))));
+    await flushPromises();
+
+    expect(readsOf(ON_SCREEN_ID_C)).toBe(1);
   });
 });
 
