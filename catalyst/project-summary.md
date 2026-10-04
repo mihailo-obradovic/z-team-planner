@@ -93,6 +93,7 @@ One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices,
 | persistence     | postgres (hosted on Neon)                                                                               |
 | identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
 | maintenance     | renovate — decision 009 (no automerge, weekly, both lockfiles in scope)                                 |
+| hosting         | Vercel — one project, two services from the repository root, `vercel.json` (decision 012)               |
 
 ## Status Values
 
