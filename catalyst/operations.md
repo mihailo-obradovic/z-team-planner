@@ -95,7 +95,7 @@ FastAPI in `app/`, run with uv. Stateless: it holds no data of its own, so every
 ```bash
 uv sync --locked                                        # install exactly the lockfile
 uv run uvicorn app.main:create_app --factory --reload --port 8000   # development
-curl -sS localhost:8000/healthz                         # liveness: {"status":"ok"}
+curl -sS localhost:8000/healthz                         # liveness: {"status":"ok","version":"0.1.0"}
 curl -sS -i localhost:8000/readyz                       # readiness: 200 ready / 503 not_ready
 curl -sS -i localhost:8000/healthz | grep -i x-request-id   # the id every response carries
 uv run pytest                                           # -m "not integration" without Docker
@@ -106,7 +106,7 @@ METRICS_ENABLED=true uv run uvicorn app.main:create_app --factory   # then GET /
 Against the deployed service, where there is no process to start and no shell to start it in:
 
 ```bash
-curl -sS https://z-team-planner.vercel.app/healthz              # liveness
+curl -sS https://z-team-planner.vercel.app/healthz              # liveness, and the release that is live
 curl -sS -i https://z-team-planner.vercel.app/readyz            # readiness; allow ~1.1s on a cold Neon
 vercel logs <deployment-url>                                    # runtime logs for one deployment
 vercel env ls production --project z-team-planner               # what the next build will read
@@ -130,6 +130,45 @@ The API is stateless — recovery is "start it again". The data drill is the Neo
 - The `/shared/*` rate limit is **inert in production**: it is an in-process token bucket, 60 a minute per caller, and every serverless instance holds its own — so the ceiling is 60 × however many instances Vercel happens to be running, and it keys on the socket peer, which behind a proxy is the proxy. Decision 007 named the edge and found there is none to be had on this plan, so `/shared/*` is effectively unprotected; the code stays as feature 007's stopgap. The danger is not the missing ceiling on a hobby app with unguessable ids — it is reading this code and believing the ceiling works.
 - `uvicorn --reload` is development only.
 - `FIREBASE_AUTH_EMULATOR_HOST` set while `APP_ENV` is not `development` stops the process at startup. That is the guard working, not a bug.
+
+## Releases
+
+The product's own version, which is unrelated to the `Catalyst version` stamp. Root `VERSION` holds the number, and `package.json` and `pyproject.toml` carry copies. `CHANGELOG.md` holds the release notes. A release is a deliberate act by the maintainer and never follows from a merge alone. Decision 013 holds the why.
+
+### Operate
+
+Activate the hooks once per clone. The two tag hooks tag `v<VERSION>` whenever a commit or merge on `master` changes `VERSION`:
+
+```bash
+git config --unset core.hooksPath      # only if this clone still points at the old .githooks/
+sh catalyst/tools/hooks/install.sh     # pre-commit, post-commit and post-merge into .git/hooks
+```
+
+Cutting release `X.Y.Z`, on `master`:
+
+1. In `CHANGELOG.md`, move the `Unreleased` entries under a new `## [X.Y.Z] - <date>` heading, and write its Overview. Add a **Database** line if any migration landed since the last release.
+2. Set `X.Y.Z` in `VERSION`, `package.json` and `pyproject.toml`.
+3. Commit the three files and the changelog together. The hook prints `tagged vX.Y.Z`.
+4. Push, then confirm the deployed API reports the new number:
+
+```bash
+git push && git push origin vX.Y.Z
+curl -sS https://z-team-planner.vercel.app/healthz     # {"status":"ok","version":"X.Y.Z"}
+```
+
+Below `1.0.0`, MINOR marks a new user-facing capability and PATCH marks fixes and polish.
+
+### Recovery
+
+- **The hook did not tag**, because it was not active or the release came in another way: `git tag vX.Y.Z <release-commit>`, then push the tag.
+- **A tag points at the wrong commit and has not been pushed**: `git tag -d vX.Y.Z` and tag again. Once pushed, a tag is never moved. Cut the next PATCH instead.
+- **The API stopped answering after a release**: roll back with `vercel promote` (Vercel hosting), then check that `VERSION` exists and is not empty. The API reads it at import and refuses to start without it.
+
+### Quirks
+
+- The hooks tag locally only. A release whose tag was never pushed is invisible to everyone but this clone.
+- `post-commit` sees releases committed on `master`; `post-merge` sees releases that arrive by merge or pull. A release merged on GitHub is tagged only when it is pulled into a clone with `post-merge` active.
+- Nothing checks that the three files agree. A mismatch shows as `/healthz` reporting a number the manifests do not.
 
 ## Neon Postgres
 
