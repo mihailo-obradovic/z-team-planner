@@ -36,6 +36,8 @@ __pycache__/
 .claude/settings.local.json
 # catalyst:end
 .vercel
+# Neon CLI context (`neon set-context`): per-machine, nothing reads it.
+.neon
 
 # Skilld references (recreated by `skilld install`)
 .skilld
