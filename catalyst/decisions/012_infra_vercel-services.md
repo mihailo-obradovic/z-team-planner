@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -36,7 +36,7 @@ Better: one upload and one deployment per push; frontend and API never skew; no 
 
 Accepted: one function region, so the Nuxt server functions move to `fra1` with the API; the API inherits the project's Vercel Authentication, which covers deployment URLs only; Services is beta. Local development stays two processes with the absolute localhost URL. Feature 007's inert rate limit and the `/metrics` under-reporting are unchanged.
 
-Cutover: `z-team-planner-api` (personal Hobby scope) stays live, its own CORS allowlist intact, until the new deployment verifies sign-in and a cloud build save; then it is deleted. The merged project never sets `CORS_ALLOW_ORIGINS`. Rollback before that is `vercel promote`; after it there is none. The dashboard steps — variables merged into one project, Root Directory blank, previews off — are a checklist in `operations.md`.
+Cutover: `z-team-planner-api` (team `obradovic-co`) stays live, its own CORS allowlist intact, until the new deployment verifies sign-in and a cloud build save; then it is deleted. The merged project never sets `CORS_ALLOW_ORIGINS`. Rollback before that is `vercel promote`; after it there is none. The dashboard steps — variables merged into one project, Root Directory blank, previews off — are a checklist in `operations.md`.
 
 ## Contracts Touched
 
@@ -48,3 +48,5 @@ Cutover: `z-team-planner-api` (personal Hobby scope) stays live, its own CORS al
 ## Open Questions
 
 ## Verification
+
+Probe on 4 October 2026, a scratch project against the Neon `dev` branch: the shared root built and routed first try, functions in `fra1`. Live after merges `2c0b738`, `b2e604a` and `7ec7200`: `/`, `/privacy` and `/b/{id}` 200; `/healthz` and `/readyz` 200 against `main`; `/metrics` Nuxt's 404; `/api/v1/me` 401 in the API's envelope; the payload's `apiBaseUrl` is `/api/v1`. The maintainer signed in and saved a cloud build, a non-`master` push produced no Vercel check, and `z-team-planner-api` was deleted the same day. The first deployment lost images and icons; decision 014 covers both. Suites green: 425 frontend, 284 API.

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -46,3 +46,5 @@ The image addon's rule that the host config is emitted, never hand-written, has 
 ## Open Questions
 
 ## Verification
+
+Both regression tests watched failing on the pre-fix tree — the images test 4 of 4, the routing test on its icon row — and passing after. Live after `7ec7200`: portraits AVIF at widths 108, 216 and 512 with `x-vercel-cache: HIT`, the background AVIF, WebP when `Accept` lacks AVIF, and a width off the list 400; `/api/_nuxt_icon/lucide.json` 200 from Nuxt and an unknown `/api/v2/x` Nuxt's 404. The maintainer confirmed the icons back.
