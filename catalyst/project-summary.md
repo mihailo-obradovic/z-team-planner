@@ -62,6 +62,7 @@ One line per record: type, status, title, link.
 | 010 | infra       | Implemented | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
 | 011 | infra       | Accepted    | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
 | 012 | infra       | Accepted    | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
+| 013 | tooling     | Proposed    | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
 
 ## Domain Decision Index
 
