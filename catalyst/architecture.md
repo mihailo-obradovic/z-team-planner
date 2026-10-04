@@ -53,9 +53,11 @@ Stack-neutral. Every project, every stack module.
 ### Layering
 
 - Business rules live in domain/service code — never in UI, routes, transport, or storage-mapping layers.
-- Dependencies point one way: transport → service → persistence. A lower layer never imports an upper one.
+- Dependencies point one way: transport → service → persistence. A lower layer never imports an upper one — except an interface the service owns and the persistence layer implements: that import is of the contract, and calls still run downward.
+- **A backend's layout follows its domain count.** A domain is a business concept that owns its own tables; auth, health, and webhook receivers are plumbing and never count. Under three domains the backend lays out by role (one top-level folder per technical role); from three it lays out by module (one folder per domain, the layering above inside it). Another module is reached only through its public surface, which each backend module document defines — never through its transport layer or its tables directly. The shape is chosen at Init Design from the domains the feature documents name and recorded in the project's `architecture.md`; crossing the threshold is a named follow-up refactor on its own branch, never a mixed tree.
+- **A module escalates on its trigger, never in case:** ports and adapters when it talks to more than two external systems or must swap one; an in-process event bus when side effects pile onto a core operation (cross-process delivery is Asynchronous Work); separate command and query paths when a service passes roughly ten write methods. The modular monolith is the default, not an escalation.
 - A message consumer is a transport boundary: deserialize, validate, call a service, acknowledge. No business logic. Every rule written for routes applies to consumers unchanged.
-- One application core per domain: new deployables come from optional stack layers and job isolation (workers, consumers, DAG tasks) — splitting the domain into separate services is a decision record with a stated trigger (independent release cadence, isolation requirement, team scaling), never an aesthetic.
+- One application core per product: new deployables come from optional stack layers and job isolation (workers, consumers, DAG tasks) — splitting the product into separate services is a decision record with a stated trigger (independent release cadence, isolation requirement, team scaling), never an aesthetic.
 
 ### Conventions
 
@@ -96,13 +98,15 @@ Stack-neutral. Every project, every stack module.
 
 - All environment access through one central configuration entry point; no scattered env reads.
 - No hardcoded URLs, secrets, or API keys — in code, tests, or compose files.
-- Configuration is validated at startup; a missing/malformed value stops the process.
+- Configuration is validated at startup; a missing/malformed value stops the process. A default is allowed only for a value identical in every environment — port, log level, timeouts, pool size; secrets, credentials, URLs, hosts, and anything environment-specific never carry one.
+- A committed `.env.example` lists every variable with a placeholder value; `.env` itself is gitignored.
 - Secrets live in the consuming process's environment — never in task payloads, message payloads, or the database.
 
 ### Persistence
 
 - A schema change ships with its migration in the same change.
 - Migrations are forward-only in production; a rollback is a new migration.
+- A destructive schema change — a drop, a rename, `NOT NULL` on an existing column, a narrowed type — ships as expand → migrate → contract in separate changes whenever old code can still run against the database (rolling deploys, several instances, workers on their own release, a rollback that redeploys old code): an additive migration, then the code and any backfill, then the destructive migration.
 - Transaction boundaries live in the service layer.
 - Business invariants that must hold under concurrency are enforced by the database — unique/check/FK constraints or explicit locking. A service-level check alone is a race, not enforcement (mirrors: hiding UI is not authorization).
 - Explicit queries for complex reads.
@@ -112,6 +116,7 @@ Stack-neutral. Every project, every stack module.
 ### Asynchronous Work
 
 - The producing side only enqueues/emits; work definitions and execution live in the consuming service.
+- A job is enqueued after the transaction that motivates it commits, never inside it. When losing it after the commit is unacceptable, an outbox row is written in the same transaction and a relay enqueues it.
 - Job families are isolated: one family's backlog or failure never blocks another; each scales and fails independently.
 - Concurrency and timeouts are explicit and matched to the workload (resource-heavy jobs: concurrency 1).
 - Every consumer is idempotent — delivery is at-least-once.
@@ -126,14 +131,16 @@ Stack-neutral. Every project, every stack module.
 
 ### Logging Format And Request Tracing
 
-One shared line format across all services (APIs, workers, consumers, DAG tasks):
+One field set across all services (APIs, workers, consumers, DAG tasks), written in one encoding per project. The default encoding is the bracketed line:
 
 ```text
-[2026-07-03T08:31:35.123Z] [INFO] [api] [orders.service] [req 59e3cc] message
+[2026-07-03T08:31:35.123Z] [INFO] [api] [orders.service] [req 59e3cc] order paid orderId=8812 attempt=2
 ```
 
 - UTC, ISO-8601, milliseconds.
-- Fields in order: level, service name, logger name, request id, message. Thread/task/partition/DAG-run id may append as an optional extra field.
+- Fields in order: level, service name, logger name, request id, message. Structured context follows the message as space-separated `key=value` pairs, a value quoted when it contains a space; thread, task, partition, and DAG-run ids are ordinary keys.
+- A stack trace sits on indented continuation lines under its record; a continuation line belongs to the record above it.
+- JSON lines with the same keys, the trace in one `stack` field, is the other encoding — adopted by decision record when the project adopts a log aggregator, every service at once.
 - The edge service accepts `X-Request-ID` or generates one; it propagates through every hop (HTTP headers, broker task/message headers, callback headers) so one request greps across all services.
 - Records without request context log `[req -]`.
 
@@ -153,6 +160,7 @@ One shared line format across all services (APIs, workers, consumers, DAG tasks)
 - Bearer tokens are validated for signature, time bounds, issuer, **and audience** — a token minted for another client never passes.
 - Hiding UI by role is UX, never authorization: the server is the only gate; every permission in the access matrix is enforced server-side.
 - Keep per-user secrets out of the database when the design allows.
+- Secrets, API keys, and signatures are compared in constant time.
 - Service-to-service calls authenticate; the network perimeter is not the authorization boundary.
 - Containers run as non-root with minimal privileges.
 - Request and upload size limits are explicit at the edge.
@@ -191,6 +199,8 @@ The stack is a **selection** — one module per layer from the index below. A mo
 A module is a single `<module>.md` or a `<module>/` directory: nested choice dirs (e.g. the frontend `ui/` libraries) are follow-up questions answered at spawn, an `addons/` dir holds optional add-on docs for that module (an addon may carry a sibling payload dir of the same name — extra docs and rules that travel with it), and a `rules/` dir is a per-rule payload loaded through the doc that routes it — a `performance.md` router, or the addon doc that owns the payload — never wholesale. `starter/` and `setup.py` are reserved inside a module for the app scaffold and its setup hook; neither is supported yet, and a module carrying one is copied for its documents alone, with a note.
 
 **Module documents.** A module or tier holding more than its own contract document indexes the rest under a `## Module Documents` heading, three columns — Document, What it holds, Load. The Load cell is the trigger that loads that document — an imperative condition ("When defining or organizing types"), or "Always, with the module" for the contract document's own row, which holds "This document — the module contract and approved libraries" — never a second description. Header position is for machine-read fields only (`**Layer:**`/`**Tool:**` or `**Tier:**`, and `**Requires:**`, which any module or addon may declare); anything else a module depends on belongs in its body.
+
+**Third-party material.** A module document built from someone else's skills is either vendored or adapted, and its `## Provenance` section (last) says which; a tier document that travels without its module contract carries its own. _Vendored_ material is copied with listed deviations and re-synced by `tools/sync_rules.py`: an `Upstream:` line (repository, path, commit, synced date), a deviations table, and a `Re-sync:` step. _Adapted_ material is rewritten once into Catalyst's structure, examples inline and never a `rules/` payload, and re-checked by hand: a `Source:` line (repository, path, commit, adapted date — never `Upstream:`), the license line, a skill → document table, a Departures list linking the Catalyst rule that wins each clash, companion reading, and a `Re-check:` step.
 
 **Shared tiers.** Guidance that serves more than one module lives in underscore-prefixed tier directories under `stacks/`. This bundle carries `_lang/typescript/` and `_lang/python/` (language-level), `frontend/_vue/` (Vue-general) and `frontend/_common/` (framework-agnostic frontend rules, e.g. component file naming). A tier is never a spawn question; a module or addon declares the tiers it needs with a `**Requires:**` header (`python-fastapi` requires `_lang/python`; `nuxt` requires `_lang/typescript · frontend/_vue · frontend/_common`), and the scaffolder copies them whenever that module is chosen. Tier docs carry a `**Tier:**` header instead of Layer/Tool.
 
@@ -250,4 +260,4 @@ The GitHub Actions the workflows use. Actions are not packages and carry no lock
 
 `temporal-polyfill` is imported inside `web/utils/formatTimestamp.ts` rather than installed as a global shim, and its class API is kept deliberately over the smaller `fns` entrypoint: it is the shape `Temporal` will have natively, so reaching Baseline means deleting one import and this dependency with no change to calling code. The extra bundle weight is accepted as temporary.
 
-The composition floor is **at least one of Backend and Frontend, and a backend brings Persistence with it**. Every other layer is **optional**, adopted when its trigger fires, not in anticipation, and never replacing that floor. Background work: when work must run outside the request/response cycle — queues, scheduled jobs, fan-out. Deployment: when the project needs a reproducible multi-service run or ship story rather than each service started by hand. Identity: when the product gains end-user accounts, roles, or permissions beyond a single trusted operator group — a small internal tool never pays the IdP tax, and nobody hand-rolls auth to dodge it. Maintenance: once the project has a committed lockfile or pinned image tags to keep current; pins stay exact, and bumping an existing dependency is not a way around the Dependency Change Rule, which still owns every _new_ one.
+The composition floor is **at least one of Backend and Frontend, and a backend brings Persistence with it** — a pure-backend service and a pure-frontend app are both valid shapes, and a frontend-only app carries no database. A product's apps share one repository; a second repository is a decision record with the triggers Layering names for splitting the product (independent release cadence, isolation requirement, team scaling). Every other layer is **optional**, adopted when its trigger fires, not in anticipation, and never replacing that floor. Background work: when work must run outside the request/response cycle — queues, scheduled jobs, fan-out — a synchronous handler covers everything else. Deployment: when the project needs a reproducible multi-service run or ship story rather than each service started by hand. Identity: when the product needs what only an identity provider gives — single sign-on across apps, federation, an admin console for users, or several backends sharing one user base. Below that, a backend's own `auth/` choice holds the accounts, and nobody hand-rolls auth to dodge either. Maintenance: once the project has a committed lockfile or pinned image tags to keep current; pins stay exact, and bumping an existing dependency is not a way around the Dependency Change Rule, which still owns every _new_ one.
