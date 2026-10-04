@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -52,3 +52,5 @@ Harder: three files carry the number, and a release must touch all three.
 ## Open Questions
 
 ## Verification
+
+Tests read `VERSION` and assert the API's metadata and `/healthz` report it, and that a missing or empty file fails at import. Suites green: 425 frontend, every API test. Merged as `8e140e6` on 4 October 2026 and tagged `v0.1.0` by hand, since the tag hooks arrived in that merge. The live `/healthz` answered `{"status":"ok","version":"0.1.0"}` about two minutes after the push, which proves the deployed API bundle carries the root `VERSION`.
