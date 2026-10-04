@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["fra1"],
+  "images": {
+    "sizes": [
+      24, 48, 52, 90, 104, 108, 120, 180, 216, 224, 240, 256, 448, 512, 2560
+    ],
+    "formats": ["image/webp", "image/avif"],
+    "minimumCacheTTL": 31536000
+  },
   "services": {
     "web": {
       "root": ".",

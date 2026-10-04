@@ -63,6 +63,7 @@ One line per record: type, status, title, link.
 | 011 | infra       | Accepted          | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
 | 012 | infra       | Accepted          | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
 | 013 | tooling     | Accepted          | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
+| 014 | incident    | Accepted          | Portraits went missing on the first Services deployment                         | [014_incident_services-image-config](decisions/014_incident_services-image-config.md)         |
 
 ## Domain Decision Index
 
