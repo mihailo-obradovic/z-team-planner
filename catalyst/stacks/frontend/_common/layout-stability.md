@@ -75,7 +75,7 @@ The four cases above are about a value that changes. This one is about a value t
 
 **Render nothing, and the space collapses**, then re-expands when the answer lands — the mount-and-unmount jump above, on every page load rather than on a user action. **Render one of the real states as a guess** and the guess is wrong for some users, so they watch the UI correct itself: a header that shows a sign-in button for a moment to someone who is already signed in reads as being signed out and back in.
 
-**Model the not-yet-known as a state of its own**, beside the real ones, and give it the reserved placeholder this document already describes: the element keeps its space, and is `invisible`, `aria-hidden`, and removed from the tab order until it has something to say.
+**Model the not-yet-known as a state of its own**, beside the real ones, and give it the reserved placeholder this document already describes: the element keeps its space, and is `invisible`, `aria-hidden`, and removed from the tab order until it has something to say. An effect after mount may resolve that state into a real one; it never replaces it with a guess.
 
 ```ts
 // ✅ the ignorance is a state, so every render has something honest to draw

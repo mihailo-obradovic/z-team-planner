@@ -7,12 +7,13 @@ One fetcher wraps every request; one policy handles every failure. Components co
 
 ## The fetcher — `@/utils/fetcher.ts`
 
-A single wrapper over `$fetch` that every service function calls (`data-layer.md`). It owns four things no caller should repeat:
+A single wrapper over `$fetch` that every service function calls (`data-layer.md`). It owns five things no caller should repeat:
 
 - **`Accept: application/json`** on every request, so an API that would otherwise redirect or render HTML answers with JSON it can parse.
 - **`credentials: 'include'`**, for a cookie-session API on another origin.
 - **The base URL**, read from public runtime config — the Universal Rules' injection rule bound to Nuxt.
 - **The CSRF header** (`X-XSRF-TOKEN`, read from the CSRF cookie) on mutating verbs only — `POST`, `PUT`, `PATCH`, `DELETE`. Sending it on reads is harmless but noise.
+- **The one retry** — `retryStatusCodes: [500, 502, 503, 504]` on the instance, so a `GET` that failed in transit or with a 5xx is retried once. ofetch never retries a mutating verb or an aborted request, and Pinia Colada has no retry of its own (`data-layer.md`).
 
 ### The CSRF retry
 
@@ -91,14 +92,30 @@ Track handled errors in a **`WeakSet`** inside the policy and handle each object
 const handledErrors = new WeakSet<object>();
 
 export function handleApiError(error, context, options = {}) {
-  if (typeof error !== 'object' || error === null) return;
-  if (handledErrors.has(error)) return;
+  if (typeof error !== 'object' || error === null) {
+    return;
+  }
+  if (isAbort(error) || handledErrors.has(error)) {
+    return;
+  }
   handledErrors.add(error);
   // …the policy
 }
 ```
 
 A `WeakSet` specifically — the entry disappears with the error object, so a long session accumulates nothing.
+
+**An abort is not a failure.** A request cancelled through its `signal` — a query superseded, cancelled, or unmounted — rejects with a `FetchError` whose `cause` is the `AbortError`, and Pinia Colada records it as the query's error. The policy returns on it before the table: no toast, no redirect.
+
+```ts
+function isAbort(error: object) {
+  return (
+    error instanceof FetchError &&
+    error.cause instanceof DOMException &&
+    error.cause.name === 'AbortError'
+  );
+}
+```
 
 ## When the failure was the page
 

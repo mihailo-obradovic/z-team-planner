@@ -57,7 +57,7 @@ Framework tiers carry their own rule sets under the same convention: React rules
 
 Vendored 2026-07-25 from Vercel's `react-best-practices` skill (as carried in Mihailo's prior projects). The upstream 70-rule set is split across Catalyst's tiers by what each rule assumes: the 24 language-level rules here, React-general rules in `frontend/_react/rules/`, Next.js client-side rules in the `nextjs` module's `rules/`, and RSC/SSR rules in the `ssr` addon's payload.
 
-Upstream: https://github.com/vercel-labs/agent-skills — `skills/react-best-practices/rules/` · commit: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62` · synced: 2026-07-27
+Upstream: https://github.com/vercel-labs/agent-skills — `skills/react-best-practices/rules/` · commit: `063bee94c3f4df8453406c830b0a7df0f2860278` · synced: 2026-10-02
 
 Local deviations from upstream:
 

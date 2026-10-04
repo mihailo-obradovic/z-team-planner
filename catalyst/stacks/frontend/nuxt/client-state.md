@@ -85,7 +85,7 @@ A composable is the third home for shared state, and it has four rules of its ow
 
 ## Stores do not call the API
 
-A store action does not fetch. The query layer calls the service, then calls the store action with the result (`data-layer.md` — "store side effects belong to the query layer's internal hook"). A store never has a loading state, an error state, or a retry — Pinia Colada owns those.
+A store action does not fetch. The query layer calls the service, then calls the store action with the result (`data-layer.md` — "store side effects belong to the query layer's internal hook"). A store never has a loading state, an error state, or a retry — Pinia Colada and the fetcher own those.
 
 Where a store genuinely must trigger a fetch — priming the session at startup — that lives in a plugin that calls the service and hands the result to the action, not in the action itself (`routing.md`).
 

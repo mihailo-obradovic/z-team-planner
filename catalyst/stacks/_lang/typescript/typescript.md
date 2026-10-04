@@ -21,9 +21,15 @@ The annotation convention for deliberate deviations, footguns, and to-dos is not
 
 The Node major is pinned at the repository root: `mise.toml` holds it (`[tools]` / `node = "<major>"`), and `package.json` mirrors it as `"engines": { "node": ">=<major>" }` once one exists, so the version manager and CI read the same pin — a CI job reads the pin file rather than restating the version (`../../ci/github-actions.md`). A new project defaults to the latest LTS; the pin is the project's own from spawn onward. Keep `mise.toml` the only pin file — a repo migrating from `.nvmrc` or `.node-version` deletes it in the same change that adds `mise.toml`. Bumping the pin is a deliberate act, not routine maintenance: an update that drops a supported runtime belongs to the decision record that owns the choice (the maintenance module's rule, when adopted). Never float the pin (`lts/*`, `latest`) — a pin that moves on its own is not a pin.
 
+## Compiler Options
+
+**Every TypeScript config sets `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, and `noImplicitOverride`** — in `tsconfig.json`, or where the framework generates its configs, its own hook (Nuxt: `typescript.tsConfig.compilerOptions` in `nuxt.config.ts`). `exactOptionalPropertyTypes` stays off: it fights library typings.
+
 ## Package Manager
 
 **The package manager is pinned exactly in `packageManager`** — `pnpm@10.30.1`, never a range. A lockfile written by a second tool, or by a second version of the same tool, is a lockfile the next install disagrees with. The exact pin is what makes Corepack install the one the project was tested against.
+
+**`pnpm-lock.yaml` is committed and is the single source of pinned versions.** Manifest ranges are allowed; CI installs frozen (`../../ci/github-actions.md`).
 
 **`pnpm-workspace.yaml` exists even in a single-package repository**, because it is the only home for pnpm settings `package.json` cannot hold. Two earn their place:
 

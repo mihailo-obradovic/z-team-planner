@@ -1,6 +1,6 @@
 # Code Style
 
-**Trigger:** writing or changing a function signature, placing a function within a file, writing a conditional or a loop, or reading, storing, or rendering a timestamp — in any language, on every project.
+**Trigger:** writing or changing a function signature, placing a function within a file, writing a conditional, a ternary, or a loop, reading, storing, or rendering a timestamp, or writing a display formatter — in any language, on every project.
 
 Language-level shaping rules that hold regardless of stack. They are about **how code is written**, never about what a file should carry: whether a comment, a helper, or an abstraction earns its place is [`mold.md`](mold.md)'s. Framework-specific ordering (a Vue SFC's script sections, a route file's declaration order) is the stack module's, and where a module states one it wins for the files it covers.
 
@@ -57,6 +57,26 @@ function serialise(build: { id: string; name: string; owner: string }) { … }
 The threshold is **two or more same-typed**, not a count of parameters — three parameters of three different types are fine, and two of the same type are not.
 
 An object also stops the growth that makes this urgent: a signature reached eight same-typed parameters, and adding a ninth meant editing every call site to keep the order right. Adding a key edits nothing.
+
+## Named functions are declarations
+
+**A named function is a declaration; an arrow is for a callback or an inline value.** It holds in every language that has both forms. Declarations hoist, which is what lets [Principal export first](#principal-export-first) put the export above its helpers.
+
+```ts
+// * Incorrect
+export const createPaymentsService = (db: Db) => ({ … });
+items.map(function (item) { return item.id; });
+
+// * Correct
+export function createPaymentsService(db: Db) {
+  return { … };
+}
+items.map((item) => item.id);
+```
+
+Three exceptions: object-literal methods in a returned object stay as written — they are values, not declarations; a framework-required form keeps the framework's shape (`defineConfig(…)`, `forwardRef(…)`, a handler passed to `app.get`); and a function passed exactly once — a comparator, a predicate — may stay inline at the call site, becoming a declaration once it is named and reused.
+
+oxlint enforces it with `func-style: ["error", "declaration"]` and `prefer-arrow-callback`.
 
 ## Principal export first
 
@@ -117,9 +137,31 @@ for (const id of build.fl) {
 Two boundaries:
 
 - **The rule binds languages whose braces are optional.** Python's block syntax is not a choice, and this says nothing about it.
-- **Expressions are not control flow.** A ternary, a `&&` short-circuit, and a single-expression arrow body are values, not branches, and stay as they are. `return a ? b : c` is untouched.
+- **Expressions are not control flow.** A ternary, a `&&` short-circuit, and a single-expression arrow body are values, not branches, and stay as they are. `return a ? b : c` is untouched; a ternary inside a ternary is [Ternaries do not nest](#ternaries-do-not-nest)'s.
 
 Where the stack's linter offers the check, it is turned on rather than left to review — ESLint and oxlint both spell it `curly`, with the `all` option.
+
+## Ternaries do not nest
+
+**A ternary's branches are values, never another ternary.** A third outcome gets a name: a function whose guard clauses return each case, or a `Record` lookup keyed by it.
+
+```ts
+// * Incorrect
+const label = count > 1 ? 'many' : count > 0 ? 'one' : 'none';
+
+// * Correct
+function countLabel(count: number) {
+  if (count > 1) {
+    return 'many';
+  }
+  if (count > 0) {
+    return 'one';
+  }
+  return 'none';
+}
+```
+
+oxlint enforces it with `no-nested-ternary`. It does not lint Vue templates, where `vue-style.md`'s binding threshold holds the same line in review.
 
 ## Wall-clock time is the server's
 
@@ -155,3 +197,24 @@ Three boundaries:
 - **An id is not a timestamp either.** `Date.now()` is sometimes reached for as a unique-enough key; the replacement there is `crypto.randomUUID()`, not `Temporal`. The ban lists `Date.now()` and offers only `Temporal`, which is the wrong answer for an id.
 
 A polyfill is **imported inside the one boundary module that needs it**, never installed as a global shim: imported, it lands in the chunk that formats a timestamp, while a shim lands in the entry bundle every visitor downloads.
+
+## Formatters take absence, never bad input
+
+**A display formatter accepts `T | null | undefined`, and legitimate absence renders the one house fallback**, defined in one place rather than chosen per call site.
+
+```ts
+// * Correct
+export function formatPrice(cents: number | null | undefined) {
+  if (cents === null || cents === undefined) {
+    return EMPTY_VALUE;
+  }
+
+  if (!Number.isFinite(cents)) {
+    throw new TypeError(`formatPrice: not a finite number: ${cents}`);
+  }
+
+  return priceFormat.format(cents / 100);
+}
+```
+
+A bad value — `NaN`, an invalid date, an unparseable string — never reaches a formatter: the schema at the service boundary parses it out ([`architecture.md`](../architecture.md), Validation). One that arrives anyway throws rather than rendering the fallback, which would hide the bug ([`architecture.md`](../architecture.md), Error Handling).

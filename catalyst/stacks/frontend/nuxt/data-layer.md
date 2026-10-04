@@ -10,6 +10,7 @@ All API communication goes through two layers. Adding endpoints for a new resour
 Pure async functions over `fetcher<T>()`, one per endpoint. Named `fetchItems` / `fetchItem`, `createItem`, `updateItem`, `deleteItem`.
 
 - **No side effects beyond the HTTP call.** No store access, no toasts, no navigation, no cache writes.
+- **Every function takes an optional `signal` last and passes it to the fetcher** — `fetchUser(id, signal)` calls `fetcher(url, { signal })` — so a superseded or unmounted query aborts its request rather than finishing it.
 - Every non-void response is **parsed, not asserted**: `parseResponse(Schema, await fetcher(url))`. Never `fetcher<T>()` with a type argument — that is a lie the compiler believes. Void endpoints (a `DELETE` returning 204) skip parsing.
 - Response-only schemas — shapes used nowhere but this file — sit at the top of the service file. Domain schemas live with the types they produce in `@/types/` (`validation.md`).
 - Unwrap envelopes here, not in components: an API that wraps single resources in `{ data: … }` gets `.data` applied at the service boundary so every consumer sees the model.
@@ -42,19 +43,26 @@ export function useFetchUser(
 ) {
   return useAppQuery<User>({
     key: () => [...usersQueryKeys.fetchUser, id.value],
-    query: () => fetchUser(id.value),
+    query: ({ signal }) => fetchUser(id.value, signal),
     ...options
   });
 }
 ```
 
+Every `query` forwards the `signal` Pinia Colada hands it.
+
 **Cache invalidation in `onSettled`.** Mutations invalidate the resource root; components never patch cached lists by hand. A mutation composable also passes the caller's own `onSettled` through, and the two run in a fixed order — internal first, then the caller's — which is pinned once in an exported helper rather than rewritten per mutation:
 
 ```ts
-export function chainOnSettled<TData, TVars, TError>(
-  internal: OnSettled<TData, TVars, TError>,
-  callerHook: OnSettled<TData, TVars, TError> | undefined
-): OnSettled<TData, TVars, TError> {
+export function chainOnSettled<
+  TData,
+  TVars,
+  TError,
+  TContext extends Record<any, any>
+>(
+  internal: OnSettled<TData, TVars, TError, TContext>,
+  callerHook: OnSettled<TData, TVars, TError, TContext> | undefined
+): OnSettled<TData, TVars, TError, TContext> {
   return async (data, error, vars, context) => {
     await internal(data, error, vars, context);
     await callerHook?.(data, error, vars, context);
@@ -62,7 +70,7 @@ export function chainOnSettled<TData, TVars, TError>(
 }
 ```
 
-Both `await`s matter: without them a caller's hook can run against a cache that has not finished invalidating.
+Both `await`s matter: without them a caller's hook can run against a cache that has not finished invalidating. `TContext` is what an optimistic `onMutate` returns ([Optimistic updates](#optimistic-updates)); a mutation without one infers it empty.
 
 ## The options passthrough
 
@@ -90,6 +98,23 @@ export function useUpdateUser(options: /* … */ = {}) {
 **Test the await, not just the order.** An internal hook whose effect is synchronous (`setUser(data)`) runs in order whether or not it is awaited, and an invalidation asserts the refetch was _sent_, not that it finished — so a composable-level spec passes with the `await` removed. Pin the guarantee once, against a deliberately slow internal hook. A project that chains through one small helper rather than hand-writing the chain per composable has exactly one place to pin it, and one place for the chain to be wrong.
 
 **Store side effects belong to the query layer's internal hook**, not to services and not to components — syncing the authenticated user after a login is the composable's job.
+
+## Global options — `colada.options.ts`
+
+`@pinia/colada-nuxt` reads the plugin's options from `colada.options.ts` at the project root. The defaults are stated, not inherited:
+
+```ts
+export default {
+  queryOptions: {
+    staleTime: 5_000,
+    refetchOnWindowFocus: false
+  }
+} satisfies PiniaColadaOptions;
+```
+
+- **`staleTime: 5_000`** — a mounting query reuses data younger than five seconds. The project's own writes never wait on it, since mutations invalidate; raise it per query only with a reason (reference data that rarely changes).
+- **No refetch on window focus** — data refreshes on mount, on reconnect, and on invalidation.
+- **No retry here.** Pinia Colada has none of its own; the fetcher retries a request that failed in transit or with a 5xx once (`error-handling.md`).
 
 ## The wrappers
 
@@ -133,7 +158,7 @@ For TypeScript narrowing, read through the grouped `state` object: inside `state
 
 ### Freshness and refetching
 
-- A query is **stale** once `staleTime` (default 5 s) has passed since its last fetch. Stale queries refetch automatically when a component mounts them or their key changes; fresh ones are served from cache.
+- A query is **stale** once `staleTime` (5 s, stated in `colada.options.ts`) has passed since its last fetch. Stale queries refetch automatically when a component mounts them or their key changes; fresh ones are served from cache.
 - `refresh()` fetches **only if stale** — prefer it. `refetch()` fetches unconditionally — reserve it for an explicit "reload" affordance.
 - `gcTime` (default 5 min) is how long an **unused** entry stays cached after the last component unmounts it. Override either per query only with a reason (e.g. long `staleTime` for near-static reference data).
 
@@ -176,7 +201,47 @@ export function clearUserScopedCache(pinia?: Pinia): void {
 
 - `mutate` catches the mutation's error itself (it lands in `error` and the central handler); `mutateAsync` also **rethrows**, so an un-caught `mutateAsync` call is an unhandled rejection — another reason the component rules default to `mutate`.
 - A mutation exposes `isLoading`, `error`, `data`, and `reset()` (clears error and data back to the initial state — useful when a dialog reopens).
-- The cache is directly writable — `queryCache.getQueryData(key)` / `setQueryData(key, data)` — which is how optimistic updates are built. The project's default is **invalidation, not manual cache writes**; reach for `setQueryData` only deliberately, and never from a component (the query layer owns the cache).
+- The cache is directly writable — `queryCache.getQueryData(key)` / `setQueryData(key, data)` — which is how optimistic updates are built. The project's default is **invalidation, not manual cache writes**; reach for `setQueryData` only for an optimistic update, and never from a component (the query layer owns the cache).
+
+### Optimistic updates
+
+An update the user must see before the server answers — a toggle, a reorder — is written to the cache first, inside the query composable:
+
+1. `onMutate` cancels the affected queries, snapshots their data, writes the expected value, and returns the snapshot.
+2. `onError` writes the snapshot back.
+3. `onSettled` invalidates, so the server's answer replaces the guess either way.
+
+```ts
+type ArchiveContext = { previous: User | undefined };
+
+export function useArchiveUser(options: /* … */ = {}) {
+  const queryCache = useQueryCache();
+
+  return useAppMutation<User, number, FetchError, ArchiveContext>({
+    mutation: (id) => archiveUser(id),
+    ...options,
+    onMutate: (id) => {
+      const key = [...usersQueryKeys.fetchUser, id];
+      queryCache.cancelQueries({ key });
+      const previous = queryCache.getQueryData<User>(key);
+      if (previous) {
+        queryCache.setQueryData(key, { ...previous, archived: true });
+      }
+      return { previous };
+    },
+    onError: (_error, id, { previous }) => {
+      if (previous) {
+        queryCache.setQueryData([...usersQueryKeys.fetchUser, id], previous);
+      }
+    },
+    onSettled: chainOnSettled(async () => {
+      await queryCache.invalidateQueries({ key: USERS_ROOT });
+    }, options.onSettled)
+  });
+}
+```
+
+Cancelling first stops an in-flight refetch from landing on top of the optimistic write.
 
 ## Component rules
 

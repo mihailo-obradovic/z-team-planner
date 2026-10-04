@@ -12,6 +12,8 @@ SemVer (`MAJOR.MINOR.PATCH`):
 
 `1.0.0` is cut, so a rule change that could break an existing project is a MAJOR bump from here. The changelog stays in Catalyst — it never travels into spawns.
 
+**No commitlint, no Conventional Commits.** They pay off when a tool reads history; here the number and the changelog are human judgment and every commit message is user-approved. A project adopting `semantic-release` brings them back through a decision record.
+
 ## Upgrading a project
 
 From the Catalyst repo: `python3 tools/upgrade_project.py <project-path>` — dry-run by default, `--apply` writes. It prints the changelog between the project's stamp and the current version, three-way merges the copied rule files in the project's `catalyst/` (project-local edits preserved; real conflicts get markers), reports — but never touches — project-owned documents, offers opt-in adoptions the project lacks (new hooks, the experiments flow — whose acceptance is the one insert-only write to `project-summary.md`), refreshes the generated root pointers, and bumps the stamp only after confirmation. An opt-in the project turns down is recorded in `catalyst/.catalyst-declined` and never offered again — every one of them is presence-detected, so without that record "no" would be re-asked on every upgrade forever; each run lists what is on it, and deleting a line reopens the offer. The merge base comes from the release tags below; without the project's base tag it degrades to `.catalyst-new` sidecar files instead of overwriting.
