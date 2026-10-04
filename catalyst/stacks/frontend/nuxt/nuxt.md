@@ -19,13 +19,13 @@ routeRules: {
 
 Every posture other than SPA — prerendering included — is the `ssr` addon's subject: `addons/ssr.md` owns the adoption criteria and the hazards each one brings.
 
-- Data fetching goes through the two-layer data access described in `data-layer.md` — a pure service function per endpoint, a Pinia Colada composable per operation. A GraphQL API keeps that contract and swaps the transport beneath it (`addons/graphql.md`).
+- Data fetching goes through the two-layer data access described in `data-layer.md` — a pure service function per endpoint, a Pinia Colada composable per operation, with the query's abort `signal` passed through to the fetcher. A GraphQL API keeps that contract and swaps the transport beneath it (`addons/graphql.md`).
 - Every response is parsed against a Zod schema rather than asserted with a generic — a removed or renamed field fails at the boundary, not three components deep.
 - Forms: Regle for client-side rules, mirroring the backend's validation for the endpoint. Server 422s render inline on the field, never as a toast.
 - Errors are handled centrally, once, at the query layer — components carry no try-catch and no manual loading flags.
-- Client state is Pinia, and only what no server owns (`client-state.md`); server-owned data stays in Pinia Colada rather than being mirrored into a store.
+- Client state is Pinia, and only what no server owns (`client-state.md`); server-owned data stays in Pinia Colada rather than being mirrored into a store. Filter, sort, and pagination state lives in the URL's query (`routing.md`).
 - Styling and component primitives are the `frontend/ui` choice.
-- Tests: Vitest with `@nuxt/test-utils` and Vue Test Utils.
+- Tests: Vitest with `@nuxt/test-utils`, Testing Library, and Vue Test Utils, colocated beside the code (`Foo.test.ts` next to `Foo.vue`) — Nuxt's default `ignore` keeps a test in `pages/` from becoming a route; MSW mocks the API at the fetcher's wire. A test queries by role, label, or text; a test id is the last resort and is never exported from the component.
 
 ## The order of `nuxt.config.ts`
 
@@ -76,6 +76,8 @@ export default defineNuxtConfig({
 
 ## `srcDir` is the project's own
 
+One app per folder: configuration and `node_modules` at the app's root. Alone, the app root is the repository root; paired with a TypeScript backend in the same repository, the app is the `web/` package of a pnpm workspace (`../../backend/node-express/node-express.md`, Structure).
+
 Nuxt's default `srcDir` is `app/`, and a project is free to use another. Two generated paths follow it, both written by the scaffolder at the default because it never asks:
 
 - **`sortTailwindcss.stylesheet`** in `.oxfmtrc.json` — the path to the global stylesheet.
@@ -96,7 +98,7 @@ Neither fails loudly when wrong. A stylesheet path that resolves to nothing make
 | `client-state.md`             | Client state — `useState`, shared composables, Pinia stores, and the server-state boundary     | When adding or changing a store or a shared composable                    |
 | `validation.md`               | Zod for responses, Regle for requests, and the inline-not-toast 422 path                       | When validating a request or a response payload                           |
 | `error-handling.md`           | The fetcher, CSRF retry, and the central error policy                                          | When adding a fetcher call, or changing how failures surface              |
-| `routing.md`                  | Pages, layouts, and middleware-as-thin-adapter                                                 | When adding or changing pages, layouts, or middleware                     |
+| `routing.md`                  | Pages, layouts, middleware-as-thin-adapter, and search params                                  | When adding or changing pages, layouts, middleware, or URL filter state   |
 | `page-layout.md`              | The height chain from the shell to a page, and the full-height column a scrolling region needs | When building a page layout, or when a region must scroll inside the page |
 | `../_common/design-system.md` | Design-system template — instantiated into a project-owned convention annex at Init Design     | At Init Design, and when the project's design annex changes               |
 
@@ -126,7 +128,7 @@ Verified on Nuxt 4.3.0: the directory is normalised to the glob `composables/*.{
 - Pinia and `@pinia/colada` (with `@pinia/colada-nuxt`) — client state and server state respectively.
 - Zod (response schemas); `@regle/core` + `@regle/rules` (with `@regle/nuxt`) — form validation.
 - `@vueuse/core`.
-- Vitest, `@nuxt/test-utils`, `@vue/test-utils`.
+- Vitest, `@nuxt/test-utils`, `@testing-library/vue` (the renderer behind `renderSuspended`), `@vue/test-utils`; `msw` (dev).
 - pnpm as the package manager.
 
 ## Avoid By Default

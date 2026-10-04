@@ -240,13 +240,16 @@ function isStatCapped(stat: StatName): boolean {
   );
 }
 
-const flightColor = computed(() =>
-  flightVisuallyActive.value
-    ? 'primary'
-    : flightActive.value
-      ? 'secondary'
-      : 'neutral'
-);
+const flightColor = computed(() => {
+  if (flightVisuallyActive.value) {
+    return 'primary';
+  }
+  if (flightActive.value) {
+    return 'secondary';
+  }
+
+  return 'neutral';
+});
 
 function handleToggleFlight() {
   toggleFlight(props.heroId);

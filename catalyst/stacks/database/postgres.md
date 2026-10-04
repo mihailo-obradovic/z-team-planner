@@ -14,9 +14,10 @@ The PostgreSQL database module. It only names the tool — the persistence rules
 
 The engine stays language-neutral; the language-side pairing lives here so the chosen backend has a documented set. One row per backend module that exists — a new backend module adds its row when it lands.
 
-| Backend          | Client                        | Migration tool | Test harness                |
-| ---------------- | ----------------------------- | -------------- | --------------------------- |
-| `python-fastapi` | SQLAlchemy (`psycopg` driver) | Alembic        | `pytest` + `testcontainers` |
+| Backend          | Client                                       | Migration tool    | Test harness                          |
+| ---------------- | -------------------------------------------- | ----------------- | ------------------------------------- |
+| `python-fastapi` | SQLAlchemy (`psycopg` driver)                | Alembic           | `pytest` + `testcontainers`           |
+| `node-express`   | Kysely (`pg` driver, `kysely-codegen` types) | Kysely `Migrator` | Vitest + `@testcontainers/postgresql` |
 
 ## Approved Libraries
 

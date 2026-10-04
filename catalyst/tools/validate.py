@@ -205,6 +205,13 @@ _PATH_RE = re.compile(r"`([^`\s]+\.md)`")
 
 # Documents a spawn writes for itself, so the template legitimately has no copy — naming one is a pointer to where it would live, not a broken link (references/project-documents.md; release notes: versioning.md).
 PROJECT_AUTHORED = {"KNOWN_FAKES.md", "operations.md", "release-notes.md"}
+# Directories under the repository root that hold no bundle documents: VCS internals, harness configuration, dependencies, and `.scratch/` — the gitignored local issue tracker whose notes name files the template has not written yet.
+NON_BUNDLE_DIRS = (".git", ".claude", ".scratch", "node_modules")
+
+
+def tree_files(root: Path, pattern: str, skip: tuple[str, ...] = NON_BUNDLE_DIRS) -> list[Path]:
+    """Files under root matching pattern, outside the skipped directories (NON_BUNDLE_DIRS by default)."""
+    return [p for p in root.rglob(pattern) if p.is_file() and not any(part in skip for part in p.relative_to(root).parts)]
 
 
 def doc_paths(text: str) -> set[str]:
@@ -567,10 +574,11 @@ def check_catalyst(root: Path) -> None:
                     error(f"conventions/editor-setup.md: setting `{key}` is not in the table — every generated setting is documented")
 
     # R13: every backticked document path resolves. Pointing at a document is how the bundle routes work — a shard nobody can open is guidance that silently never loads, and a rename leaves the old name behind in prose no rule ever reads. A path resolves relative to the repository root or to the document naming it (both forms are in use), with a leading `catalyst/` stripped: root-facing documents address the bundle the way a project sees it.
-    known = {p.name for p in root.rglob("*") if p.is_file()}
-    for path in sorted(root.rglob("*.md")):
-        # CHANGELOG.md and TODO.md are the two documents that legitimately name files the tree does not have: history keeps the old names, and a TODO describes what has not been written yet — and a root `PLAN-*.md` handoff (untracked, gitignored) names what its steps will create. `examples/` documents a fictional project's own features and decisions. `.claude/` is harness configuration, not bundle documents.
-        if any(part in (".git", ".claude", "node_modules", "examples") for part in path.parts):
+    # The names a shorthand path may resolve to: every file but tracker notes, VCS internals, and dependencies. `.claude/` stays in — `SKILL.md` exists only under `.claude/skills/`.
+    known = {p.name for p in tree_files(root, "*", tuple(d for d in NON_BUNDLE_DIRS if d != ".claude"))}
+    for path in sorted(tree_files(root, "*.md")):
+        # CHANGELOG.md and TODO.md are the two documents that legitimately name files the tree does not have: history keeps the old names, and a TODO describes what has not been written yet — and a root `PLAN-*.md` handoff (untracked, gitignored) names what its steps will create. `examples/` documents a fictional project's own features and decisions.
+        if "examples" in path.relative_to(root).parts:
             continue
         if path.name in ("CHANGELOG.md", "TODO.md") or (path.parent == root and path.name.startswith("PLAN-")):
             continue

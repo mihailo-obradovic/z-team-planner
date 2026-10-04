@@ -1,7 +1,7 @@
 import { MAX_STAT_VALUE } from '@/types/hero';
 import { MISSION_TEMPLATE_COUNT } from '@/types/mission';
 
-import type { StatName } from '@/types/hero';
+import type { HeroStats, StatName } from '@/types/hero';
 import type { MissionTemplate } from '@/types/mission';
 
 type MissionThresholdEdit = {
@@ -49,14 +49,24 @@ export function useMissionTemplates() {
 
     updateTemplate(template, (entry) => ({
       ...entry,
-      // * At most one threshold per column; unsetting clears only a value that stat actually holds.
-      [kind]:
-        value === null
-          ? entry[kind][stat] === undefined
-            ? entry[kind]
-            : {}
-          : { [stat]: value }
+      [kind]: nextThreshold(entry[kind], stat, value)
     }));
+  }
+
+  // * At most one threshold per column; unsetting clears only a value that stat actually holds.
+  function nextThreshold(
+    current: Partial<HeroStats>,
+    stat: StatName,
+    value: number | null
+  ): Partial<HeroStats> {
+    if (value !== null) {
+      return { [stat]: value };
+    }
+    if (current[stat] === undefined) {
+      return current;
+    }
+
+    return {};
   }
 
   function setMissionActiveTemplate(index: number) {

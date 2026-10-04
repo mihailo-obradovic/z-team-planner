@@ -1,28 +1,57 @@
 #!/usr/bin/env sh
-# Catalyst document validator (optional pre-commit seatbelt).
+# Catalyst pre-commit seatbelt: the document validator, then the fast code checks (format check + lint).
 #
 # Optional — never installed automatically (agents don't install or configure hooks; see prime-directive.md, Document Validation). To enable in a clone:
 #   sh catalyst/tools/hooks/install.sh pre-commit
 #
-# Runs the validator before each commit and blocks when it reports errors; notes never block. Graceful: where the validator or python3 itself is absent (a standalone handoff, a stripped-down environment), the commit proceeds with a note instead of breaking.
+# Blocks the commit when the validator reports errors (notes never block) or a check fails. Checks, never fixes: nothing is rewritten or re-staged, and a failure names the fix verb. Typecheck and tests stay in Verification and CI — the hook runs only what finishes in about a second. Graceful: a missing python3, validator, pnpm, or uv skips that check with a note instead of breaking the commit.
 #
-# Validates the working tree as it sits on disk, not the staged index — a partial `git add -p` stage is checked in its on-disk form. An index-accurate run would need the validator's own change detection to read the index too; deferred deliberately.
+# Checks the working tree as it sits on disk, not the staged index — a partial `git add -p` stage is checked in its on-disk form. An index-accurate run would need the validator's own change detection to read the index too; deferred deliberately.
 
-set -eu
+set -u
 
-command -v python3 >/dev/null 2>&1 || {
-    echo "pre-commit: python3 not found — skipping document validation"
-    exit 0
-}
+failed=0
 
 # Git runs hooks from the repository root. A project keeps the rule set in catalyst/ and the Catalyst repo keeps it at the root, so which one this is follows from where the validator sits. tools/validate.py alone does not identify Catalyst — an older spawn carries it at tools/ too — so the scaffolder, which never travels, is the tiebreaker (the same test validate.py uses).
-if [ -f catalyst/tools/validate.py ]; then
-    exec python3 catalyst/tools/validate.py .
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: python3 not found — skipping document validation"
+elif [ -f catalyst/tools/validate.py ]; then
+    python3 catalyst/tools/validate.py . || failed=1
 elif [ -f tools/new_project.py ]; then
-    exec python3 tools/validate.py             # Catalyst itself
+    python3 tools/validate.py || failed=1             # Catalyst itself
 elif [ -f tools/validate.py ]; then
-    exec python3 tools/validate.py .           # older spawn carrying the validator at tools/
+    python3 tools/validate.py . || failed=1           # older spawn carrying the validator at tools/
+else
+    echo "pre-commit: validate.py not found — skipping document validation"
 fi
 
-echo "pre-commit: validate.py not found — skipping document validation"
-exit 0
+# check <label> <fix hint> <command...> — runs one check, records a failure with the verb that fixes it.
+check() {
+    label=$1 fix=$2
+    shift 2
+    if ! "$@"; then
+        echo "pre-commit: $label failed — run \`$fix\`, review, and stage the result"
+        failed=1
+    fi
+}
+
+# The checks are detected by the file that defines them, so the hook needs no per-stack configuration: the TypeScript tier's verbs (stacks/_lang/typescript/toolchain.md) where package.json exists, Ruff where pyproject.toml does. The Catalyst repo has neither and stays validator-only.
+if [ -f package.json ]; then
+    if command -v pnpm >/dev/null 2>&1; then
+        check "format check" "pnpm format" pnpm run --silent --if-present format:check
+        check "lint" "pnpm lint:fix" pnpm run --silent --if-present lint
+    else
+        echo "pre-commit: pnpm not found — skipping format and lint checks"
+    fi
+fi
+
+if [ -f pyproject.toml ]; then
+    if command -v uv >/dev/null 2>&1; then
+        check "format check" "uv run ruff format ." uv run ruff format --check .
+        check "lint" "uv run ruff check --fix ." uv run ruff check .
+    else
+        echo "pre-commit: uv not found — skipping format and lint checks"
+    fi
+fi
+
+exit "$failed"

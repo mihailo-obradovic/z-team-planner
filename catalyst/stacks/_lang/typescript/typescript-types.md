@@ -14,6 +14,8 @@ If a type is only used within the file where it's defined (e.g., a local helper 
 
 Import shared types as `@/types/...`.
 
+Where a backend uses the module shape (`architecture.md`, Layering), "shared" means shared across modules: a type used only within one module lives in `<module>.types.ts`, a type another module needs is exported from the owning module's `index.ts`, and `@/types/` holds only types no module owns.
+
 ---
 
 ## 2. File Extension

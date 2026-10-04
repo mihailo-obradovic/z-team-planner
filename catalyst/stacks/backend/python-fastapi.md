@@ -34,6 +34,8 @@ app/
   utils/         shared helpers (pagination)
 ```
 
+That is the role shape; `auth/` is its one domain folder, as cross-cutting plumbing. From three domains the module shape applies (`architecture.md`, Layering): `app/<domain>/{router,schemas,models,service,repository}.py`, with `core/` kept. Foreign keys may point across modules; `relationship()` stays within one, since an async session cannot lazy-load and eager-loading another module's model puts this module's queries on its tables. Another module's data comes only through its `service.py`, batched by id rather than one call per row — never its `router.py` or `repository.py`. The boundary is prose; no import-linter.
+
 - DB session only through a `get_db` dependency.
 - Scaffold order: `core` → `models` (+ Alembic init) → `schemas` → `repositories` → `services` → `routes` → `auth` → wire in `main.py`.
 

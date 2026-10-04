@@ -43,6 +43,20 @@ function dialogText() {
   return document.body.textContent?.replace(/\s+/g, ' ') ?? '';
 }
 
+function partnerOf<T extends { id: HeroId }>(
+  column: { top: T; bottom: T },
+  heroId: HeroId
+): T | null {
+  if (column.top.id === heroId) {
+    return column.bottom;
+  }
+  if (column.bottom.id === heroId) {
+    return column.top;
+  }
+
+  return null;
+}
+
 function rosterNames() {
   const rail = document.querySelector('nav[aria-label="Roster"]');
 
@@ -98,14 +112,7 @@ describe('hero detail dialog', () => {
     await nextTick();
 
     const partner = p.synergyPairColumns.value
-      .flatMap((column) => [column, column])
-      .map((column) =>
-        column.top.id === 'golem'
-          ? column.bottom
-          : column.bottom.id === 'golem'
-            ? column.top
-            : null
-      )
+      .map((column) => partnerOf(column, 'golem'))
       .find(Boolean);
 
     expect(partner).toBeTruthy();

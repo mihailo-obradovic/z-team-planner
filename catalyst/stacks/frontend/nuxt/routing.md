@@ -57,3 +57,37 @@ That pre-mount window is otherwise a blank screen — cover it with a self-conta
 
 - `navigateTo` for programmatic navigation, `<NuxtLink>` in templates. Never `window.location` — it discards the SPA's state and forces a full reload.
 - External links use a plain `<a>` with `rel="noopener"`.
+
+## Search params
+
+Filter, sort, and pagination state lives in the URL's query, so a reload, a bookmark, or a shared link restores it. Each page reads and writes it through one composable, `@/composables/use<Page>Filters.ts`, never through `route.query` scattered across components:
+
+```ts
+const UserFiltersSchema = z.object({
+  status: z.enum(['active', 'archived']).catch('active'),
+  page: z.coerce.number().int().min(1).catch(1)
+});
+
+type UserFilters = z.infer<typeof UserFiltersSchema>;
+
+export function useUserFilters() {
+  const route = useRoute();
+  const filters = computed(() => UserFiltersSchema.parse(route.query));
+
+  function setFilter<K extends keyof UserFilters>(
+    key: K,
+    value: UserFilters[K]
+  ) {
+    return navigateTo(
+      { query: { ...route.query, [key]: String(value) } },
+      { replace: true }
+    );
+  }
+
+  return { filters, setFilter };
+}
+```
+
+- **Parse with a schema whose fields `.catch()` to a default.** The URL is user-editable; a stale or hand-edited value — or a repeated key, which Vue Router reads as an array — renders the default, never an error.
+- **Replace the history entry, never push one** — Back leaves the page rather than stepping through every filter.
+- **The filters are the query's params,** so they go into its key (`data-layer.md`).
