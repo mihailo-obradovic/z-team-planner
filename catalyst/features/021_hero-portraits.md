@@ -30,12 +30,12 @@ The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust**
 
 ## Outputs And Side Effects
 
-| Output / Side Effect   | Type               | Description                                                                                                                                            |
-| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| served portrait        | AVIF               | on Vercel `/_vercel/image?url=…&w=<width × density>&q=90`, by `Accept`; in dev and tests, IPX with `f_avif` so local review sees production's encoding |
-| `srcset`               | HTML               | x1 and x2 candidates per usage site, the largest exactly 512                                                                                           |
-| edge cache             | Vercel image cache | one entry per (master, width, quality, format) for one year                                                                                            |
-| Vercel `images` config | build output       | `sizes` from `image.screens`, AVIF + WebP, the TTL — emitted at build, never a hand-written `vercel.json`                                              |
+| Output / Side Effect   | Type               | Description                                                                                                                                                    |
+| ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| served portrait        | AVIF               | on Vercel `/_vercel/image?url=…&w=<width × density>&q=90`, by `Accept`; in dev and tests, IPX with `f_avif` so local review sees production's encoding         |
+| `srcset`               | HTML               | x1 and x2 candidates per usage site, the largest exactly 512                                                                                                   |
+| edge cache             | Vercel image cache | one entry per (master, width, quality, format) for one year                                                                                                    |
+| Vercel `images` config | `vercel.json`      | top-level `images`: `sizes` = `image.screens`, AVIF + WebP, the TTL; restated because Services drops Nuxt's (decision 014), held to `nuxt.config.ts` by a test |
 
 ## Scope And Non-Goals
 
@@ -67,17 +67,18 @@ Not role-specific.
 
 ## Examples
 
-| Input                                            | Expected Output                                          | Notes                                   |
-| ------------------------------------------------ | -------------------------------------------------------- | --------------------------------------- |
-| `identify public/images/portraits/*.webp`        | twelve lossless WebPs, 450–512 a side, square within 2px | one per hero, plus Sonar's second form  |
-| Malevola's master beside Fandom's `Malevola.png` | identical pixels, 496×496                                | never resampled or padded               |
-| `HeroPortrait` with `usage="card"`               | `w=108 1x`, `w=216 2x`, `q=90`                           | IPX spells it `w_108`, `q_90`, `f_avif` |
-| `usage="panel"`                                  | `w=256 1x`, `w=512 2x`                                   | the 2x is the largest master            |
-| card at 2x, production                           | `content-type: image/avif`                               | `image/webp` without AVIF in `Accept`   |
-| a second request for that variant                | `x-vercel-cache: HIT`                                    | one transformation per variant per year |
-| a portrait `NuxtImg` outside `HeroPortrait`      | test failure                                             | the component is the one declaration    |
-| a width × density above the largest master       | test failure                                             | never an upscale                        |
-| a master replaced, deployed                      | old variants until `vercel cache invalidate --srcimg …`  | then fresh next request                 |
+| Input                                            | Expected Output                                          | Notes                                      |
+| ------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------ |
+| `identify public/images/portraits/*.webp`        | twelve lossless WebPs, 450–512 a side, square within 2px | one per hero, plus Sonar's second form     |
+| Malevola's master beside Fandom's `Malevola.png` | identical pixels, 496×496                                | never resampled or padded                  |
+| `HeroPortrait` with `usage="card"`               | `w=108 1x`, `w=216 2x`, `q=90`                           | IPX spells it `w_108`, `q_90`, `f_avif`    |
+| `usage="panel"`                                  | `w=256 1x`, `w=512 2x`                                   | the 2x is the largest master               |
+| card at 2x, production                           | `content-type: image/avif`                               | `image/webp` without AVIF in `Accept`      |
+| a second request for that variant                | `x-vercel-cache: HIT`                                    | one transformation per variant per year    |
+| a portrait `NuxtImg` outside `HeroPortrait`      | test failure                                             | the component is the one declaration       |
+| a width × density above the largest master       | test failure                                             | never an upscale                           |
+| a master replaced, deployed                      | old variants until `vercel cache invalidate --srcimg …`  | then fresh next request                    |
+| `vercel.json` `images` off `image.screens`       | test failure                                             | live, `/_vercel/image` 404s (decision 014) |
 
 ## Business Rules
 
