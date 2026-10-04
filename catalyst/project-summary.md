@@ -61,6 +61,7 @@ One line per record: type, status, title, link.
 | 009 | tooling     | Implemented | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
 | 010 | infra       | Implemented | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
 | 011 | infra       | Accepted    | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
+| 012 | infra       | Proposed    | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
 
 ## Domain Decision Index
 
