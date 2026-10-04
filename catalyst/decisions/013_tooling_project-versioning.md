@@ -40,8 +40,6 @@ Better: an incident can name its release from one `curl` of `/healthz`. The firs
 
 Harder: three files carry the number, and a release must touch all three.
 
-If decision 012 moves the API into a subdirectory, the `VERSION` reader moves with the `shared/` readers.
-
 `versioning.md` names the file `release-notes.md`, while the template's spawn writes `CHANGELOG.md` and the prime directive says "changelog". This project uses `CHANGELOG.md`. The contradiction is recorded in the Catalyst repository's `TODO.md` for a template fix.
 
 ## Contracts Touched

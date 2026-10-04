@@ -11,6 +11,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import build_engine, build_session_factory
 from app.core.firebase import init_firebase
 from app.core.logging import configure_logging
+from app.core.version import APP_VERSION
 from app.exceptions import register_exception_handlers
 from app.middleware import (
     BodyLimitMiddleware,
@@ -36,7 +37,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title="Z-Team Planner API",
-        version="0.1.0",
+        version=APP_VERSION,
         # * OpenAPI is a development convenience, not a public surface.
         docs_url="/docs" if settings.app_env == "development" else None,
         redoc_url=None,

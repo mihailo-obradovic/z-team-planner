@@ -3,6 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.version import APP_VERSION
 from app.main import API_V1_PREFIX, create_app
 from app.middleware.request_id import REQUEST_ID_HEADER
 
@@ -15,7 +16,11 @@ def client(base_env: dict[str, str]) -> TestClient:
 def test_healthz_is_liveness_only(client: TestClient) -> None:
     response = client.get("/healthz")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    assert response.json() == {"status": "ok", "version": APP_VERSION}
+
+
+def test_the_openapi_metadata_carries_the_release(base_env: dict[str, str]) -> None:
+    assert create_app().version == APP_VERSION
 
 
 def test_every_response_carries_a_request_id(client: TestClient) -> None:

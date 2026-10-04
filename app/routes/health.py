@@ -13,6 +13,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import DbSession
+from app.core.version import APP_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ router = APIRouter(tags=["ops"])
 
 @router.get("/healthz", summary="Liveness — the process is up")
 def healthz() -> dict[str, str]:
-    # * Liveness only: touches nothing. The distinction from /readyz is the point — a liveness probe that checks the database restarts the process every time the database blinks.
-    return {"status": "ok"}
+    # * Liveness only: touches nothing. The distinction from /readyz is the point — a liveness probe that checks the database restarts the process every time the database blinks. The version is a constant read at import, so it touches nothing either.
+    return {"status": "ok", "version": APP_VERSION}
 
 
 @router.get("/readyz", summary="Readiness — the API can serve")

@@ -1,5 +1,6 @@
 [project]
 name = "z-team-planner-api"
+# * A copy of VERSION, the one source of the number (decision 013); change both together.
 version = "0.1.0"
 description = "FastAPI backend for the Z-Team build calculator"
 requires-python = ">=3.14"
