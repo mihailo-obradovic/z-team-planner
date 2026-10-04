@@ -43,11 +43,11 @@ export function handleApiError(
   }
 
   const status = asStatusError(error)?.statusCode;
-  const toast = (message: string) => {
+  function toast(message: string) {
     if (options.suppressToasts !== 'all') {
       context.showToast(message);
     }
-  };
+  }
 
   if (status === 401) {
     // * Reached only after the fetcher's refresh-and-retry already failed. No redirect: no route in this app requires authentication (feature 006).

@@ -91,10 +91,12 @@ export function enPointe(
   const mechanics = SPECIAL_POWER_MECHANICS.coupe;
   const bonus =
     aLaSeconde === 'trained' ? mechanics.upgradeBonus : mechanics.baseBonus;
-  const stat = index === 0 ? 'combat' : index === 1 ? 'mobility' : null;
+  const stat = EN_POINTE_SLOT_STATS[index] ?? null;
 
   return mapStats((name) => (name === stat ? bonus : 0));
 }
+
+const EN_POINTE_SLOT_STATS: readonly StatName[] = ['combat', 'mobility'];
 
 // * Golem's Spread Thin pays +25% of his own starting-plus-allocated stats per copy standing on the team.
 export function spreadThin(ownStats: HeroStats, copies: number): HeroStats {

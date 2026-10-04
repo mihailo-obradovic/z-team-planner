@@ -127,11 +127,15 @@ function enPointeIcon(state: number): string {
 
 // * One source for the shown line and the reserved variants, so a state cannot render taller than the row kept for it.
 function enPointeDescription(bonus: number, state: number): string {
-  const statLabel =
-    state === 1 ? 'Combat' : state === 2 ? 'Mobility' : 'Combat or Mobility';
+  const statLabel = EN_POINTE_STAT_LABELS[state] ?? 'Combat or Mobility';
 
   return `+${bonus} ${statLabel} when placed in a specific slot.`;
 }
+
+const EN_POINTE_STAT_LABELS: Record<number, string> = {
+  1: 'Combat',
+  2: 'Mobility'
+};
 
 function enPointeTooltip(bonus: number, state: number): string {
   if (state === 1) {
