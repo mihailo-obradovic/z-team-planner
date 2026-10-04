@@ -18,9 +18,9 @@ Decision 007 put the frontend and the API on Vercel as two projects from one rep
 
 ## Decision
 
-One project, `z-team-planner`, with two services — the Nuxt frontend and the FastAPI backend — declared in a root `vercel.json`. Top-level rewrites send `/api/(.*)`, `/healthz` and `/readyz` to the backend with the path preserved, and everything else to the frontend. `/metrics` gets no rewrite and is unreachable by construction. The frontend calls the API on its own origin: production `NUXT_PUBLIC_API_BASE_URL` becomes `/api/v1`, feature 006's empty-means-unavailable rule unchanged, and the production CORS allowlist becomes empty. The Python `entrypoint` moves from `pyproject.toml` into the service object, its one home.
+One project, `z-team-planner`, with two services — the Nuxt frontend and the FastAPI backend — declared in a root `vercel.json`. Top-level rewrites send `/api/(.*)`, `/healthz` and `/readyz` to the backend with the path preserved, and everything else to the frontend. `/metrics` gets no rewrite and is unreachable by construction. The frontend calls the API on its own origin: production `NUXT_PUBLIC_API_BASE_URL` becomes `/api/v1`, feature 006's empty-means-unavailable rule unchanged, and `CORS_ALLOW_ORIGINS` is left unset, so the allowlist is empty. The Python `entrypoint` moves from `pyproject.toml` into the service object, its one home.
 
-The layout is settled by a probe, not up front. The docs require a `root` per service and show only subdirectories, while `@vercel/config`'s own types call `.` a service root's default. A scratch project deployed from the CLI against the Neon `dev` branch tries, in order: both services on the shared root with `framework` pinned; the frontend at `.` with the API under `api/`; both under `web/` and `api/`. The first that builds and routes is adopted, this record states which, and the scratch project is deleted.
+Both services keep the repository root as their `root`, with `framework` pinned so detection never has to choose between `package.json` and `pyproject.toml`. Nothing moves. The docs show only subdirectory roots, so this was settled by a probe before any file moved: a scratch project deployed from the CLI against the Neon `dev` branch built and routed the shared root on the first try, and the subdirectory layouts were never needed. `shared/` stays where it is; the API bundle carries the fixture it reads. The region is `regions: ["fra1"]` in `vercel.json`, which services mode honours, so it leaves the dashboard.
 
 `vercel.json` rather than the recommended `vercel.ts`: `@vercel/config` 0.9.0 types only the superseded `experimentalServices` key, so it cannot express `services` yet.
 
@@ -28,7 +28,7 @@ Supersedes 007, whose `vercel.json` ban existed only because two projects shared
 
 ## Scope
 
-`vercel.json`; `pyproject.toml` (the `[tool.vercel]` block removed); `.env.example`. If the probe moves files: the structural move as its own commit, then `ci.yml`, `migrate.yml`, the toolchain configs and the three `shared/` readers. `operations.md` (Vercel hosting), feature 006, the `.vercelignore` and `app/CLAUDE.md` comments, and the README's hosting line. No behavior contract changes.
+`vercel.json`; `pyproject.toml` (the `[tool.vercel]` block removed); `.env.example`; `operations.md` (Vercel hosting), feature 006, the `.vercelignore` comment, and the README's hosting line. No behavior contract changes.
 
 ## Consequences
 
@@ -36,15 +36,14 @@ Better: one upload and one deployment per push; frontend and API never skew; no 
 
 Accepted: one function region, so the Nuxt server functions move to `fra1` with the API; the API inherits the project's Vercel Authentication, which covers deployment URLs only; Services is beta. Local development stays two processes with the absolute localhost URL. Feature 007's inert rate limit and the `/metrics` under-reporting are unchanged.
 
-Cutover: `z-team-planner-api` (personal Hobby scope) stays live until the new deployment verifies sign-in and a cloud build save; then CORS is emptied and the project is deleted. Rollback before that is `vercel promote`; after it there is none. The dashboard steps — variables merged into one project, region `fra1`, Root Directory blank, previews off — are a checklist in `operations.md`.
+Cutover: `z-team-planner-api` (personal Hobby scope) stays live, its own CORS allowlist intact, until the new deployment verifies sign-in and a cloud build save; then it is deleted. The merged project never sets `CORS_ALLOW_ORIGINS`. Rollback before that is `vercel promote`; after it there is none. The dashboard steps — variables merged into one project, Root Directory blank, previews off — are a checklist in `operations.md`.
 
 ## Contracts Touched
 
 - `operations.md`: Vercel hosting rewritten; API service URLs.
 - `features/006_frontend-data-layer.md`: the `NUXT_PUBLIC_API_BASE_URL` row.
 - `decisions/007_infra_hosting-vercel.md`: status `Superseded by 012`.
-- `project-summary.md`: the ADR index rows for 007 and 012.
-- `app/CLAUDE.md`: the location paragraph, if files move.
+- `project-summary.md`: the ADR index rows for 007 and 012; a Technical Stack hosting row.
 
 ## Open Questions
 

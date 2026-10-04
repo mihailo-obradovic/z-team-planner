@@ -14,12 +14,12 @@ Features 004 and 005 give the Nuxt app a real backend. This feature is the layer
 
 ## Inputs
 
-| Input                      | Type                  | Source                      | Constraints                                                               |
-| -------------------------- | --------------------- | --------------------------- | ------------------------------------------------------------------------- |
-| `NUXT_PUBLIC_API_BASE_URL` | public runtime config | build/deploy environment    | optional; empty means no API is deployed and sign-in is unavailable       |
-| `NUXT_PUBLIC_FIREBASE_*`   | public runtime config | Firebase web app config     | `apiKey`, `authDomain`, `projectId`, `appId` — public values, not secrets |
-| Firebase auth state        | `onAuthStateChanged`  | `firebase.client.ts` plugin | drives the store; `getIdToken()` per request                              |
-| API responses              | JSON                  | feature 005's contract      | parsed with Zod at the service boundary, never asserted                   |
+| Input                      | Type                  | Source                      | Constraints                                                                                          |
+| -------------------------- | --------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `NUXT_PUBLIC_API_BASE_URL` | public runtime config | build/deploy environment    | optional; empty means sign-in is unavailable; production is the same-origin `/api/v1` (decision 012) |
+| `NUXT_PUBLIC_FIREBASE_*`   | public runtime config | Firebase web app config     | `apiKey`, `authDomain`, `projectId`, `appId` — public values, not secrets                            |
+| Firebase auth state        | `onAuthStateChanged`  | `firebase.client.ts` plugin | drives the store; `getIdToken()` per request                                                         |
+| API responses              | JSON                  | feature 005's contract      | parsed with Zod at the service boundary, never asserted                                              |
 
 ## Outputs And Side Effects
 

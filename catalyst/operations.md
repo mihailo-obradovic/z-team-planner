@@ -2,29 +2,33 @@
 
 How to run what decision 004 adopted — one section per stateful component, three parts each: **Operate** (paste-ready commands), **Recovery** (the drill, with the date it was last actually performed), **Quirks** (traps that already bit someone). Rules and contracts live in `architecture.md` and the feature documents, never here.
 
-Status note: **stage 2 is live** (21 September 2026). The planner is at <https://z-team-planner.vercel.app> and the API at <https://z-team-planner-api.vercel.app>, with Google sign-in enabled. Decision 007's four gates all passed first: the scheduled backup workflow runs, its restore has been rehearsed, Firebase has the live domain authorized with a published consent screen, and the privacy page is reachable. Neon `main` is production at revision `182ad318ac94`. A real Google sign-in was completed on the live site the same day.
+Status note: **stage 2 is live** (21 September 2026). The planner is at <https://z-team-planner.vercel.app>, with Google sign-in enabled. Since decision 012 the API answers on the same origin under `/api/v1`. Decision 007's four gates all passed first: the scheduled backup workflow runs, its restore has been rehearsed, Firebase has the live domain authorized with a published consent screen, and the privacy page is reachable. Neon `main` is production at revision `182ad318ac94`. A real Google sign-in was completed on the live site the same day.
 
 ## Vercel hosting
 
-Two projects from this one repository, both with the repository root as their Root Directory: **`z-team-planner`** (Nuxt preset) and **`z-team-planner-api`** (FastAPI preset, region `fra1`, install command `uv sync --locked`). Production branch is `master`; preview deployments are off. Decision 007 holds the why and the staging; both projects exist and are live as of stage 2.
+One project, **`z-team-planner`** (team `obradovic-co`), holding two services that the root `vercel.json` declares: `web` (Nuxt) and `api` (FastAPI, entrypoint `app.asgi:app`, install `uv sync --locked`). Both are rooted at the repository root, and every push builds and ships them as one deployment. `vercel.json` also routes the public traffic. `/api/*`, `/healthz` and `/readyz` go to `api` with the path unchanged, `/metrics` has no route at all, and everything else goes to `web`. Its `regions` key puts every function in `fra1`, beside Neon in `eu-central-1`. Production branch is `master`; preview deployments are off. Decision 012 holds the why. Decision 007 is the two-project layout this replaced.
 
-The API project also carries **Vercel Authentication switched off explicitly**. The frontend project has it on, and a project that inherited it would answer every browser call with a login page instead of JSON.
+Vercel Authentication is on for the project. It guards deployment URLs, never the production domain, so the browser's calls to `/api/v1` pass untouched.
 
 ### Operate
 
+Every command names its project. A checkout linked to another project once sent production variables to the wrong place (Quirks).
+
 ```bash
-vercel link                                 # bind this checkout to one project (once per project)
-vercel --prod                               # deploy the linked project to production
-vercel promote <deployment-url>             # make an earlier deployment production again
-vercel env ls production                    # what the next build will read
-vercel logs <deployment-url>                # runtime logs for one deployment
+vercel link --project z-team-planner --scope obradovic-co   # bind this checkout (once)
+vercel deploy --prod                                        # deploy the working tree to production
+vercel promote <deployment-url>                             # make an earlier deployment production again
+vercel env ls production --project z-team-planner           # what the next build will read
+vercel logs <deployment-url>                                # runtime logs for one deployment, both services
 ```
 
-A push to `master` deploys whichever projects exist. Everything else is dashboard work: creating a project, its region, and its environment variables.
+A push to `master` deploys. Everything else is dashboard work: environment variables and project settings.
+
+The project holds both halves' variables, and every service sees all of them. The frontend reads the four `NUXT_PUBLIC_FIREBASE_*`, `NUXT_SITE_URL`, `NUXT_SITE_ENV`, and `NUXT_PUBLIC_API_BASE_URL` set to `/api/v1`. The API reads `APP_ENV`, `DATABASE_URL`, `DATABASE_URL_DIRECT`, `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_JSON`. Sharing is harmless: `Settings` ignores names it does not declare, and Nuxt reads only its own prefixes. `CORS_ALLOW_ORIGINS` stays unset, because no browser crosses an origin.
 
 ### Recovery
 
-Rolling back is `vercel promote` against an earlier deployment (Instant Rollback in the dashboard) — it reassigns the production domain immediately, with no rebuild. There is nothing here to restore: the frontend is a build artifact and the API holds no data of its own. Data recovery is the Neon section's drill.
+Rolling back is `vercel promote` against an earlier deployment (Instant Rollback in the dashboard). It reassigns the production domain immediately, with no rebuild, and moves the frontend and the API together, since they are one deployment. A rollback can therefore never pair a frontend with an API it was not built beside. There is nothing here to restore: the frontend is a build artifact and the API holds no data of its own. Data recovery is the Neon section's drill.
 
 ### Quirks
 
@@ -32,26 +36,30 @@ Rolling back is `vercel promote` against an earlier deployment (Instant Rollback
 - **Diagnosing a page that renders but does nothing:** compare the entry chunk the served HTML asks for against one the build log says it emitted. If the HTML's chunk 404s and the log's chunk 200s, the HTML is stale — not the assets.
 - **A `NUXT_PUBLIC_*` change needs a redeploy, not an environment edit.** `/` is prerendered, so those values are baked into the payload at build time. Editing the variable in the dashboard changes nothing until the next build.
 - An **empty `NUXT_PUBLIC_API_BASE_URL` is a valid deployment**, not a broken one: it means no API is behind this frontend and sign-in is unavailable (feature 006). The missing Firebase variables still fail the build, loudly, in the `ready` hook.
-- **`vercel.json` is read from a project's Root Directory.** Both projects are rooted at the repository root, so any such file would be read by both — and a `functions` glob that matches no files hard-fails the build it does not belong to. Python configuration lives in `pyproject.toml` instead, where the Nuxt project cannot see it.
+- **The relative `/api/v1` works only on the deployed origin.** Local development runs Nuxt and the API as two processes on two ports, so `.env` keeps the absolute `http://localhost:8000/api/v1` and the CORS allowlist that goes with it.
+- **Pass `--project` to every `vercel env` command.** Without it the CLI acts on whatever the current directory is linked to. On 4 October 2026, database variables meant for a scratch project landed on production from the main checkout. Nothing read them, and they were removed.
+- **`vercel link` edits the repository.** It appends `.env*` to `.gitignore` and writes a development token to `.env.local`. Revert the first and delete the second: `.env.*` is already ignored, and the token is never needed.
+- **Both services pin `framework`.** They share the repository root, where `package.json` and `pyproject.toml` sit side by side, and detection would otherwise have to guess which framework each one is.
+- **The `entrypoint` is `module:object`, never a file path.** `app/asgi.py` looks obviously right and fails the build with `no matching module file was found`; the value is `app.asgi:app`. It sits on the `api` service in `vercel.json`, its only home.
+- **A routed service never falls back.** A path that matches the `api` rewrite and that FastAPI does not serve returns the API's own 404 error envelope, never the frontend's page. That is why only `/api/*` and the two health paths go to it.
 - **Preview deployments are off, and the switch is a dashboard project setting** — production-only building, set in the project's build/deployment settings. Nothing in the repository turns them off, which is the whole hazard: this setting reverted once and nobody noticed until a Renovate PR carried a failing Vercel check. Confirm it by pushing any branch other than `master` and looking for the absence of a Vercel check — not a skipped one, none at all. It moved out of Settings → Git at some point, so hunt by setting name rather than by path.
-- **Write the Ignored Build Step as an explicit `if`, never a bare test.** Both projects mean "build production only", but only this form is known to work here:
+- **Write the Ignored Build Step as an explicit `if`, never a bare test.** The project means "build production only", but only this form is known to work here:
 
   ```bash
   if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi
   ```
 
-  The terse equivalent `[ "$VERCEL_ENV" != "production" ]` **skips production too**. The API project shipped with it briefly and its first git-triggered production deploy came back `Canceled` with a `0ms` build, which reads like an infrastructure hiccup rather than a config error. A skipped build is not a failed one: nothing goes red, and the old deployment just stays live.
+  The terse equivalent `[ "$VERCEL_ENV" != "production" ]` **skips production too**. The old API project shipped with it briefly and its first git-triggered production deploy came back `Canceled` with a `0ms` build, which reads like an infrastructure hiccup rather than a config error. A skipped build is not a failed one: nothing goes red, and the old deployment just stays live.
 
-- **Why previews are not turned off in the repository.** `vercel.json`'s `git.deploymentEnabled` takes a bare `false`, which stops production deploying too; its per-branch form would need every future branch listed. The older Ignored Build Step (`[ "$VERCEL_ENV" != "production" ]`, exit 0 to skip) works, but it lets Vercel create the deployment and start the build before aborting it, so the deployments list fills with aborted builds. Both are also read from a project's Root Directory, and once the API project exists both projects are rooted there — see the `vercel.json` note above.
+- **Why previews are not turned off in the repository.** `vercel.json`'s `git.deploymentEnabled` takes a bare `false`, which stops production deploying too, and its per-branch form would need every future branch listed. A per-service `ignoreCommand` lets Vercel create the deployment and start the build before aborting it, so the deployments list fills with aborted builds.
 - **A preview build cannot succeed here even by accident.** The Firebase `NUXT_PUBLIC_*` variables are scoped to Production, so a preview build reaches `nuxt.config.ts`'s `ready` guard with none of them and fails on `Missing required public runtime config`. That is the guard working — a build without config is not a deployable artifact — but it means a stray preview always shows up as a red check rather than a quiet one.
-- **The API project must stay in `fra1`.** Vercel's default is `iad1`, which puts an ocean between every query and Neon in `eu-central-1`. Only the _function_ region is `fra1`; builds still run in `iad1` and that is fine, since no build talks to the database.
-- **`[tool.vercel] entrypoint` is `module:object`, never a file path.** `app/asgi.py` looks obviously right and fails the build with `no matching module file was found`; the value is `app.asgi:app`. The first API deployment ever attempted is what found this — the setting had been written but never exercised.
+- **Only the function region is `fra1`.** Builds still run in `iad1`, which is fine, since no build talks to the database. Vercel's default function region is `iad1`, so deleting `regions` from `vercel.json` would put an ocean between every query and Neon.
 - **Alembic never runs on Vercel.** Migrations are manual, from a workstation, against the direct endpoint — the Neon section's commands.
 - Vercel's **Neon marketplace integration is not used**: it injects a single `DATABASE_URL`, and this project needs the pooled and direct endpoints separately. Both variables are set by hand.
 
 ## Portrait images (Vercel Image Optimization)
 
-The twelve hero portraits in `public/images/portraits/` are lossless WebP masters at the bust's native size; Vercel's optimizer resizes and re-encodes them on request. `nuxt.config.ts` holds the whole configuration — `image.screens` is derived from the per-usage widths in `web/config/portraits.ts` and becomes the optimizer's allowed `sizes`, `image.quality` is 90, and the one-year edge TTL sits under `nitro.vercel.config.images`. Feature 021 holds the why; there is no `vercel.json` and there must not be (see the Vercel section's Quirks).
+The twelve hero portraits in `public/images/portraits/` are lossless WebP masters at the bust's native size; Vercel's optimizer resizes and re-encodes them on request. `nuxt.config.ts` holds the whole configuration — `image.screens` is derived from the per-usage widths in `web/config/portraits.ts` and becomes the optimizer's allowed `sizes`, `image.quality` is 90, and the one-year edge TTL sits under `nitro.vercel.config.images`. Feature 021 holds the why. The image settings never go in `vercel.json`: Nitro emits them at build, and a hand-written `images` block there would be a second source.
 
 ### Operate
 
@@ -97,10 +105,10 @@ METRICS_ENABLED=true uv run uvicorn app.main:create_app --factory   # then GET /
 Against the deployed service, where there is no process to start and no shell to start it in:
 
 ```bash
-curl -sS https://z-team-planner-api.vercel.app/healthz          # liveness
-curl -sS -i https://z-team-planner-api.vercel.app/readyz        # readiness; allow ~1.1s on a cold Neon
+curl -sS https://z-team-planner.vercel.app/healthz              # liveness
+curl -sS -i https://z-team-planner.vercel.app/readyz            # readiness; allow ~1.1s on a cold Neon
 vercel logs <deployment-url>                                    # runtime logs for one deployment
-vercel env ls production                                        # what the next build will read (link the API project first)
+vercel env ls production --project z-team-planner               # what the next build will read
 vercel promote <deployment-url>                                 # roll back by making an earlier deployment production
 ```
 

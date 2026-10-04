@@ -48,21 +48,21 @@ Agent adapters: `agents/domain.md`, `agents/issue-tracker.md`, `agents/triage-la
 
 One line per record: type, status, title, link.
 
-| ### | Type        | Status      | Decision                                                                        | Document                                                                                      |
-| --- | ----------- | ----------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 001 | init-design | Implemented | Brownfield adoption — confirm the de facto Nuxt/NuxtUI frontend stack           | [001_init-design_brownfield-adoption](decisions/001_init-design_brownfield-adoption.md)       |
-| 002 | tooling     | Implemented | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md)                 |
-| 003 | design      | Implemented | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                             |
-| 004 | infra       | Implemented | Adopt a backend — FastAPI, Neon Postgres, Firebase identity                     | [004_infra_backend-adoption](decisions/004_infra_backend-adoption.md)                         |
-| 005 | bootstrap   | Implemented | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic       | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                           |
-| 006 | refactor    | Implemented | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md)     |
-| 007 | infra       | Implemented | Host on Vercel — two projects, one repository                                   | [007_infra_hosting-vercel](decisions/007_infra_hosting-vercel.md)                             |
-| 008 | refactor    | Implemented | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                     |
-| 009 | tooling     | Implemented | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
-| 010 | infra       | Implemented | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
-| 011 | infra       | Accepted    | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
-| 012 | infra       | Accepted    | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
-| 013 | tooling     | Accepted    | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
+| ### | Type        | Status            | Decision                                                                        | Document                                                                                      |
+| --- | ----------- | ----------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 001 | init-design | Implemented       | Brownfield adoption — confirm the de facto Nuxt/NuxtUI frontend stack           | [001_init-design_brownfield-adoption](decisions/001_init-design_brownfield-adoption.md)       |
+| 002 | tooling     | Implemented       | Adopt the Matt Pocock engineering skill pipeline, paths adapted into the bundle | [002_tooling_matt-pocock-skills](decisions/002_tooling_matt-pocock-skills.md)                 |
+| 003 | design      | Implemented       | Instantiate the design system — Dispatch-styled reskin                          | [003_design_design-system](decisions/003_design_design-system.md)                             |
+| 004 | infra       | Implemented       | Adopt a backend — FastAPI, Neon Postgres, Firebase identity                     | [004_infra_backend-adoption](decisions/004_infra_backend-adoption.md)                         |
+| 005 | bootstrap   | Implemented       | Bootstrap the FastAPI service — scaffold, health, error envelope, Alembic       | [005_bootstrap_api](decisions/005_bootstrap_api.md)                                           |
+| 006 | refactor    | Implemented       | Split build persistence, and settle what "build" means                          | [006_refactor_build-persistence-split](decisions/006_refactor_build-persistence-split.md)     |
+| 007 | infra       | Superseded by 012 | Host on Vercel — two projects, one repository                                   | [007_infra_hosting-vercel](decisions/007_infra_hosting-vercel.md)                             |
+| 008 | refactor    | Implemented       | Draw the stat radar ourselves and drop vue-data-ui                              | [008_refactor_own-radar-chart](decisions/008_refactor_own-radar-chart.md)                     |
+| 009 | tooling     | Implemented       | Adopt the Maintenance layer — Renovate, with no automerge                       | [009_tooling_adopt-maintenance-renovate](decisions/009_tooling_adopt-maintenance-renovate.md) |
+| 010 | infra       | Implemented       | Record the schema revision in the backup manifest                               | [010_infra_backup-manifest-revision](decisions/010_infra_backup-manifest-revision.md)         |
+| 011 | infra       | Accepted          | Alert when a day passes without a scheduled backup                              | [011_infra_backup-missed-run-alert](decisions/011_infra_backup-missed-run-alert.md)           |
+| 012 | infra       | Accepted          | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
+| 013 | tooling     | Accepted          | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
 
 ## Domain Decision Index
 
@@ -94,6 +94,7 @@ One row per layer: the module chosen from Catalyst's `stacks/`, plus UI choices,
 | persistence     | postgres (hosted on Neon)                                                                               |
 | identity        | firebase-auth — swapped from `keycloak` by decision 004; no module document, the record is the contract |
 | maintenance     | renovate — decision 009 (no automerge, weekly, both lockfiles in scope)                                 |
+| hosting         | Vercel — one project, two services from the repository root, `vercel.json` (decision 012)               |
 
 ## Status Values
 
