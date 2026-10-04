@@ -44,7 +44,7 @@ Harder: three files carry the number, and a release must touch all three.
 
 ## Contracts Touched
 
-- `operations.md`: API service (Releasing, and the `version` field on `/healthz`).
+- `operations.md`: a new Releases section; the `/healthz` examples in API service.
 - `app/CLAUDE.md`: the `/healthz` body.
 - `project-summary.md`: the ADR index.
 
