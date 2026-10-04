@@ -84,16 +84,18 @@ pnpm test:coverage   # the whole suite with a V8 coverage report in coverage/
 
 CI (`.github/workflows/ci.yml`) runs lint, format check, typecheck and tests for both applications on every push and pull request, Renovate opens dependency PRs on Mondays, and security fixes as soon as an advisory lands; none of them merges without a person.
 
-### The pre-commit hook
+### The git hooks
 
-Optional, and per clone. It runs the Catalyst document validator and then `oxfmt --check`, blocking the commit if either objects:
+Optional, and per clone. Three hooks ship in `catalyst/tools/hooks/`:
+
+- `pre-commit` runs the Catalyst document validator, then the format and lint checks for both applications, and blocks the commit if any of them objects.
+- `post-commit` and `post-merge` tag a commit or merge on `master` that changes `VERSION` as `v<VERSION>`. The tag stays local until you push it.
 
 ```bash
-git config core.hooksPath .githooks    # activate
-git config --unset core.hooksPath      # undo
+sh catalyst/tools/hooks/install.sh     # activate all three in .git/hooks
 ```
 
-Worth the two seconds because the failure it catches is invisible locally: `oxfmt` reflows Markdown tables, so a hand-edited document passes the validator and fails CI. `core.hooksPath` replaces `.git/hooks` wholesale, so `.githooks/pre-commit` calls the Catalyst hook itself rather than letting the symlink there do it.
+Worth the two seconds because the failure the pre-commit hook catches is invisible locally: `oxfmt` reflows Markdown tables, so a hand-edited document passes the validator and fails CI. A clone that still has `core.hooksPath` set from the old `.githooks/` folder runs no hooks at all, so clear it first with `git config --unset core.hooksPath`.
 
 `uv run pytest -m "not integration"` skips the tests that need Docker. `uv run python -m scripts.reset_db --yes` drops the development database schema and migrates it back up; it refuses unless `APP_ENV` is `development`. `pnpm run game-data:export` regenerates `shared/game-data.json` from `web/types/hero.ts` — the fixture the API validates saved builds against; a test fails if the committed copy has drifted.
 

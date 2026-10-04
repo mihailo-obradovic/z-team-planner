@@ -25,14 +25,14 @@ Catalyst's `versioning.md` describes how a project versions itself: a root `VERS
 - **One `CHANGELOG.md`**, in Keep a Changelog layout and the release-notes shape `versioning.md` asks for: per release a version, date, short Overview, then Added / Changed / Fixed, plus a **Database** line naming the migration whenever a release changes the schema. Its readers are the players on the live site and the maintainer as operator, so one file serves both. `Unreleased` gathers only what a player or the operator would notice. Dependency bumps get no line unless they change behavior or the schema.
 - **`0.1.0` describes the live product as it stands**, in one Overview paragraph. No history is reconstructed from the 571 commits before it.
 - **A release is a deliberate act by the maintainer.** It is never implied by a merge. Below `1.0.0`, MINOR marks a new user-facing capability and PATCH marks fixes and polish. `1.0.0` comes when the maintainer declares it.
-- **The `post-commit` and `post-merge` hooks** come into `catalyst/tools/hooks/` from the template unchanged. The maintainer activates them, and they tag `v<VERSION>` on `master`. Tags are pushed. No GitHub Releases: nobody reads that page, and it would be a second copy of the changelog.
+- **The `post-commit` and `post-merge` hooks** come into `catalyst/tools/hooks/` from the template unchanged. The maintainer activates them with `install.sh`, and they tag `v<VERSION>` on `master`. The project-owned `.githooks/pre-commit` and its `core.hooksPath` go: that setting hides `.git/hooks`, where `install.sh` links, and Catalyst 2.0.0's own pre-commit now runs the format and lint checks the wrapper added. Tags are pushed. No GitHub Releases: nobody reads that page, and it would be a second copy of the changelog.
 - **The version shows in the API only.** Showing it in the frontend is a design question and its own ticket.
 
 Rejected: a version per merge, which makes a one-line fix and a whole feature look the same; separate changelog and release-notes files, which drift apart with one maintainer; `semantic-release` and Conventional Commits, which `versioning.md` reserves for projects whose history a tool reads.
 
 ## Scope
 
-New `VERSION`, `CHANGELOG.md`, `catalyst/tools/hooks/post-commit` and `post-merge`. `package.json`, `pyproject.toml`, `app/main.py`, `app/routes/health.py` and their tests. No behavior contract for players changes. The ops endpoint's body grows by one field.
+New `VERSION`, `CHANGELOG.md`, `catalyst/tools/hooks/post-commit` and `post-merge`; `.githooks/` removed. `package.json`, `pyproject.toml`, `app/main.py`, `app/routes/health.py` and their tests. No behavior contract for players changes. The ops endpoint's body grows by one field.
 
 ## Consequences
 
@@ -46,6 +46,7 @@ Harder: three files carry the number, and a release must touch all three.
 
 - `operations.md`: a new Releases section; the `/healthz` examples in API service.
 - `app/CLAUDE.md`: the `/healthz` body.
+- `README.md`: The git hooks.
 - `project-summary.md`: the ADR index.
 
 ## Open Questions

@@ -137,11 +137,11 @@ The product's own version, which is unrelated to the `Catalyst version` stamp. R
 
 ### Operate
 
-Activate the tag hooks once per clone. They tag `v<VERSION>` whenever a commit or merge on `master` changes `VERSION`:
+Activate the hooks once per clone. The two tag hooks tag `v<VERSION>` whenever a commit or merge on `master` changes `VERSION`:
 
 ```bash
-sh catalyst/tools/hooks/install.sh post-commit
-sh catalyst/tools/hooks/install.sh post-merge
+git config --unset core.hooksPath      # only if this clone still points at the old .githooks/
+sh catalyst/tools/hooks/install.sh     # pre-commit, post-commit and post-merge into .git/hooks
 ```
 
 Cutting release `X.Y.Z`, on `master`:
