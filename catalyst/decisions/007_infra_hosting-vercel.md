@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented
+Superseded by 012
 
 ## Type
 

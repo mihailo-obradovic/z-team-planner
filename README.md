@@ -116,7 +116,7 @@ pnpm preview
 
 Unlike `pnpm dev`, a production build **fails** unless the four `NUXT_PUBLIC_FIREBASE_*` values, `NUXT_SITE_URL` (the absolute origin, no trailing slash) and `NUXT_SITE_ENV` are set — they are baked into the bundle, and a build with none of them would ship an app silently pointed at nothing. `NUXT_SITE_ENV` must be `production` for search engines to index the site; any other value keeps every page out. `NUXT_PUBLIC_API_BASE_URL` is the one exception: left empty, the build succeeds as the planner alone, with sign-in unavailable. Development is deliberately exempt so the anonymous planner needs no setup at all.
 
-The planner is live on Vercel at <https://z-team-planner.vercel.app>, deployed from `master` — the frontend alone, with sign-in unavailable. The API is not deployed yet: it goes to a second Vercel project once nightly backups exist and a restore has been rehearsed. `catalyst/operations.md` is the runbook.
+The planner and the API are live on Vercel at <https://z-team-planner.vercel.app>, deployed from `master` as one project with two services: the API answers under `/api/v1` on the same origin. `vercel.json` declares both, and `catalyst/operations.md` is the runbook.
 
 ## The catalyst/ Directory
 

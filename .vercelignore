@@ -4,9 +4,8 @@
 # * .env baked http://localhost:8000 into the deployed payload, re-enabling a sign-in that
 # * leads nowhere (decision 007, stage 1).
 # !
-# ! Both Vercel projects are rooted at the repository root, so this file serves both.
-# ! That is fine here — build artefacts and local secrets are wrong for either of them —
-# ! unlike vercel.json, which 007 rules out for exactly the same shared-root reason.
+# ! Both services in vercel.json are rooted at the repository root, so this one upload
+# ! serves both builds (decision 012).
 
 # Local environment: Vercel's own project settings are the only source of truth.
 .env
