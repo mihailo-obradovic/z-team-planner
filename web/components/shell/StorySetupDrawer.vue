@@ -30,7 +30,7 @@
           label="Training budget"
           :ui="{
             label:
-              'font-heading text-base font-bold tracking-tag text-dimmed uppercase'
+              'font-heading text-base font-bold tracking-tag text-muted uppercase'
           }"
         />
 

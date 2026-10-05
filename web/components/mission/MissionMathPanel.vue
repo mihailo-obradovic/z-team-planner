@@ -42,7 +42,7 @@
 
       <!-- * Every row always renders, a dash when empty, so the panel's height never changes. -->
       <div class="flex flex-col gap-1">
-        <h3 class="font-heading text-label text-dimmed uppercase">
+        <h3 class="font-heading text-label text-muted uppercase">
           Success calculation
         </h3>
 
@@ -90,7 +90,7 @@
           <!-- * Reserved at the switch row's height even when empty. -->
           <div class="flex h-3 items-center justify-end">
             <span
-              class="font-heading text-tag text-dimmed uppercase"
+              class="font-heading text-tag text-muted uppercase"
               :class="missionTeamHasPair ? 'invisible' : ''"
             >
               no synergy pair on the team
@@ -98,7 +98,7 @@
           </div>
 
           <div class="pt-1">
-            <h3 class="font-heading text-label text-dimmed uppercase">
+            <h3 class="font-heading text-label text-muted uppercase">
               Special conditions
             </h3>
           </div>

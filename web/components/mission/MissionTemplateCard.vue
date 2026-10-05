@@ -75,24 +75,24 @@
           class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-4 gap-y-1 border-t border-muted px-3 py-2 @max-[28.5rem]:gap-x-2"
           :class="statGridClass"
         >
-          <span class="font-heading text-tag text-dimmed uppercase">Stat</span>
+          <span class="font-heading text-tag text-muted uppercase">Stat</span>
 
           <span
-            class="text-center font-heading text-tag text-dimmed uppercase"
+            class="text-center font-heading text-tag text-muted uppercase"
             :class="reqColumnClass"
           >
             REQ
           </span>
 
           <span
-            class="text-center font-heading text-tag text-dimmed uppercase"
+            class="text-center font-heading text-tag text-muted uppercase"
             :class="conditionColumnClass"
           >
             2×XP ≥
           </span>
 
           <span
-            class="text-center font-heading text-tag text-dimmed uppercase"
+            class="text-center font-heading text-tag text-muted uppercase"
             :class="conditionColumnClass"
           >
             Fail ≥

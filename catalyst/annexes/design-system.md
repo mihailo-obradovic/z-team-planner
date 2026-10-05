@@ -51,24 +51,24 @@ Two steps deliberately leave their ramp's hue line, and both are intentional: `e
 
 Nuxt UI derives its `--ui-*` set from the `neutral` alias, assuming a white page. This project inverts that: the page is dark and every surface is paper. The remap is an unlayered `:root` block in `web/assets/css/main.css` (unlayered so it beats the values Nuxt UI injects into `@layer theme`).
 
-| Variable                | Value       | Reads as                                          |
-| ----------------------- | ----------- | ------------------------------------------------- |
-| `--ui-bg`               | `paper-100` | Panels, dialogs, dropdowns, inputs — the paper    |
-| `--ui-bg-muted`         | `paper-50`  | Highlight bands inside a panel                    |
-| `--ui-bg-elevated`      | `paper-300` | Tan: subtle buttons, stepper fill, hover surfaces |
-| `--ui-bg-accented`      | `paper-400` | Tan-deep: pressed and active surfaces             |
-| `--ui-bg-inverted`      | `gold-500`  | Neutral solids — the header counters              |
-| `--ui-text`             | `paper-900` | Ink, the default text colour                      |
-| `--ui-text-highlighted` | `paper-900` | Ink — emphasis is weight, not colour              |
-| `--ui-text-toned`       | `paper-600` | Ink-soft                                          |
-| `--ui-text-muted`       | `paper-600` | Ink-soft — secondary copy, measured, not dimmed   |
-| `--ui-text-dimmed`      | `paper-500` | Muted — labels and non-text only, never body copy |
-| `--ui-text-inverted`    | `paper-900` | Ink on amber and gold solids                      |
-| `--ui-border`           | `paper-500` | Dividers, stat-row rules                          |
-| `--ui-border-muted`     | `paper-400` | Quiet separators                                  |
-| `--ui-border-accented`  | `paper-900` | Ink: panel borders, input and select rings        |
-| `--ui-border-inverted`  | `paper-900` | Ink                                               |
-| `--ui-radius`           | `0`         | See §5                                            |
+| Variable                | Value       | Reads as                                                                            |
+| ----------------------- | ----------- | ----------------------------------------------------------------------------------- |
+| `--ui-bg`               | `paper-100` | Panels, dialogs, dropdowns, inputs — the paper                                      |
+| `--ui-bg-muted`         | `paper-50`  | Highlight bands inside a panel                                                      |
+| `--ui-bg-elevated`      | `paper-300` | Tan: subtle buttons, stepper fill, hover surfaces                                   |
+| `--ui-bg-accented`      | `paper-400` | Tan-deep: pressed and active surfaces                                               |
+| `--ui-bg-inverted`      | `gold-500`  | Neutral solids — the header counters                                                |
+| `--ui-text`             | `paper-900` | Ink, the default text colour                                                        |
+| `--ui-text-highlighted` | `paper-900` | Ink — emphasis is weight, not colour                                                |
+| `--ui-text-toned`       | `paper-600` | Ink-soft                                                                            |
+| `--ui-text-muted`       | `paper-600` | Ink-soft — secondary copy, measured, not dimmed                                     |
+| `--ui-text-dimmed`      | `paper-500` | Muted — placeholders, disabled states and non-text only; never a label or body copy |
+| `--ui-text-inverted`    | `paper-900` | Ink on amber and gold solids                                                        |
+| `--ui-border`           | `paper-500` | Dividers, stat-row rules                                                            |
+| `--ui-border-muted`     | `paper-400` | Quiet separators                                                                    |
+| `--ui-border-accented`  | `paper-900` | Ink: panel borders, input and select rings                                          |
+| `--ui-border-inverted`  | `paper-900` | Ink                                                                                 |
+| `--ui-radius`           | `0`         | See §5                                                                              |
 
 `--ui-text-inverted` resolving to ink is the consequential one: it is right for the amber and gold solids the design leans on, and wrong for `secondary` solids (ink on teal is unreadable), which therefore carry an annotated `text-neutral-100` in their component configs.
 
@@ -522,7 +522,7 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px 
 | ink                     | tan         | 9.22  | AA                                  |
 | ink-soft (`text-muted`) | paper       | 6.11  | AA                                  |
 | ink-soft                | tan         | 4.50  | AA, exactly at the floor            |
-| muted (`text-dimmed`)   | paper       | 3.13  | **labels and non-text only**        |
+| muted (`text-dimmed`)   | paper       | 3.13  | **non-text only** — never text      |
 | ink                     | amber solid | 6.08  | AA                                  |
 | `paper-600`             | paper-200   | 5.58  | non-text — scrollbar on paper       |
 | `lagoon-300`            | lagoon-950  | 8.27  | non-text — scrollbar on ground      |
@@ -551,7 +551,7 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px 
 | gold                    | ground      | 9.87  | AA                                  |
 | edge ring               | ground      | 3.31  | non-text, meets 3:1                 |
 
-Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to labels; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
+Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to placeholders, disabled states and non-text — a label is text under WCAG, and the 2026-10-05 audit found it on twelve labels and headings, every one moved to `text-muted`; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
 
 Re-measure after any token change. A brand colour that fails as text is constrained to a fill role and recorded here rather than nudged until it passes.
 

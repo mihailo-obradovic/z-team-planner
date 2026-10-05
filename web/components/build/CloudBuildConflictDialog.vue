@@ -14,7 +14,7 @@
           after you opened it. Saving now would overwrite that version.
         </p>
 
-        <p class="text-sm text-dimmed">
+        <p class="text-sm text-muted">
           Last saved elsewhere {{ savedElsewhereAt }}
         </p>
       </div>

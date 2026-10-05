@@ -46,7 +46,7 @@
         </span>
 
         <span
-          class="font-heading text-base tracking-label text-dimmed uppercase"
+          class="font-heading text-base tracking-label text-muted uppercase"
         >
           Est. success
         </span>
