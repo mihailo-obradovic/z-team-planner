@@ -6,6 +6,12 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 
 ## [Unreleased]
 
+### Fixed
+
+- Text that was hard to read now meets the contrast floor: the Story Setup drawer's budget counters and "Training budget" label, the error page's status code, the power cards' state badges in the hero dialog, the mission simulator's small labels, and the red Delete buttons.
+- Screen readers now hear which build is loaded in the build menu, and after renaming, deleting or saving a build from that menu the keyboard focus returns to the menu button instead of the top of the page.
+- The planner page has a proper page heading, the error page a main landmark, and the stat buttons read "Remove one combat point" rather than "Remove a combat point".
+
 ## [0.1.1] - 2026-10-05
 
 ### Overview
