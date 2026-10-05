@@ -68,7 +68,7 @@
                   color="neutral"
                   size="sm"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                  :label="`Remove a ${stat} point`"
+                  :label="`Remove one ${stat} point`"
                   @click="() => handleStatDown(stat)"
                 />
               </div>
@@ -84,7 +84,7 @@
                   color="neutral"
                   size="sm"
                   :disabled="isStatCapped(stat)"
-                  :label="`Add a ${stat} point`"
+                  :label="`Add one ${stat} point`"
                   @click="() => handleStatUp(stat)"
                 />
               </div>

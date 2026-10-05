@@ -103,7 +103,7 @@
                   icon="i-lucide-minus"
                   color="neutral"
                   :disabled="statBonuses[resolvedStat(stat)] <= 0"
-                  :label="`Remove a ${stat} point`"
+                  :label="`Remove one ${stat} point`"
                   @click="() => handleStatDown(stat)"
                 />
               </div>
@@ -118,7 +118,7 @@
                   icon="i-lucide-plus"
                   color="neutral"
                   :disabled="isStatCapped(stat)"
-                  :label="`Add a ${stat} point`"
+                  :label="`Add one ${stat} point`"
                   @click="() => handleStatUp(stat)"
                 />
               </div>
