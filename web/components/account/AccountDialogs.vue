@@ -3,6 +3,7 @@
     v-model:open="deleteAccountOpen"
     title="Delete your account"
     description="Removes your account and every build saved to it."
+    :content="dialogContent"
   >
     <template #body>
       <div class="flex flex-col gap-4">
@@ -56,7 +57,7 @@ const { isSignedIn } = storeToRefs(useAuthStore());
 
 const { signOut } = useAuth();
 
-const { deleteAccountOpen } = useDialogs();
+const { deleteAccountOpen, dialogContent } = useDialogs();
 
 const { data: me, isPending } = useFetchMe({
   enabled: () => isSignedIn.value && deleteAccountOpen.value

@@ -72,7 +72,7 @@ const { isSignedIn, isResolved, isSignInUnavailable, user } =
 
 const { signIn, signOut } = useAuth();
 
-const { openBuildMenu, deleteAccountOpen } = useDialogs();
+const { openBuildMenu, deleteAccountOpen, rememberOpener } = useDialogs();
 
 const accountName = computed(() => {
   const { displayName, email } = user.value ?? {};
@@ -106,6 +106,7 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
       color: 'error',
       class: 'uppercase',
       onSelect: () => {
+        rememberOpener();
         deleteAccountOpen.value = true;
       }
     }

@@ -1,5 +1,10 @@
 <template>
-  <u-modal v-model:open="open" :title="title" description="Name this build.">
+  <u-modal
+    v-model:open="open"
+    :title="title"
+    description="Name this build."
+    :content="dialogContent"
+  >
     <template #body>
       <u-form-field label="Build name" :error="error">
         <u-input
@@ -53,6 +58,8 @@ withDefaults(
 const emit = defineEmits<{
   confirm: [];
 }>();
+
+const { dialogContent } = useDialogs();
 
 function handleConfirm() {
   emit('confirm');

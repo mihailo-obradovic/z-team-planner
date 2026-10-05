@@ -54,7 +54,8 @@ const {
   accountDeleteOpen,
   openNewBuild,
   openRename,
-  openAccountSave
+  openAccountSave,
+  rememberOpener
 } = useDialogs();
 
 const isMenuOpen = computed({
@@ -75,26 +76,36 @@ const displayName = computed(
 );
 
 const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
-  const localBuildItems = localBuilds.value.map((localBuild) => ({
-    label: localBuild.name,
-    icon: localBuild.id === activeBuildId.value ? 'i-lucide-check' : undefined,
-    onSelect: () => {
-      loadLocalBuild(localBuild.id);
-    }
-  }));
+  // * Checkbox items, so the loaded build is `aria-checked` rather than marked by an icon only; the library draws the check as the trailing indicator.
+  const localBuildItems: DropdownMenuItem[] = localBuilds.value.map(
+    (localBuild) => ({
+      label: localBuild.name,
+      type: 'checkbox',
+      checked: localBuild.id === activeBuildId.value,
+      onSelect: () => {
+        loadLocalBuild(localBuild.id);
+      }
+    })
+  );
 
   const management: DropdownMenuItem[] = [
     {
       label: 'New build...',
       icon: 'i-lucide-plus',
       class: 'uppercase',
-      onSelect: () => openNewBuild('')
+      onSelect: () => {
+        rememberOpener();
+        openNewBuild('');
+      }
     },
     {
       label: 'Rename...',
       icon: 'i-lucide-pencil',
       class: 'uppercase',
-      onSelect: () => openRename(activeBuildName.value)
+      onSelect: () => {
+        rememberOpener();
+        openRename(activeBuildName.value);
+      }
     }
   ];
 
@@ -105,6 +116,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       color: 'error',
       class: 'uppercase',
       onSelect: () => {
+        rememberOpener();
         deleteOpen.value = true;
       }
     });
@@ -133,10 +145,9 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       ]
     : (accountBuilds.value?.items ?? []).map((cloudBuild) => ({
         label: cloudBuild.name,
-        icon:
-          cloudBuild.id === activeAccountBuildId.value
-            ? 'i-lucide-check'
-            : 'i-lucide-cloud',
+        icon: 'i-lucide-cloud',
+        type: 'checkbox' as const,
+        checked: cloudBuild.id === activeAccountBuildId.value,
         onSelect: () => {
           void openAccountBuild(cloudBuild.id);
         }
@@ -147,7 +158,10 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       label: 'Save to account...',
       icon: 'i-lucide-cloud-upload',
       class: 'uppercase',
-      onSelect: () => openAccountSave(displayName.value)
+      onSelect: () => {
+        rememberOpener();
+        openAccountSave(displayName.value);
+      }
     }
   ];
 
@@ -158,6 +172,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       color: 'error',
       class: 'uppercase',
       onSelect: () => {
+        rememberOpener();
         accountDeleteOpen.value = true;
       }
     });

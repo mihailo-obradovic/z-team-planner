@@ -2,6 +2,31 @@ import { CloudBuildSchema, type CloudBuild } from '@/types/api';
 
 import type { HeaderTier } from '@/types/header';
 
+// ! A dialog raised from a menu item has no opener left to return focus to — the item unmounts with the menu — so the menu's trigger is remembered here and focused on close instead. Module state, not `useState`: an element is client-only and never serialized.
+const dialogOpener = shallowRef<HTMLElement | null>(null);
+
+// * Called from a menu item's `onSelect`, while the menu is still open: the one expanded menu trigger is the opener, whichever header tier it sits in.
+function rememberOpener() {
+  dialogOpener.value = document.querySelector<HTMLElement>(
+    '[aria-haspopup="menu"][aria-expanded="true"]'
+  );
+}
+
+function restoreOpenerFocus(event: Event) {
+  const opener = dialogOpener.value;
+
+  if (!opener) {
+    return;
+  }
+
+  event.preventDefault();
+  opener.focus();
+  dialogOpener.value = null;
+}
+
+// * Passed as `u-modal`'s `content` by every dialog a menu can raise; reka emits `closeAutoFocus` right before it would focus the element that was active on open.
+const dialogContent = { onCloseAutoFocus: restoreOpenerFocus };
+
 // * Every overlay whose openers sit outside it: the build dialogs, and the delete-account dialog the profile menu raises from any header tier. A dialog with one nearby opener keeps its own `defineModel('open')` instead.
 export function useDialogs() {
   const buildMenuTier = useState<HeaderTier | null>(
@@ -65,6 +90,8 @@ export function useDialogs() {
   }
 
   return {
+    dialogContent,
+    rememberOpener,
     buildMenuTier,
     openBuildMenu,
     saveSharedOpen,

@@ -25,6 +25,7 @@
     v-model:open="deleteOpen"
     title="Delete build"
     description="Removes this build from this browser."
+    :content="dialogContent"
   >
     <template #body>
       <p class="text-sm text-muted">
@@ -73,7 +74,8 @@ const {
   deleteOpen,
   renameOpen,
   newBuildName,
-  renameBuildName
+  renameBuildName,
+  dialogContent
 } = useDialogs();
 
 const { r$: nameForm } = useBuildNameForm(newBuildName, { requireName: false });

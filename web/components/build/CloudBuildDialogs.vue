@@ -15,6 +15,7 @@
     v-model:open="accountDeleteOpen"
     title="Delete from your account"
     description="Removes this build from your account and stops its share link."
+    :content="dialogContent"
   >
     <template #body>
       <p class="text-sm text-muted">
@@ -79,7 +80,8 @@ const { mutate: deleteBuild, isLoading: isDeleting } = useDeleteBuild({
   }
 });
 
-const { accountSaveOpen, accountSaveName, accountDeleteOpen } = useDialogs();
+const { accountSaveOpen, accountSaveName, accountDeleteOpen, dialogContent } =
+  useDialogs();
 
 const plannerState = usePlannerState();
 
