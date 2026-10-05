@@ -155,7 +155,7 @@ class ImportItemOut(BaseModel):
     """One item's outcome. Import succeeds per item, so a report carries both verdicts."""
 
     index: int
-    status: Literal["created", "invalid"]
+    status: Literal["created", "existing", "invalid"]
     id: UUID | None = None
     name: str | None = None
     errors: list[ErrorDetail] | None = None

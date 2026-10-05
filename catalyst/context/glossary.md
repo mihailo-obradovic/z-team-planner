@@ -17,6 +17,8 @@ A **context document** (`references/project-documents.md`), project-specific: th
 
 A **local build** and a **cloud build** are never the same object, even when they hold identical documents and the same name: they have separate ids, separate lifecycles, and separate delete semantics. Copying between them is always an explicit act by the user.
 
+A local build is **already kept** when the signed-in user's account holds a cloud build with the same name and an identical build document. The two are still separate objects; the term says only that keeping the local build in the account would add nothing.
+
 A **shared build** is not a fifth stored thing — it is a projection of one cloud build, and it disappears when that cloud build is deleted.
 
 ## Links

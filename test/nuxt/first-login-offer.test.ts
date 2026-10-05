@@ -39,9 +39,11 @@ Object.defineProperty(window, 'localStorage', {
   }
 });
 
-const toasts: { title?: string; description?: string }[] = [];
+type Toast = { title?: string; description?: string; color?: string };
+
+const toasts: Toast[] = [];
 mockNuxtImport('useToast', () => () => ({
-  add: (toast: { title?: string; description?: string }) => toasts.push(toast)
+  add: (toast: Toast) => toasts.push(toast)
 }));
 
 const STUBS = {
@@ -171,6 +173,56 @@ describe('FirstLoginOffer', () => {
     expect(toasts[0]?.title).toBe('1 build kept');
     // * Named, not counted: the player has to know which build to go and look at.
     expect(toasts[0]?.description).toBe('Could not import: Tank line');
+
+    page.unmount();
+  });
+
+  it('counts builds the account already held apart from the kept ones', async () => {
+    importBuildsSpy.mockResolvedValue([
+      { index: 0, status: 'created', id: crypto.randomUUID(), name: 'Main' },
+      { index: 1, status: 'existing', id: crypto.randomUUID(), name: 'Tank' }
+    ]);
+
+    const page = await mountWith([
+      localBuild('a', 'Main'),
+      localBuild('b', 'Tank')
+    ]);
+    await signIn();
+
+    const keep = page
+      .findAll('button')
+      .find((button) => button.text() === 'Keep selected');
+    await keep?.trigger('click');
+
+    await vi.waitFor(() => expect(toasts).toHaveLength(1));
+    expect(toasts[0]).toMatchObject({
+      title: '1 build kept',
+      description: '1 was already in your account',
+      color: 'success'
+    });
+
+    page.unmount();
+  });
+
+  it('says so when every build was already in the account', async () => {
+    importBuildsSpy.mockResolvedValue([
+      { index: 0, status: 'existing', id: crypto.randomUUID(), name: 'Main' }
+    ]);
+
+    const page = await mountWith([localBuild('a', 'Main')]);
+    await signIn();
+
+    const keep = page
+      .findAll('button')
+      .find((button) => button.text() === 'Keep selected');
+    await keep?.trigger('click');
+
+    await vi.waitFor(() => expect(toasts).toHaveLength(1));
+    expect(toasts[0]).toMatchObject({
+      title: 'Already in your account',
+      color: 'success'
+    });
+    expect(toasts[0]?.description).toBeUndefined();
 
     page.unmount();
   });

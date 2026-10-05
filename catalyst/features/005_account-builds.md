@@ -31,7 +31,7 @@ A signed-in player's builds live on the server and follow them to any device. Th
 | build summary        | JSON     | `{ id, name, format_version, created_at, updated_at }` — list items                  |
 | build list           | JSON     | `{ items: [summary], total }` — every build the caller owns                          |
 | build                | JSON     | summary plus `data`; `ETag` header = `updated_at`                                    |
-| import report        | JSON     | `[{ index, status: "created" \| "invalid", id?, name?, errors? }]`                   |
+| import report        | JSON     | `[{ index, status: "created" \| "existing" \| "invalid", id?, name?, errors? }]`     |
 
 ## Scope And Non-Goals
 
@@ -55,6 +55,7 @@ Non-goals:
 - Editing the same build from two devices: the second `PATCH` carries a stale `ETag` and gets `412` with the current build in the body — enough for the caller to offer a choice rather than silently losing a write.
 - A request retried after a network failure carries the same `Idempotency-Key` and gets the original response, not a second build.
 - At the cap, create and import answer `409 build_limit` with a message naming the limit.
+- Importing a build the account already holds adds nothing: the item answers `existing` with the build it matched, so signing in on a second browser that holds the same local builds never copies them.
 
 ## Roles And Access
 
@@ -62,23 +63,26 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 
 ## Examples
 
-| Input                                            | Expected Output                                     | Notes                           |
-| ------------------------------------------------ | --------------------------------------------------- | ------------------------------- |
-| `POST /builds` `{name:"Main", data:{v:1}}` + key | `201`, build with `name:"Main"`                     |                                 |
-| same request, same key, within 24 h              | `201`, the **same** build                           | idempotent replay               |
-| same body, **different** key                     | `201`, `name:"Main (2)"`                            | suffixed                        |
-| `PATCH` rename to a name another own build has   | `200`, `name:"<name> (2)"`                          | renames suffix too              |
-| `PATCH` without `If-Match`                       | `428 precondition_required`                         |                                 |
-| `PATCH` with a stale `If-Match`                  | `412 precondition_failed`, body = current build     | two-device conflict             |
-| any `data` from `shared/build-cases.json`        | its verdict and exact `details[].path` set          | all tiers + episode             |
-| `POST /builds` with a 9 KB document              | `413 payload_too_large`                             |                                 |
-| 21st `POST /builds`                              | `409 build_limit`                                   | cap 20                          |
-| `GET /builds` with 7 builds                      | `200`, 7 summaries, `total: 7`                      | no paging; the cap is the bound |
-| `GET /builds?page=2`                             | `200`, all 7 — an undeclared query param is ignored | an old client keeps working     |
-| `GET /builds/{other user's id}`                  | `404 not_found`                                     | never `403`                     |
-| import of 3 items, one with an unknown hero id   | `200`, statuses `created, invalid, created`         | partial success                 |
-| import of 51 items                               | `422`, path `builds`                                | batch cap                       |
-| `DELETE /me` (feature 004) with 5 builds         | all 5 rows gone; their `/b/` links `404`            | cascade                         |
+| Input                                                      | Expected Output                                      | Notes                           |
+| ---------------------------------------------------------- | ---------------------------------------------------- | ------------------------------- |
+| `POST /builds` `{name:"Main", data:{v:1}}` + key           | `201`, build with `name:"Main"`                      |                                 |
+| same request, same key, within 24 h                        | `201`, the **same** build                            | idempotent replay               |
+| same body, **different** key                               | `201`, `name:"Main (2)"`                             | suffixed                        |
+| `PATCH` rename to a name another own build has             | `200`, `name:"<name> (2)"`                           | renames suffix too              |
+| `PATCH` without `If-Match`                                 | `428 precondition_required`                          |                                 |
+| `PATCH` with a stale `If-Match`                            | `412 precondition_failed`, body = current build      | two-device conflict             |
+| any `data` from `shared/build-cases.json`                  | its verdict and exact `details[].path` set           | all tiers + episode             |
+| `POST /builds` with a 9 KB document                        | `413 payload_too_large`                              |                                 |
+| 21st `POST /builds`                                        | `409 build_limit`                                    | cap 20                          |
+| `GET /builds` with 7 builds                                | `200`, 7 summaries, `total: 7`                       | no paging; the cap is the bound |
+| `GET /builds?page=2`                                       | `200`, all 7 — an undeclared query param is ignored  | an old client keeps working     |
+| `GET /builds/{other user's id}`                            | `404 not_found`                                      | never `403`                     |
+| import of 3 items, one with an unknown hero id             | `200`, statuses `created, invalid, created`          | partial success                 |
+| import of 51 items                                         | `422`, path `builds`                                 | batch cap                       |
+| import `"Main"` `{v:1,ec:"coupe"}`, account holds the same | `200`, `existing` with that build's id; no row added | already kept                    |
+| import `"Main"` with another document                      | `200`, `created`, `name:"Main (2)"`                  | same name, new build            |
+| import the same item twice in one batch                    | `200`, `created, existing`, one id                   | matches within the batch        |
+| `DELETE /me` (feature 004) with 5 builds                   | all 5 rows gone; their `/b/` links `404`             | cascade                         |
 
 ## Business Rules
 
@@ -86,6 +90,7 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 - **Validation tiers**, all before any write, `422` with a `path` per failure: (i) structure — only the known keys, `v == 1`; (ii) identity — hero ids among the eleven, `ec`/`eh` among their options; (iii) ranges — `lu` five non-negative ints in `STAT_NAMES` order, `bl` 1–4, `pw` `[0|1, 0|1|2]` within the hero's real trainable count and never without the starting power revealed, `sp` only for Flambae (0/1, needs trainable-2) and Coupé (0–2), `fl` ⊆ Flight School heroes; (iv) budgets — Σ`bl` ≤ 4, trained ≤ 7, distinct `fl` ≤ 2, per hero Σ`lu` ≤ 9 + `bl`; (v) caps — starting + `lu` ≤ 10 per stat.
 - **Episode rules**: the cut hero (`ec`) holds no state; recruits — Blonde Blazer and the episode-4 option not hired — may reveal a starting power (`pw` `[1,0]`, which the planner offers on their card) but hold no trained power, `sp` or `fl`; a non-fixed-level recruit may hold `lu`/`bl`; fixed-level heroes never hold `lu`/`bl`.
 - **Names**: unique per `(owner_id, name)`, enforced by a database unique index; on collision the server appends ` (n)` with the smallest free `n ≥ 2` and returns the final name. Applies to create, import and rename alike.
+- **Already kept**: an import item whose trimmed name equals an own build's name exactly (case-sensitive) and whose validated document equals that build's `data` (JSONB equality, key order ignored) is `existing`: nothing is written, the report carries the matched `id` and `name`, and it is judged before the cap, so it never costs a slot or answers `build_limit`. Import only — create and rename never match.
 - **Cap**: 20 builds per account. **Payload**: 8 KB per document, 50 items per import.
 - **Idempotency**: `Idempotency-Key` required on create and import — without it, `422` naming the header. The key plus the user identify a stored response for 24 h; the same key with a different body → `409 idempotency_conflict`. Only a **success** is stored: a rejected document is re-judged on the next attempt, never answered from a day-old cache.
 - **Concurrency**: `PATCH` requires `If-Match` equal to the current `updated_at`; the update is a single `UPDATE … WHERE id = ? AND updated_at = ?` so two writers cannot both win.
@@ -96,6 +101,7 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 
 - The suffix loop is bounded by the cap (20), never unbounded. A rename to the build's **own** name is a no-op `200`.
 - Import inserts one transaction per item, so a failure in item 3 never touches items 1 and 2. An item's **name** is judged per item too — a local build predating the 80-character rule costs its own row, not the whole offer.
+- Two devices importing the same build at once keep it once: the match runs under the account lock that already serialises creates, so the second finds the first's row and answers `existing`.
 - The `ETag` is Postgres's timestamp, so two writes to one row cannot share it.
 - A hand-written `?build=` link can carry a document the guards would refuse into planner state, which feature 001 allows deliberately. Saving it to an account is where it is caught: a `422` whose paths render inline (feature 008).
 
@@ -127,7 +133,7 @@ Per feature 004's matrix: a user reaches every route here on their own builds, a
 
 ## Tests
 
-- `tests/services/test_validation.py`: every row of `shared/build-cases.json`, failing on exactly the expected paths. `tests/services/test_builds_concurrency.py`: the naming lock, the cap and the `If-Match` guard, by really racing threads.
+- `tests/services/test_validation.py`: every row of `shared/build-cases.json`, failing on exactly the expected paths. `tests/services/test_builds_concurrency.py`: the naming lock, the cap, the import match and the `If-Match` guard, by really racing threads.
 - `tests/routes/` against testcontainers Postgres: the Examples table row by row, plus the deletion cascade. `tests/repositories/`: the schema's own guarantees.
 - `test/unit/game-data.test.ts`: the committed fixture equals a fresh export. `test/nuxt/build-cases.test.ts`: the planner's guards agree with the cases file — a Nuxt test, because those guards are `useState` composables.
 

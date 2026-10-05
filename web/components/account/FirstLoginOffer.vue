@@ -109,21 +109,33 @@ function close() {
 
 function reportOutcome(report: ImportReport) {
   const created = report.filter((item) => item.status === 'created');
+  const existing = report.filter((item) => item.status === 'existing');
   const invalid = report.filter((item) => item.status === 'invalid');
 
   const names = invalid
     .map((item) => item.name ?? candidates.value[item.index]?.name)
     .filter(Boolean);
 
+  const lines = [
+    created.length > 0 && existing.length > 0
+      ? `${existing.length} ${existing.length === 1 ? 'was' : 'were'} already in your account`
+      : '',
+    names.length > 0 ? `Could not import: ${names.join(', ')}` : ''
+  ].filter(Boolean);
+
   toast.add({
-    title:
-      created.length > 0
-        ? `${plural(created.length, 'build')} kept`
-        : 'Nothing was kept',
-    description:
-      names.length > 0 ? `Could not import: ${names.join(', ')}` : undefined,
+    title: outcomeTitle(created.length, existing.length),
+    description: lines.length > 0 ? lines.join('. ') : undefined,
     color: invalid.length > 0 ? 'warning' : 'success'
   });
+}
+
+function outcomeTitle(createdCount: number, existingCount: number): string {
+  if (createdCount > 0) {
+    return `${plural(createdCount, 'build')} kept`;
+  }
+
+  return existingCount > 0 ? 'Already in your account' : 'Nothing was kept';
 }
 
 function handleToggle(id: string, value: boolean | 'indeterminate') {

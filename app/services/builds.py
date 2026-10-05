@@ -308,6 +308,9 @@ def import_builds(
 ) -> tuple[int, list[dict[str, Any]]]:
     """Create what can be created, and say per item what happened to the rest.
 
+    An item the account already holds under the same name with the same document is reported
+    as `existing` rather than copied, and costs no slot under the cap (feature 005).
+
     The batch answers `200` whatever the items did: a report of outcomes is the result, not a
     failure. Only a request the server could not read at all — too many items — is an error.
     """
@@ -320,14 +323,21 @@ def import_builds(
                 # * A savepoint per item, so a failure at item 3 rolls back item 3 alone and leaves 1 and 2 exactly as they were (feature 005, Edge Cases).
                 with session.begin_nested():
                     name = validate_name(item.name)
-                    document = validate_build_data(item.data, get_game_data())
-                    build = insert_named(
-                        session, owner_id, name, document.model_dump(exclude_unset=True)
+                    data = validate_build_data(item.data, get_game_data()).model_dump(
+                        exclude_unset=True
                     )
+
+                    # * The match runs under the account lock, so a second device importing the same build at the same moment finds the first one's row rather than adding a copy.
+                    builds_repo.lock_owner(session, owner_id)
+                    kept = builds_repo.find_identical(session, owner_id, name, data)
+                    build = kept or insert_named(session, owner_id, name, data)
 
                 report.append(
                     ImportItemOut(
-                        index=index, status="created", id=build.id, name=build.name
+                        index=index,
+                        status="existing" if kept else "created",
+                        id=build.id,
+                        name=build.name,
                     )
                 )
             except AppError as rejected:

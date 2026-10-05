@@ -107,6 +107,33 @@ def test_the_cap_holds_when_two_requests_reach_it_together(
         assert builds_repo.count_for_owner(session, owner) == builds_service.MAX_BUILDS
 
 
+def _import(engine: Engine, owner_id: UUID, key: str) -> str:
+    """One import of the same single build in its own session, as a second device would send it."""
+    from app.schemas.builds import ImportBuildsIn
+
+    payload = ImportBuildsIn.model_validate(
+        {"builds": [{"name": "Main", "data": {"v": 1, "ec": "coupe"}}]}
+    )
+
+    with sessionmaker(bind=engine)() as session:
+        _, report = builds_service.import_builds(session, owner_id, payload, key)
+
+        return report[0]["status"]
+
+
+def test_two_imports_of_one_build_keep_it_once(engine: Engine, owner: UUID) -> None:
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [
+            future.result()
+            for future in [
+                pool.submit(_import, engine, owner, key) for key in ("one", "two")
+            ]
+        ]
+
+    # ! Without the match running under the account lock, both would find nothing kept and the second would land as "Main (2)".
+    assert sorted(results) == ["created", "existing"]
+
+
 def _patch(engine: Engine, owner_id: UUID, build_id: UUID, etag: str, name: str) -> Any:
     """One PATCH in its own session, holding an ETag another writer may already have used."""
     from app.schemas.builds import UpdateBuildIn

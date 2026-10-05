@@ -80,6 +80,8 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 | delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`     |
 | delete a non-active build            | list refetches; the active id is left alone        |                             |
 | the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report        |
+| the offer imports 2, one `existing`  | "1 build kept" — "1 was already in your account"   | success colour              |
+| every item comes back `existing`     | "Already in your account", no description          | success colour              |
 | a `412` whose body will not parse    | generic toast, no dialog                           | nothing to choose between   |
 
 ## Business Rules
@@ -90,6 +92,7 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 - **`Idempotency-Key`** is generated inside `useCreateBuild` and `useImportBuilds`, once per mutation call. The fetcher's `401` retry replays the same request options, so it carries the same key and cannot create a second build.
 - **Store side effects belong to the query layer**: clearing `activeAccountBuildId` on delete happens in the mutation, not in a service or component.
 - **Regle** owns the name field and mirrors the server: required and at most 80, both after trimming, so a name of only spaces fails here as it would there. Feature 001's local dialogs opt out of `required` — an empty local name falls back to a generated one, unchanged here.
+- **Import toast**: the title counts `created` ("2 builds kept"); with none created it is "Already in your account" when any item was `existing`, else "Nothing was kept". The description adds the `existing` count only beside a created one, then names each `invalid` item. Any `invalid` item makes it the warning colour.
 - Invalidation is awaited before the caller's own `onSettled` runs, so a handler that reads the list sees the refreshed one.
 
 ## Edge Cases

@@ -40,7 +40,7 @@ export const CloudBuildListSchema = z.object({
 
 export const ImportResultSchema = z.object({
   index: z.number(),
-  status: z.enum(['created', 'invalid']),
+  status: z.enum(['created', 'existing', 'invalid']),
   id: z.uuid().optional(),
   name: z.string().optional(),
   errors: z.array(ErrorDetailSchema).optional()

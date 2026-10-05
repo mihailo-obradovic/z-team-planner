@@ -55,7 +55,7 @@ def test_a_rejected_item_carries_the_paths_that_rejected_it(api: Api) -> None:
 
 
 def test_a_created_item_carries_the_id_and_the_final_name(api: Api) -> None:
-    report = api.import_builds([_item("Main"), _item("Main")]).json()
+    report = api.import_builds([_item("Main"), _item("Main", VALID)]).json()
 
     assert [row["name"] for row in report] == ["Main", "Main (2)"]
     assert api.get(report[1]["id"]).json()["name"] == "Main (2)"
@@ -64,9 +64,69 @@ def test_a_created_item_carries_the_id_and_the_final_name(api: Api) -> None:
 def test_names_collide_with_what_the_account_already_has(api: Api) -> None:
     api.create("Main")
 
-    report = api.import_builds([_item("Main")]).json()
+    # * The same name over a different document is a different build, so it is kept under a suffix.
+    report = api.import_builds([_item("Main", VALID)]).json()
 
+    assert report[0]["status"] == "created"
     assert report[0]["name"] == "Main (2)"
+
+
+def test_an_already_kept_build_is_reported_not_copied(api: Api) -> None:
+    kept = api.create("Main", VALID).json()
+
+    report = api.import_builds([_item("Main", VALID)]).json()
+
+    assert report == [
+        {"index": 0, "status": "existing", "id": kept["id"], "name": "Main"}
+    ]
+    assert api.list().json()["total"] == 1
+
+
+def test_already_kept_ignores_key_order_and_padding(api: Api) -> None:
+    api.create("Main", {"v": 1, "ec": "coupe"})
+
+    report = api.import_builds([_item("  Main  ", {"ec": "coupe", "v": 1})]).json()
+
+    assert report[0]["status"] == "existing"
+    assert api.list().json()["total"] == 1
+
+
+def test_the_same_document_under_another_name_is_created(api: Api) -> None:
+    api.create("Main", VALID)
+
+    report = api.import_builds([_item("Other", VALID)]).json()
+
+    assert report[0]["status"] == "created"
+    assert report[0]["name"] == "Other"
+
+
+def test_a_name_differing_only_in_case_is_another_build(api: Api) -> None:
+    api.create("Main", VALID)
+
+    report = api.import_builds([_item("main", VALID)]).json()
+
+    assert report[0]["status"] == "created"
+    assert report[0]["name"] == "main"
+
+
+def test_a_repeat_within_one_batch_matches_the_first(api: Api) -> None:
+    report = api.import_builds([_item("Main", VALID), _item("Main", VALID)]).json()
+
+    assert [row["status"] for row in report] == ["created", "existing"]
+    assert report[1]["id"] == report[0]["id"]
+    assert api.list().json()["total"] == 1
+
+
+def test_an_already_kept_build_is_not_refused_at_the_cap(api: Api) -> None:
+    for index in range(19):
+        api.create(f"build-{index}")
+    api.create("Main", VALID)
+
+    report = api.import_builds([_item("Main", VALID), _item("New")]).json()
+
+    # * Matching costs no slot, so a full account still recognises what it already holds.
+    assert [row["status"] for row in report] == ["existing", "invalid"]
+    assert report[1]["errors"][0]["path"] == "$"
 
 
 def test_an_unusable_name_is_one_bad_item_not_a_bad_batch(api: Api) -> None:

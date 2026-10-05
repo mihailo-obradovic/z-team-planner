@@ -31,6 +31,20 @@ def names_for_owner(session: Session, owner_id: UUID) -> set[str]:
     )
 
 
+def find_identical(
+    session: Session, owner_id: UUID, name: str, data: dict[str, Any]
+) -> Build | None:
+    """The owner's build with exactly this name and document, if there is one.
+
+    The comparison is JSONB equality, so key order in the document does not matter.
+    """
+    return session.execute(
+        select(Build).where(
+            Build.owner_id == owner_id, Build.name == name, Build.data == data
+        )
+    ).scalar_one_or_none()
+
+
 def list_for_owner(session: Session, owner_id: UUID) -> list[Build]:
     """Every build the owner has, newest-updated first (feature 005, Business Rules)."""
     return list(
