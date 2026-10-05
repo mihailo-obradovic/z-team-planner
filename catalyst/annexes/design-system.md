@@ -532,6 +532,8 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px 
 | `ember-800`             | tan         | 3.44  | **large text only** — not the badge |
 | `ember-800`             | paper       | 4.87  | AA — the small-text amber           |
 | `brick-600`             | paper       | 5.45  | AA — error text                     |
+| cream                   | brick-600   | 5.45  | AA — the error solid                |
+| cream                   | brick-500   | 4.36  | **fails as button text**            |
 | brick-500               | paper       | 4.36  | fill only                           |
 | moss-500                | paper       | 4.58  | AA                                  |
 | signal-500              | paper       | 2.98  | **fill only, never text**           |
@@ -551,7 +553,7 @@ WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px 
 | gold                    | ground      | 9.87  | AA                                  |
 | edge ring               | ground      | 3.31  | non-text, meets 3:1                 |
 
-Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream; `--ui-text-dimmed` is below the body floor and is restricted to placeholders, disabled states and non-text — a label is text under WCAG, and the 2026-10-05 audit found it on twelve labels and headings, every one moved to `text-muted`; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
+Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream, and the error solid likewise uses `brick-600` with cream, since ink on brick-500 is 2.88:1 and cream 4.36:1; `--ui-text-dimmed` is below the body floor and is restricted to placeholders, disabled states and non-text — a label is text under WCAG, and the 2026-10-05 audit found it on twelve labels and headings, every one moved to `text-muted`; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
 
 Re-measure after any token change. A brand colour that fails as text is constrained to a fill role and recorded here rather than nudged until it passes.
 

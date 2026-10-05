@@ -140,8 +140,10 @@ export default {
     {
       color: 'error',
       variant: 'solid',
+      // * Changes: the 600 fill with cream, the move the info solid already made — ink on brick-500 is 2.88:1 and cream 4.36:1; cream on brick-600 is 5.45:1 (annex §14.1). The Delete buttons.
+      // * Default: 'text-inverted bg-error hover:bg-error/75 active:bg-error/75 disabled:bg-error aria-disabled:bg-error focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
       class:
-        'text-inverted bg-error hover:bg-error/75 active:bg-error/75 disabled:bg-error aria-disabled:bg-error focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
+        'text-neutral-100 bg-error-600 hover:bg-error-600/75 active:bg-error-600/75 disabled:bg-error-600 aria-disabled:bg-error-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
     },
     {
       color: 'primary',
