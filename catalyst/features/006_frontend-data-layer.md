@@ -67,6 +67,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 | refresh also fails                         | store → `anonymous`, one toast                          | second `401`                              |
 | a mutation that opts the toast out         | no toast; the caller renders the error itself           | `suppressToasts: 'validation'`            |
 | a response missing a schema-required field | generic toast; Zod issue logged for developers          | schema failure, not user error            |
+| return to the tab after switching away     | no request                                              | `refetchOnWindowFocus: false`             |
 | a query's key changes                      | previous data stays visible until the new data lands    | no empty flash                            |
 | `useAppQuery` called outside a component   | no-op rather than a thrown error                        |                                           |
 | `NUXT_PUBLIC_API_BASE_URL` empty at build  | sign-in disabled, Firebase never initialised            | frontend-only deployment (decision 007)   |
@@ -76,6 +77,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 - **Departures from `error-handling.md`, deliberate**: no cookies (`credentials: 'omit'`), no CSRF header, and the recoverable status is `401` with a Firebase token refresh instead of `419` with a cookie refresh. The retry shape is unchanged: `makeRequest`, once, guarded.
 - **Central policy** (`handleApiError`): `401` after retry → `resetUser` + toast, no redirect (no route requires auth); `403` → toast; `404` → 404 page on `/b/{id}`, toast elsewhere; `409` → toast naming the limit; `412` → conflict dialog, never a toast; `422` → inline when the mutation opts out, toast otherwise; `429` → toast; other → the API's `error.message`, else a generic line. Handled errors are deduplicated with a `WeakSet`.
 - **Services** are pure: one function per endpoint, no store access, no toasts, no cache writes, every non-void response through `parseResponse(Schema, …)` with the envelope unwrapped there. A read takes an optional `signal` last and passes it to the fetcher, and every `query` forwards the one Pinia Colada hands it, so a superseded or unmounted query aborts its request. Mutations take none — Colada hands a mutation no signal, so `data-layer.md`'s every-function rule is narrowed to reads here. **Queries** use `useAppQuery` / `useAppMutation` only, never Colada directly. Each resource owns a key namespace under its own root — `me.get = ['me']` here, `['builds']` in feature 008, `['shared']` in feature 007 — and a mutation invalidates its resource's root rather than picking individual keys. Invalidation is awaited before the caller's own `onSettled`.
+- **Client defaults are stated in `colada.options.ts`**, not inherited: `staleTime` 5 s and no refetch on window focus, so data refreshes on mount, on reconnect and on invalidation, never over what is on screen. Pinia Colada's own default refetches on focus; a save over another device's edit is caught by the `412` dialog instead (feature 008).
 - **Protocol headers never reach a component**: an `ETag` or an `Idempotency-Key` is the query layer's business, read from the cache or generated inside the mutation (feature 008).
 - **Zod** schemas live in `@/types/api.ts` with types inferred from them; `SerializedBuild` keeps its hand-written type (feature 001) and the schema for `data` is `z.custom<SerializedBuild>` guarded by `v === 1` — the server already validated it. Request payload types stay hand-written.
 - **Regle** is the form library, and a form's rules mirror the server's so the client rejects what the server would; a server `422` flows back onto the field through `externalErrors` (feature 008).
@@ -103,7 +105,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 
 ## Entry Points
 
-- `web/utils/fetcher.ts`, `web/utils/handleApiError.ts`, `web/composables/data/useAppQuery.ts`, `useAppMutation.ts`.
+- `colada.options.ts`, `web/utils/fetcher.ts`, `web/utils/handleApiError.ts`, `web/composables/data/useAppQuery.ts`, `useAppMutation.ts`.
 - `web/services/me.api.ts`, `web/services/queries/useMeQueries.ts`, `web/services/queries/chainOnSettled.ts`, `web/types/api.ts`.
 - `web/stores/useAuthStore.ts`, `web/plugins/firebase.client.ts`.
 
