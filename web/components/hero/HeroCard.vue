@@ -12,18 +12,20 @@
             <span v-if="flightShown" class="flex">
               <TooltipButton
                 :text="flightTooltip"
+                :label="readonly ? flightLabel : undefined"
                 icon="i-lucide-plane"
                 :color="flightColor"
                 :active="flightActive"
                 :disabled="flightLocked"
                 :confirmation="flightConfirmation"
+                :readonly="readonly"
                 @click="handleToggleFlight"
               />
             </span>
           </Transition>
         </div>
 
-        <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
+        <div v-if="showControls" class="flex w-6 items-center justify-center">
           <Transition name="state-fade">
             <span v-if="hasAnythingToReset" class="flex">
               <IconButton
@@ -40,7 +42,7 @@
           Lv. {{ heroLevel }}
         </span>
 
-        <div v-if="canLevelUp" class="flex w-6 items-center justify-center">
+        <div v-if="showControls" class="flex w-6 items-center justify-center">
           <Transition name="state-fade">
             <span v-if="bonusLevel > 0 || !bonusFull" class="flex">
               <IconButton
@@ -65,7 +67,17 @@
     <div class="flex justify-between gap-2 p-3 sm:gap-3">
       <!-- ! Shrinkable because the portrait is the only part that degrades gracefully below ~328px; the stat steppers are tap targets and must not shrink. -->
       <div class="flex w-27 min-w-0 shrink flex-col gap-2">
+        <!-- * Read-only: the portrait is a picture, not the way into the detail dialog (feature 007). -->
+        <HeroPortrait
+          v-if="readonly"
+          :hero-id="heroId"
+          usage="card"
+          :alt="hero.name"
+          class="aspect-square w-full border-2 border-accented bg-accented object-cover select-none"
+        />
+
         <button
+          v-else
           type="button"
           class="block w-full cursor-pointer"
           :aria-label="`View ${hero.name}`"
@@ -79,7 +91,7 @@
           />
         </button>
 
-        <HeroPowerChips :hero-id="heroId" />
+        <HeroPowerChips :hero-id="heroId" :readonly="readonly" />
       </div>
 
       <div class="flex flex-1 flex-col">
@@ -97,7 +109,10 @@
             </span>
 
             <div class="ml-2 flex items-center gap-1">
-              <div class="flex w-6 items-center justify-center">
+              <div
+                v-if="!readonly"
+                class="flex w-6 items-center justify-center"
+              >
                 <IconButton
                   v-if="canLevelUp"
                   icon="i-lucide-minus"
@@ -112,7 +127,10 @@
                 {{ shownStat(stat) }}
               </span>
 
-              <div class="flex w-6 items-center justify-center">
+              <div
+                v-if="!readonly"
+                class="flex w-6 items-center justify-center"
+              >
                 <IconButton
                   v-if="canLevelUp"
                   icon="i-lucide-plus"
@@ -142,9 +160,14 @@ import {
 
 import type { HeroId, StatName } from '@/types/hero';
 
-const props = defineProps<{
-  heroId: HeroId;
-}>();
+const props = withDefaults(
+  defineProps<{
+    heroId: HeroId;
+    // * The share page's form: values as text, controls absent, information kept (feature 007; composition rules, Read-only regions).
+    readonly?: boolean;
+  }>(),
+  { readonly: false }
+);
 
 const emit = defineEmits<{
   viewDetail: [];
@@ -191,6 +214,13 @@ const flightVisuallyActive = computed(() => {
 
   return flightActive.value && monsterForm.value;
 });
+
+const showControls = computed(() => canLevelUp.value && !props.readonly);
+
+const flightLabel = computed(
+  () =>
+    `${flightInfo.value?.name ?? 'Flight'}, ${flightActive.value ? 'trained' : 'untrained'}`
+);
 
 const flightTooltip = computed(() => {
   const flight = flightInfo.value;

@@ -19,6 +19,7 @@
         :color="monsterForm ? 'primary' : 'neutral'"
         :active="monsterForm"
         :confirmation="monsterFormConfirmation"
+        :readonly="readonly"
         @click="toggleMonsterForm"
       />
     </span>
@@ -26,10 +27,12 @@
     <span key="starting" class="flex">
       <TooltipButton
         :text="startingTooltip"
+        :label="readonly ? startingLabel : undefined"
         :icon="POWER_ICONS[0]"
         :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
         :active="powerStates.startingRevealed"
         :confirmation="startingConfirmation"
+        :readonly="readonly"
         @click="handleToggleStartingPower"
       />
     </span>
@@ -41,11 +44,13 @@
     >
       <TooltipButton
         :text="powerTooltip(power)"
+        :label="readonly ? upgradeLabel(power, index) : undefined"
         :icon="POWER_ICONS[index + 1]!"
         :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
         :active="trainablePowerActive(index)"
         :disabled="trainablesLocked"
         :confirmation="() => upgradeConfirmation(power, index)"
+        :readonly="readonly"
         @click="() => handleToggleTrainablePower(index)"
       />
     </span>
@@ -58,6 +63,7 @@
         :color="specialPower.active ? 'primary' : 'neutral'"
         :active="specialPower.active"
         :confirmation="specialPowerConfirmation"
+        :readonly="readonly"
         @click="handleToggleSpecialPower"
       />
     </span>
@@ -69,9 +75,14 @@ import { HERO_POWERS } from '@/types/hero';
 
 import type { HeroId, HeroPowerDefinition } from '@/types/hero';
 
-const props = defineProps<{
-  heroId: HeroId;
-}>();
+const props = withDefaults(
+  defineProps<{
+    heroId: HeroId;
+    // * Read-only chips are labelled images that say the power and its state; the hint stays, nothing is tapped (feature 007).
+    readonly?: boolean;
+  }>(),
+  { readonly: false }
+);
 
 const {
   getPowerState,
@@ -123,6 +134,15 @@ function monsterFormConfirmation(): string | null {
 }
 
 const startingTooltip = computed(() => powerTooltip(powers.value?.[0]));
+
+const startingLabel = computed(
+  () =>
+    `${powers.value?.[0]?.name ?? 'Starting power'}, ${powerStates.value.startingRevealed ? 'revealed' : 'hidden'}`
+);
+
+function upgradeLabel(power: HeroPowerDefinition, index: number): string {
+  return `${power.name}, ${trainablePowerActive(index) ? 'trained' : 'untrained'}`;
+}
 
 function startingConfirmation(): string | null {
   return confirmationText({

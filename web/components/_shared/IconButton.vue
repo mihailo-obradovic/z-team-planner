@@ -1,13 +1,16 @@
 <template>
   <!-- * No `click` emit: declaring one would fire twice, while an undeclared `@click` falls through to the native button. -->
+  <!-- * `readonly` keeps the glyph and its colour but renders a span with `role="img"`: information, not a control (composition rules, Read-only regions). -->
   <u-button
+    :as="readonly ? 'span' : undefined"
+    :role="readonly ? 'img' : undefined"
     :icon="swapKey === undefined ? icon : undefined"
     :color="color"
     :size="size"
-    :disabled="disabled"
+    :disabled="readonly ? undefined : disabled"
     :active="active"
     :aria-label="label"
-    :aria-pressed="active === undefined ? undefined : active"
+    :aria-pressed="readonly || active === undefined ? undefined : active"
     variant="subtle"
     square
   >
@@ -37,6 +40,7 @@ withDefaults(
     active?: boolean;
     // * Changing it swaps the glyph out-in; absent, the glyph is static.
     swapKey?: string | number;
+    readonly?: boolean;
   }>(),
   { size: 'xs' }
 );

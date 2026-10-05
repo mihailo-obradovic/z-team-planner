@@ -52,7 +52,7 @@ Non-goals:
 - **Share** on an account build copies `https://<web>/b/{id}`. A local build has no server id, so it keeps the `?build=` snapshot instead.
 - **Share** on an account build holding unsaved changes saves it first, then copies — the link resolves to the stored document, so copying before saving would hand out a build the sharer is not looking at. A save that fails copies nothing and reports itself through the central policy (a `412` opens feature 008's conflict dialog); the toast names the save, since it was not asked for explicitly.
 - Every open of the link shows the owner's **current** document — an edit the owner saves is visible on the next load, with no new link. A load is opening or reloading the link; an open page never reads again, so returning to the tab or coming back from `/privacy` shows what was loaded.
-- A skeleton shows while the read is pending, then the planner read-only — one `inert` region rather than a disabled prop on forty controls; the page has no write path to the owner's build at all.
+- A skeleton shows while the read is pending, then the planner in its **read-only form**: each hero card with its `readonly` prop — name, level, portrait, stat values and power glyphs present and readable by assistive technology, every control absent. Never an `inert` wrapper, which hides the build from a screen reader; the page has no write path to the owner's build at all, and that structure, not the prop, is the guarantee.
 - **Save a copy** creates an account build when signed in (`POST /builds`) and falls back to feature 001's local save when not. Either way the viewer gets their own copy; the owner's is untouched.
 - The owner opening their own link sees the same read-only page; editing happens through **My builds**.
 - Once the owner deletes the build the link is the 404 page, which never says the build existed.
@@ -72,7 +72,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 | `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed    |
 | `GET /shared/not-a-uuid`                      | `404 not_found`, the same body                     | never a `422` naming the id     |
 | `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                 |
-| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** |                                 |
+| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** | cards readable, no controls     |
 | open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
 | open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any      |
 | open `/b/<id>`, the read answers `503`        | the error page: `503`, "Something went wrong"      | no toast                        |
@@ -108,6 +108,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 - The response never carries the owner, and a build id never appears in any list an outsider can read.
 - The page has no write path to the owner's build: the only mutation it can start creates a **new** one.
+- The read-only form hides nothing from assistive technology that a sighted viewer sees, and renders no control.
 - Nothing on `/b/{id}` invalidates the query cache.
 - The page stays `noindex, nofollow` for as long as an unlisted id is the access control.
 
@@ -120,7 +121,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 ## Entry Points
 
 - API: `app/routes/shared.py` (the route and its limiter dependency), `app/utils/ratelimit.py`, `app/repositories/builds.py` (`get_public`), `app/schemas/builds.py` (`PublicBuildOut`).
-- Web: `web/pages/b/[id].vue`, `web/composables/build/useSharedBuild.ts`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**).
+- Web: `web/pages/b/[id].vue`, `web/composables/build/useSharedBuild.ts`, `web/services/shared.api.ts`, `web/services/queries/useSharedQueries.ts`, `web/components/build/BuildManager.vue` (**Share**); the `readonly` prop on `web/components/hero/HeroCard.vue` and what it reaches through (`HeroPowerChips`, `TooltipButton`, `IconButton`).
 - `nuxt.config.ts`: the `/b/**` route rule that turns SSR off.
 
 ## Dependencies
@@ -138,6 +139,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 - `tests/routes/test_shared.py`: the public shape carries no owner; `404` for deleted, never-existed and malformed alike; the stopgap `429` on the 61st call.
 - `tests/utils/test_ratelimit.py`: capacity, refill, eviction and thread safety, against an injected clock rather than real sleeping.
 - `test/nuxt/shared-build.test.ts`: the pending skeleton; a failed read raising the error page with its status and no toast; a dead link left to the central policy; a rendered build kept when a later read fails; a rendered build never read again on focus or remount, after a deletion or an edit.
+- `test/nuxt/readonly-card.test.ts`: the read-only card has no button, keeps name, level, portrait and stats, shows each power as a labelled `role="img"` glyph naming its state, and is the ordinary card with the prop off.
 
 ## Verification
 

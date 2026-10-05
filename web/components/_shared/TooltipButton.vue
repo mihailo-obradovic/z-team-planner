@@ -8,13 +8,14 @@
     @click="handleClick"
   >
     <IconButton
-      :label="text"
+      :label="label ?? text"
       :icon="icon"
       :color="color"
       :size="size"
       :disabled="disabled"
       :active="active"
       :swap-key="swapKey"
+      :readonly="readonly"
     />
   </u-tooltip>
 </template>
@@ -23,6 +24,8 @@
 const props = withDefaults(
   defineProps<{
     text: string;
+    // * The accessible name when it should differ from the hint — the read-only chips say the state, not the description.
+    label?: string;
     icon: string;
     color?: 'primary' | 'secondary' | 'neutral';
     size?: 'xs' | 'sm';
@@ -31,6 +34,7 @@ const props = withDefaults(
     swapKey?: string | number;
     // * Called after the click with the resulting state applied; null shows nothing.
     confirmation?: () => string | null;
+    readonly?: boolean;
   }>(),
   { size: 'xs' }
 );
@@ -62,7 +66,7 @@ const delayDuration = computed(() =>
 );
 
 async function handleClick() {
-  if (mode.value !== 'no-hover' || !props.confirmation) {
+  if (props.readonly || mode.value !== 'no-hover' || !props.confirmation) {
     return;
   }
 

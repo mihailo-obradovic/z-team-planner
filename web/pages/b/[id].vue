@@ -39,31 +39,25 @@
       </u-button>
     </div>
 
-    <!-- * Read-only at one boundary rather than a disabled prop on forty controls. `inert` does not stop a scripted `.click()`; the real guarantee is that this page has no write path to the owner's build. -->
+    <!-- * The cards' read-only form, never an `inert` wrapper: `inert` would hide the whole build from assistive technology (composition rules, Read-only regions). A `readonly` prop stops human input, not a scripted dispatch; the real guarantee is that this page has no write path to the owner's build. -->
     <div
-      class="pointer-events-none select-none"
-      inert
-      aria-readonly="true"
+      class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
       data-testid="readonly-planner"
     >
       <div
-        class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
+        v-for="pair in synergyPairColumns"
+        :key="pair.topId"
+        class="flex w-full max-w-92 flex-col gap-2"
       >
-        <div
-          v-for="pair in synergyPairColumns"
-          :key="pair.topId"
-          class="flex w-full max-w-92 flex-col gap-2"
-        >
-          <HeroCard :hero-id="pair.top.id" />
+        <HeroCard :hero-id="pair.top.id" readonly />
 
-          <u-separator color="secondary" decorative>
-            <u-badge color="warning" variant="outline" icon="i-lucide-link-2">
-              Synergy
-            </u-badge>
-          </u-separator>
+        <u-separator color="secondary" decorative>
+          <u-badge color="warning" variant="outline" icon="i-lucide-link-2">
+            Synergy
+          </u-badge>
+        </u-separator>
 
-          <HeroCard :hero-id="pair.bottom.id" />
-        </div>
+        <HeroCard :hero-id="pair.bottom.id" readonly />
       </div>
     </div>
 
