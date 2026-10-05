@@ -147,8 +147,8 @@ sh catalyst/tools/hooks/install.sh     # pre-commit, post-commit and post-merge 
 Cutting release `X.Y.Z`, on `master`:
 
 1. In `CHANGELOG.md`, move the `Unreleased` entries under a new `## [X.Y.Z] - <date>` heading, and write its Overview. Add a **Database** line if any migration landed since the last release.
-2. Set `X.Y.Z` in `VERSION`, `package.json` and `pyproject.toml`.
-3. Commit the three files and the changelog together. The hook prints `tagged vX.Y.Z`.
+2. Set `X.Y.Z` in `VERSION`, `package.json` and `pyproject.toml`, then run `uv lock`: `uv.lock` records the project's version too, and a stale one fails `uv sync --locked`.
+3. Commit the four files and the changelog together. The hook prints `tagged vX.Y.Z`.
 4. Push, then confirm the deployed API reports the new number:
 
 ```bash
