@@ -68,6 +68,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 | a mutation that opts the toast out         | no toast; the caller renders the error itself           | `suppressToasts: 'validation'`            |
 | a response missing a schema-required field | generic toast; Zod issue logged for developers          | schema failure, not user error            |
 | return to the tab after switching away     | no request                                              | `refetchOnWindowFocus: false`             |
+| a query aborted mid-request                | no toast, no redirect                                   | abort returns before the status table     |
 | a query's key changes                      | previous data stays visible until the new data lands    | no empty flash                            |
 | `useAppQuery` called outside a component   | no-op rather than a thrown error                        |                                           |
 | `NUXT_PUBLIC_API_BASE_URL` empty at build  | sign-in disabled, Firebase never initialised            | frontend-only deployment (decision 007)   |
@@ -75,7 +76,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 ## Business Rules
 
 - **Departures from `error-handling.md`, deliberate**: no cookies (`credentials: 'omit'`), no CSRF header, and the recoverable status is `401` with a Firebase token refresh instead of `419` with a cookie refresh. The retry shape is unchanged: `makeRequest`, once, guarded.
-- **Central policy** (`handleApiError`): `401` after retry → `resetUser` + toast, no redirect (no route requires auth); `403` → toast; `404` → 404 page on `/b/{id}`, toast elsewhere; `409` → toast naming the limit; `412` → conflict dialog, never a toast; `422` → inline when the mutation opts out, toast otherwise; `429` → toast; other → the API's `error.message`, else a generic line. Handled errors are deduplicated with a `WeakSet`.
+- **Central policy** (`handleApiError`): an aborted request → nothing at all, ahead of every status — a cancelled query is not a failure; `401` after retry → `resetUser` + toast, no redirect (no route requires auth); `403` → toast; `404` → 404 page on `/b/{id}`, toast elsewhere; `409` → toast naming the limit; `412` → conflict dialog, never a toast; `422` → inline when the mutation opts out, toast otherwise; `429` → toast; other → the API's `error.message`, else a generic line. Handled errors are deduplicated with a `WeakSet`.
 - **Services** are pure: one function per endpoint, no store access, no toasts, no cache writes, every non-void response through `parseResponse(Schema, …)` with the envelope unwrapped there. A read takes an optional `signal` last and passes it to the fetcher, and every `query` forwards the one Pinia Colada hands it, so a superseded or unmounted query aborts its request. Mutations take none — Colada hands a mutation no signal, so `data-layer.md`'s every-function rule is narrowed to reads here. **Queries** use `useAppQuery` / `useAppMutation` only, never Colada directly. Each resource owns a key namespace under its own root — `me.get = ['me']` here, `['builds']` in feature 008, `['shared']` in feature 007 — and a mutation invalidates its resource's root rather than picking individual keys. Invalidation is awaited before the caller's own `onSettled`.
 - **Client defaults are stated in `colada.options.ts`**, not inherited: `staleTime` 5 s and no refetch on window focus, so data refreshes on mount, on reconnect and on invalidation, never over what is on screen. Pinia Colada's own default refetches on focus; a save over another device's edit is caught by the `412` dialog instead (feature 008).
 - **Protocol headers never reach a component**: an `ETag` or an `Idempotency-Key` is the query layer's business, read from the cache or generated inside the mutation (feature 008).
@@ -120,7 +121,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 ## Tests
 
 - `test/unit/fetcher.test.ts`: headers, base URL, the single `401` retry, no retry on the retry, the 5xx-only retry codes with no numeric `retry`.
-- `test/unit/handleApiError.test.ts`: every status row above, `WeakSet` dedup, the `412`/`422` non-toast paths.
+- `test/unit/handleApiError.test.ts`: every status row above, the abort early-return, `WeakSet` dedup, the `412`/`422` non-toast paths.
 - `test/nuxt/app-query.test.ts`: previous data held across a key change, failures routed through the policy for both query and mutation, the toast opt-out, and the outside-a-component no-op.
 - `test/unit/services.test.ts`, `test/nuxt/build-queries.test.ts`: a read's `signal` reaching the fetcher, and Colada's reaching the service.
 - `test/nuxt/auth-store.test.ts`: the `unknown` start, both resolutions, the active build cleared on sign-out and kept across an ordinary update, the SDK-failure state, and a direct write being ignored.

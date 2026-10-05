@@ -35,7 +35,8 @@ export function handleApiError(
   options: ErrorHandlingOptions = {}
 ): void {
   if (typeof error === 'object' && error !== null) {
-    if (handledErrors.has(error)) {
+    // * An abort is not a failure: a cancelled query rejects with its own abort, and Pinia Colada records that as the query's error.
+    if (isAbort(error) || handledErrors.has(error)) {
       return;
     }
 
@@ -95,6 +96,17 @@ export function extractMessage(error: unknown): string {
 
   return (
     candidate?.data?.error?.message || candidate?.message || GENERIC_MESSAGE
+  );
+}
+
+// * Deviation from stacks/frontend/nuxt/error-handling.md, which writes this with `instanceof FetchError` and `instanceof DOMException`: `ofetch` is only a transitive dependency here, so the shape is read instead, as `fetcher.ts` does for `401`.
+function isAbort(error: object): boolean {
+  const cause = (error as { cause?: unknown }).cause;
+
+  return (
+    typeof cause === 'object' &&
+    cause !== null &&
+    (cause as { name?: unknown }).name === 'AbortError'
   );
 }
 

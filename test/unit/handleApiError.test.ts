@@ -27,6 +27,19 @@ describe('handleApiError', () => {
     context = makeContext();
   });
 
+  it('does nothing for an aborted request', () => {
+    // * Shaped like ofetch's FetchError for a request cancelled through its signal: no status, the AbortError as its cause.
+    const aborted = Object.assign(new Error('[GET] "/builds": <no response>'), {
+      cause: new DOMException('signal is aborted without reason', 'AbortError')
+    });
+
+    handleApiError(aborted, context);
+
+    expect(context.showToast).not.toHaveBeenCalled();
+    expect(context.resetUser).not.toHaveBeenCalled();
+    expect(context.showNotFoundPage).not.toHaveBeenCalled();
+  });
+
   it('signs the user out and toasts on 401', () => {
     handleApiError(apiError(401), context);
 
