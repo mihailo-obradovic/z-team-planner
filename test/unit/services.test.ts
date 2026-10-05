@@ -47,7 +47,7 @@ describe('builds service', () => {
     const result = await fetchBuilds();
 
     // * No query at all: the per-account cap is the bound, so there is nothing to page (feature 005).
-    expect(fetcherMock).toHaveBeenCalledWith('/builds');
+    expect(fetcherMock).toHaveBeenCalledWith('/builds', { signal: undefined });
     expect(result.total).toBe(7);
     expect(result.items[0]?.name).toBe('Main');
   });
@@ -56,6 +56,20 @@ describe('builds service', () => {
     fetcherMock.mockResolvedValue(BUILD);
 
     expect((await fetchBuild(BUILD.id)).data).toEqual({ v: 1 });
+  });
+
+  it('passes a read its signal through to the fetcher', async () => {
+    const { signal } = new AbortController();
+
+    fetcherMock.mockResolvedValue({ items: [], total: 0 });
+    await fetchBuilds(signal);
+    expect(fetcherMock).toHaveBeenLastCalledWith('/builds', { signal });
+
+    fetcherMock.mockResolvedValue(BUILD);
+    await fetchBuild(BUILD.id, signal);
+    expect(fetcherMock).toHaveBeenLastCalledWith(`/builds/${BUILD.id}`, {
+      signal
+    });
   });
 
   it('sends the idempotency key on create', async () => {

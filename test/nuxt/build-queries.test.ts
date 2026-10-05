@@ -11,10 +11,10 @@ import { meQueryKeys } from '@/services/queries/useMeQueries';
 import { sharedQueryKeys } from '@/services/queries/useSharedQueries';
 import { useAuthStore } from '@/stores/useAuthStore';
 
-const fetchBuildsSpy = vi.fn<() => Promise<unknown>>();
+const fetchBuildsSpy = vi.fn<(signal?: AbortSignal) => Promise<unknown>>();
 
 vi.mock('@/services/builds.api', () => ({
-  fetchBuilds: () => fetchBuildsSpy(),
+  fetchBuilds: (signal?: AbortSignal) => fetchBuildsSpy(signal),
   fetchBuild: vi.fn<() => Promise<never>>(),
   createBuild: vi.fn<() => Promise<never>>(),
   updateBuild: vi.fn<() => Promise<never>>(),
@@ -92,7 +92,8 @@ describe('enabled gating', () => {
       store.setUser({ uid: 'u1', email: null, displayName: 'Alice' })
     );
 
-    expect(fetchBuildsSpy).toHaveBeenCalled();
+    // * With Pinia Colada's signal, so a superseded or unmounted query aborts its request rather than finishing it.
+    expect(fetchBuildsSpy).toHaveBeenCalledWith(expect.any(AbortSignal));
   });
 });
 

@@ -17,7 +17,7 @@ export function useFetchMe(
 
   return useAppQuery<Me>({
     key: meQueryKeys.fetchMe,
-    query: () => fetchMe(),
+    query: ({ signal }) => fetchMe(signal),
     enabled: () => isSignedIn.value,
     ...options
   });

@@ -48,7 +48,7 @@ export function useFetchBuilds(
 
   return useAppQuery<CloudBuildList>({
     key: () => [...buildsQueryKeys.fetchBuilds],
-    query: () => fetchBuilds(),
+    query: ({ signal }) => fetchBuilds(signal),
     enabled: () => isSignedIn.value,
     ...options
   });
@@ -62,7 +62,7 @@ export function useFetchBuild(
 
   return useAppQuery<CloudBuild>({
     key: () => [...buildsQueryKeys.fetchBuild, id.value ?? ''],
-    query: () => fetchBuild(id.value as string),
+    query: ({ signal }) => fetchBuild(id.value as string, signal),
     enabled: () => isSignedIn.value && !!id.value,
     ...options
   });
@@ -94,7 +94,8 @@ export function useAlreadyKept(
 
   const nameMatches = useAppQuery<CloudBuild[]>({
     key: () => [...buildsQueryKeys.fetchNameMatches, ...nameMatchedIds.value],
-    query: () => Promise.all(nameMatchedIds.value.map((id) => fetchBuild(id))),
+    query: ({ signal }) =>
+      Promise.all(nameMatchedIds.value.map((id) => fetchBuild(id, signal))),
     enabled: () =>
       isSignedIn.value &&
       enabled() &&

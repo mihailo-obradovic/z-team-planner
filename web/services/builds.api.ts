@@ -10,12 +10,23 @@ import {
   type UpdateBuildPayload
 } from '@/types/api';
 
-export async function fetchBuilds(): Promise<CloudBuildList> {
-  return parseResponse(CloudBuildListSchema, await fetcher('/builds'));
+export async function fetchBuilds(
+  signal?: AbortSignal
+): Promise<CloudBuildList> {
+  return parseResponse(
+    CloudBuildListSchema,
+    await fetcher('/builds', { signal })
+  );
 }
 
-export async function fetchBuild(id: string): Promise<CloudBuild> {
-  return parseResponse(CloudBuildSchema, await fetcher(`/builds/${id}`));
+export async function fetchBuild(
+  id: string,
+  signal?: AbortSignal
+): Promise<CloudBuild> {
+  return parseResponse(
+    CloudBuildSchema,
+    await fetcher(`/builds/${id}`, { signal })
+  );
 }
 
 export async function createBuild(

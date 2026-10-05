@@ -1,5 +1,11 @@
 import { SharedBuildSchema, type SharedBuild } from '@/types/api';
 
-export async function fetchSharedBuild(id: string): Promise<SharedBuild> {
-  return parseResponse(SharedBuildSchema, await fetcher(`/shared/${id}`));
+export async function fetchSharedBuild(
+  id: string,
+  signal?: AbortSignal
+): Promise<SharedBuild> {
+  return parseResponse(
+    SharedBuildSchema,
+    await fetcher(`/shared/${id}`, { signal })
+  );
 }
