@@ -169,7 +169,9 @@ export default {
     {
       color: 'primary',
       variant: 'subtle',
-      class: 'bg-primary/10 text-primary ring ring-inset ring-primary/25'
+      // * Changes: ink text. The power card's state badge sits on the tan plate at 8px, where `text-primary` is 1.45:1 and even the small-text amber `primary-800` only 3.44:1 (annex §14.1); the amber stays in the ring and the tint.
+      // * Default: 'bg-primary/10 text-primary ring ring-inset ring-primary/25'
+      class: 'bg-primary/10 text-highlighted ring ring-inset ring-primary/25'
     },
     {
       color: 'secondary',

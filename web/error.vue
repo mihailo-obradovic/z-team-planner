@@ -8,7 +8,7 @@
     >
       <span
         v-if="statusCode"
-        class="font-heading text-display text-primary"
+        class="font-heading text-display text-primary-800"
         aria-hidden="true"
       >
         {{ statusCode }}

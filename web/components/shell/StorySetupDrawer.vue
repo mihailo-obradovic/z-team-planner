@@ -46,7 +46,7 @@
           </span>
 
           <span class="flex items-center gap-2">
-            <span class="font-heading text-lg font-extrabold text-primary">
+            <span class="font-heading text-lg font-extrabold text-primary-800">
               {{ budget.used }}/{{ budget.max }}
             </span>
 
