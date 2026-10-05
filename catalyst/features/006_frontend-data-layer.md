@@ -49,7 +49,7 @@ Non-goals:
 ## User / System Behavior
 
 - The client plugin initialises Firebase from public runtime config and subscribes `onAuthStateChanged`; the store starts `unknown` and every user-scoped query is `enabled` only at `signed-in`. The server never calls the API; nothing is forwarded.
-- Every request goes through `fetcher`: `Accept: application/json`, base URL from runtime config, `credentials: 'omit'`, a generated `X-Request-ID`, and `Authorization: Bearer <getIdToken()>` when signed in. On `401` it forces `getIdToken(true)` and retries **once** via `makeRequest`, never recursively.
+- Every request goes through `fetcher`: `Accept: application/json`, base URL from runtime config, `credentials: 'omit'`, a generated `X-Request-ID`, and `Authorization: Bearer <getIdToken()>` when signed in. On `401` it forces `getIdToken(true)` and retries **once** via `makeRequest`, never recursively. Separately, a `GET` that failed in transit or answered `500`/`502`/`503`/`504` is retried once by ofetch; a mutating verb and an aborted request never are, and Pinia Colada adds no retry of its own.
 - A query keeps its previous data visible across a key change rather than flashing empty, and every failure — query or mutation — goes through the one central policy instead of a try-catch at the call site.
 - A mutation may opt out of the toast for a status it handles itself; that is the only sanctioned way to bypass the policy, and features 007 and 008 are its callers.
 
@@ -96,7 +96,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 - No component calls the network; no component holds a loading `ref`; no try-catch around a query or mutation.
 - Server state lives only in the query cache; the auth store holds identity and the active build id, never a build, and actions are its only mutation path.
 - The eight planner `useState` keys are untouched by this feature.
-- The fetcher retries a `401` at most once per request.
+- The fetcher retries a `401` at most once per request, and a `GET` that failed in transit or with a 5xx at most once; nothing else is retried — not a `429`, not a mutation.
 
 ## Error Handling
 
@@ -119,7 +119,7 @@ Not role-specific; visibility follows the auth store (feature 004).
 
 ## Tests
 
-- `test/unit/fetcher.test.ts`: headers, base URL, the single `401` retry, no retry on the retry.
+- `test/unit/fetcher.test.ts`: headers, base URL, the single `401` retry, no retry on the retry, the 5xx-only retry codes with no numeric `retry`.
 - `test/unit/handleApiError.test.ts`: every status row above, `WeakSet` dedup, the `412`/`422` non-toast paths.
 - `test/nuxt/app-query.test.ts`: previous data held across a key change, failures routed through the policy for both query and mutation, the toast opt-out, and the outside-a-component no-op.
 - `test/unit/services.test.ts`, `test/nuxt/build-queries.test.ts`: a read's `signal` reaching the fetcher, and Colada's reaching the service.

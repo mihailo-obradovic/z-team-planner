@@ -34,6 +34,9 @@ async function makeRequest(
     baseURL: apiBaseUrl,
     // ! No cookies. This API is bearer-token only and sets none; sending credentials would also force a CORS configuration the server deliberately refuses (feature 004).
     credentials: 'omit',
+    // * ofetch retries a GET once by default, on a 5xx, a request that failed in transit, and also 408/409/425/429; narrowed to the 5xx, so a rate-limited read is not retried straight back into the limiter.
+    // ! Never set `retry` to a number: it overrides ofetch's rule that a mutating verb is not retried, and a POST or PATCH would then be sent twice.
+    retryStatusCodes: [500, 502, 503, 504],
     ...options,
     headers: {
       ...(await buildHeaders(freshness)),

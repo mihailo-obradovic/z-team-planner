@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 type FetchCallOptions = {
   baseURL: string;
   credentials: string;
+  retry?: unknown;
+  retryStatusCodes: number[];
   headers: Record<string, string>;
 };
 
@@ -55,6 +57,17 @@ describe('fetcher', () => {
     expect(options.headers.Accept).toBe('application/json');
     // * 12 hex chars, matching the id the API generates when none is sent.
     expect(options.headers['X-Request-ID']).toMatch(/^[0-9a-f]{12}$/);
+  });
+
+  it('retries only a 5xx, and leaves the verb rule to ofetch', async () => {
+    fetchMock.mockResolvedValue({});
+
+    await fetcher('/builds', { method: 'POST' });
+
+    const [, options] = callArgs(0);
+    expect(options.retryStatusCodes).toEqual([500, 502, 503, 504]);
+    // ! A numeric `retry` would make ofetch resend a POST.
+    expect(options).not.toHaveProperty('retry');
   });
 
   it('gives each request its own id', async () => {
