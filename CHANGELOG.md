@@ -6,6 +6,10 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 
 ## [Unreleased]
 
+### Changed
+
+- Your account builds no longer reload every time you switch back to the planner's tab. They refresh when the page opens, after you save or delete one, and when your connection comes back.
+
 ### Fixed
 
 - A shared build's page now reads to screen readers: every hero card is there with its name, level, stats and powers, and nothing on it is a control. Before, the whole build was hidden from assistive technology.
