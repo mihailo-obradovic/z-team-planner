@@ -69,15 +69,14 @@ This is for genuinely different _forms_. A control that only changes size or pad
 
 ## Read-only regions
 
-**A region the user may read but not change gets `inert` at its boundary**, with `pointer-events-none` and `aria-readonly`, and the components inside are untouched.
+**A region the user may read but not change renders a read-only variant of its components: the values as text, the controls absent.** Information stays — a level, a stat, a trained power as a labelled glyph — and actions go: no stepper, no toggle, no reset, not greyed out but not rendered. The variant is a prop on the component (`readonly`), so the one component owns both forms and a control added later is added to one of them on purpose.
 
 ```vue
-<!-- * Read-only at one boundary rather than a disabled prop on forty controls. -->
-<div class="pointer-events-none select-none" inert aria-readonly="true">
-  <!-- the ordinary components, unchanged -->
-</div>
+<HeroCard v-for="hero in heroes" :key="hero.id" :hero-id="hero.id" readonly />
 ```
 
-The alternative is a `disabled` prop threaded through every descendant, which fails the moment someone adds a control and forgets it. One attribute at the boundary cannot be missed by a control that did not exist when it was written.
+**Never `inert` at the boundary of content the user is meant to read.** `inert` removes the subtree from the accessibility tree as well as from the tab order: a screen reader hears nothing inside it, so a page built as "the ordinary components, unchanged, inside one inert wrapper" is a page whose entire content is missing for a screen-reader user. `aria-readonly` on a plain `div` does not restore it — the attribute belongs to form roles and a `div` has none. The template once prescribed exactly that wrapper, and it shipped a share page whose eight cards did not exist to assistive technology.
 
-**State the limit in the same breath: `inert` stops human input, not a scripted dispatch.** It is a UI affordance, not an authorisation boundary. The real guarantee has to be structural — the page has no write path at all — and the comment at the boundary says so, or the next reader will mistake the attribute for the protection.
+`inert` is right for what assistive technology should also skip: a banner mid-exit, a tier of the header hidden at the current breakpoint, a placeholder that has nothing to say yet (Reserved cells). It is wrong for a read-only view.
+
+**The authorisation boundary is structural, not an attribute.** A read-only variant stops human input, not a scripted dispatch; the real guarantee is that the page has no write path at all, and the comment at the variant's call site says so, or the next reader will mistake the prop for the protection.
