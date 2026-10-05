@@ -3,8 +3,9 @@
     <SkipLink />
 
     <u-header class="shrink-0">
+      <!-- * The title is the page's one `h1`: the title link is the only element on every route that names the app. -->
+      <!-- ! No comment inside this slot: `u-header` builds the link's `aria-label` from the slot's nodes, comments included. -->
       <template #title>
-        <!-- * The page's one `h1`; the title link is the only element on every route that names the app. -->
         <h1 class="font-heading text-title">
           Z-Team <span class="text-primary">Planner</span>
         </h1>
