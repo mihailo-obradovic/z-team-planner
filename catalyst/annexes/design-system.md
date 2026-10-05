@@ -515,43 +515,43 @@ Two rules this ladder encodes. **Labels go before information**: an unlabelled f
 
 WCAG AA: body text 4.5:1, large text (18.66px+ bold) and non-text UI 3:1. A 1px rule that only decorates is exempt, and there are three: the band under a section heading, the tab row's bottom edge (`secondary-500` on the ground, 1.98:1) and the header's divider (`secondary-400` on the chrome, 2.74:1 — 500 was tried first and is invisible there at 1.29:1). None carries information the labels either side do not, and none is a target — unlike the scroll edge rule (§5), which is the only sign that content is off-screen and is therefore held to the floor. **Measured from the token values, then confirmed in the rendered DOM** — the two agreed everywhere they were both checked.
 
-| Foreground              | On          | Ratio | Verdict                             |
-| ----------------------- | ----------- | ----- | ----------------------------------- |
-| ink                     | paper       | 12.52 | AA                                  |
-| ink                     | highlight   | 12.74 | AA                                  |
-| ink                     | tan         | 9.22  | AA                                  |
-| ink-soft (`text-muted`) | paper       | 6.11  | AA                                  |
-| ink-soft                | tan         | 4.50  | AA, exactly at the floor            |
-| muted (`text-dimmed`)   | paper       | 3.13  | **non-text only** — never text      |
-| ink                     | amber solid | 6.08  | AA                                  |
-| `paper-600`             | paper-200   | 5.58  | non-text — scrollbar on paper       |
-| `lagoon-300`            | lagoon-950  | 8.27  | non-text — scrollbar on ground      |
-| ink                     | gold solid  | 9.37  | AA — the Story Setup button         |
-| amber-deep              | paper       | 3.12  | **large text only** (19px/800)      |
-| `ember-500` (primary)   | paper       | 2.05  | **fill only, never text**           |
-| `ember-800`             | tan         | 3.44  | **large text only** — not the badge |
-| `ember-800`             | paper       | 4.87  | AA — the small-text amber           |
-| `brick-600`             | paper       | 5.45  | AA — error text                     |
-| cream                   | brick-600   | 5.45  | AA — the error solid                |
-| cream                   | brick-500   | 4.36  | **fails as button text**            |
-| brick-500               | paper       | 4.36  | fill only                           |
-| moss-500                | paper       | 4.58  | AA                                  |
-| signal-500              | paper       | 2.98  | **fill only, never text**           |
-| `signal-700`            | paper       | 5.50  | AA — status text                    |
-| cream                   | signal-700  | 5.50  | AA — the info solid                 |
-| gold-500                | ground      | 11.20 | AA — the pair marker                |
-| `secondary-300`         | ground      | 7.68  | AA — headings on the ground         |
-| gold-500 at 50%         | ground      | 3.59  | non-text — the marker's ring        |
-| cream                   | chrome      | 9.03  | AA                                  |
-| steel                   | chrome      | 5.09  | AA — header labels                  |
-| gold                    | chrome      | 6.76  | AA — counters, Story Setup          |
-| `secondary-400`         | chrome      | 2.74  | non-text — the header divider       |
-| secondary solid         | chrome      | 1.29  | **fails — no control, no rule**     |
-| neutral subtle          | chrome      | 6.65  | AA — Story Setup and Save           |
-| cream                   | teal solid  | 6.99  | AA                                  |
-| cream                   | ground      | 13.19 | AA                                  |
-| gold                    | ground      | 9.87  | AA                                  |
-| edge ring               | ground      | 3.31  | non-text, meets 3:1                 |
+| Foreground              | On          | Ratio | Verdict                                                                                                 |
+| ----------------------- | ----------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| ink                     | paper       | 12.52 | AA                                                                                                      |
+| ink                     | highlight   | 12.74 | AA                                                                                                      |
+| ink                     | tan         | 9.22  | AA                                                                                                      |
+| ink-soft (`text-muted`) | paper       | 6.11  | AA                                                                                                      |
+| ink-soft                | tan         | 4.50  | AA, exactly at the floor — axe reads 4.49 from a sampled plate pixel; accepted as rounding (2026-10-05) |
+| muted (`text-dimmed`)   | paper       | 3.13  | **non-text only** — never text                                                                          |
+| ink                     | amber solid | 6.08  | AA                                                                                                      |
+| `paper-600`             | paper-200   | 5.58  | non-text — scrollbar on paper                                                                           |
+| `lagoon-300`            | lagoon-950  | 8.27  | non-text — scrollbar on ground                                                                          |
+| ink                     | gold solid  | 9.37  | AA — the Story Setup button                                                                             |
+| amber-deep              | paper       | 3.12  | **large text only** (19px/800)                                                                          |
+| `ember-500` (primary)   | paper       | 2.05  | **fill only, never text**                                                                               |
+| `ember-800`             | tan         | 3.44  | **large text only** — not the badge                                                                     |
+| `ember-800`             | paper       | 4.87  | AA — the small-text amber                                                                               |
+| `brick-600`             | paper       | 5.45  | AA — error text                                                                                         |
+| cream                   | brick-600   | 5.45  | AA — the error solid                                                                                    |
+| cream                   | brick-500   | 4.36  | **fails as button text**                                                                                |
+| brick-500               | paper       | 4.36  | fill only                                                                                               |
+| moss-500                | paper       | 4.58  | AA                                                                                                      |
+| signal-500              | paper       | 2.98  | **fill only, never text**                                                                               |
+| `signal-700`            | paper       | 5.50  | AA — status text                                                                                        |
+| cream                   | signal-700  | 5.50  | AA — the info solid                                                                                     |
+| gold-500                | ground      | 11.20 | AA — the pair marker                                                                                    |
+| `secondary-300`         | ground      | 7.68  | AA — headings on the ground                                                                             |
+| gold-500 at 50%         | ground      | 3.59  | non-text — the marker's ring                                                                            |
+| cream                   | chrome      | 9.03  | AA                                                                                                      |
+| steel                   | chrome      | 5.09  | AA — header labels                                                                                      |
+| gold                    | chrome      | 6.76  | AA — counters, Story Setup                                                                              |
+| `secondary-400`         | chrome      | 2.74  | non-text — the header divider                                                                           |
+| secondary solid         | chrome      | 1.29  | **fails — no control, no rule**                                                                         |
+| neutral subtle          | chrome      | 6.65  | AA — Story Setup and Save                                                                               |
+| cream                   | teal solid  | 6.99  | AA                                                                                                      |
+| cream                   | ground      | 13.19 | AA                                                                                                      |
+| gold                    | ground      | 9.87  | AA                                                                                                      |
+| edge ring               | ground      | 3.31  | non-text, meets 3:1                                                                                     |
 
 Four findings this table produced, all fixed rather than accepted: ink on **signal-500** is 4.21:1 and fails for badge text, so the info solid uses `signal-700` with cream, and the error solid likewise uses `brick-600` with cream, since ink on brick-500 is 2.88:1 and cream 4.36:1; `--ui-text-dimmed` is below the body floor and is restricted to placeholders, disabled states and non-text — a label is text under WCAG, and the 2026-10-05 audit found it on twelve labels and headings, every one moved to `text-muted`; the three fill colours that fail as small text each have a darker text-only step beside them (§1); and the **secondary solid is 1.29:1 against the chrome** — a teal button on a teal bar, which is not a contrast that can be nudged into passing. The Story Setup trigger takes Save's neutral subtle instead, a tan fill at 6.65:1 carrying ink at 9.22:1. The lesson repeats §14.1's rule: measure the pair that actually renders, not the one the eye assumes, and a solid on chrome is a pair like any other.
 
