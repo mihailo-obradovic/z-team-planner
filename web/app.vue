@@ -4,9 +4,10 @@
 
     <u-header class="shrink-0">
       <template #title>
-        <span class="font-heading text-title">
+        <!-- * The page's one `h1`; the title link is the only element on every route that names the app. -->
+        <h1 class="font-heading text-title">
           Z-Team <span class="text-primary">Planner</span>
-        </span>
+        </h1>
 
         <span
           class="ml-2 hidden font-sans text-xs tracking-widest text-secondary-300 uppercase xl:inline"

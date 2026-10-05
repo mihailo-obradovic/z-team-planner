@@ -1,6 +1,6 @@
 <template>
   <!-- * `#__nuxt` is the pinned flex column (main.css) and this page is its only child, so height comes from the chain rather than a viewport unit (annex §4). Its own scroll region, because that column is `overflow: hidden`. -->
-  <div
+  <main
     class="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-4 md:p-6"
   >
     <div
@@ -28,7 +28,7 @@
         @click="handleBackToPlanner"
       />
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
