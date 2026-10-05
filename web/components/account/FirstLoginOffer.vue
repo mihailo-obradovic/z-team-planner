@@ -46,7 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import { useImportBuilds } from '@/services/queries/useBuildQueries';
+import {
+  useAlreadyKept,
+  useImportBuilds
+} from '@/services/queries/useBuildQueries';
 
 import type { ImportReport } from '@/types/api';
 import type { LocalBuild } from '@/types/build';
@@ -69,17 +72,30 @@ const { mutate: importBuilds, isLoading: isImporting } = useImportBuilds({
 const { localBuilds } = useLocalBuilds();
 
 const isOpen = ref(false);
+const isOfferPending = ref(false);
 const selected = ref<string[]>([]);
 
-const candidates = computed<LocalBuild[]>(() =>
-  localBuilds.value.slice(0, IMPORT_LIMIT)
+const { alreadyKeptIds, status: alreadyKeptStatus } = useAlreadyKept(
+  localBuilds,
+  () => isOfferPending.value
 );
 
-const isCapped = computed(() => localBuilds.value.length > IMPORT_LIMIT);
+// * A build the account already holds would only come back as "existing", so it is never offered.
+const offerable = computed<LocalBuild[]>(() =>
+  localBuilds.value.filter(
+    (localBuild) => !alreadyKeptIds.value.has(localBuild.id)
+  )
+);
+
+const candidates = computed<LocalBuild[]>(() =>
+  offerable.value.slice(0, IMPORT_LIMIT)
+);
+
+const isCapped = computed(() => offerable.value.length > IMPORT_LIMIT);
 
 const intro = computed(
   () =>
-    `You have ${plural(localBuilds.value.length, 'build')} saved in this browser. ` +
+    `You have ${plural(offerable.value.length, 'build')} saved in this browser. ` +
     'Keep them in your account and they follow you to other devices — the copies here stay either way.'
 );
 
@@ -154,11 +170,28 @@ function handleKeep() {
 }
 
 watch(isSignedIn, (signedIn, wasSignedIn) => {
-  if (!signedIn || wasSignedIn) {
+  if (!signedIn) {
+    isOfferPending.value = false;
+
     return;
   }
 
-  if (localBuilds.value.length === 0 || hasSeenOffer()) {
+  if (wasSignedIn || localBuilds.value.length === 0 || hasSeenOffer()) {
+    return;
+  }
+
+  isOfferPending.value = true;
+});
+
+// * The offer waits for the account's answer. Nothing to offer, or no answer, leaves it unanswered rather than spent, so the next sign-in asks again.
+watch([isOfferPending, alreadyKeptStatus], ([pending, status]) => {
+  if (!pending || status === 'pending') {
+    return;
+  }
+
+  isOfferPending.value = false;
+
+  if (status === 'failed' || candidates.value.length === 0) {
     return;
   }
 

@@ -6,6 +6,10 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 
 ## [Unreleased]
 
+### Fixed
+
+- Signing in on another browser no longer copies builds your account already has. The offer to keep this browser's builds now lists only builds the account doesn't already hold under the same name with the same contents, and shows nothing when there are none. An import that still meets one reports it as already in your account instead of adding a "(2)" copy.
+
 ## [0.1.0] - 2026-10-04
 
 ### Overview

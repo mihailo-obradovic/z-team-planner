@@ -14,13 +14,13 @@ What a signed-in player actually touches: account builds listed beside the local
 
 ## Inputs
 
-| Input                  | Type            | Source               | Constraints                                      |
-| ---------------------- | --------------- | -------------------- | ------------------------------------------------ |
-| auth status            | store           | feature 006          | account queries fire only at `signed-in`         |
-| `activeAccountBuildId` | store, nullable | opening a build      | which build **Save** patches; `null` means local |
-| build name             | form field      | BuildManager dialogs | Regle: required and ≤ 80, both after trim        |
-| planner state          | `useState`      | feature 003          | serialized by feature 001 into the `data` sent   |
-| local builds           | localStorage    | feature 001          | the offer's candidates, capped at 50             |
+| Input                  | Type            | Source               | Constraints                                                 |
+| ---------------------- | --------------- | -------------------- | ----------------------------------------------------------- |
+| auth status            | store           | feature 006          | account queries fire only at `signed-in`                    |
+| `activeAccountBuildId` | store, nullable | opening a build      | which build **Save** patches; `null` means local            |
+| build name             | form field      | BuildManager dialogs | Regle: required and ≤ 80, both after trim                   |
+| planner state          | `useState`      | feature 003          | serialized by feature 001 into the `data` sent              |
+| local builds           | localStorage    | feature 001          | the offer's candidates, less the already kept, capped at 50 |
 
 ## Outputs And Side Effects
 
@@ -60,6 +60,7 @@ Non-goals:
 - Saving a build another device already changed opens the conflict dialog holding that build: **Reload theirs** replaces the planner state, **Save mine as new** keeps the local work under a new build.
 - At the account limit a create toasts the server's own message, not a generic failure.
 - After a first sign-in on a browser holding local builds, the offer sends the kept ones to import and reports the outcome as one summary toast; local copies are untouched.
+- The offer lists only local builds that are not **already kept** (`context/glossary.md`). It waits for the account list, then reads in full only the cloud builds whose name a local build shares — the list carries no documents. With nothing left, or with either read failed, no offer is shown and none is answered.
 
 ## Roles And Access
 
@@ -67,27 +68,30 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 
 ## Examples
 
-| Input                                | Expected Output                                    | Notes                       |
-| ------------------------------------ | -------------------------------------------------- | --------------------------- |
-| load `/` signed out                  | no account request at all                          | `enabled` gate              |
-| sign in                              | `GET /builds` exactly once                         |                             |
-| **Save** on a build edited elsewhere | conflict dialog with the other build; no toast     | `412`, body parsed          |
-| **Save as new** with a 90-char name  | inline field error; no request                     | Regle catches it first      |
-| server-only `422` (a rule drifted)   | inline field error from `externalErrors`; no toast | mutation opts the toast out |
-| 21st **Save as new**                 | toast "You can keep up to 20 builds"               | `409 build_limit`           |
-| open an account build, touch nothing | **Save** shows no unsaved-changes state            | baseline re-taken on load   |
-| **Save** an account build, succeed   | **Save** returns to its resting state              | baseline is what was sent   |
-| delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`     |
-| delete a non-active build            | list refetches; the active id is left alone        |                             |
-| the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report        |
-| the offer imports 2, one `existing`  | "1 build kept" — "1 was already in your account"   | success colour              |
-| every item comes back `existing`     | "Already in your account", no description          | success colour              |
-| a `412` whose body will not parse    | generic toast, no dialog                           | nothing to choose between   |
+| Input                                | Expected Output                                    | Notes                        |
+| ------------------------------------ | -------------------------------------------------- | ---------------------------- |
+| load `/` signed out                  | no account request at all                          | `enabled` gate               |
+| sign in                              | `GET /builds` exactly once                         |                              |
+| **Save** on a build edited elsewhere | conflict dialog with the other build; no toast     | `412`, body parsed           |
+| **Save as new** with a 90-char name  | inline field error; no request                     | Regle catches it first       |
+| server-only `422` (a rule drifted)   | inline field error from `externalErrors`; no toast | mutation opts the toast out  |
+| 21st **Save as new**                 | toast "You can keep up to 20 builds"               | `409 build_limit`            |
+| open an account build, touch nothing | **Save** shows no unsaved-changes state            | baseline re-taken on load    |
+| **Save** an account build, succeed   | **Save** returns to its resting state              | baseline is what was sent    |
+| delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`      |
+| delete a non-active build            | list refetches; the active id is left alone        |                              |
+| the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report         |
+| sign in, 3 local, 1 already kept     | the offer lists the other 2                        | one `GET /builds/{id}`       |
+| sign in, every local already kept    | no offer; not answered                             | a later new build is offered |
+| sign in, `GET /builds` fails         | no offer; not answered                             | next sign-in asks again      |
+| the offer imports 2, one `existing`  | "1 build kept" — "1 was already in your account"   | success colour               |
+| every item comes back `existing`     | "Already in your account", no description          | success colour               |
+| a `412` whose body will not parse    | generic toast, no dialog                           | nothing to choose between    |
 
 ## Business Rules
 
 - **Services are pure**: one function per feature 005 endpoint, no store access, no toasts, no cache writes — everything stateful lives in the composables.
-- **Query keys** `builds.fetch = ['builds','fetch']`, `builds.get = ['builds','get']`; create, import, patch and delete invalidate the `['builds']` root, covering the list and every cached build at once.
+- **Query keys** `builds.fetch = ['builds','fetch']`, `builds.get = ['builds','get']`, the offer's `['builds','name-matches', …ids]`; create, import, patch and delete invalidate the `['builds']` root, covering the list and every cached build at once.
 - **`If-Match`** is read from the cached build inside `useUpdateBuild` — a component never sees an `ETag`.
 - **`Idempotency-Key`** is generated inside `useCreateBuild` and `useImportBuilds`, once per mutation call. The fetcher's `401` retry replays the same request options, so it carries the same key and cannot create a second build.
 - **Store side effects belong to the query layer**: clearing `activeAccountBuildId` on delete happens in the mutation, not in a service or component.
@@ -137,4 +141,4 @@ Every status goes through feature 006's central policy; this feature only decide
 
 ## Verification
 
-By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one; dirty tracking re-baselined on open and on save, and re-selecting the open build reloading its stored document (`build-manager.test.ts`, `build-manager-reopen.test.ts`). In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, `409` toasted the server's own limit message, and the first-login offer imported two of four local builds with one summary toast.
+By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one; dirty tracking re-baselined on open and on save, and re-selecting the open build reloading its stored document (`build-manager.test.ts`, `build-manager-reopen.test.ts`). In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, `409` toasted the server's own limit message, and the first-login offer imported two of four local builds with one summary toast. Three fresh browsers on one emulator account: the second offered only its changed build after one `GET /builds/{id}` per shared name, and the third, holding only already-kept builds, offered nothing and left the offer unanswered; the account ended with four builds, no copies.

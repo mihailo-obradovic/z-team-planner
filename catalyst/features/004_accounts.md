@@ -51,7 +51,7 @@ Non-goals:
 - On load the header renders a reserved slot; the store starts `unknown` and resolves to `anonymous` or `signed-in` once the Firebase SDK reports, so the prerendered page never shows a wrong button. With no API base URL configured it never resolves, so the control is not rendered rather than holding a slot forever.
 - Anonymous: the slot shows **Sign in**; the build manager keeps a hint — "Sign in to keep your builds stored securely" — beside its local controls. Nothing is gated.
 - Signing in opens Google's popup; on success the store flips to `signed-in`, the first request carrying the token upserts the `users` row, and the header shows the display name with a menu: **My builds**, **Sign out**, **Delete account**.
-- First sign-in on a browser holding local builds: the offer lists them with checkboxes (all selected), **Keep selected** / **Not now**. Kept builds are sent to feature 005's import endpoint; local copies are untouched either way. The offer is **answered** once per browser (a localStorage flag) — dismissed, or kept with the import accepted. A failed import leaves it open and unspent.
+- First sign-in on a browser holding local builds the account does not already hold: the offer lists those with checkboxes (all selected), **Keep selected** / **Not now**. Kept builds are sent to feature 005's import endpoint; local copies are untouched either way. The offer is **answered** once per browser (a localStorage flag) — dismissed, or kept with the import accepted. A failed import leaves it open and unspent. A sign-in with every local build **already kept** (feature 008) shows nothing and answers nothing.
 - Sign-out clears the store and the token; local builds remain and the page stays usable.
 - Delete account: the confirm dialog names the account build count; on confirm the API deletes everything, the client signs out, and a toast confirms. Share links to those builds answer 404 from then on.
 - A request that answers `401` is retried once after a forced token refresh; a second `401` signs the user out locally with a toast.
@@ -72,21 +72,22 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 
 ## Examples
 
-| Input                                                   | Expected Output                                                      | Notes                                   |
-| ------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------- |
-| load `/` signed out                                     | header slot empty until the SDK reports, then **Sign in**            | no layout shift                         |
-| sign in with a Google account never seen before         | `users` row created; header shows the name                           | upsert on first request                 |
-| sign in again from another device                       | same row, `last_seen_at` updated, builds listed                      | keyed on `firebase_uid`                 |
-| request with no `Authorization` header to `GET /me`     | `401`, `WWW-Authenticate: Bearer`                                    |                                         |
-| request with an expired token                           | `401`; client refreshes and retries once → `200`                     |                                         |
-| token minted for another Firebase project               | `401`                                                                | audience check                          |
-| `DELETE /me` with 3 account builds                      | `204`; builds gone; their share links `404`; Firebase user deleted   | then the client signs out               |
-| sign in after deleting the account                      | a fresh row, zero builds                                             | Firebase user was deleted too           |
-| first sign-in with 4 local builds, keep 2               | 2 account builds created; 4 local builds still present               | offer never shown again on this browser |
-| **Keep selected**, the import fails                     | dialog stays open; offer returns on the next sign-in                 | answered, not merely attempted          |
-| first sign-in with 0 local builds                       | no offer                                                             |                                         |
-| `FIREBASE_AUTH_EMULATOR_HOST` set, `APP_ENV=production` | API refuses to start                                                 | emulator tokens are unsigned            |
-| Firebase unreachable, valid token in hand               | API keeps validating offline until `exp`; sign-in fails with a toast | no outage-time data loss                |
+| Input                                                   | Expected Output                                                      | Notes                                      |
+| ------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------ |
+| load `/` signed out                                     | header slot empty until the SDK reports, then **Sign in**            | no layout shift                            |
+| sign in with a Google account never seen before         | `users` row created; header shows the name                           | upsert on first request                    |
+| sign in again from another device                       | same row, `last_seen_at` updated, builds listed                      | keyed on `firebase_uid`                    |
+| request with no `Authorization` header to `GET /me`     | `401`, `WWW-Authenticate: Bearer`                                    |                                            |
+| request with an expired token                           | `401`; client refreshes and retries once → `200`                     |                                            |
+| token minted for another Firebase project               | `401`                                                                | audience check                             |
+| `DELETE /me` with 3 account builds                      | `204`; builds gone; their share links `404`; Firebase user deleted   | then the client signs out                  |
+| sign in after deleting the account                      | a fresh row, zero builds                                             | Firebase user was deleted too              |
+| first sign-in with 4 local builds, keep 2               | 2 account builds created; 4 local builds still present               | offer never shown again on this browser    |
+| **Keep selected**, the import fails                     | dialog stays open; offer returns on the next sign-in                 | answered, not merely attempted             |
+| first sign-in with 0 local builds                       | no offer                                                             |                                            |
+| first sign-in, both local builds already kept           | no offer                                                             | not answered: a new build is offered later |
+| `FIREBASE_AUTH_EMULATOR_HOST` set, `APP_ENV=production` | API refuses to start                                                 | emulator tokens are unsigned               |
+| Firebase unreachable, valid token in hand               | API keeps validating offline until `exp`; sign-in fails with a toast | no outage-time data loss                   |
 
 ## Business Rules
 

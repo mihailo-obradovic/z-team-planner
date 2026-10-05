@@ -1,19 +1,67 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
+import { flushPromises } from '@vue/test-utils';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
+import { clearUserScopedCache } from '@/services/queries/clearUserScopedCache';
 import { useAuthStore } from '@/stores/useAuthStore';
 
-import type { ImportBuildsPayload } from '@/types/api';
-import type { LocalBuild } from '@/types/build';
+import type {
+  CloudBuild,
+  CloudBuildList,
+  ImportBuildsPayload
+} from '@/types/api';
+import type { LocalBuild, SerializedBuild } from '@/types/build';
 
 const importBuildsSpy =
   vi.fn<(payload: ImportBuildsPayload) => Promise<unknown>>();
 
+type CloudFixture = { id: string; name: string; data: SerializedBuild };
+
+// * What the account already holds. The list carries no documents, so each build is also served by id, the way the server answers.
+const cloudBuilds: CloudFixture[] = [];
+const failingReads = { list: false, build: false };
+
+function cloudRow({ id, name, data }: CloudFixture): CloudBuild {
+  return {
+    id,
+    name,
+    data,
+    format_version: 1,
+    created_at: '2026-10-01T00:00:00Z',
+    updated_at: '2026-10-01T00:00:00Z'
+  };
+}
+
+const fetchBuildsSpy = vi.fn<() => Promise<CloudBuildList>>(async () => {
+  if (failingReads.list) {
+    throw { statusCode: 500 };
+  }
+
+  return {
+    items: cloudBuilds.map((build) => {
+      const { data: _data, ...summary } = cloudRow(build);
+
+      return summary;
+    }),
+    total: cloudBuilds.length
+  };
+});
+
+const fetchBuildSpy = vi.fn<(id: string) => Promise<CloudBuild>>(async (id) => {
+  const found = cloudBuilds.find((build) => build.id === id);
+
+  if (failingReads.build || !found) {
+    throw { statusCode: 500 };
+  }
+
+  return cloudRow(found);
+});
+
 vi.mock('@/services/builds.api', () => ({
-  fetchBuilds: vi.fn<() => Promise<never>>(),
-  fetchBuild: vi.fn<() => Promise<never>>(),
+  fetchBuilds: () => fetchBuildsSpy(),
+  fetchBuild: (id: string) => fetchBuildSpy(id),
   createBuild: vi.fn<() => Promise<never>>(),
   updateBuild: vi.fn<() => Promise<never>>(),
   deleteBuild: vi.fn<() => Promise<never>>(),
@@ -56,8 +104,12 @@ const STUBS = {
 
 const ALICE = { uid: 'u1', email: null, displayName: 'Alice' };
 
-function localBuild(id: string, name: string) {
-  return { id, name, data: { v: 1 as const } };
+function localBuild(
+  id: string,
+  name: string,
+  data: SerializedBuild = { v: 1 }
+) {
+  return { id, name, data };
 }
 
 // ! Captured from inside the component's own setup. A store or planner reached from the test body is a different instance, and every assertion here would be vacuous.
@@ -69,6 +121,8 @@ async function mountWith(builds: ReturnType<typeof localBuild>[]) {
       setup() {
         store = useAuthStore();
         store.resetUser();
+        // * What signing out does in the app: no account's list outlives its session.
+        clearUserScopedCache();
         localBuilds.value = builds;
 
         return () => h(FirstLoginOffer);
@@ -82,7 +136,7 @@ async function mountWith(builds: ReturnType<typeof localBuild>[]) {
 
 async function signIn() {
   store.setUser(ALICE);
-  await nextTick();
+  await flushPromises();
   await nextTick();
 }
 
@@ -90,6 +144,11 @@ describe('FirstLoginOffer', () => {
   beforeEach(() => {
     importBuildsSpy.mockReset();
     importBuildsSpy.mockResolvedValue([]);
+    fetchBuildsSpy.mockClear();
+    fetchBuildSpy.mockClear();
+    cloudBuilds.length = 0;
+    failingReads.list = false;
+    failingReads.build = false;
     window.localStorage.clear();
     toasts.length = 0;
   });
@@ -173,6 +232,87 @@ describe('FirstLoginOffer', () => {
     expect(toasts[0]?.title).toBe('1 build kept');
     // * Named, not counted: the player has to know which build to go and look at.
     expect(toasts[0]?.description).toBe('Could not import: Tank line');
+
+    page.unmount();
+  });
+
+  it('leaves out the builds the account already holds', async () => {
+    cloudBuilds.push(
+      { id: crypto.randomUUID(), name: 'Main', data: { v: 1, ec: 'coupe' } },
+      { id: crypto.randomUUID(), name: 'Tank', data: { v: 1 } }
+    );
+
+    const page = await mountWith([
+      // * Already kept: same name, same document, keys in another order.
+      localBuild('a', 'Main', { ec: 'coupe', v: 1 } as SerializedBuild),
+      // * Same name, another document: a different build, so still offered.
+      localBuild('b', 'Tank', { v: 1, ec: 'coupe' }),
+      // * Same document, another name: also still offered.
+      localBuild('c', 'Scout', { v: 1, ec: 'coupe' })
+    ]);
+    await signIn();
+
+    expect(page.text()).not.toContain('Main');
+    expect(page.text()).toContain('Tank');
+    expect(page.text()).toContain('Scout');
+    expect(page.text()).toContain('You have 2 builds saved in this browser');
+    // * Only the name-matched builds are read in full; one per collision, never the whole account.
+    expect(fetchBuildSpy).toHaveBeenCalledTimes(2);
+
+    page.unmount();
+  });
+
+  it('offers nothing, and stays unanswered, when every build is already kept', async () => {
+    cloudBuilds.push({ id: crypto.randomUUID(), name: 'Main', data: { v: 1 } });
+
+    const first = await mountWith([localBuild('a', 'Main')]);
+    await signIn();
+
+    expect(first.text()).toBe('');
+    first.unmount();
+
+    // ! Nothing was answered, so a build made here later is still offered on the next sign-in.
+    const later = await mountWith([
+      localBuild('a', 'Main'),
+      localBuild('b', 'New')
+    ]);
+    await signIn();
+
+    expect(later.text()).toContain('New');
+    expect(later.text()).not.toContain('Main');
+    later.unmount();
+  });
+
+  it('offers nothing when the account list cannot be read', async () => {
+    failingReads.list = true;
+
+    const failed = await mountWith([localBuild('a', 'Main')]);
+    await signIn();
+
+    expect(failed.text()).toBe('');
+    failed.unmount();
+
+    failingReads.list = false;
+
+    const retried = await mountWith([localBuild('a', 'Main')]);
+    await signIn();
+
+    expect(retried.text()).toContain('Main');
+    retried.unmount();
+  });
+
+  it('offers nothing when a matched build cannot be read', async () => {
+    cloudBuilds.push({ id: crypto.randomUUID(), name: 'Main', data: { v: 1 } });
+    failingReads.build = true;
+
+    const page = await mountWith([
+      localBuild('a', 'Main'),
+      localBuild('b', 'New')
+    ]);
+    await signIn();
+
+    // * An offer that might list a kept build is the defect itself, so none is shown.
+    expect(page.text()).toBe('');
 
     page.unmount();
   });
