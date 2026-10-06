@@ -313,6 +313,10 @@ WCAG 2.5.8 (AA) floor: **24×24** CSS px for any standalone interactive element;
 
 Breakpoints: `<sm 640 · md 768 · lg 1024 · xl 1280>` px house defaults unless the project overrides them; the annex records the chosen set, and every media query uses it. **Reflow (WCAG 1.4.10):** usable without horizontal scrolling at **320px** — mobile-first base styles must work there, no hardcoded widths above 320px on outer wrappers, and tables/code blocks/long strings need `overflow-x: auto` / `overflow-wrap: break-word`.
 
+**Two axes, one per component.** A component whose width a parent layout decides switches on its own container — `@container` on its wrapper, container-query variants inside. Page chrome, pages, and dialogs, whatever the viewport sizes directly, switch on the viewport breakpoints above. A child of a viewport-tiered parent shares the parent's axis rather than re-measuring. Never both axes in one component: a viewport prefix inside a container-sized component is a proxy for a width the component can measure itself. Container thresholds are not snapped to the framework's container scale. A threshold is either measured from the content it holds, written in rem, or a viewport judgment, written in px; an annotation says which, and the annex records the number and its derivation.
+
+**Verification widths.** A feature that touches layout verifies reflow at 320, 375, 768, 1024, 1280 and 1536, and one px either side of every content-derived threshold it introduces or crosses. A feature that does not touch layout cites nothing here.
+
 ### 14.4 Motion & reduced motion
 
 Guard transform-based or longer-than-baseline animation with a CSS `@media (prefers-reduced-motion: reduce)` rule or a `useMediaQuery` / `window.matchMedia` check rendering a static fallback. Purely decorative color/opacity fades at the baseline duration don't need the guard.
