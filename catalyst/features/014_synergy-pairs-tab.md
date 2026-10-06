@@ -49,8 +49,9 @@ Non-goals:
 
 - One card per derived pair, in the overview's pair order — content-width cards, centered, wrapping to two per row where they fit, scrolling in the tab's scroll area.
 - Card title: both hero names around the link icon. No badge, no close control, no "active" label — a card appears and disappears only when episode setup changes the derived pairs.
-- Card body from `lg` up, side by side: the two radar-sized portrait blocks, the pair-total stat list, the radar.
-- Below `lg`: the portraits at chip width (108px) side by side with the stat list, the radar at its desktop size in a frame spanning the row; the card hugs its content down to `sm`, then goes full-width with portraits and stats spread apart. Once the two cannot share a row, one container query stacks and centers them and caps the frame — together. The stat value sits in a fixed slot so a total growing a digit shifts nothing.
+- The card reflows on the tab's container, never the viewport (annex §14.3). It is `w-fit`, so it cannot be its own query container and reads the tab wrapper, as the mission simulator does; both thresholds are measured from the card's content.
+- From 58rem — the row form's own 923px — side by side: the two radar-sized portrait blocks, the pair-total stat list, the radar; the title at the plate's start.
+- Below 58rem: the portraits at chip width (108px) side by side with the stat list, the radar at its desktop size in a frame spanning the row, the title centered; the card hugs its 496px content. Below 31rem the two cannot share a row: one query stacks and centers them and caps the frame — together — and `fit-content` clamps the card to the tab. The stat value sits in a fixed slot so a total growing a digit shifts nothing.
 - Each portrait block is the portrait and, under it, the overview card's power/special/form toggle row — same shared state, so a toggle made here shows everywhere. Flight is not shown.
 - The pair total is the dialog's pair-total computation: per stat, both heroes' effective stats summed, with a slot-filling power re-derived for a two-hero call (feature 012's `min(slots, 2)` rule). Each hero's effective stat is clamped at `MAX_STAT_VALUE` before summing; the sum may exceed 10 and is shown as-is in the list.
 - The radar plots the five pair totals as a single series on the shared `StatRadar`, `max` 10 — a total past 10 saturates at the rim while the list beside it shows the true number.
@@ -62,17 +63,17 @@ Not role-specific.
 
 ## Examples
 
-| Input                                                  | Expected Output                                                            | Notes                              |
-| ------------------------------------------------------ | -------------------------------------------------------------------------- | ---------------------------------- |
-| default episode setup                                  | 4 cards; a 5th appears once the ep3 cut + ep4 hire form a conditional pair | pairs derived, never edited here   |
-| change the ep3 cut or ep4 hire                         | the conditional card swaps or disappears; base cards unaffected            |                                    |
-| pair combat 8 + 7                                      | list shows 15; radar combat axis sits at the rim (10)                      | clip in the radar only             |
-| Coupé at 10 combat with En Pointe +3, partner combat 5 | pair combat shows 15, not 18                                               | per-hero clamp before summing      |
-| Golem's card, Spread Thin at 3 slots                   | pair total credits 2 slots — the partner fills one                         | same figure as the dialog's block  |
-| toggle a power on a synergy card                       | overview card and dialog reflect it immediately                            | one shared state                   |
-| toggle Sonar's form on the overview                    | the Malevola–Sonar card shows the swapped stats                            | form state lifted to shared        |
-| click a portrait on a card                             | that hero's detail dialog opens; synergy tab still active on close         |                                    |
-| viewport below `lg`                                    | small portraits side by side with the stats; the radar centered, own row   | full width below `sm`, 320px floor |
+| Input                                                  | Expected Output                                                            | Notes                             |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- | --------------------------------- |
+| default episode setup                                  | 4 cards; a 5th appears once the ep3 cut + ep4 hire form a conditional pair | pairs derived, never edited here  |
+| change the ep3 cut or ep4 hire                         | the conditional card swaps or disappears; base cards unaffected            |                                   |
+| pair combat 8 + 7                                      | list shows 15; radar combat axis sits at the rim (10)                      | clip in the radar only            |
+| Coupé at 10 combat with En Pointe +3, partner combat 5 | pair combat shows 15, not 18                                               | per-hero clamp before summing     |
+| Golem's card, Spread Thin at 3 slots                   | pair total credits 2 slots — the partner fills one                         | same figure as the dialog's block |
+| toggle a power on a synergy card                       | overview card and dialog reflect it immediately                            | one shared state                  |
+| toggle Sonar's form on the overview                    | the Malevola–Sonar card shows the swapped stats                            | form state lifted to shared       |
+| click a portrait on a card                             | that hero's detail dialog opens; synergy tab still active on close         |                                   |
+| tab wrapper below 58rem                                | small portraits side by side with the stats; the radar centered, own row   | stacked below 31rem, 320px floor  |
 
 ## Business Rules
 
@@ -123,4 +124,4 @@ Not role-specific.
 
 By test (`vue-tsc` and `oxlint` clean): `test/nuxt/synergy-pairs.test.ts` proves the derived card set and the conditional swap, card values matching `getPairCombinedStats`, live update on a shared toggle, and the portrait click; `pair-stats.test.ts` the clamp-before-sum, the `min(slots, 2)` deduction, the Sonar swap on either side; `monster-form.test.ts` the shared form.
 
-Walked live in Chrome: the default setup renders 4 cards; toggling Golem's power on a synergy card pressed the overview card's chip in the same tick and back; a portrait click opened Golem's dialog with the synergy tab active under it and after close. The reflow was measured from 1400 down to 525px: stacking, spread, content-hug and desktop bands all behave, and the frame cap flips at exactly the width the row wraps. Remaining risk: WebKit is unverified locally — the container query needs a device check.
+Walked live in Chrome: the default setup renders 4 cards; toggling Golem's power on a synergy card pressed the overview card's chip in the same tick and back; a portrait click opened Golem's dialog with the synergy tab active under it and after close. The reflow was measured at 320, 375, 768, 1024, 1280, 1536 and one px either side of 58rem and 31rem: the row, hug and stacked forms behave, and the frame cap flips at exactly the width the row wraps. Remaining risk: WebKit is unverified locally — the container query needs a device check.

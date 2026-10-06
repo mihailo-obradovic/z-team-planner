@@ -1,6 +1,6 @@
 <template>
-  <!-- * w-27 is the chip box's 108px, the width four chips need. -->
-  <div class="flex w-27 shrink-0 flex-col gap-2 lg:w-56">
+  <!-- * w-27 is the chip box's 108px, the width four chips need; 58rem is the card's row form (SynergyPairCard). -->
+  <div class="flex w-27 shrink-0 flex-col gap-2 @min-[58rem]:w-56">
     <button
       type="button"
       class="block w-full cursor-pointer"

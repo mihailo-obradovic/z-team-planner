@@ -14,7 +14,11 @@
   </div>
 
   <!-- * `min-h-full` with `mt-auto` on the line keeps it at the bottom until the build is taller (feature 010). -->
-  <div v-else-if="sharedBuild" class="flex min-h-full flex-col gap-4 p-4">
+  <!-- * `@container` so the cards read this wrapper the way they read the planner's tab wrapper (HeroCard's gap step). -->
+  <div
+    v-else-if="sharedBuild"
+    class="@container flex min-h-full flex-col gap-4 p-4"
+  >
     <div
       class="flex flex-col items-start justify-between gap-3 bg-default p-4 panel sm:flex-row sm:items-center"
     >
