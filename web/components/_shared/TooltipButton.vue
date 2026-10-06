@@ -1,6 +1,8 @@
 <template>
   <!-- * This click handler runs after the parent's fallthrough one, so the confirmation reads the resulting state. -->
+  <!-- ! Keyed on the mode: Reka decides once, at setup, whether `open` is passive, and a passive model copies the prop verbatim — so `false` (no-hover) followed by `undefined` (hover again) would leave it holding `undefined` and `Presence` warning on every render. A remount per device flip is cheap; the flip is rare. -->
   <u-tooltip
+    :key="mode"
     :text="displayedText"
     :open="controlledOpen"
     :delay-duration="delayDuration"

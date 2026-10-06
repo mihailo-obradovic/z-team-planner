@@ -130,7 +130,7 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 ## Tests
 
 - `test/unit/confirmationText.test.ts`: every row of the Examples table as a pure function of chip kind, previous and resulting state, including the flight fallback, the singular slot, and `null` for every deactivation.
-- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`.
+- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`. `test/nuxt/tooltip-button-device-flip.test.ts`: the mode going `no-hover` and back raises no prop warning — the tooltip remounts per mode, since Reka fixes at setup whether `open` is passive.
 - The linger timing and the fade are verified on the live walk, not asserted in jsdom.
 
 ## Verification
