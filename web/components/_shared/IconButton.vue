@@ -10,7 +10,9 @@
     :disabled="readonly ? undefined : disabled"
     :active="active"
     :aria-label="label"
-    :aria-pressed="readonly || active === undefined ? undefined : active"
+    :aria-pressed="
+      readonly || indicator || active === undefined ? undefined : active
+    "
     variant="subtle"
     square
   >
@@ -38,6 +40,8 @@ withDefaults(
     size?: 'xs' | 'sm';
     disabled?: boolean;
     active?: boolean;
+    // * The on look without the toggle semantics: a stepper that shows a state it advances rather than flips carries no `aria-pressed`.
+    indicator?: boolean;
     // * Changing it swaps the glyph out-in; absent, the glyph is static.
     swapKey?: string | number;
     readonly?: boolean;

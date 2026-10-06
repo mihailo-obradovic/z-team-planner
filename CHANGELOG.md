@@ -9,6 +9,7 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 ### Changed
 
 - Your account builds no longer reload every time you switch back to the planner's tab. They refresh when the page opens, after you save or delete one, and when your connection comes back.
+- A power, flight or synergy-level control that is on but locked now keeps most of its colour instead of fading almost to the card. Locked controls that are off fade as before, so the two states no longer look alike.
 
 ### Fixed
 

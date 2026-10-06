@@ -404,49 +404,49 @@ export default {
         trailingIcon: 'animate-spin'
       }
     },
-    // * Changes: the fill half of the on state, and the reason it is down here rather than on the `active` variant — tailwind-variants appends compound classes in source order, so these have to sit after the colour compounds to out-rank them. The boards draw an on control as a solid of its own colour with ink on it and an ink edge (`.chip.on`: #df8a20 on #241f14, against the off chip's tan `.chip`), so `active` flips the fill rather than tinting it — a `subtle` control reads as `solid` while it is on, which is the whole point of the state. Each entry repeats its fill under `disabled:`/`aria-disabled:` because the colour compounds above pin one there too, and a bare `bg-*` loses to a `:disabled` selector on specificity — without it an on control that is also locked (a hero whose flight is not the player's to train) drops back to the off fill and reads as off. Upstream has no active treatment at all.
+    // * Changes: the fill half of the on state, and the reason it is down here rather than on the `active` variant — tailwind-variants appends compound classes in source order, so these have to sit after the colour compounds to out-rank them. The boards draw an on control as a solid of its own colour with ink on it and an ink edge (`.chip.on`: #df8a20 on #241f14, against the off chip's tan `.chip`), so `active` flips the fill rather than tinting it — a `subtle` control reads as `solid` while it is on, which is the whole point of the state. Each entry repeats its fill under `disabled:`/`aria-disabled:` because the colour compounds above pin one there too, and a bare `bg-*` loses to a `:disabled` selector on specificity — without it an on control that is also locked (a hero whose flight is not the player's to train) drops back to the off fill and reads as off. The same entries lift the disabled dim from the base's 0.4 to 0.7 (annex §7): at 0.4 the amber or teal fill blends into the plate and on-and-locked is indistinguishable from off-and-locked, while the fill alone is enough to say on, so the dim only has to say locked. Upstream has no active treatment at all.
     {
       active: true,
       color: 'primary',
       class:
-        'text-inverted bg-primary hover:bg-primary/75 disabled:bg-primary aria-disabled:bg-primary ring ring-inset ring-inverted'
+        'text-inverted bg-primary hover:bg-primary/75 disabled:bg-primary aria-disabled:bg-primary disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'secondary',
       // * Cream, not ink, for the same reason the secondary solid above carries it: ink on teal is unreadable (annex §1).
       class:
-        'text-neutral-100 bg-secondary hover:bg-secondary/75 disabled:bg-secondary aria-disabled:bg-secondary ring ring-inset ring-inverted'
+        'text-neutral-100 bg-secondary hover:bg-secondary/75 disabled:bg-secondary aria-disabled:bg-secondary disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'success',
       class:
-        'text-inverted bg-success hover:bg-success/75 disabled:bg-success aria-disabled:bg-success ring ring-inset ring-inverted'
+        'text-inverted bg-success hover:bg-success/75 disabled:bg-success aria-disabled:bg-success disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'info',
       class:
-        'text-inverted bg-info hover:bg-info/75 disabled:bg-info aria-disabled:bg-info ring ring-inset ring-inverted'
+        'text-inverted bg-info hover:bg-info/75 disabled:bg-info aria-disabled:bg-info disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'warning',
       class:
-        'text-inverted bg-warning hover:bg-warning/75 disabled:bg-warning aria-disabled:bg-warning ring ring-inset ring-inverted'
+        'text-inverted bg-warning hover:bg-warning/75 disabled:bg-warning aria-disabled:bg-warning disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'error',
       class:
-        'text-inverted bg-error hover:bg-error/75 disabled:bg-error aria-disabled:bg-error ring ring-inset ring-inverted'
+        'text-inverted bg-error hover:bg-error/75 disabled:bg-error aria-disabled:bg-error disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     },
     {
       active: true,
       color: 'neutral',
       class:
-        'text-inverted bg-inverted hover:bg-inverted/90 disabled:bg-inverted aria-disabled:bg-inverted ring ring-inset ring-inverted'
+        'text-inverted bg-inverted hover:bg-inverted/90 disabled:bg-inverted aria-disabled:bg-inverted disabled:opacity-70 aria-disabled:opacity-70 ring ring-inset ring-inverted'
     }
   ],
   defaultVariants: {

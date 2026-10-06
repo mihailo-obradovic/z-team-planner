@@ -1,5 +1,6 @@
 <template>
   <!-- * No `click` emit: declaring one fires it twice, and a disabled button fires none. -->
+  <!-- * On and locked takes the lighter dim: the plate says on, the dim only says locked (annex §6, §7). -->
   <button
     type="button"
     class="block w-full border-2 p-3 text-left transition-colors"
@@ -7,7 +8,8 @@
       active
         ? 'border-accented bg-elevated'
         : 'border-default hover:border-accented/50',
-      disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+      disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+      disabled && (active ? 'opacity-70' : 'opacity-40')
     ]"
     :disabled="disabled"
     :aria-pressed="active"

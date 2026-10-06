@@ -48,6 +48,8 @@
               <IconButton
                 :icon="bonusLevel === 0 ? 'i-lucide-plus-circle' : undefined"
                 :color="bonusLevel > 0 ? 'primary' : 'neutral'"
+                :active="bonusLevel > 0"
+                indicator
                 :disabled="bonusLevel >= MAX_BONUS_LEVEL_PER_HERO || bonusFull"
                 :swap-key="bonusLevel"
                 label="Add a bonus level"
