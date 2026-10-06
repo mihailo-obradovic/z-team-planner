@@ -63,8 +63,8 @@
       </div>
     </div>
 
-    <!-- ! The tighter base gap leaves the portrait column the 78px the power chips need at 320px; `gap-3` overflows them. -->
-    <div class="flex justify-between gap-2 p-3 sm:gap-3">
+    <!-- ! The tighter base gap leaves the portrait column the 78px the power chips need at 320px; `gap-3` overflows them. 18.5rem reads the tab wrapper, the card's query container: 78 + 12 + 172 steppers + 24 padding + 4 border = 290, the next half rem. The card sits in a content-sized grid track, so it cannot be its own container. -->
+    <div class="flex justify-between gap-2 p-3 @min-[18.5rem]:gap-3">
       <!-- ! Shrinkable because the portrait is the only part that degrades gracefully below ~328px; the stat steppers are tap targets and must not shrink. -->
       <div class="flex w-27 min-w-0 shrink flex-col gap-2">
         <!-- * Read-only: the portrait is a picture, not the way into the detail dialog (feature 007). -->

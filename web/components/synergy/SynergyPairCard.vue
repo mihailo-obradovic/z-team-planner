@@ -1,7 +1,8 @@
 <template>
-  <div class="w-fit bg-default panel max-sm:w-full">
+  <!-- * `w-fit` cannot be its own query container, so every `@` variant here reads the tab wrapper (feature 014, annex §14.3). Below 31rem `fit-content` already clamps the card to it. -->
+  <div class="w-fit bg-default panel">
     <div
-      class="flex plate items-center justify-between gap-6 px-3 max-md:justify-center"
+      class="flex plate items-center justify-between gap-6 px-3 @max-[58rem]:justify-center"
     >
       <h3 class="flex items-center gap-2 font-heading text-title uppercase">
         {{ top.name }}
@@ -12,11 +13,12 @@
       </h3>
     </div>
 
-    <div class="flex flex-col gap-4 p-3 lg:flex-row lg:items-center lg:gap-6">
+    <!-- * 58rem = the row form's measured 923px: two 224 portraits and their gap, the stat list at its 160 floor, the 224 radar, two gap-6, padding and border. -->
+    <div
+      class="flex flex-col gap-4 p-3 @min-[58rem]:flex-row @min-[58rem]:items-center @min-[58rem]:gap-6"
+    >
       <!-- * The stacking comes from the same @container query that caps the radar frame, not flex wrapping, so the two never disagree. -->
-      <div
-        class="flex flex-wrap items-center gap-4 max-sm:justify-between lg:contents"
-      >
+      <div class="flex flex-wrap items-center gap-4 @min-[58rem]:contents">
         <div
           class="flex shrink-0 gap-3 @max-[31rem]:basis-full @max-[31rem]:justify-center"
         >
@@ -31,9 +33,9 @@
           />
         </div>
 
-        <!-- * Below lg the type steps down so five rows match the portrait column's height. -->
+        <!-- * Below 58rem the type steps down so five rows match the portrait column's height. -->
         <ul
-          class="flex min-w-40 flex-1 flex-col gap-1 max-md:w-56 max-md:flex-none lg:gap-2 @max-[31rem]:mx-auto"
+          class="flex w-56 flex-none flex-col gap-1 @max-[31rem]:mx-auto @min-[58rem]:w-auto @min-[58rem]:min-w-40 @min-[58rem]:flex-1 @min-[58rem]:gap-2"
         >
           <li
             v-for="entry in combinedStats"
@@ -41,17 +43,19 @@
             class="flex items-center justify-between gap-6"
           >
             <span
-              class="flex items-center gap-2 font-heading text-sm tracking-label text-toned uppercase lg:text-lg"
+              class="flex items-center gap-2 font-heading text-sm tracking-label text-toned uppercase @min-[58rem]:text-lg"
             >
               <u-icon
                 :name="STAT_ICONS[entry.stat]"
-                class="size-4 shrink-0 lg:size-5"
+                class="size-4 shrink-0 @min-[58rem]:size-5"
               />
               {{ entry.stat }}
             </span>
 
             <!-- * Fixed width, so a two-digit total doesn't shift the column. -->
-            <span class="w-7 text-center text-base font-bold lg:text-xl">
+            <span
+              class="w-7 text-center text-base font-bold @min-[58rem]:text-xl"
+            >
               {{ entry.value }}
             </span>
           </li>
@@ -60,7 +64,7 @@
 
       <!-- * 31rem = portraits 228 + gap 16 + stats 224 + padding 24, plus 4px against subpixel wrapping. -->
       <div
-        class="w-full border-2 border-accented bg-default lg:w-56 lg:shrink-0 @max-[31rem]:max-w-56 @max-[31rem]:self-center"
+        class="w-full border-2 border-accented bg-default @max-[31rem]:max-w-56 @max-[31rem]:self-center @min-[58rem]:w-56 @min-[58rem]:shrink-0"
       >
         <div class="mx-auto aspect-square w-full max-w-56">
           <StatRadar
