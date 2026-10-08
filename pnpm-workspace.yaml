@@ -8,3 +8,6 @@ ignoredBuiltDependencies:
   - protobufjs
   - sharp
   - vue-demi
+minimumReleaseAgeExclude:
+  # Renovate security update: nuxt@4.5.1
+  - nuxt@4.5.1
