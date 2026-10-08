@@ -3,7 +3,7 @@
   <!-- ! Fixed while shown rather than in flow: a link that takes its space back on focus pushes the header down. -->
   <a
     :href="`#${MAIN_CONTENT_ID}`"
-    class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-(--z-toast) focus-visible:bg-default focus-visible:px-3 focus-visible:py-2 focus-visible:font-heading focus-visible:text-label focus-visible:text-highlighted focus-visible:uppercase focus-visible:panel"
+    class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-(--z-toast) focus-visible:panel focus-visible:bg-default focus-visible:px-3 focus-visible:py-2 focus-visible:font-heading focus-visible:text-label focus-visible:text-highlighted focus-visible:uppercase"
     @click="handleSkip"
   >
     Skip to main content

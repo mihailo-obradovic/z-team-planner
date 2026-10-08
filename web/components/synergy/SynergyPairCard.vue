@@ -1,6 +1,6 @@
 <template>
   <!-- * `w-fit` cannot be its own query container, so every `@` variant here reads the tab wrapper (feature 014, annex §14.3). Below 31rem `fit-content` already clamps the card to it. -->
-  <div class="w-fit bg-default panel">
+  <div class="w-fit panel bg-default">
     <div
       class="flex plate items-center justify-between gap-6 px-3 @max-[58rem]:justify-center"
     >

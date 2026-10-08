@@ -4,7 +4,7 @@
     class="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-4 md:p-6"
   >
     <div
-      class="flex w-full max-w-[65ch] flex-col items-center gap-4 bg-default p-6 text-center panel"
+      class="flex w-full max-w-[65ch] panel flex-col items-center gap-4 bg-default p-6 text-center"
     >
       <span
         v-if="statusCode"

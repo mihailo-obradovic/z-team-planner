@@ -20,7 +20,7 @@
     class="@container flex min-h-full flex-col gap-4 p-4"
   >
     <div
-      class="flex flex-col items-start justify-between gap-3 bg-default p-4 panel sm:flex-row sm:items-center"
+      class="flex panel flex-col items-start justify-between gap-3 bg-default p-4 sm:flex-row sm:items-center"
     >
       <div class="flex flex-col gap-1">
         <!-- ! `text-muted`, not `secondary-300`: this band is paper, where `secondary-300` measures 1.78:1 (annex §14.1). -->

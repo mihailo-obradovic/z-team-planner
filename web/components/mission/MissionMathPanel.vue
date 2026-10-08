@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-default panel">
+  <section class="panel bg-default">
     <div class="flex plate items-center px-3">
       <h2 class="font-heading text-title uppercase">The math</h2>
     </div>
