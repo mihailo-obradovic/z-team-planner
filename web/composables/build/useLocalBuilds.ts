@@ -1,23 +1,27 @@
 import type { LocalBuild } from '@/types/build';
 
 const STORAGE_KEY_BUILDS = 'z-team-builds';
-const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 
 export function useLocalBuilds() {
   const state = usePlannerState();
   const { leaveSharedMode } = useBuildMode();
   const { clearUrlParam } = useBuildSharing();
-  const { updateSavedSnapshot } = useUnsavedChanges();
+  const { updateSavedSnapshot, forgetSavedSnapshot } = useUnsavedChanges();
+  const { openLocalId, openLocal, closeDeletedBuild, draftName } =
+    useOpenBuild();
 
   const localBuilds = useLocalStorageRef<LocalBuild[]>(STORAGE_KEY_BUILDS, []);
-  const activeBuildId = useLocalStorageRef<string | null>(
-    STORAGE_KEY_ACTIVE,
-    null
-  );
 
   const activeBuildName = computed(
-    () => findLocalBuild(activeBuildId.value)?.name ?? 'Untitled'
+    () => findLocalBuild(openLocalId.value)?.name ?? draftName.value
   );
+
+  // * The names a build may not take; `exceptId` leaves a renamed build's own name free.
+  function takenNames(exceptId?: string) {
+    return localBuilds.value
+      .filter((localBuild) => localBuild.id !== exceptId)
+      .map((localBuild) => localBuild.name);
+  }
 
   function settleOnOwnBuild() {
     leaveSharedMode();
@@ -34,38 +38,37 @@ export function useLocalBuilds() {
   }
 
   function getActiveBuild(): LocalBuild | undefined {
-    return findLocalBuild(activeBuildId.value);
+    return findLocalBuild(openLocalId.value);
   }
 
-  function saveLocalBuild(name?: string) {
+  // * Returns the name the build ended up with.
+  function saveLocalBuild(): string {
     const existing = getActiveBuild();
 
     if (!existing) {
-      saveAsNewLocalBuild(name ?? `Build ${localBuilds.value.length + 1}`);
-
-      return;
+      return saveAsNewLocalBuild(DEFAULT_BUILD_NAME);
     }
 
     existing.data = serializeBuild(state);
-
-    if (name !== undefined) {
-      existing.name = name;
-    }
-
     settleOnOwnBuild();
+
+    return existing.name;
   }
 
-  function saveAsNewLocalBuild(name: string) {
+  // * Returns the final name, suffix included, for the confirmation to report.
+  function saveAsNewLocalBuild(name: string): string {
     const localBuild: LocalBuild = {
       id: crypto.randomUUID(),
-      name,
+      name: freeBuildName(takenNames(), name),
       data: serializeBuild(state)
     };
 
     localBuilds.value.push(localBuild);
-    activeBuildId.value = localBuild.id;
+    openLocal(localBuild.id);
 
     settleOnOwnBuild();
+
+    return localBuild.name;
   }
 
   async function loadLocalBuild(id: string) {
@@ -75,7 +78,7 @@ export function useLocalBuilds() {
       return;
     }
 
-    activeBuildId.value = id;
+    openLocal(id);
 
     await deserializeBuild(localBuild.data, state);
     settleOnOwnBuild();
@@ -100,24 +103,30 @@ export function useLocalBuilds() {
       return;
     }
 
-    localBuilds.value.splice(index, 1);
+    const [deleted] = localBuilds.value.splice(index, 1);
 
-    if (activeBuildId.value === id) {
-      activeBuildId.value = localBuilds.value[0]?.id ?? null;
+    if (openLocalId.value === id) {
+      closeDeletedBuild(deleted!.name);
+      forgetSavedSnapshot();
     }
   }
 
-  function renameLocalBuild(id: string, name: string) {
+  // * Returns the final name, or undefined when there is no such build.
+  function renameLocalBuild(id: string, name: string): string | undefined {
     const localBuild = findLocalBuild(id);
 
-    if (localBuild) {
-      localBuild.name = name;
+    if (!localBuild) {
+      return undefined;
     }
+
+    localBuild.name = freeBuildName(takenNames(id), name);
+
+    return localBuild.name;
   }
 
   return {
     localBuilds: computed(() => localBuilds.value),
-    activeBuildId: computed(() => activeBuildId.value),
+    activeBuildId: openLocalId,
     activeBuildName,
     getActiveBuild,
     saveLocalBuild,

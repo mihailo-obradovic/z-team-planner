@@ -121,8 +121,9 @@ Not role-specific.
 
 - `test/nuxt/build-persistence.test.ts`: `initialize()` falls back to the open build on a garbage or unknown-version `?build=` param; a valid param enters shared mode without touching local builds.
 - `test/nuxt/build-document.test.ts`: what the format omits, how each group is shaped, the round trip, and the URL codec's alphabet and padding. `test/unit/isSerializedBuild.test.ts`: the client gate.
-- Build CRUD and shared-mode behavior are covered by the live browser walk per the stack's testing rule.
+- `test/nuxt/shared-mode.test.ts`: edits to a snapshot are unsaved; **Save a copy** in one click; **Back to my build** only when a build was open.
+- Build CRUD and the rest of shared-mode behavior are covered by the live browser walk per the stack's testing rule.
 
 ## Verification
 
-The Examples table walked live in Chrome: shared-mode open restored flight and episode cut with localStorage untouched; "Save as mine" persisted byte-identical data, stripped the URL param and exited shared mode; reload restored the active build; a stat edit raised the unsaved-changes badge and the beforeunload prompt; garbage and `v:2` params were rejected without error. Format omission, shaping, round trip and the URL codec are pinned by test. oxlint, vue-tsc and vitest pass.
+The Examples table walked live in Chrome: shared-mode open with localStorage untouched; reload restoring the open build; an edit raising the unsaved badge and the beforeunload prompt, in shared-build mode too; **Save a copy** in one tap at 390 px, the URL stripped; **Back to my build** reopening an account build; garbage and `v:2` params rejected. Format, round trip and URL codec are pinned by test, shared-build mode by `shared-mode.test.ts`.

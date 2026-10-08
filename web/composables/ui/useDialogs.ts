@@ -34,18 +34,12 @@ export function useDialogs() {
     () => null
   );
 
-  const saveSharedOpen = useState('build-dialog-save-shared', () => false);
-  const newBuildOpen = useState('build-dialog-new', () => false);
+  const saveAsNewOpen = useState('build-dialog-save-as-new', () => false);
   const deleteOpen = useState('build-dialog-delete', () => false);
   const renameOpen = useState('build-dialog-rename', () => false);
 
   const accountSaveOpen = useState('build-dialog-account-save', () => false);
   const accountSaveName = useState('build-dialog-account-save-name', () => '');
-  const accountDeleteOpen = useState(
-    'build-dialog-account-delete',
-    () => false
-  );
-
   const deleteAccountOpen = useState('account-dialog-delete', () => false);
 
   const conflictOpen = useState('build-dialog-conflict', () => false);
@@ -54,12 +48,13 @@ export function useDialogs() {
     () => null
   );
 
-  const newBuildName = useState('build-dialog-new-name', () => '');
+  const saveAsNewName = useState('build-dialog-save-as-new-name', () => '');
   const renameBuildName = useState('build-dialog-rename-name', () => '');
 
-  function openNewBuild(name = '') {
-    newBuildName.value = name;
-    newBuildOpen.value = true;
+  // * The local half of Save as new; signed in, the account save dialog takes its place (feature 029).
+  function openSaveAsNew(name = '') {
+    saveAsNewName.value = name;
+    saveAsNewOpen.value = true;
   }
 
   function openRename(currentName: string) {
@@ -94,21 +89,19 @@ export function useDialogs() {
     rememberOpener,
     buildMenuTier,
     openBuildMenu,
-    saveSharedOpen,
     accountSaveOpen,
     accountSaveName,
-    accountDeleteOpen,
     openAccountSave,
     deleteAccountOpen,
     conflictOpen,
     conflictBuild,
     openConflict,
-    newBuildOpen,
+    saveAsNewOpen,
     deleteOpen,
     renameOpen,
-    newBuildName,
+    saveAsNewName,
     renameBuildName,
-    openNewBuild,
+    openSaveAsNew,
     openRename
   };
 }

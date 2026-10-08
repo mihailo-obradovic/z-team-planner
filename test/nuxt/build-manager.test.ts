@@ -2,6 +2,7 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
 import type { VueWrapper } from '@vue/test-utils';
+import type { LocalBuild } from '@/types/build';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import BuildManager from '@/components/build/BuildManager.vue';
@@ -60,6 +61,37 @@ function signIn() {
   // ! Called inside a component setup, so it is the component's own Pinia. A store created in the test body is a different instance and every assertion here would be vacuous.
   useAuthStore().setUser({ uid: 'u1', email: null, displayName: 'Alice' });
 }
+
+// ! First in the file on purpose: the auth store is one Pinia per file and has no way back to `unknown`, so only the first mount sees it.
+describe('BuildManager while the account is unknown (feature 029)', () => {
+  it('holds Save until it knows where a build would go', async () => {
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          // * The test app has no API URL, which reads as a deployment without sign-in, where nothing waits.
+          useAuthStore().setSignInAvailability('available');
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    expect(useAuthStore().status).toBe('unknown');
+
+    const save = page
+      .findAll('button')
+      .find((button) =>
+        /^save to/i.test(button.attributes('aria-label') ?? '')
+      );
+
+    expect(save?.attributes('disabled')).toBeDefined();
+
+    page.unmount();
+  });
+});
 
 describe('BuildManager account list', () => {
   beforeEach(() => {
@@ -144,9 +176,14 @@ describe('BuildManager share', () => {
         setup() {
           signIn();
           // ! Set both ways round: the store outlives a mount, so leaving it alone would carry the previous test's account build into this one and pass vacuously.
-          useAuthStore().setActiveAccountBuildId(
-            withAccountBuild ? ACCOUNT_BUILDS.items[0]!.id : null
-          );
+          if (withAccountBuild) {
+            // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
+            useOpenBuild().openCloud(ACCOUNT_BUILDS.items[0]!.id);
+            useOpenBuild().requestedCloudId.value = ACCOUNT_BUILDS.items[0]!.id;
+            useOpenBuildSync();
+          } else {
+            useOpenBuild().closeBuild();
+          }
 
           // ! These two cover the clean path. Share on a *dirty* account build saves first and is
           // ! covered below, so the planner has to be baselined or this exercises that path
@@ -195,7 +232,11 @@ const CLOUD_BUILD = {
   data: { v: 1, fl: ['flambae'] }
 };
 
-const LOCAL_BUILD = { id: 'local-1', name: 'Local build', data: { v: 1 } };
+const LOCAL_BUILD: LocalBuild = {
+  id: 'local-1',
+  name: 'Local build',
+  data: { v: 1 }
+};
 
 // * Save carries its state in its accessible name (annex §13), so that is what dirtiness is read
 // * from here rather than a fill colour.
@@ -228,14 +269,16 @@ describe('BuildManager dirty state across the two worlds', () => {
       defineComponent({
         setup() {
           signIn();
-          useAuthStore().setActiveAccountBuildId(id);
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
+          useOpenBuild().openCloud(id);
+          useOpenBuild().requestedCloudId.value = id;
+          useOpenBuildSync();
 
-          // ! Seeded through the state refs, not localStorage: `useLocalStorageRef` reads storage
-          // ! once per key per app, and an earlier mount in this file already claimed both keys.
-          // ! A local build has to exist or Save renders unconditionally on `length === 0`, and
-          // ! every assertion about Save's absence below would pass vacuously.
+          // ! Seeded through the state ref, not localStorage: `useLocalStorageRef` reads storage
+          // ! once per key per app, and an earlier mount in this file already claimed the key.
+          // ! The cloud build is opened before the mount: with nothing open Save renders
+          // ! unconditionally, and every assertion about Save's absence below would pass vacuously.
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
-          useState<string | null>('z-team-active-build').value = LOCAL_BUILD.id;
 
           resetPlanner();
 
@@ -310,7 +353,10 @@ describe('BuildManager sharing an account build with unsaved changes', () => {
       defineComponent({
         setup() {
           signIn();
-          useAuthStore().setActiveAccountBuildId(id);
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
+          useOpenBuild().openCloud(id);
+          useOpenBuild().requestedCloudId.value = id;
+          useOpenBuildSync();
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
           resetPlanner();
 
@@ -358,5 +404,286 @@ describe('BuildManager sharing an account build with unsaved changes', () => {
     // * A stale link is worse than no link: the failure is the central policy's to report.
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(written).toHaveLength(0);
+  });
+});
+
+type MenuItem = {
+  label: string;
+  type?: string;
+  icon?: string;
+  onSelect?: () => void;
+};
+
+function menuGroups(page: VueWrapper) {
+  return page
+    .findComponent({ name: 'UDropdownMenu' })
+    .props('items') as MenuItem[][];
+}
+
+function menuLabels(page: VueWrapper) {
+  return menuGroups(page)
+    .flat()
+    .map((item) => item.label);
+}
+
+function findSave(page: VueWrapper) {
+  return page
+    .findAll('button')
+    .find((candidate) =>
+      /^save to/i.test(candidate.attributes('aria-label') ?? '')
+    );
+}
+
+describe('BuildManager menu and Save (feature 029)', () => {
+  beforeEach(() => {
+    fetchBuildsSpy.mockReset();
+    fetchBuildSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+  });
+
+  // * Every piece of build state lives in `useState` for the whole file, so each mount starts from a stated one.
+  async function mountWith(options: {
+    signedIn: boolean;
+    localBuilds: LocalBuild[];
+    openLocalId: string | null;
+  }) {
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          if (options.signedIn) {
+            signIn();
+          } else {
+            useAuthStore().resetUser();
+          }
+
+          useState('z-team-builds').value = options.localBuilds;
+          useState('z-team-open-build').value = {
+            open: options.openLocalId
+              ? { kind: 'local', id: options.openLocalId }
+              : null,
+            lastLocalId: options.openLocalId
+          };
+          resetPlanner();
+          useUnsavedChanges().updateSavedSnapshot();
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    await vi.waitFor(() => expect(menuGroups(page).length).toBeGreaterThan(0));
+
+    return page;
+  }
+
+  it('leaves out the local group when there are no local builds, so no separator frames an empty box', async () => {
+    const page = await mountWith({
+      signedIn: true,
+      localBuilds: [],
+      openLocalId: null
+    });
+
+    await vi.waitFor(() =>
+      expect(menuLabels(page)).not.toContain('Loading your builds...')
+    );
+
+    // * Two groups: the account's builds and the actions — no local group, empty or otherwise.
+    expect(menuGroups(page)).toHaveLength(2);
+    expect(menuGroups(page).every((group) => group.length > 0)).toBe(true);
+    expect(menuLabels(page)).toEqual([
+      'Cloud build',
+      'New build',
+      'Save as new...'
+    ]);
+  });
+
+  it('offers one Rename and one Delete, for the open build', async () => {
+    const page = await mountWith({
+      signedIn: false,
+      localBuilds: [LOCAL_BUILD],
+      openLocalId: LOCAL_BUILD.id
+    });
+
+    const labels = menuLabels(page);
+
+    expect(labels.filter((label) => label === 'Rename...')).toHaveLength(1);
+    expect(labels.filter((label) => label === 'Delete...')).toHaveLength(1);
+  });
+
+  it('hides Save while the open build is clean and shows it on an edit, naming the destination', async () => {
+    const page = await mountWith({
+      signedIn: false,
+      localBuilds: [LOCAL_BUILD],
+      openLocalId: LOCAL_BUILD.id
+    });
+
+    expect(findSave(page)).toBeUndefined();
+
+    usePlannerState().showEp8Recruits.value = true;
+
+    await vi.waitFor(() =>
+      expect(findSave(page)?.attributes('aria-label')).toBe(
+        'Save to this browser — unsaved changes'
+      )
+    );
+  });
+
+  it('shows Save with nothing open, naming the account when signed in', async () => {
+    const page = await mountWith({
+      signedIn: true,
+      localBuilds: [],
+      openLocalId: null
+    });
+
+    expect(findSave(page)?.attributes('aria-label')).toMatch(
+      /^Save to your account/
+    );
+  });
+
+  it('marks a local build open while signed in as only in this browser', async () => {
+    const page = await mountWith({
+      signedIn: true,
+      localBuilds: [LOCAL_BUILD],
+      openLocalId: LOCAL_BUILD.id
+    });
+
+    expect(menuLabels(page)).toContain('This build is only in this browser');
+
+    const select = page
+      .findAllComponents({ name: 'UButton' })
+      .find((button) => button.props('label') === LOCAL_BUILD.name);
+
+    expect(select?.props('icon')).toBe('i-lucide-monitor');
+  });
+
+  it('leaves nothing open after deleting the open build, and Save offers its name back', async () => {
+    const page = await mountWith({
+      signedIn: false,
+      localBuilds: [LOCAL_BUILD],
+      openLocalId: LOCAL_BUILD.id
+    });
+
+    useLocalBuilds().deleteLocalBuild(LOCAL_BUILD.id);
+
+    expect(useOpenBuild().openBuild.value).toBeNull();
+    // * The deleted build's contents are still on screen with nothing behind them: unsaved work.
+    expect(useUnsavedChanges().hasUnsavedChanges.value).toBe(true);
+
+    await vi.waitFor(() => expect(findSave(page)).toBeTruthy());
+    await findSave(page)!.trigger('click');
+
+    const { saveAsNewOpen, saveAsNewName } = useDialogs();
+
+    expect(saveAsNewOpen.value).toBe(true);
+    expect(saveAsNewName.value).toBe(LOCAL_BUILD.name);
+  });
+
+  it('opens a blank planner as a new local build when signed out', async () => {
+    const page = await mountWith({
+      signedIn: false,
+      localBuilds: [LOCAL_BUILD],
+      openLocalId: LOCAL_BUILD.id
+    });
+
+    usePlannerState().showEp8Recruits.value = true;
+
+    menuGroups(page)
+      .flat()
+      .find((item) => item.label === 'New build')!.onSelect!();
+    // * The edit above is unsaved work, so New build asks first.
+    useDiscardGuard().confirmDiscard();
+
+    await vi.waitFor(() =>
+      expect(useOpenBuild().openLocalId.value).not.toBe(LOCAL_BUILD.id)
+    );
+
+    expect(usePlannerState().showEp8Recruits.value).toBe(false);
+    expect(useLocalBuilds().activeBuildName.value).toBe('New build');
+  });
+});
+
+describe('BuildManager discard confirmation (feature 029)', () => {
+  const OTHER_BUILD: LocalBuild = {
+    id: 'local-2',
+    name: 'Other build',
+    data: { v: 1, fl: ['flambae'] }
+  };
+
+  beforeEach(() => {
+    fetchBuildsSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+  });
+
+  async function mountDirty() {
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          useAuthStore().resetUser();
+          useState('z-team-builds').value = [LOCAL_BUILD, OTHER_BUILD];
+          useState('z-team-open-build').value = {
+            open: { kind: 'local', id: LOCAL_BUILD.id },
+            lastLocalId: LOCAL_BUILD.id
+          };
+          resetPlanner();
+          useUnsavedChanges().updateSavedSnapshot();
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    usePlannerState().showEp8Recruits.value = true;
+    await nextTick();
+
+    return page;
+  }
+
+  function select(page: VueWrapper, label: string) {
+    menuGroups(page)
+      .flat()
+      .find((item) => item.label === label)!.onSelect!();
+  }
+
+  it('asks before opening another build over unsaved changes, and Cancel keeps everything', async () => {
+    const page = await mountDirty();
+    const guard = useDiscardGuard();
+
+    select(page, OTHER_BUILD.name);
+
+    expect(guard.discardOpen.value).toBe(true);
+    // * Nothing replaced yet: the edit and the open build are as they were.
+    expect(useOpenBuild().openLocalId.value).toBe(LOCAL_BUILD.id);
+    expect(usePlannerState().showEp8Recruits.value).toBe(true);
+
+    guard.closeDiscard();
+    await nextTick();
+
+    expect(useOpenBuild().openLocalId.value).toBe(LOCAL_BUILD.id);
+    expect(usePlannerState().showEp8Recruits.value).toBe(true);
+  });
+
+  it('opens the other build once the discard is confirmed', async () => {
+    const page = await mountDirty();
+    const guard = useDiscardGuard();
+
+    select(page, OTHER_BUILD.name);
+    guard.confirmDiscard();
+
+    await vi.waitFor(() =>
+      expect(usePlannerState().heroFlights.value).toHaveProperty('flambae')
+    );
+    expect(useOpenBuild().openLocalId.value).toBe(OTHER_BUILD.id);
+    expect(guard.discardOpen.value).toBe(false);
+  });
+
+  it('asks before New build too', async () => {
+    const page = await mountDirty();
+
+    select(page, 'New build');
+
+    expect(useDiscardGuard().discardOpen.value).toBe(true);
+    useDiscardGuard().closeDiscard();
   });
 });

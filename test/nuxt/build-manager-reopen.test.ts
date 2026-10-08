@@ -72,7 +72,10 @@ describe('BuildManager reopening the account build already open', () => {
             email: null,
             displayName: 'Alice'
           });
-          useAuthStore().setActiveAccountBuildId(BUILD_ID);
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
+          useOpenBuild().openCloud(BUILD_ID);
+          useOpenBuild().requestedCloudId.value = BUILD_ID;
+          useOpenBuildSync();
 
           return () => h(BuildManager);
         }
@@ -106,6 +109,10 @@ describe('BuildManager reopening the account build already open', () => {
     });
 
     item.onSelect!();
+
+    // * Reopening over edits asks first, then reloads (feature 029, Edge Cases).
+    expect(useDiscardGuard().discardOpen.value).toBe(true);
+    useDiscardGuard().confirmDiscard();
 
     // ! The defect this pins: selecting only wrote the active id, and re-selecting the id already
     // ! set changed neither the query key nor its data, so the load watcher never fired and the

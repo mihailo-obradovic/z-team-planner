@@ -1,49 +1,25 @@
 <template>
   <div class="flex items-center gap-2">
     <div :class="clusterClass">
-      <template v-if="isViewingSharedBuild">
-        <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
-          Viewing shared build
-        </u-badge>
-
-        <u-tooltip text="Save as mine" :disabled="labelled">
-          <u-button
-            :size="size"
-            variant="subtle"
-            color="neutral"
-            icon="i-lucide-save"
-            :label="labelled ? 'Save as mine' : undefined"
-            :aria-label="labelled ? undefined : 'Save as mine'"
-            :block="block"
-            @click="openSaveShared"
-          />
-        </u-tooltip>
-
-        <u-tooltip text="Back to my build" :disabled="labelled">
-          <u-button
-            v-if="localBuilds.length > 0"
-            :size="size"
-            variant="subtle"
-            color="neutral"
-            icon="i-lucide-undo-2"
-            :label="labelled ? 'Back to my build' : undefined"
-            :aria-label="labelled ? undefined : 'Back to my build'"
-            :block="block"
-            @click="backToMyBuild"
-          />
-        </u-tooltip>
-      </template>
+      <SharedBuildBanner
+        v-if="isViewingSharedBuild"
+        :labelled="labelled"
+        :block="block"
+        :size="size"
+      />
 
       <template v-else>
-        <u-tooltip :text="saveLabel" :disabled="saveLabelled">
+        <!-- * Labelled or not, the tooltip stays: "Save" alone does not say where it writes. -->
+        <u-tooltip :text="saveLabel">
           <u-button
-            v-if="hasUnsavedChanges || localBuilds.length === 0"
+            v-if="hasUnsavedChanges || !openBuild"
             :size="size"
             :variant="hasUnsavedChanges ? 'solid' : 'subtle'"
             :color="hasUnsavedChanges ? 'warning' : 'neutral'"
             icon="i-lucide-save"
-            :label="saveLabelled ? 'Save' : undefined"
-            :aria-label="saveLabel"
+            :label="saveLabelled ? saveButtonText : undefined"
+            :aria-label="saveAriaLabel"
+            :loading="!isDestinationKnown"
             @click="handleSave"
           />
         </u-tooltip>
@@ -70,6 +46,7 @@
 
 <script setup lang="ts">
 import BuildMenu from '@/components/build/BuildMenu.vue';
+import SharedBuildBanner from '@/components/build/SharedBuildBanner.vue';
 
 import { useUpdateBuild } from '@/services/queries/useBuildQueries';
 
@@ -86,63 +63,96 @@ const props = withDefaults(
 );
 
 const toast = useToast();
+const { reportBuild } = useBuildToast();
 
-const { activeAccountBuildId } = storeToRefs(useAuthStore());
+const { openBuild, openLocalId, openCloudId, draftName } = useOpenBuild();
+const { isSignedIn, isDestinationKnown, status } = storeToRefs(useAuthStore());
+const { signIn } = useAuth();
 
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
     updateSavedSnapshot(payload.data);
-    toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
+    reportBuild('saved', updated.name, 'cloud');
   }
 });
 
 const plannerState = usePlannerState();
 
-const { localBuilds, saveLocalBuild, backToMyBuild } = useLocalBuilds();
+const { saveLocalBuild } = useLocalBuilds();
 
 const { isViewingSharedBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
-const { saveSharedOpen, openNewBuild } = useDialogs();
+const { openSaveAsNew, openAccountSave } = useDialogs();
 
 const { handleShare } = useShareFlow();
 
-const saveLabel = computed(() =>
-  hasUnsavedChanges.value ? 'Save — unsaved changes' : 'Save'
+// * Where Save writes: the open build's own home, else wherever a new build goes (feature 029).
+const savesToAccount = computed(
+  () => !!openCloudId.value || (!openLocalId.value && isSignedIn.value)
+);
+
+// * A session that ended on its own left a cloud build open with its edits: only signing back in can save it, and nothing is written to this browser meanwhile (feature 029).
+const needsSignIn = computed(
+  () => !!openCloudId.value && status.value === 'anonymous'
+);
+
+const saveButtonText = computed(() =>
+  needsSignIn.value ? 'Sign in to save' : 'Save'
+);
+
+const saveLabel = computed(() => {
+  if (needsSignIn.value) {
+    return 'Sign in to save';
+  }
+
+  return savesToAccount.value ? 'Save to your account' : 'Save to this browser';
+});
+
+const saveAriaLabel = computed(() =>
+  hasUnsavedChanges.value
+    ? `${saveLabel.value} — unsaved changes`
+    : saveLabel.value
 );
 
 const saveLabelled = computed(() => props.labelled && !props.block);
 
 // * The shared-build branch is a row of its own in the action bar; everywhere else the controls sit directly in the bar's own row.
+// * Two parts to Share's one: the label and two icon buttons do not fit in half a phone's width.
 const clusterClass = computed(() =>
   props.block && isViewingSharedBuild.value
-    ? 'flex min-w-0 flex-1 basis-0 items-center gap-2'
+    ? 'flex min-w-0 flex-2 basis-0 items-center gap-2'
     : 'contents'
 );
 
-function openSaveShared() {
-  saveSharedOpen.value = true;
-}
-
 function handleSave() {
-  if (activeAccountBuildId.value) {
+  if (needsSignIn.value) {
+    void signIn();
+
+    return;
+  }
+
+  if (openCloudId.value) {
     patchBuild({
-      id: activeAccountBuildId.value,
+      id: openCloudId.value,
       payload: { data: serializeBuild(plannerState) }
     });
 
     return;
   }
 
-  if (localBuilds.value.length === 0) {
-    openNewBuild('Build 1');
+  if (!openLocalId.value) {
+    if (isSignedIn.value) {
+      openAccountSave(draftName.value);
+    } else {
+      openSaveAsNew(draftName.value);
+    }
 
     return;
   }
 
-  saveLocalBuild();
-  toast.add({ title: 'Build saved', color: 'success' });
+  reportBuild('saved', saveLocalBuild(), 'local');
 }
 
 // * An account build with unsaved changes is saved first, so the link never points at a stale version.
@@ -157,7 +167,7 @@ function useShareFlow() {
   });
 
   async function handleShare() {
-    const accountBuildId = activeAccountBuildId.value;
+    const accountBuildId = openCloudId.value;
 
     if (!accountBuildId) {
       reportShare((await shareBuild()) ? 'copied' : 'failed');

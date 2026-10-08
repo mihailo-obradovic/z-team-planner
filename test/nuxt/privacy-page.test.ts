@@ -22,7 +22,7 @@ describe('the privacy page', () => {
 
     for (const key of [
       'z-team-builds',
-      'z-team-active-build',
+      'z-team-open-build',
       'z-team-import-offer-seen',
       'z-team-spoiler-acknowledged',
       'z-team-storage-notice-acknowledged'

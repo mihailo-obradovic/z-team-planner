@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -61,4 +61,4 @@ Maintainer console work: create the account and the check (period 1 day, grace 8
 
 On 2026-10-02 the maintainer set the `HEALTHCHECKS_PING_URL` secret and checked by hand that the email alert works. healthchecks.io's test notification arrived. A `curl` to `<url>/fail` raised the failure alert, and a plain ping reset it, which also armed the check's 1-day clock.
 
-Still to be seen: the first scheduled run after master is pushed checks in on the dashboard, and a dispatched run skips both ping steps. The record stays `Accepted` until the scheduled check-in is seen.
+On 2026-10-02 dispatched run 36999179423 skipped both ping steps. The first scheduled run, on 2026-10-03, checked in, and the dashboard shows one check-in per day from 3 to 8 October 2026, each within a second of the run's ping step. The six logs carry no undelivered-ping warning.

@@ -29,7 +29,10 @@ const SAVED_BUILD = {
 
 function seedActiveBuild() {
   localStorage.setItem('z-team-builds', JSON.stringify([SAVED_BUILD]));
-  localStorage.setItem('z-team-active-build', JSON.stringify('b1'));
+  localStorage.setItem(
+    'z-team-open-build',
+    JSON.stringify({ open: { kind: 'local', id: 'b1' }, lastLocalId: 'b1' })
+  );
 }
 
 async function initializedPlanner() {

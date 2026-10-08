@@ -37,15 +37,15 @@
 <script setup lang="ts">
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
-const { setActiveAccountBuildId } = useAuthStore();
+const { openCloud } = useOpenBuild();
 
 const { mutate: createBuild } = useCreateBuild({
   onSuccess: (created, { data }) => {
-    setActiveAccountBuildId(created.id);
+    openCloud(created.id);
     updateSavedSnapshot(data);
-    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
+    reportBuild('created', created.name, 'cloud');
   }
 });
 
@@ -66,7 +66,7 @@ async function handleReloadTheirs() {
   }
 
   await loadAccountBuild(conflictBuild.value.data);
-  setActiveAccountBuildId(conflictBuild.value.id);
+  openCloud(conflictBuild.value.id);
   updateSavedSnapshot();
   conflictOpen.value = false;
 }

@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -35,7 +35,7 @@ A player must never believe a build is safe in their account when it went only t
 
 In scope:
 
-- The open build, build names, where a new build goes, the build select and menu, the location icon, Save's visibility, the discard confirmation, the toasts, and sign-out's effect on the planner.
+- Everything under User / System Behavior below.
 
 Non-goals:
 
@@ -141,11 +141,12 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 ## Entry Points
 
-- `web/composables/build/useOpenBuild.ts` (new): the open build, its record and the cloud cache.
+- `web/composables/build/useOpenBuild.ts`: the open build and its cache; `useOpenBuildSync.ts`: reload, owner, sign-out.
+- `useOpenBuildName.ts`, `useNewBuild.ts`, `ui/useDeviceClass.ts`, `ui/useDiscardGuard.ts`, `usePlannerSetAside.ts`.
 - `web/composables/build/useLocalBuilds.ts`, `useBuildMode.ts`, `useUnsavedChanges.ts`, `useInitialBuild.ts`.
-- `web/components/build/BuildManager.vue`, `BuildMenu.vue`, `LocalBuildDialogs.vue`, `CloudBuildDialogs.vue`, `BuildNameDialog.vue`, a discard-confirmation dialog.
+- `web/components/build/BuildManager.vue`, `BuildMenu.vue`, `LocalBuildDialogs.vue`, `CloudBuildDialogs.vue`, `BuildNameDialog.vue`, `OpenBuildDialogs.vue`, `DiscardChangesDialog.vue`.
 - `web/stores/useAuthStore.ts`: `activeAccountBuildId` folds into the open build; the chosen/unchosen sign-out distinction.
-- `web/utils/buildName.ts` (new): the suffix rule.
+- `web/utils/buildName.ts`: the suffix rule.
 
 ## Dependencies
 
@@ -162,9 +163,14 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 ## Tests
 
-- `test/nuxt/open-build.test.ts`: one open build across kinds; Save after switching from cloud to local writes locally (regression, watched failing first); restore from cache, replacement when untouched, foreign uid and `404` fallbacks; chosen vs unchosen sign-out.
-- `test/unit/buildName.test.ts`: suffix from 2, smallest free `n`, trim, case-sensitivity, rename to own name.
-- `test/nuxt/build-manager.test.ts`: menu groups without empties, one Rename/Delete per open build, Save visibility, destination tooltip, disabled while auth is `unknown`, discard confirmation.
+- `test/nuxt/open-build.test.ts`: one open build (the regression), the cache and its fallbacks, both sign-outs.
+- `test/unit/buildName.test.ts`, `test/nuxt/local-build-names.test.ts`: the name rule.
+- `test/nuxt/build-manager.test.ts`: menu groups, one Rename/Delete, Save's visibility and destination, auth `unknown`, the discard guard.
+- `test/nuxt/build-toast.test.ts`: toast wording.
 - Live browser walk of the Examples against the real API, the Neon dev branch and the Auth emulator, at desktop and phone widths.
 
 ## Verification
+
+By test, as listed; the data-loss regression and the empty-cache gap were watched failing.
+
+Live against the dev API, Neon and the Auth emulator at 1280 to 500 px: suffixed names, both deletes, the monitor icon, **New build** in the account, a reload painted from cache, a chosen sign-out falling back, **Back to my build** and `/b` copies in both destinations. A session ending, a foreign cache and a load `404` are by test only.

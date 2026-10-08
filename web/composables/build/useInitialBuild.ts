@@ -4,6 +4,7 @@ export function useInitialBuild() {
   const { readSharedBuildFromUrl, clearUrlParam } = useBuildSharing();
   const { updateSavedSnapshot } = useUnsavedChanges();
   const { getActiveBuild } = useLocalBuilds();
+  const { openCloudEntry } = useOpenBuild();
 
   async function loadInitialBuild() {
     if (import.meta.server) {
@@ -24,10 +25,11 @@ export function useInitialBuild() {
         clearUrlParam();
       }
 
-      const active = getActiveBuild();
+      // * An open cloud build paints from its cached document at once; `useOpenBuildSync` replaces it with the fetched one, or falls back when the cache is not this user's (feature 029).
+      const opened = getActiveBuild()?.data ?? openCloudEntry.value?.document;
 
-      if (active) {
-        await deserializeBuild(active.data, state);
+      if (opened) {
+        await deserializeBuild(opened, state);
       }
     }
 
