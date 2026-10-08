@@ -14,13 +14,13 @@ What a signed-in player actually touches: account builds listed beside the local
 
 ## Inputs
 
-| Input                  | Type            | Source               | Constraints                                                 |
-| ---------------------- | --------------- | -------------------- | ----------------------------------------------------------- |
-| auth status            | store           | feature 006          | account queries fire only at `signed-in`                    |
-| `activeAccountBuildId` | store, nullable | opening a build      | which build **Save** patches; `null` means local            |
-| build name             | form field      | BuildManager dialogs | Regle: required and ≤ 80, both after trim                   |
-| planner state          | `useState`      | feature 003          | serialized by feature 001 into the `data` sent              |
-| local builds           | localStorage    | feature 001          | the offer's candidates, less the already kept, capped at 50 |
+| Input         | Type         | Source               | Constraints                                                 |
+| ------------- | ------------ | -------------------- | ----------------------------------------------------------- |
+| auth status   | store        | feature 006          | account queries fire only at `signed-in`                    |
+| open build    | feature 029  | opening a build      | a cloud open build is what **Save** patches                 |
+| build name    | form field   | BuildManager dialogs | Regle: required and ≤ 80, both after trim                   |
+| planner state | `useState`   | feature 003          | serialized by feature 001 into the `data` sent              |
+| local builds  | localStorage | feature 001          | the offer's candidates, less the already kept, capped at 50 |
 
 ## Outputs And Side Effects
 
@@ -37,7 +37,7 @@ What a signed-in player actually touches: account builds listed beside the local
 In scope:
 
 - `builds.api.ts` and `useBuildQueries.ts` — one service function per feature 005 endpoint, one composable per operation.
-- BuildManager's account list, **Save**, **Save as new**, rename and delete.
+- BuildManager's account list, and the requests behind **Save**, **Save as new…**, rename and delete — what they act on is feature 029's.
 - The `412` conflict dialog; the `422`-inline name form; the `409` limit message.
 - The first-login offer's data path (feature 004 owns the offer itself).
 
@@ -53,9 +53,9 @@ Non-goals:
 
 - Signed out, nothing here fetches: every account query is gated on the store.
 - Signed in, BuildManager lists the account's builds newest-updated first — a skeleton while pending, the previous list held across refetches rather than flashing empty.
-- Opening an account build loads its document into the planner and makes it active. **Save** patches it, **Save as new** creates one; both invalidate `['builds']`, refreshing the list and every cached build together.
+- Opening an account build loads its document into the planner and makes it the open build (feature 029). **Save** patches it, **Save as new…** creates one, **Rename…** patches its name; each invalidates `['builds']`, refreshing the list and every cached build together.
 - Opening an account build and saving one both re-baseline dirty tracking (feature 001), so **Save**'s unsaved-changes state and the unload guard describe the build the planner is actually on rather than the local build that preceded it. A save baselines against the document it sent, leaving an edit made while the request was in flight still unsaved.
-- Deleting the active build clears the active id, so the planner is not left pointed at something gone.
+- Deleting the open build leaves nothing open (feature 029), so the planner is not left pointed at something gone.
 - A rejected name appears **on the field**, not in a toast — whether Regle caught it or the server's `422` came back.
 - Saving a build another device already changed opens the conflict dialog holding that build: **Reload theirs** replaces the planner state, **Save mine as new** keeps the local work under a new build.
 - At the account limit a create toasts the server's own message, not a generic failure.
@@ -78,8 +78,8 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 | 21st **Save as new**                 | toast "You can keep up to 20 builds"               | `409 build_limit`            |
 | open an account build, touch nothing | **Save** shows no unsaved-changes state            | baseline re-taken on load    |
 | **Save** an account build, succeed   | **Save** returns to its resting state              | baseline is what was sent    |
-| delete the active build              | list refetches; `activeAccountBuildId` clears      | invalidate `['builds']`      |
-| delete a non-active build            | list refetches; the active id is left alone        |                              |
+| delete the open build                | list refetches; nothing open                       | invalidate `['builds']`      |
+| rename the open build to a taken one | `PATCH`; toast names the suffixed name             | the server's rule (005)      |
 | the offer imports 3, one invalid     | one summary toast naming the outcome per item      | feature 005's report         |
 | sign in, 3 local, 1 already kept     | the offer lists the other 2                        | one `GET /builds/{id}`       |
 | sign in, every local already kept    | no offer; not answered                             | a later new build is offered |
@@ -94,7 +94,7 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 - **Query keys** `builds.fetch = ['builds','fetch']`, `builds.get = ['builds','get']`, the offer's `['builds','name-matches', …ids]`; create, import, patch and delete invalidate the `['builds']` root, covering the list and every cached build at once.
 - **`If-Match`** is read from the cached build inside `useUpdateBuild` — a component never sees an `ETag`.
 - **`Idempotency-Key`** is generated inside `useCreateBuild` and `useImportBuilds`, once per mutation call. The fetcher's `401` retry replays the same request options, so it carries the same key and cannot create a second build.
-- **Store side effects belong to the query layer**: clearing `activeAccountBuildId` on delete happens in the mutation, not in a service or component.
+- **Open-build side effects belong to the query layer**: closing the open build on delete happens in the mutation, not in a service or component.
 - **Regle** owns the name field and mirrors the server: required and at most 80, both after trimming, so a name of only spaces fails here as it would there. Feature 001's local dialogs opt out of `required` — an empty local name falls back to a generated one, unchanged here.
 - **Import toast**: the title counts `created` ("2 builds kept"); with none created it is "Already in your account" when any item was `existing`, else "Nothing was kept". The description adds the `existing` count only beside a created one, then names each `invalid` item. Any `invalid` item makes it the warning colour.
 - Invalidation is awaited before the caller's own `onSettled` runs, so a handler that reads the list sees the refreshed one.
@@ -104,13 +104,13 @@ Not role-specific. Everything here is invisible until the auth store says `signe
 - A `412` body that fails its schema is not a conflict this dialog can present — with no other build there is nothing to choose between — so it falls through to the generic toast.
 - Sign-out while a mutation is in flight: the response is discarded when the queries disable; no toast.
 - A kept local build predating the 80-character rule costs its own row, not the whole import: feature 005 judges each item separately.
-- **Save** with no active account build id is a local save: nothing on the server is pointed at.
+- **Save** with nothing open asks for a name and creates a build where feature 029 sends it — the account, when signed in.
 
 ## Invariants
 
 - No component calls the network, holds a loading `ref`, or wraps a query in try-catch.
 - No component sees an `ETag` or an `Idempotency-Key`; both are the query layer's business.
-- Server state lives only in the query cache — the auth store holds identity and the active build id, never a build.
+- Server state lives in the query cache; the only build document outside it is feature 029's cache of the open build, written from the cache, never read back into it.
 - The eight planner `useState` keys are untouched by this feature.
 
 ## Error Handling
@@ -129,6 +129,7 @@ Every status goes through feature 006's central policy; this feature only decide
 - Feature 006: the fetcher, `useAppQuery` / `useAppMutation`, the central error policy, the auth store and the Zod schemas.
 - Feature 004: the first-login offer this provides the data path for, and the meaning of `signed-in`.
 - Feature 001: local builds beside the account ones, the serialization of what is sent, and the dialogs opting out of `required`.
+- Feature 029: the open build every operation here acts on, the name rule, the menu, and the toasts.
 - Feature 003: the planner state a build is loaded into and saved from.
 
 ## Open Questions
@@ -141,4 +142,4 @@ Every status goes through feature 006's central policy; this feature only decide
 
 ## Verification
 
-By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog opening from a parsed `412` and falling through from an unparseable one; dirty tracking re-baselined on open and on save, and re-selecting the open build reloading its stored document (`build-manager.test.ts`, `build-manager-reopen.test.ts`). In a browser against the real API, the Neon dev branch and the Auth emulator: a signed-out load made no request, sign-in issued exactly one `GET /builds`, **Save** patched with the cached `ETag`, a second device's save raised the conflict dialog from a real `412` with no toast, `409` toasted the server's own limit message, and the first-login offer imported two of four local builds with one summary toast. Three fresh browsers on one emulator account: the second offered only its changed build after one `GET /builds/{id}` per shared name, and the third, holding only already-kept builds, offered nothing and left the offer unanswered; the account ended with four builds, no copies.
+By test: query keys, `enabled` gating and invalidation ordering; a 90-character name erroring inline; the conflict dialog from a parsed `412` and the fall-through from an unparseable one; dirty tracking re-baselined on open and on save. Live against the real API, the Neon dev branch and the Auth emulator: no request signed out, one `GET /builds` on sign-in, **Save** with the cached `ETag`, a real `412` raising the dialog, `409` toasting the server's message, and the first-login offer importing only builds not already kept across three browsers on one account.

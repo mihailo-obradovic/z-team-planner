@@ -33,6 +33,10 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 
 **Planner state** — the live, in-memory roster the user is manipulating. Exactly one exists at a time. Every build above is planner state at a moment, written down; loading any of them replaces it.
 
+**Open build** — the one build the planner is on: a local build, a cloud build, or none. Opening one closes whichever was open, of either kind; the header's name, Save, Rename and Delete all mean the open build and nothing else. It is remembered across reloads. None is open in shared-build mode, or before a first save.
+
+**Build name** — unique within its own collection: among this browser's local builds, or among one account's cloud builds. A local and a cloud build may share a name. A name already taken becomes the next free `Name (n)`, counting from 2.
+
 **Episode setup** — the story-driven roster choices (who was cut in episode 3, who was hired in episode 4, whether episode 8 recruits are shown). Distinguished from allocations because it is upstream of them: changing episode setup can invalidate allocations that depended on a hero being present.
 
 **Allocation** — any budgeted spend on a hero: a stat level-up, a bonus level, a power training, a flight training. Budgets are per category, never pooled.
@@ -49,7 +53,9 @@ A **shared build** is not a fifth stored thing — it is a projection of one clo
 
 ## Modes
 
-**Shared-build mode** — the planner is displaying a build document that did not come from the user's own saves, so it has nothing of theirs to lose and offers to save a copy rather than to save. Entered by opening a share link, left by saving a copy or returning to their own build.
+**Shared-build mode** — the planner is displaying a snapshot link's build document, which did not come from the user's own saves, so it offers to save a copy rather than to save. Until the user edits it there is nothing of theirs to lose; after the first edit the difference from the snapshot is unsaved work. Entered by opening a snapshot link, left by saving a copy or returning to their own build. No build is open while in it.
+
+A **share link** never enters shared-build mode: its page shows the shared build read-only, beside the planner rather than in it, and leaving the page returns the planner exactly as it was.
 
 Viewing one's own **cloud build** is not shared-build mode, even though both arrive over the network.
 
