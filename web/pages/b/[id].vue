@@ -13,12 +13,13 @@
     </div>
   </div>
 
-  <!-- * `min-h-full` with `mt-auto` on the line keeps it at the bottom until the build is taller (feature 010). -->
-  <!-- * `@container` so the cards read this wrapper the way they read the planner's tab wrapper (HeroCard's gap step). -->
   <div
     v-else-if="sharedBuild"
     class="@container flex min-h-full flex-col gap-4 p-4"
   >
+    <!-- ! Comments live inside the branches: one between `v-if` and `v-else-if` becomes part of the branch in dev, the page renders as a fragment, and the route transition leaves the next page blank (as `index.vue` notes). -->
+    <!-- * `min-h-full` with `mt-auto` on the line keeps it at the bottom until the build is taller (feature 010). -->
+    <!-- * `@container` so the cards read this wrapper the way they read the planner's tab wrapper (HeroCard's gap step). -->
     <div
       class="flex panel flex-col items-start justify-between gap-3 bg-default p-4 sm:flex-row sm:items-center"
     >
@@ -37,6 +38,7 @@
         color="primary"
         icon="i-lucide-copy"
         :loading="isSaving"
+        :disabled="isCopied"
         @click="handleSaveCopy"
       >
         Save a copy
@@ -85,12 +87,25 @@ const { data: sharedBuild, isPending } = useSharedBuild(id);
 
 const { isSignedIn } = storeToRefs(useAuthStore());
 const { synergyPairColumns } = useHeroPlanner();
-const { loadSharedBuild } = useBuildMode();
 const { saveAsNewLocalBuild } = useLocalBuilds();
+const { openCloud } = useOpenBuild();
+const { updateSavedSnapshot } = useUnsavedChanges();
+const { leaveSharedMode } = useBuildMode();
+const { guardDiscard } = useDiscardGuard();
+const { setPlannerAside, restorePlanner, dropSetAside } = usePlannerSetAside();
+
+const plannerState = usePlannerState();
+
+// * Set once a copy exists: the page is on its way to `/`, and a second click would make a second copy.
+const isCopied = ref(false);
 
 const { mutate: createBuild, isLoading: isSaving } = useCreateBuild({
-  onSuccess: (created) => {
-    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
+  onSuccess: async (created, { data }) => {
+    openCloud(created.id);
+    // * A `?build=` snapshot the visitor had on `/` is replaced by the copy, not returned to.
+    leaveSharedMode();
+    updateSavedSnapshot(data);
+    await finishCopy(created.name);
   }
 });
 
@@ -98,26 +113,50 @@ watch(
   sharedBuild,
   async (next) => {
     if (next) {
-      await loadSharedBuild(next.data);
+      setPlannerAside();
+      await deserializeBuild(next.data, plannerState);
     }
   },
   { immediate: true }
 );
 
+// * Leaving without a copy hands the visitor's planner back exactly as it was (feature 029).
+onBeforeRouteLeave(async () => {
+  await restorePlanner();
+});
+
 function handleSaveCopy() {
-  if (!sharedBuild.value) {
+  if (!sharedBuild.value || isSaving.value || isCopied.value) {
+    return;
+  }
+
+  guardDiscard(saveCopy);
+}
+
+function saveCopy() {
+  const build = sharedBuild.value;
+
+  if (!build) {
     return;
   }
 
   // * Signed in it becomes an account build; signed out it falls back to feature 001's local save, so the link is useful without an account (feature 007).
   if (isSignedIn.value) {
-    createBuild({ name: sharedBuild.value.name, data: sharedBuild.value.data });
+    createBuild({ name: build.name, data: build.data });
 
     return;
   }
 
-  saveAsNewLocalBuild(sharedBuild.value.name);
-  toast.add({ title: 'Saved to this browser', color: 'success' });
+  // * The planner already holds the shared build, so the local save writes exactly it.
+  void finishCopy(saveAsNewLocalBuild(build.name));
+}
+
+// * The copy is open and the planner holds it: nothing is left to restore, and `/` shows it.
+async function finishCopy(name: string) {
+  isCopied.value = true;
+  dropSetAside();
+  toast.add({ title: `Saved a copy as "${name}"`, color: 'success' });
+  await navigateTo('/');
 }
 
 useSeoMeta({

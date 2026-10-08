@@ -141,12 +141,12 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 ## Entry Points
 
-- `web/composables/build/useOpenBuild.ts` (new): the open build, its record and the cloud cache.
-- `useOpenBuildName.ts`, `useNewBuild.ts`, `ui/useDeviceClass.ts`, `ui/useDiscardGuard.ts` (new).
+- `web/composables/build/useOpenBuild.ts`: the open build, its record and the cloud cache.
+- `useOpenBuildName.ts`, `useNewBuild.ts`, `ui/useDeviceClass.ts`, `ui/useDiscardGuard.ts`, `usePlannerSetAside.ts`.
 - `web/composables/build/useLocalBuilds.ts`, `useBuildMode.ts`, `useUnsavedChanges.ts`, `useInitialBuild.ts`.
-- `web/components/build/BuildManager.vue`, `BuildMenu.vue`, `LocalBuildDialogs.vue`, `CloudBuildDialogs.vue`, `BuildNameDialog.vue`, `OpenBuildDialogs.vue`, `DiscardChangesDialog.vue` (new).
+- `web/components/build/BuildManager.vue`, `BuildMenu.vue`, `LocalBuildDialogs.vue`, `CloudBuildDialogs.vue`, `BuildNameDialog.vue`, `OpenBuildDialogs.vue`, `DiscardChangesDialog.vue`.
 - `web/stores/useAuthStore.ts`: `activeAccountBuildId` folds into the open build; the chosen/unchosen sign-out distinction.
-- `web/utils/buildName.ts` (new): the suffix rule.
+- `web/utils/buildName.ts`: the suffix rule.
 
 ## Dependencies
 

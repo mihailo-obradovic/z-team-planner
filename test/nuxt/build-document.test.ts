@@ -75,7 +75,8 @@ async function freshPlanner() {
     ...planner,
     plannerState: state,
     serializeCurrentBuild: () => serializeBuild(state),
-    loadSharedBuild: mode.loadSharedBuild,
+    loadDocument: (document: SerializedBuild) =>
+      deserializeBuild(document, state),
     getShareUrl: sharing.getShareUrl
   };
 }
@@ -196,7 +197,7 @@ describe('build document — round trip', () => {
 
     const before = planner.serializeCurrentBuild();
 
-    await planner.loadSharedBuild(before);
+    await planner.loadDocument(before);
 
     expect(planner.serializeCurrentBuild()).toEqual(before);
   });
@@ -204,7 +205,7 @@ describe('build document — round trip', () => {
   it('survives a document carrying a key this client does not know', async () => {
     const planner = await freshPlanner();
 
-    await planner.loadSharedBuild({
+    await planner.loadDocument({
       v: 1,
       ec: 'coupe',
       zz: 'from a later client'
@@ -323,7 +324,7 @@ describe('build document — mission simulator keys (feature 015)', () => {
 
     const before = planner.serializeCurrentBuild();
 
-    await planner.loadSharedBuild(before);
+    await planner.loadDocument(before);
 
     expect(planner.serializeCurrentBuild()).toEqual(before);
   });
@@ -332,7 +333,7 @@ describe('build document — mission simulator keys (feature 015)', () => {
     const planner = await freshPlanner();
 
     planner.setMissionReq(0, 'combat', 10);
-    await planner.loadSharedBuild({ v: 1 });
+    await planner.loadDocument({ v: 1 });
 
     expect(planner.plannerState.missionTemplates.value).toHaveLength(3);
     expect(planner.plannerState.missionTemplates.value[0]!.req.combat).toBe(6);
@@ -348,8 +349,8 @@ describe('build document — mission simulator keys (feature 015)', () => {
 
     expect(saved.mt).toHaveLength(3);
 
-    await planner.loadSharedBuild({ v: 1 });
-    await planner.loadSharedBuild(saved);
+    await planner.loadDocument({ v: 1 });
+    await planner.loadDocument(saved);
 
     expect(planner.plannerState.missionTemplates.value[1]!.req.vigor).toBe(9);
     expect(planner.serializeCurrentBuild()).toEqual(saved);
@@ -358,7 +359,7 @@ describe('build document — mission simulator keys (feature 015)', () => {
   it('sanitises loaded slots: unknown ids and duplicates empty out, ranges clamp', async () => {
     const planner = await freshPlanner();
 
-    await planner.loadSharedBuild({
+    await planner.loadDocument({
       v: 1,
       mh: ['golem', 'batman', 'golem', 'illusion'],
       ml: 9,
@@ -388,7 +389,7 @@ describe('build document — mission simulator keys (feature 015)', () => {
       ]
     } as SerializedBuild;
 
-    await planner.loadSharedBuild(document);
+    await planner.loadDocument(document);
 
     expect(planner.plannerState.missionTemplates.value[0]!.xp).toEqual({
       intellect: 7

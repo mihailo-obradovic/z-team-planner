@@ -44,3 +44,10 @@ export type LocalBuild = {
   name: string;
   data: SerializedBuild;
 };
+
+// * The visitor's planner while a share page borrows it (feature 029): its document, the saved baseline it was measured against, and whether it held unsaved work.
+export type PlannerSetAside = {
+  document: SerializedBuild;
+  savedSnapshot: string;
+  wasDirty: boolean;
+};

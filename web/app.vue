@@ -24,8 +24,9 @@
 
           <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
 
+          <!-- * Not on a share page: every build control there would act on a build that is not open (feature 007). -->
           <!-- ! Client-only because it renders localStorage: server-rendering it desynchronises hydration. -->
-          <ClientOnly>
+          <ClientOnly v-if="!isSharePage">
             <BuildManager class="hidden lg:flex" tier="labelled" />
             <BuildManager
               class="hidden md:flex lg:hidden"
@@ -41,11 +42,13 @@
 
           <AuthMenu tier="bare" />
 
-          <StorySetupButton tier="labelled" @open="handleOpen" />
+          <template v-if="!isSharePage">
+            <StorySetupButton tier="labelled" @open="handleOpen" />
 
-          <StorySetupButton tier="icon" @open="handleOpen" />
+            <StorySetupButton tier="icon" @open="handleOpen" />
 
-          <StorySetupButton tier="bare" @open="handleOpen" />
+            <StorySetupButton tier="bare" @open="handleOpen" />
+          </template>
         </div>
       </template>
     </u-header>
@@ -78,6 +81,7 @@
         <FirstRunBanners />
 
         <div
+          v-if="!isSharePage"
           class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
         >
           <BuildManager block size="lg" tier="bare" />
@@ -133,7 +137,11 @@ useOpenBuild().watchSignOut();
 const storySetupOpen = ref(false);
 
 // * Read once and a plain ref, not query state: only `/`'s initial boot waits, and on localStorage rather than a request (feature 023).
-const booting = ref(useRoute().path === '/');
+const route = useRoute();
+
+const booting = ref(route.path === '/');
+
+const isSharePage = computed(() => route.path.startsWith('/b/'));
 
 function handleOpen() {
   storySetupOpen.value = true;

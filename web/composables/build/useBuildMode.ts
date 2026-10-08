@@ -8,12 +8,6 @@ export function useBuildMode() {
     () => false
   );
 
-  async function loadSharedBuild(buildDocument: SerializedBuild) {
-    isViewingSharedBuild.value = true;
-
-    await deserializeBuild(buildDocument, state);
-  }
-
   async function loadAccountBuild(buildDocument: SerializedBuild) {
     isViewingSharedBuild.value = false;
 
@@ -28,7 +22,6 @@ export function useBuildMode() {
     leaveSharedMode: () => {
       isViewingSharedBuild.value = false;
     },
-    loadSharedBuild,
     loadAccountBuild
   };
 }
