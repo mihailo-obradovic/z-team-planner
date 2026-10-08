@@ -65,6 +65,7 @@ One line per record: type, status, title, link.
 | 013 | tooling     | Implemented       | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
 | 014 | incident    | Implemented       | Images and icons went missing on the first Services deployment                  | [014_incident_services-image-config](decisions/014_incident_services-image-config.md)         |
 | 015 | upgrade     | Implemented       | Move the test stack to Vitest 5 and @nuxt/test-utils 4                          | [015_upgrade_test-stack-vitest-5](decisions/015_upgrade_test-stack-vitest-5.md)               |
+| 016 | tooling     | Implemented       | Hold TypeScript below 7 until vue-tsc runs on it                                | [016_tooling_hold-typescript-below-7](decisions/016_tooling_hold-typescript-below-7.md)       |
 
 ## Domain Decision Index
 
