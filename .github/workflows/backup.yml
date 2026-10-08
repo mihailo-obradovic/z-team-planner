@@ -2,7 +2,7 @@ name: backup
 
 on:
   schedule:
-    # * Off the hour, because top-of-the-hour crons queue longest. GitHub still starts it hours late (operations.md, Backups); only the Thursday 01:00–02:00 Neon maintenance window is to be avoided, and a delay would have to pass 21 hours to reach it.
+    # * Off the hour made no measurable difference: GitHub starts it about 6 to 7 hours late either way (operations.md, Backups). Only the Thursday 01:00–02:00 Neon maintenance window is to be avoided, and a delay would have to pass 21 hours to reach it.
     - cron: '17 3 * * *'
   workflow_dispatch:
   # * migrate.yml calls this before touching the schema, so a dispatched migration always has a dump from minutes earlier rather than from last night.
