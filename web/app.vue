@@ -188,7 +188,13 @@ useHead({
 useSeoMeta({
   title,
   description,
-  ogImage: '/images/og/build-now.png',
-  twitterImage: '/images/og/build-now.png'
+  // * No twitter:* tags: X reads Open Graph, and unhead v3 deprecates them (feature 027).
+  ogImage: {
+    url: '/images/og/build-now.png',
+    width: 1200,
+    height: 630,
+    type: 'image/png',
+    alt: 'Z-Team Planner card reading "Plan your Dispatch build ahead of time" beside a masked hero'
+  }
 });
 </script>
