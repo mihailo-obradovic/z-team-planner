@@ -162,6 +162,8 @@ const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
 
 const tabWidth = useTabWidth();
 
+const { start: startPortraitPrefetch } = usePortraitPrefetch();
+
 const selectedHeroId = ref<HeroId | null>(null);
 
 // * Every tab's wrapper is observed; a hidden one measures 0, so the visible one is the only entry that writes (feature 028).
@@ -203,6 +205,8 @@ function observeTabWrapper(element: Element | ComponentPublicInstance | null) {
 }
 
 onMounted(initTabFromUrl);
+
+onMounted(startPortraitPrefetch);
 
 onUnmounted(() => tabWrapperObserver?.disconnect());
 </script>

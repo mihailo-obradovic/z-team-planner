@@ -53,7 +53,7 @@ Non-goals:
 - **Already loaded** — the browser holds that exact variant when the portrait mounts or its source changes — it shows at once, with no fade-in. Reopening the dialog on a seen hero, or switching back to a tab, never replays it.
 - **Under reduced motion** a loaded portrait shows at once; only the motion is dropped, never the content.
 - **On failure**, the box shows the hero's name as the browser's alt text. No retry.
-- **Background download.** On `/`, once the window has loaded and the browser is next idle, one low-priority batch requests, in order: the synergy tab's portraits at the width the current tab would render, then the dialog's portraits for every hero — header, panel, rail and ribbon. Each request is the variant the browser would pick for that site at the device's pixel ratio, so a later render is a cache hit. It runs once per page load.
+- **Background download.** On `/`, once the window has loaded and the browser is next idle, one low-priority batch requests, in order: the synergy tab's portraits at the width the current tab would render, then the dialog's portraits for every hero in its roster at the sites the viewport shows — the header always, the panel from `md`, the rail from `lg` and the ribbon below it. Each request is the variant the browser would pick for that site at the device's pixel ratio, so a later render is a cache hit. It runs once per page load.
 - **Synergy width.** Below a 58rem tab the synergy portrait renders at 108px and declares `card`, the variant the overview already loaded; from 58rem it declares `synergy`. A hidden tab measures 0 and declares `card`. Crossing the threshold, the first showing of a wide tab included, upgrades the portrait in place: the browser keeps the smaller variant on screen until the larger has loaded, with no fade-in.
 
 ## Roles And Access
@@ -84,7 +84,7 @@ Not role-specific.
 ## Edge Cases
 
 - The synergy tab is hidden (`display: none`) at load, so its own width is zero: the batch reads the visible tab wrapper's width, which is the same box.
-- The dialog's rail and ribbon both mount and CSS shows one; the batch requests both, since each is a few kilobytes.
+- The dialog's rail and ribbon both mount and CSS shows one; the batch requests only the one the viewport shows, as it does the panel. A viewport resized across a breakpoint afterwards loads the other on its own, with a fade-in.
 - A portrait whose source changes while still fading restarts from its box for the new source, or shows at once if that one is loaded.
 - A browser without an idle callback starts the batch on a short timeout after `load` instead.
 
