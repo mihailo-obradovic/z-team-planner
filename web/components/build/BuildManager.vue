@@ -29,7 +29,7 @@
             :label="labelled ? 'Back to my build' : undefined"
             :aria-label="labelled ? undefined : 'Back to my build'"
             :block="block"
-            @click="backToMyBuild"
+            @click="guardDiscard(backToMyBuild)"
           />
         </u-tooltip>
       </template>
@@ -107,6 +107,7 @@ const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
 const { saveSharedOpen, openSaveAsNew, openAccountSave } = useDialogs();
+const { guardDiscard } = useDiscardGuard();
 
 const { handleShare } = useShareFlow();
 

@@ -551,6 +551,8 @@ describe('BuildManager menu and Save (feature 029)', () => {
     menuGroups(page)
       .flat()
       .find((item) => item.label === 'New build')!.onSelect!();
+    // * The edit above is unsaved work, so New build asks first.
+    useDiscardGuard().confirmDiscard();
 
     await vi.waitFor(() =>
       expect(useOpenBuild().openLocalId.value).not.toBe(LOCAL_BUILD.id)
@@ -558,5 +560,90 @@ describe('BuildManager menu and Save (feature 029)', () => {
 
     expect(usePlannerState().showEp8Recruits.value).toBe(false);
     expect(useLocalBuilds().activeBuildName.value).toBe('New build');
+  });
+});
+
+describe('BuildManager discard confirmation (feature 029)', () => {
+  const OTHER_BUILD: LocalBuild = {
+    id: 'local-2',
+    name: 'Other build',
+    data: { v: 1, fl: ['flambae'] }
+  };
+
+  beforeEach(() => {
+    fetchBuildsSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+  });
+
+  async function mountDirty() {
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          useAuthStore().resetUser();
+          useState('z-team-builds').value = [LOCAL_BUILD, OTHER_BUILD];
+          useState('z-team-open-build').value = {
+            open: { kind: 'local', id: LOCAL_BUILD.id },
+            lastLocalId: LOCAL_BUILD.id
+          };
+          resetPlanner();
+          useUnsavedChanges().updateSavedSnapshot();
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    usePlannerState().showEp8Recruits.value = true;
+    await nextTick();
+
+    return page;
+  }
+
+  function select(page: VueWrapper, label: string) {
+    menuGroups(page)
+      .flat()
+      .find((item) => item.label === label)!.onSelect!();
+  }
+
+  it('asks before opening another build over unsaved changes, and Cancel keeps everything', async () => {
+    const page = await mountDirty();
+    const guard = useDiscardGuard();
+
+    select(page, OTHER_BUILD.name);
+
+    expect(guard.discardOpen.value).toBe(true);
+    // * Nothing replaced yet: the edit and the open build are as they were.
+    expect(useOpenBuild().openLocalId.value).toBe(LOCAL_BUILD.id);
+    expect(usePlannerState().showEp8Recruits.value).toBe(true);
+
+    guard.closeDiscard();
+    await nextTick();
+
+    expect(useOpenBuild().openLocalId.value).toBe(LOCAL_BUILD.id);
+    expect(usePlannerState().showEp8Recruits.value).toBe(true);
+  });
+
+  it('opens the other build once the discard is confirmed', async () => {
+    const page = await mountDirty();
+    const guard = useDiscardGuard();
+
+    select(page, OTHER_BUILD.name);
+    guard.confirmDiscard();
+
+    await vi.waitFor(() =>
+      expect(usePlannerState().heroFlights.value).toHaveProperty('flambae')
+    );
+    expect(useOpenBuild().openLocalId.value).toBe(OTHER_BUILD.id);
+    expect(guard.discardOpen.value).toBe(false);
+  });
+
+  it('asks before New build too', async () => {
+    const page = await mountDirty();
+
+    select(page, 'New build');
+
+    expect(useDiscardGuard().discardOpen.value).toBe(true);
+    useDiscardGuard().closeDiscard();
   });
 });

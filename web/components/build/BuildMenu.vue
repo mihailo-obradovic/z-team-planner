@@ -42,6 +42,7 @@ const { openLocalId, openCloudId, openCloud } = useOpenBuild();
 const openBuildName = useOpenBuildName();
 const deviceClass = useDeviceClass();
 const { startNewBuild } = useNewBuild();
+const { guardDiscard } = useDiscardGuard();
 
 const { data: accountBuilds, isPending: accountBuildsPending } =
   useFetchBuilds();
@@ -96,7 +97,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
       type: 'checkbox',
       checked: localBuild.id === openLocalId.value,
       onSelect: () => {
-        loadLocalBuild(localBuild.id);
+        guardDiscard(() => loadLocalBuild(localBuild.id));
       }
     })
   );
@@ -131,7 +132,7 @@ function accountBuildItems(): DropdownMenuItem[] {
     type: 'checkbox' as const,
     checked: cloudBuild.id === openCloudId.value,
     onSelect: () => {
-      void openAccountBuild(cloudBuild.id);
+      guardDiscard(() => openAccountBuild(cloudBuild.id));
     }
   }));
 }
@@ -145,7 +146,7 @@ function actionItems(): DropdownMenuItem[] {
       icon: 'i-lucide-plus',
       class: 'uppercase',
       onSelect: () => {
-        void startNewBuild();
+        guardDiscard(startNewBuild);
       }
     },
     {

@@ -90,6 +90,8 @@
 
       <OpenBuildDialogs />
 
+      <DiscardChangesDialog />
+
       <CloudBuildConflictDialog />
 
       <FirstLoginOffer />
@@ -112,6 +114,7 @@ import FirstRunBanners from '@/components/shell/FirstRunBanners.vue';
 import LocalBuildDialogs from '@/components/build/LocalBuildDialogs.vue';
 import CloudBuildDialogs from '@/components/build/CloudBuildDialogs.vue';
 import OpenBuildDialogs from '@/components/build/OpenBuildDialogs.vue';
+import DiscardChangesDialog from '@/components/build/DiscardChangesDialog.vue';
 import CloudBuildConflictDialog from '@/components/build/CloudBuildConflictDialog.vue';
 import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
 import AccountDialogs from '@/components/account/AccountDialogs.vue';
