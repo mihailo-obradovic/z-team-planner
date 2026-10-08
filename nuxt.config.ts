@@ -145,7 +145,9 @@ export default defineNuxtConfig({
 
   seo: {
     // ! Its error titles carry the status, Nuxt's `Page not found: <path>` message, or the last path segment; `plugins/error-title.ts` titles the error page instead (feature 009).
-    fallbackTitle: false
+    fallbackTitle: false,
+    // * Open Graph only: X reads og:* without twitter:* tags, and unhead v3 deprecates them (feature 027).
+    automaticTwitterTags: false
   },
 
   vite: {
