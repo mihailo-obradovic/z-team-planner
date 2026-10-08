@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mountSuspended } from '@nuxt/test-utils/runtime';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, nextTick } from 'vue';
 
 import SynergyPairCard from '@/components/synergy/SynergyPairCard.vue';
 
@@ -27,6 +27,22 @@ async function planner() {
   );
 
   return instance;
+}
+
+async function tabWidthState() {
+  let state!: ReturnType<typeof useTabWidth>;
+
+  await mountSuspended(
+    defineComponent({
+      setup() {
+        state = useTabWidth();
+
+        return () => h('div');
+      }
+    })
+  );
+
+  return state;
 }
 
 // * A card left mounted reacts to the next test's planner reset mid-teardown; unmounting per test keeps those re-renders out of the following test.
@@ -109,5 +125,22 @@ describe('synergy pairs', () => {
     await card.find('img').trigger('click');
 
     expect(card.emitted('viewDetail')).toEqual([[column.top.id]]);
+  });
+
+  // * Feature 028: the narrow card form reuses the overview's 108 variant; the row form requests the synergy width.
+  it('requests the card variant below the row form and the synergy one from it', async () => {
+    const tabWidth = await tabWidthState();
+
+    tabWidth.value = 900;
+    const { card } = await mountGolemPair();
+
+    expect(card.find('img').attributes('src')).toContain('w_108');
+
+    tabWidth.value = 1200;
+    await nextTick();
+
+    expect(card.find('img').attributes('src')).toContain('w_224');
+
+    tabWidth.value = 0;
   });
 });

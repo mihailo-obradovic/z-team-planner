@@ -9,7 +9,7 @@
     >
       <HeroPortrait
         :hero-id="heroId"
-        usage="synergy"
+        :usage="usage"
         :alt="hero.name"
         class="aspect-square w-full border-2 border-accented bg-accented transition-shadow select-none hover:ring-2 hover:ring-warning"
       />
@@ -34,6 +34,8 @@ const emit = defineEmits<{
 }>();
 
 const { heroes } = useHeroPlanner();
+
+const usage = useSynergyPortraitUsage();
 
 const hero = computed(() =>
   heroes.value.find((candidate) => candidate.id === props.heroId)!

@@ -110,6 +110,20 @@ describe('HeroPortrait loading', () => {
     expect(img.classes()).toContain('portrait-fade-in');
   });
 
+  it('drops the fade once it has played, so showing the tab again never replays it', async () => {
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'synergy',
+      alt: 'Coupe'
+    });
+
+    await img.trigger('load');
+    await img.trigger('animationend');
+
+    expect(img.classes()).not.toContain('portrait-fade-in');
+    expect(img.classes()).not.toContain('opacity-0');
+  });
+
   it('shows the alt text when the portrait fails', async () => {
     const img = await mountPortrait({
       heroId: 'coupe',

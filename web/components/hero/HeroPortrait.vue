@@ -17,6 +17,8 @@
       :class="LOAD_STATE_CLASS[loadState]"
       @load="handleLoad"
       @error="handleError"
+      @animationend="settle"
+      @animationcancel="settle"
     />
   </span>
 </template>
@@ -69,6 +71,13 @@ function checkLoaded() {
 function handleLoad() {
   if (loadState.value === 'loading') {
     loadState.value = 'fading';
+  }
+}
+
+// ! The class has to go once the fade ends: a CSS animation restarts whenever its element is shown again, so a portrait left `fading` would replay on every tab switch.
+function settle() {
+  if (loadState.value === 'fading') {
+    loadState.value = 'settled';
   }
 }
 

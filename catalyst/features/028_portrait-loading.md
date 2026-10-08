@@ -54,7 +54,7 @@ Non-goals:
 - **Under reduced motion** a loaded portrait shows at once; only the motion is dropped, never the content.
 - **On failure**, the box shows the hero's name as the browser's alt text. No retry.
 - **Background download.** On `/`, once the window has loaded and the browser is next idle, one low-priority batch requests, in order: the synergy tab's portraits at the width the current tab would render, then the dialog's portraits for every hero — header, panel, rail and ribbon. Each request is the variant the browser would pick for that site at the device's pixel ratio, so a later render is a cache hit. It runs once per page load.
-- **Synergy width.** Below a 58rem tab the synergy portrait renders at 108px and declares `card`, the variant the overview already loaded; from 58rem it declares `synergy`. Crossing the threshold swaps the variant, and a variant not yet loaded fades in.
+- **Synergy width.** Below a 58rem tab the synergy portrait renders at 108px and declares `card`, the variant the overview already loaded; from 58rem it declares `synergy`. A hidden tab measures 0 and declares `card`. Crossing the threshold, the first showing of a wide tab included, upgrades the portrait in place: the browser keeps the smaller variant on screen until the larger has loaded, with no fade-in.
 
 ## Roles And Access
 
