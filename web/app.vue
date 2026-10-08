@@ -131,8 +131,8 @@ const { name: title, description } = useSiteConfig();
 const { loadInitialBuild } = useInitialBuild();
 const { setupBeforeUnload } = useUnsavedChanges();
 
-// * A cloud build belongs to the account; once signed out the planner no longer has one open.
-useOpenBuild().watchSignOut();
+// * The open build follows the account and the API: the reload paint's replacement, the owner check, sign-out (feature 029).
+useOpenBuildSync();
 
 const storySetupOpen = ref(false);
 

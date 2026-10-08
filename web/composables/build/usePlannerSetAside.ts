@@ -1,4 +1,4 @@
-import type { PlannerSetAside } from '@/types/build';
+import type { PlannerSetAside, SerializedBuild } from '@/types/build';
 
 export const PLANNER_SET_ASIDE_KEY = 'planner-set-aside';
 
@@ -36,10 +36,29 @@ export function usePlannerSetAside() {
     setAside.value = null;
   }
 
+  // * The visitor's own build changed while it was set aside — a sign-out fell back to another — so that is what the leave restores.
+  function replaceSetAside(document: SerializedBuild) {
+    if (!setAside.value) {
+      return;
+    }
+
+    setAside.value = {
+      document,
+      savedSnapshot: JSON.stringify(document),
+      wasDirty: false
+    };
+  }
+
   // * After a copy: the planner now holds the copy, which is open, so there is nothing to put back.
   function dropSetAside() {
     setAside.value = null;
   }
 
-  return { setPlannerAside, restorePlanner, dropSetAside };
+  return {
+    isSetAside: computed(() => !!setAside.value),
+    setPlannerAside,
+    restorePlanner,
+    replaceSetAside,
+    dropSetAside
+  };
 }

@@ -49,7 +49,10 @@
           <li>
             <span class="font-semibold">z-team-builds</span> — the builds you
             saved, and <span class="font-semibold">z-team-open-build</span> —
-            which one is open.
+            which one is open. When that is a build in your account, it also
+            keeps a copy of that one build and your account's id, so the page
+            can show it before your account answers; signing out clears it,
+            unless your session simply expired.
           </li>
 
           <li>

@@ -14,6 +14,9 @@ let firebaseAuth: object | null = { name: 'test' };
 
 // * Stubbed rather than mounted: the Firebase client plugin cannot initialise in a test environment (no project config), so a component mount would only ever exercise the sign-in-unavailable path. This is where the popup outcomes are provable.
 vi.stubGlobal('useNuxtApp', () => ({ $firebaseAuth: firebaseAuth }));
+const chooseSignOut = vi.fn<() => void>();
+
+vi.stubGlobal('useAuthStore', () => ({ chooseSignOut }));
 vi.stubGlobal('useToast', () => ({
   add: (toast: { title?: string; color?: string }) => toasts.push(toast)
 }));
@@ -28,6 +31,7 @@ describe('useAuth', () => {
   beforeEach(() => {
     signInWithPopup.mockReset();
     signOut.mockReset();
+    chooseSignOut.mockReset();
     signInWithPopup.mockResolvedValue(undefined);
     signOut.mockResolvedValue(undefined);
     firebaseAuth = { name: 'test' };
@@ -81,7 +85,12 @@ describe('useAuth', () => {
     expect(toasts[0]?.title).toBe('Sign-in failed. Please try again.');
   });
 
-  it('signs out through the SDK', async () => {
+  it('signs out through the SDK, marked as chosen first', async () => {
+    signOut.mockImplementation(async () => {
+      // * Marked before the SDK reports the sign-out, so the planner reads it as chosen (feature 029).
+      expect(chooseSignOut).toHaveBeenCalledOnce();
+    });
+
     await useAuth().signOut();
 
     expect(signOut).toHaveBeenCalledOnce();

@@ -36,9 +36,10 @@ const props = defineProps<{
   block: boolean;
 }>();
 
-const { isSignedIn } = storeToRefs(useAuthStore());
+const { isSignedIn, isDestinationKnown } = storeToRefs(useAuthStore());
 
-const { openLocalId, openCloudId, openCloud } = useOpenBuild();
+const { openLocalId, openCloudId, openCloud, requestedCloudId } =
+  useOpenBuild();
 const openBuildName = useOpenBuildName();
 const deviceClass = useDeviceClass();
 const { startNewBuild } = useNewBuild();
@@ -138,13 +139,16 @@ function accountBuildItems(): DropdownMenuItem[] {
 }
 
 function actionItems(): DropdownMenuItem[] {
-  const isOpen = !!openLocalId.value || !!openCloudId.value;
+  // * A cloud build left open by a session that ended cannot be renamed or deleted until its owner signs back in.
+  const isOpen =
+    !!openLocalId.value || (!!openCloudId.value && isSignedIn.value);
 
   const actions: DropdownMenuItem[] = [
     {
       label: 'New build',
       icon: 'i-lucide-plus',
       class: 'uppercase',
+      disabled: !isDestinationKnown.value,
       onSelect: () => {
         guardDiscard(startNewBuild);
       }
@@ -153,6 +157,7 @@ function actionItems(): DropdownMenuItem[] {
       label: 'Save as new...',
       icon: 'i-lucide-copy-plus',
       class: 'uppercase',
+      disabled: !isDestinationKnown.value,
       onSelect: () => {
         rememberOpener();
 
@@ -220,6 +225,8 @@ function signedOutHint(): DropdownMenuItem[] {
 async function openAccountBuild(id: string) {
   if (id !== openCloudId.value) {
     openCloud(id);
+    // * `useOpenBuildSync` loads it when it arrives.
+    requestedCloudId.value = id;
 
     return;
   }
@@ -232,12 +239,4 @@ async function openAccountBuild(id: string) {
     updateSavedSnapshot();
   }
 }
-
-watch(openedAccountBuild, async (cloudBuild) => {
-  if (cloudBuild) {
-    await loadAccountBuild(cloudBuild.data);
-
-    updateSavedSnapshot();
-  }
-});
 </script>

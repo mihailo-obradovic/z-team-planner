@@ -141,7 +141,7 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 ## Entry Points
 
-- `web/composables/build/useOpenBuild.ts`: the open build, its record and the cloud cache.
+- `web/composables/build/useOpenBuild.ts`: the open build and its cache; `useOpenBuildSync.ts`: reload, owner, sign-out.
 - `useOpenBuildName.ts`, `useNewBuild.ts`, `ui/useDeviceClass.ts`, `ui/useDiscardGuard.ts`, `usePlannerSetAside.ts`.
 - `web/composables/build/useLocalBuilds.ts`, `useBuildMode.ts`, `useUnsavedChanges.ts`, `useInitialBuild.ts`.
 - `web/components/build/BuildManager.vue`, `BuildMenu.vue`, `LocalBuildDialogs.vue`, `CloudBuildDialogs.vue`, `BuildNameDialog.vue`, `OpenBuildDialogs.vue`, `DiscardChangesDialog.vue`.
@@ -163,7 +163,7 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 ## Tests
 
-- `test/nuxt/open-build.test.ts`: one open build across kinds; Save after switching from cloud to local writes locally (regression, watched failing first); restore from cache, replacement when untouched, foreign uid and `404` fallbacks; chosen vs unchosen sign-out.
+- `test/nuxt/open-build.test.ts`: one open build across kinds; Save after switching from cloud to local writes locally (the regression); restore from cache, replacement when untouched, foreign uid and `404` fallbacks; chosen vs unchosen sign-out.
 - `test/unit/buildName.test.ts`: suffix from 2, smallest free `n`, trim, case-sensitivity, rename to own name.
 - `test/nuxt/local-build-names.test.ts`: create, save, rename stay unique.
 - `test/nuxt/build-manager.test.ts`: menu groups without empties, one Rename/Delete per open build, Save visibility, destination tooltip, disabled while auth is `unknown`, discard confirmation.

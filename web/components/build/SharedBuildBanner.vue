@@ -21,7 +21,7 @@
       :label="showLabels ? 'Save a copy' : undefined"
       :aria-label="copyAriaLabel"
       :block="block"
-      :loading="isCreating"
+      :loading="isCreating || !isDestinationKnown"
       @click="saveCopy"
     />
   </u-tooltip>
@@ -60,7 +60,7 @@ const showLabels = computed(() => props.labelled && !props.block);
 const toast = useToast();
 const plannerState = usePlannerState();
 
-const { isSignedIn } = storeToRefs(useAuthStore());
+const { isSignedIn, isDestinationKnown } = storeToRefs(useAuthStore());
 const { openBuild, openCloudId, openCloud } = useOpenBuild();
 const { saveAsNewLocalBuild, backToMyBuild: backToLocalBuild } =
   useLocalBuilds();
@@ -95,7 +95,7 @@ const { mutate: createCloudBuild, isLoading: isCreating } = useCreateBuild({
 
 // * One click, no dialog: a snapshot carries no name, so the copy takes the default; edits made to it are kept, so nothing is discarded.
 function saveCopy() {
-  if (isCreating.value) {
+  if (isCreating.value || !isDestinationKnown.value) {
     return;
   }
 

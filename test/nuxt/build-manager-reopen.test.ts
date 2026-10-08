@@ -72,7 +72,10 @@ describe('BuildManager reopening the account build already open', () => {
             email: null,
             displayName: 'Alice'
           });
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
           useOpenBuild().openCloud(BUILD_ID);
+          useOpenBuild().requestedCloudId.value = BUILD_ID;
+          useOpenBuildSync();
 
           return () => h(BuildManager);
         }

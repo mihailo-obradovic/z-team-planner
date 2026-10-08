@@ -17,8 +17,9 @@
             :variant="hasUnsavedChanges ? 'solid' : 'subtle'"
             :color="hasUnsavedChanges ? 'warning' : 'neutral'"
             icon="i-lucide-save"
-            :label="saveLabelled ? 'Save' : undefined"
+            :label="saveLabelled ? saveButtonText : undefined"
             :aria-label="saveAriaLabel"
+            :loading="!isDestinationKnown"
             @click="handleSave"
           />
         </u-tooltip>
@@ -64,7 +65,8 @@ const props = withDefaults(
 const toast = useToast();
 
 const { openBuild, openLocalId, openCloudId, draftName } = useOpenBuild();
-const { isSignedIn } = storeToRefs(useAuthStore());
+const { isSignedIn, isDestinationKnown, status } = storeToRefs(useAuthStore());
+const { signIn } = useAuth();
 
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
@@ -90,9 +92,22 @@ const savesToAccount = computed(
   () => !!openCloudId.value || (!openLocalId.value && isSignedIn.value)
 );
 
-const saveLabel = computed(() =>
-  savesToAccount.value ? 'Save to your account' : 'Save to this browser'
+// * A session that ended on its own left a cloud build open with its edits: only signing back in can save it, and nothing is written to this browser meanwhile (feature 029).
+const needsSignIn = computed(
+  () => !!openCloudId.value && status.value === 'anonymous'
 );
+
+const saveButtonText = computed(() =>
+  needsSignIn.value ? 'Sign in to save' : 'Save'
+);
+
+const saveLabel = computed(() => {
+  if (needsSignIn.value) {
+    return 'Sign in to save';
+  }
+
+  return savesToAccount.value ? 'Save to your account' : 'Save to this browser';
+});
 
 const saveAriaLabel = computed(() =>
   hasUnsavedChanges.value
@@ -111,6 +126,12 @@ const clusterClass = computed(() =>
 );
 
 function handleSave() {
+  if (needsSignIn.value) {
+    void signIn();
+
+    return;
+  }
+
   if (openCloudId.value) {
     patchBuild({
       id: openCloudId.value,

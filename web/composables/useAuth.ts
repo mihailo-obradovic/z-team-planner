@@ -46,6 +46,8 @@ export function useAuth() {
       return;
     }
 
+    // * Marked before the SDK call, so the subscription's sign-out is read as chosen, not as a session that ended.
+    useAuthStore().chooseSignOut();
     await signOut($firebaseAuth);
   }
 

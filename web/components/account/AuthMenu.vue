@@ -71,6 +71,8 @@ const { isSignedIn, isResolved, isSignInUnavailable, user } =
   storeToRefs(useAuthStore());
 
 const { signIn, signOut } = useAuth();
+const { openCloudId } = useOpenBuild();
+const { guardDiscard } = useDiscardGuard();
 
 const { openBuildMenu, deleteAccountOpen, rememberOpener } = useDialogs();
 
@@ -97,7 +99,12 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
       icon: 'i-lucide-log-out',
       class: 'uppercase',
       onSelect: () => {
-        void signOut();
+        // * A chosen sign-out swaps an open account build for the last local one, so unsaved work there is asked about first (feature 029).
+        if (openCloudId.value) {
+          guardDiscard(signOut);
+        } else {
+          void signOut();
+        }
       }
     },
     {

@@ -62,6 +62,37 @@ function signIn() {
   useAuthStore().setUser({ uid: 'u1', email: null, displayName: 'Alice' });
 }
 
+// ! First in the file on purpose: the auth store is one Pinia per file and has no way back to `unknown`, so only the first mount sees it.
+describe('BuildManager while the account is unknown (feature 029)', () => {
+  it('holds Save until it knows where a build would go', async () => {
+    fetchBuildsSpy.mockResolvedValue(ACCOUNT_BUILDS);
+
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          // * The test app has no API URL, which reads as a deployment without sign-in, where nothing waits.
+          useAuthStore().setSignInAvailability('available');
+
+          return () => h(BuildManager);
+        }
+      }),
+      { global: { stubs: STUBS } }
+    );
+
+    expect(useAuthStore().status).toBe('unknown');
+
+    const save = page
+      .findAll('button')
+      .find((button) =>
+        /^save to/i.test(button.attributes('aria-label') ?? '')
+      );
+
+    expect(save?.attributes('disabled')).toBeDefined();
+
+    page.unmount();
+  });
+});
+
 describe('BuildManager account list', () => {
   beforeEach(() => {
     fetchBuildsSpy.mockReset();
@@ -146,7 +177,10 @@ describe('BuildManager share', () => {
           signIn();
           // ! Set both ways round: the store outlives a mount, so leaving it alone would carry the previous test's account build into this one and pass vacuously.
           if (withAccountBuild) {
+            // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
             useOpenBuild().openCloud(ACCOUNT_BUILDS.items[0]!.id);
+            useOpenBuild().requestedCloudId.value = ACCOUNT_BUILDS.items[0]!.id;
+            useOpenBuildSync();
           } else {
             useOpenBuild().closeBuild();
           }
@@ -235,7 +269,10 @@ describe('BuildManager dirty state across the two worlds', () => {
       defineComponent({
         setup() {
           signIn();
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
           useOpenBuild().openCloud(id);
+          useOpenBuild().requestedCloudId.value = id;
+          useOpenBuildSync();
 
           // ! Seeded through the state ref, not localStorage: `useLocalStorageRef` reads storage
           // ! once per key per app, and an earlier mount in this file already claimed the key.
@@ -316,7 +353,10 @@ describe('BuildManager sharing an account build with unsaved changes', () => {
       defineComponent({
         setup() {
           signIn();
+          // * Opened as the menu opens one, so `useOpenBuildSync` (installed by `app.vue`) loads it.
           useOpenBuild().openCloud(id);
+          useOpenBuild().requestedCloudId.value = id;
+          useOpenBuildSync();
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
           resetPlanner();
 

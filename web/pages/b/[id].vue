@@ -37,7 +37,7 @@
       <u-button
         color="primary"
         icon="i-lucide-copy"
-        :loading="isSaving"
+        :loading="isSaving || !isDestinationKnown"
         :disabled="isCopied"
         @click="handleSaveCopy"
       >
@@ -85,7 +85,7 @@ const id = computed(() => route.params.id as string);
 // * Every failure of this read ends on the error page, so the template needs no third branch: a dead share link through the central policy, anything else through `useSharedBuild` (feature 007).
 const { data: sharedBuild, isPending } = useSharedBuild(id);
 
-const { isSignedIn } = storeToRefs(useAuthStore());
+const { isSignedIn, isDestinationKnown } = storeToRefs(useAuthStore());
 const { synergyPairColumns } = useHeroPlanner();
 const { saveAsNewLocalBuild } = useLocalBuilds();
 const { openCloud } = useOpenBuild();
@@ -126,7 +126,12 @@ onBeforeRouteLeave(async () => {
 });
 
 function handleSaveCopy() {
-  if (!sharedBuild.value || isSaving.value || isCopied.value) {
+  if (
+    !sharedBuild.value ||
+    isSaving.value ||
+    isCopied.value ||
+    !isDestinationKnown.value
+  ) {
     return;
   }
 
