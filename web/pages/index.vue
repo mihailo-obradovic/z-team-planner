@@ -13,7 +13,10 @@
       </template>
 
       <template #content="{ item }">
-        <div class="@container flex min-h-full tab-fade flex-col gap-4 p-4">
+        <div
+          :ref="observeTabWrapper"
+          class="@container flex min-h-full tab-fade flex-col gap-4 p-4"
+        >
           <template v-if="item.value === 'overview'">
             <div
               class="grid grid-cols-1 justify-center justify-items-center gap-x-6 gap-y-12 md:grid-cols-[repeat(2,auto)] 2xl:grid-cols-[repeat(4,auto)]"
@@ -125,6 +128,8 @@ import MissionRequirementsPanel from '@/components/mission/MissionRequirementsPa
 import MissionMathPanel from '@/components/mission/MissionMathPanel.vue';
 import MissionTeamPanel from '@/components/mission/MissionTeamPanel.vue';
 
+import type { ComponentPublicInstance } from 'vue';
+
 import type { HeroId } from '@/types/hero';
 
 // * The tab content already fades on mount, so the page itself arrives cut (feature 010).
@@ -155,7 +160,24 @@ const { activeTabModel, initTabFromUrl } = useActiveTab();
 
 const { synergyPairColumns, ep8Recruits, showEp8Recruits } = useHeroPlanner();
 
+const tabWidth = useTabWidth();
+
+const { start: startPortraitPrefetch } = usePortraitPrefetch();
+
 const selectedHeroId = ref<HeroId | null>(null);
+
+// * Every tab's wrapper is observed; a hidden one measures 0, so the visible one is the only entry that writes (feature 028).
+const tabWrapperObserver = import.meta.client
+  ? new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentBoxSize[0]?.inlineSize ?? 0;
+
+        if (width > 0) {
+          tabWidth.value = width;
+        }
+      }
+    })
+  : null;
 
 // * nuxt-schema-org has no `defineWebApplication`; the `@type` override merges with its `SoftwareApplication` default.
 
@@ -176,5 +198,15 @@ function handleCloseDetail() {
   selectedHeroId.value = null;
 }
 
+function observeTabWrapper(element: Element | ComponentPublicInstance | null) {
+  if (element instanceof Element) {
+    tabWrapperObserver?.observe(element);
+  }
+}
+
 onMounted(initTabFromUrl);
+
+onMounted(startPortraitPrefetch);
+
+onUnmounted(() => tabWrapperObserver?.disconnect());
 </script>

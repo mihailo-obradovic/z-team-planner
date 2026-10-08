@@ -25,7 +25,7 @@
         :hero-id="hero.id"
         :usage="variant"
         :alt="hero.name"
-        class="size-full object-cover object-top"
+        class="size-full"
       />
     </button>
   </ScrollRegion>

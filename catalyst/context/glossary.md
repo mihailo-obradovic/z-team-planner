@@ -90,3 +90,5 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 **Portrait** — the square hero image the app shows wherever a hero is pictured: card, dialog, roster rail, synergy pair, mission slot. One per hero, except Sonar, whose portrait follows the shared monster form. Named in code around `heroPortraitSrc`.
 
 **Bust** — the game's own head-and-shoulders roster art for a hero, as published unedited. A portrait is a bust cropped square; the bust itself never appears in the app.
+
+**Portrait fade-in** — a portrait fading in the moment it finishes loading, from an empty box. A portrait the browser already holds shows at once, with no fade-in. Distinct from the planner's reveal after the loading ring ([feature 023](../features/023_initial-load.md)).

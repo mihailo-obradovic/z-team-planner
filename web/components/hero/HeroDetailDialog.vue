@@ -16,7 +16,7 @@
             :hero-id="heroId"
             usage="header"
             :alt="hero?.name ?? ''"
-            class="size-6 shrink-0 object-cover object-top"
+            class="size-6 shrink-0"
           />
         </Transition>
 
@@ -66,7 +66,7 @@
                     :hero-id="hero.id"
                     usage="panel"
                     :alt="hero.name"
-                    class="size-full object-cover object-top"
+                    class="size-full"
                   />
                 </div>
               </Transition>

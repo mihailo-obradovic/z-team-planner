@@ -8,7 +8,9 @@ import {
   PORTRAIT_LOADING,
   PORTRAIT_MASTER,
   PORTRAIT_WIDTHS,
-  portraitScreens
+  SYNERGY_ROW_FORM_REM,
+  portraitScreens,
+  synergyPortraitUsage
 } from '@/config/portraits';
 
 // * The keys `portraitScreens` reuses so the module's defaults cannot survive its merge (web/config/portraits.ts).
@@ -84,5 +86,24 @@ describe('portrait widths', () => {
     });
 
     expect(offenders).toEqual([]);
+  });
+});
+
+// * Feature 028: below the synergy card's row form the portrait renders at the card's width, so it declares the card's usage and reuses the overview's variant.
+describe('synergy portrait usage', () => {
+  it('switches to the synergy width exactly at the row form', () => {
+    expect(synergyPortraitUsage(927, 16)).toBe('card');
+    expect(synergyPortraitUsage(928, 16)).toBe('synergy');
+  });
+
+  it('reads the threshold in rem, so a larger root font moves it', () => {
+    expect(synergyPortraitUsage(SYNERGY_ROW_FORM_REM * 20 - 1, 20)).toBe(
+      'card'
+    );
+    expect(synergyPortraitUsage(SYNERGY_ROW_FORM_REM * 20, 20)).toBe('synergy');
+  });
+
+  it('declares a usage whose width the narrow form renders', () => {
+    expect(PORTRAIT_WIDTHS[synergyPortraitUsage(0, 16)]).toBe(108);
   });
 });

@@ -58,7 +58,7 @@
         :hero-id="portraitHeroId"
         usage="tile"
         :alt="name"
-        class="size-22 border-2 border-accented bg-accented object-cover select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
+        class="size-22 border-2 border-accented bg-accented select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
         :class="slot === ILLUSION_SLOT ? 'opacity-40' : ''"
       />
 
@@ -77,7 +77,7 @@
         hero-id="golem"
         usage="tile"
         alt="Golem's copy"
-        class="size-22 border-2 border-accented bg-accented object-cover opacity-40 select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
+        class="size-22 border-2 border-accented bg-accented opacity-40 select-none @max-[35rem]:aspect-square @max-[35rem]:size-auto @max-[35rem]:w-full"
       />
 
       <span

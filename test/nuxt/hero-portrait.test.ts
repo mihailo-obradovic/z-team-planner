@@ -1,5 +1,5 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HeroPortrait from '@/components/hero/HeroPortrait.vue';
 
@@ -59,16 +59,101 @@ describe('HeroPortrait', () => {
     expect(srcset).toMatch(/w_512[^,]*prism\.webp 2x/);
   });
 
-  it('passes class and listeners through to the image', async () => {
+  it('passes class and listeners through to the box around the image', async () => {
     let clicks = 0;
     mounted = await mountSuspended(HeroPortrait, {
       props: { heroId: 'coupe', usage: 'card', alt: 'Coupe' },
-      attrs: { class: 'object-top', onClick: () => clicks++ }
+      attrs: { class: 'bg-accented', onClick: () => clicks++ }
     });
-    const img = mounted.find('img');
+    const box = mounted.find('span');
 
-    expect(img.classes()).toContain('object-top');
-    await img.trigger('click');
+    expect(box.classes()).toContain('bg-accented');
+    expect(mounted.find('img').classes()).not.toContain('bg-accented');
+    await box.trigger('click');
     expect(clicks).toBe(1);
+  });
+});
+
+// * Feature 028: a portrait still on its way is invisible over its box, alt text included, and fades in on load; one already held shows at once; a failed one shows its alt text.
+describe('HeroPortrait loading', () => {
+  // ! happy-dom fetches an image's `src` and settles `complete` on its own, so each test pins the state it is about; still-loading is the default here.
+  beforeEach(() => {
+    vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(
+      false
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('hides a portrait that is still loading', async () => {
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'synergy',
+      alt: 'Coupe'
+    });
+
+    expect(img.classes()).toContain('opacity-0');
+  });
+
+  it('fades the portrait in once it loads', async () => {
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'synergy',
+      alt: 'Coupe'
+    });
+
+    await img.trigger('load');
+
+    expect(img.classes()).not.toContain('opacity-0');
+    expect(img.classes()).toContain('portrait-fade-in');
+  });
+
+  it('drops the fade once it has played, so showing the tab again never replays it', async () => {
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'synergy',
+      alt: 'Coupe'
+    });
+
+    await img.trigger('load');
+    await img.trigger('animationend');
+
+    expect(img.classes()).not.toContain('portrait-fade-in');
+    expect(img.classes()).not.toContain('opacity-0');
+  });
+
+  it('shows the alt text when the portrait fails', async () => {
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'synergy',
+      alt: 'Coupe'
+    });
+
+    await img.trigger('error');
+
+    expect(img.classes()).not.toContain('opacity-0');
+    expect(img.classes()).not.toContain('portrait-fade-in');
+  });
+
+  it('shows a portrait the browser already holds at once, with no fade-in', async () => {
+    vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(
+      true
+    );
+    vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(
+      216
+    );
+
+    const img = await mountPortrait({
+      heroId: 'coupe',
+      usage: 'card',
+      alt: 'Coupe'
+    });
+
+    await img.trigger('load');
+
+    expect(img.classes()).not.toContain('opacity-0');
+    expect(img.classes()).not.toContain('portrait-fade-in');
   });
 });

@@ -51,7 +51,7 @@ Non-goals:
 - Card title: both hero names around the link icon. No badge, no close control, no "active" label — a card appears and disappears only when episode setup changes the derived pairs.
 - The card reflows on the tab's container, never the viewport (annex §14.3). It is `w-fit`, so it cannot be its own query container and reads the tab wrapper, as the mission simulator does; both thresholds are measured from the card's content.
 - From 58rem — the row form's own 923px — side by side: the two radar-sized portrait blocks, the pair-total stat list, the radar; the title at the plate's start.
-- Below 58rem: the portraits at chip width (108px) side by side with the stat list, the radar at its desktop size in a frame spanning the row, the title centered; the card hugs its 496px content. Below 31rem the two cannot share a row: one query stacks and centers them and caps the frame — together — and `fit-content` clamps the card to the tab. The stat value sits in a fixed slot so a total growing a digit shifts nothing.
+- Below 58rem: the portraits at chip width (108px) — the overview card's own portrait variant, so they are already loaded (feature 028) — side by side with the stat list, the radar at its desktop size in a frame spanning the row, the title centered; the card hugs its 496px content. Below 31rem the two cannot share a row: one query stacks and centers them and caps the frame — together — and `fit-content` clamps the card to the tab. The stat value sits in a fixed slot so a total growing a digit shifts nothing.
 - Each portrait block is the portrait and, under it, the overview card's power/special/form toggle row — same shared state, so a toggle made here shows everywhere. Flight is not shown.
 - The pair total is the dialog's pair-total computation: per stat, both heroes' effective stats summed, with a slot-filling power re-derived for a two-hero call (feature 012's `min(slots, 2)` rule). Each hero's effective stat is clamped at `MAX_STAT_VALUE` before summing; the sum may exceed 10 and is shown as-is in the list.
 - The radar plots the five pair totals as a single series on the shared `StatRadar`, `max` 10 — a total past 10 saturates at the rim while the list beside it shows the true number.
@@ -74,6 +74,7 @@ Not role-specific.
 | toggle Sonar's form on the overview                    | the Malevola–Sonar card shows the swapped stats                            | form state lifted to shared       |
 | click a portrait on a card                             | that hero's detail dialog opens; synergy tab still active on close         |                                   |
 | tab wrapper below 58rem                                | small portraits side by side with the stats; the radar centered, own row   | stacked below 31rem, 320px floor  |
+| tab wrapper below 58rem, after the overview loaded     | portraits show at once from the overview's 108 variant, no new request     | feature 028                       |
 
 ## Business Rules
 
@@ -112,6 +113,7 @@ Not role-specific.
 - Feature 012 (special powers): effective-stat math, the pair's `min(slots, 2)` rule, Sonar's shared form.
 - Feature 011 (hero detail dialog): the selection flow the portrait click enters; its pair-total block uses the shared computation.
 - Feature 002 (hero data): `STAT_NAMES`, `MAX_STAT_VALUE`, pair definitions.
+- Feature 028 (portrait loading): the portrait width per threshold, the background download, the fade-in.
 
 ## Open Questions
 

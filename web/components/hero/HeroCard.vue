@@ -75,7 +75,7 @@
           :hero-id="heroId"
           usage="card"
           :alt="hero.name"
-          class="aspect-square w-full border-2 border-accented bg-accented object-cover select-none"
+          class="aspect-square w-full border-2 border-accented bg-accented select-none"
         />
 
         <button
@@ -89,7 +89,7 @@
             :hero-id="heroId"
             usage="card"
             :alt="hero.name"
-            class="aspect-square w-full border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+            class="aspect-square w-full border-2 border-accented bg-accented transition-shadow select-none hover:ring-2 hover:ring-warning"
           />
         </button>
 
