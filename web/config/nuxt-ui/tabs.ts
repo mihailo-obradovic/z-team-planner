@@ -1,11 +1,15 @@
 import type { TabsConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
+// * Changes: focus stays on the @nuxt/ui 4.4.0 treatment. 4.9 replaced every focus ring with a 3px outline at 25% of the component colour, which the annex's focus rule (2px, contrast-driven, never amber) rules out. Lines marked "4.4 focus (header)" keep the 4.4.0 classes, out-ranking what 4.11.3 adds; their Default is the 4.11.3 string.
+// TODO the held 4.4.0 rings are still the component colour (amber on primary), not the annex's ink and cream — a separate fix.
 export default {
   slots: {
-    // * Changes: `u-tabs` renders once, as the planner page's column — the list keeps its height and the panel is the scrolling region. `gap-0` out-ranks upstream's gap rather than omitting it. Default root: 'flex items-center gap-2'; list: 'relative flex p-1 group'; content: 'focus:outline-none w-full'
+    // * Changes: `u-tabs` renders once, as the planner page's column — the list keeps its height and the panel is the scrolling region. `gap-0` out-ranks upstream's gap rather than omitting it. Default root: 'flex items-center gap-2'; list: 'relative flex p-1 group'; content: 'w-full rounded-md focus-visible:outline-3'
     root: 'flex items-center gap-0',
     list: 'relative flex shrink-0 p-1 group',
-    indicator: 'absolute transition-[translate,width] duration-200',
+    indicator:
+      'absolute transition-[translate,width] duration-200 ease-out motion-reduce:transition-none',
     trigger: [
       'group relative inline-flex items-center min-w-0 data-[state=inactive]:text-muted hover:data-[state=inactive]:not-disabled:text-default font-medium rounded-md disabled:cursor-not-allowed disabled:opacity-75',
       'transition-colors',
@@ -18,31 +22,53 @@ export default {
     label: 'truncate',
     trailingBadge: 'shrink-0',
     trailingBadgeSize: 'sm',
+    // * Changes: 4.4 focus (header) — the panel takes no focus outline.
     content: 'focus:outline-none w-full min-h-0 flex-1 overflow-y-auto'
   },
   variants: {
     color: {
-      primary: '',
-      secondary: '',
-      success: '',
-      info: '',
-      warning: '',
-      error: '',
-      neutral: ''
+      primary: {
+        content: 'outline-primary/25'
+      },
+      secondary: {
+        content: 'outline-secondary/25'
+      },
+      success: {
+        content: 'outline-success/25'
+      },
+      info: {
+        content: 'outline-info/25'
+      },
+      warning: {
+        content: 'outline-warning/25'
+      },
+      error: {
+        content: 'outline-error/25'
+      },
+      neutral: {
+        content: 'outline-inverted/25'
+      }
     },
     variant: {
       pill: {
         list: 'bg-elevated rounded-lg',
-        trigger: 'grow',
+        trigger: [
+          'grow',
+          "in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:content-[''] in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:absolute in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:inset-0 in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:rounded-md in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:shadow-xs in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:-z-10 in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:isolate"
+        ],
         indicator: 'rounded-md shadow-xs'
       },
       // * Changes: the design's tabs are free-standing bordered buttons on the dark ground, not an underlined rail — so the sliding indicator is hidden here and the rail's bottom rule is dropped in the compound variant below, which is the level that re-adds it. Colours too.
       // * Below sm the three tabs are equal thirds of the width — a 3-track grid, each trigger `w-full` — because at phone widths a content-width row left three short labels huddled against one edge, and at 320 it overflowed (353 into 320) and had to scroll. Equal thirds removes the overflow rather than scrolling it. From sm the row goes back to content width, `shrink-0` so it cannot compress, and keeps `overflow-x-auto` as the safety net. Inline padding follows the page container (p-4, then 6 from md) rather than sitting at 6 everywhere (annex §3, §13).
-      // * Default: { list: 'border-default', indicator: 'rounded-full', trigger: 'focus:outline-none' }
+      // * Default: { list: 'border-default', indicator: 'rounded-full', trigger: "in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:content-[''] in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:absolute in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:rounded-full" }
       link: {
         list: 'border-default grid grid-cols-3 gap-2 px-4 py-2.5 sm:flex sm:overflow-x-auto md:px-6',
         indicator: 'rounded-full hidden',
-        trigger: 'w-full focus:outline-none sm:w-auto sm:shrink-0'
+        // * Changes: `after:content-none` out-ranks upstream's server-render stand-in for the indicator. The stand-in draws an underline under the active tab while the list has no indicator element, which is the case before hydration; this design hides the indicator, so the stand-in would flash an underline the client never shows.
+        trigger: [
+          'w-full focus:outline-none sm:w-auto sm:shrink-0',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:content-none'
+        ]
       }
     },
     orientation: {
@@ -100,7 +126,9 @@ export default {
       variant: 'link',
       class: {
         list: 'border-b -mb-px',
-        indicator: '-bottom-px h-px'
+        indicator: '-bottom-px h-px',
+        trigger:
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:inset-x-0 in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:-bottom-[calc(var(--spacing)+1px)] in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:h-px'
       }
     },
     {
@@ -108,7 +136,8 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'inset-x-1',
-        list: 'items-center'
+        list: 'items-center',
+        trigger: 'w-full justify-center'
       }
     },
     {
@@ -116,7 +145,9 @@ export default {
       variant: 'link',
       class: {
         list: 'border-s -ms-px',
-        indicator: '-start-px w-px'
+        indicator: '-start-px w-px',
+        trigger:
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:inset-y-0 in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:-start-[calc(var(--spacing)+1px)] in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:w-px'
       }
     },
     {
@@ -124,8 +155,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-primary',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-primary/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-primary'
+        ]
       }
     },
     {
@@ -133,8 +168,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-secondary',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-secondary/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-secondary'
+        ]
       }
     },
     {
@@ -142,8 +181,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-success',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-success/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-success'
+        ]
       }
     },
     {
@@ -151,8 +194,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-info',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-info/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-info'
+        ]
       }
     },
     {
@@ -160,8 +207,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-warning',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-warning/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-warning'
+        ]
       }
     },
     {
@@ -169,8 +220,12 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-error',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-error/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-error'
+        ]
       }
     },
     {
@@ -178,11 +233,15 @@ export default {
       variant: 'pill',
       class: {
         indicator: 'bg-inverted',
-        trigger:
-          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-inverted'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-inverted outline-inverted/25 focus-visible:outline-3'
+          'data-[state=active]:text-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-inverted',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:before:bg-inverted'
+        ]
       }
     },
-    // * Changes: an inactive tab is a teal chrome button with cream label; the active one flips to paper with ink text, an inset amber underline and a gold ring. Every rule here out-ranks an upstream one it cannot remove: font-bold beats font-medium, and the state colours beat text-muted and data-[state=active]:text-primary. Focus is cream, since amber fails 3:1 against paper (annex §5). Default trigger: 'data-[state=active]:text-primary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
+    // * Changes: an inactive tab is a teal chrome button with cream label; the active one flips to paper with ink text, an inset amber underline and a gold ring. Every rule here out-ranks an upstream one it cannot remove: font-bold beats font-medium, and the state colours beat text-muted and data-[state=active]:text-primary. Focus is cream, since amber fails 3:1 against paper (annex §5). Default trigger: ['data-[state=active]:text-primary outline-primary/25 focus-visible:outline-3', 'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-primary']
     {
       color: 'primary',
       variant: 'link',
@@ -206,8 +265,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-secondary',
-        trigger:
-          'data-[state=active]:text-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-secondary outline-secondary/25 focus-visible:outline-3'
+          'data-[state=active]:text-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-secondary'
+        ]
       }
     },
     {
@@ -215,8 +278,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-success',
-        trigger:
-          'data-[state=active]:text-success focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-success outline-success/25 focus-visible:outline-3'
+          'data-[state=active]:text-success focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-success'
+        ]
       }
     },
     {
@@ -224,8 +291,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-info',
-        trigger:
-          'data-[state=active]:text-info focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-info'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-info outline-info/25 focus-visible:outline-3'
+          'data-[state=active]:text-info focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-info',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-info'
+        ]
       }
     },
     {
@@ -233,8 +304,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-warning',
-        trigger:
-          'data-[state=active]:text-warning focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warning'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-warning outline-warning/25 focus-visible:outline-3'
+          'data-[state=active]:text-warning focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warning',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-warning'
+        ]
       }
     },
     {
@@ -242,8 +317,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-error',
-        trigger:
-          'data-[state=active]:text-error focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-error'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-error outline-error/25 focus-visible:outline-3'
+          'data-[state=active]:text-error focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-error',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-error'
+        ]
       }
     },
     {
@@ -251,8 +330,12 @@ export default {
       variant: 'link',
       class: {
         indicator: 'bg-inverted',
-        trigger:
-          'data-[state=active]:text-highlighted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-inverted'
+        trigger: [
+          // * Changes: 4.4 focus (header).
+          // * Default: 'data-[state=active]:text-highlighted outline-inverted/25 focus-visible:outline-3'
+          'data-[state=active]:text-highlighted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-inverted',
+          'in-[[data-slot=list]:not(:has([data-slot=indicator]))]:data-[state=active]:after:bg-inverted'
+        ]
       }
     }
   ],

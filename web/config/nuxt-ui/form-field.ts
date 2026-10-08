@@ -1,5 +1,6 @@
 import type { FormFieldConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
 export default {
   slots: {
     root: '',
@@ -47,7 +48,6 @@ export default {
     }
   },
   defaultVariants: {
-    size: 'md',
-    orientation: 'vertical'
+    size: 'md'
   }
 } satisfies FormFieldConfig;

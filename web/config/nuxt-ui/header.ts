@@ -1,9 +1,10 @@
 import type { HeaderConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
 export default {
   slots: {
     // * Changes: the header is teal chrome, not translucent paper — a solid secondary-600 band with a 2px ink-dark rule and cream text. z comes from the §8 scale instead of a raw 50.
-    // * Default: 'bg-default/75 backdrop-blur border-b border-default h-(--ui-header-height) sticky top-0 z-50'
+    // * Default: 'bg-default/75 backdrop-blur-sm border-b border-default h-(--ui-header-height) sticky top-0 z-50'
     root: 'bg-secondary-600 backdrop-blur-none border-b-2 border-secondary-700 text-neutral-100 h-(--ui-header-height) sticky top-0 z-(--z-sticky)',
     // * Changes: the header is full-bleed with the annex §13 inline padding (px-4 / sm:px-6). Upstream wraps the content in UContainer, whose max-w-(--ui-container) capped it at 1280px — so on a 1600px viewport the header sat inset 300px on each side while the tabs and the roster grid, which are page-width, ran to the edge. lg:px-8 goes with it: the annex names two padding steps here, not three.
     // * Default: 'w-full max-w-(--ui-container) mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 h-full'

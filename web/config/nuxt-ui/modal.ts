@@ -1,5 +1,6 @@
 import type { ModalConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
 export default {
   slots: {
     overlay: 'fixed inset-0',
@@ -7,8 +8,8 @@ export default {
     // * Default: 'bg-default divide-y divide-default flex flex-col focus:outline-none'
     content:
       'panel bg-default divide-y divide-default flex flex-col focus:outline-none',
-    // * Changes: the dialog's header is the titled plate band from the mockups. min-h-16 has to be out-ranked with min-h-10, because a min-height beats the plate utility's own height — and py-0 lets the band be exactly 40px rather than 40px plus the upstream padding.
-    // * Default: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-16'
+    // * Changes: the dialog's header is the titled plate band from the mockups. Upstream's min-height has to be out-ranked with min-h-10, because a min-height beats the plate utility's own height — and py-0 lets the band be exactly 40px rather than 40px plus the upstream padding.
+    // * Default: 'flex items-center gap-1.5 p-4 sm:px-6 min-h-(--ui-header-height)'
     header: 'plate flex items-center gap-1.5 px-4 sm:px-6 py-0 min-h-10',
     wrapper: '',
     body: 'flex-1 p-4 sm:p-6',
@@ -28,9 +29,9 @@ export default {
     transition: {
       true: {
         overlay:
-          'data-[state=open]:animate-[fade-in_200ms_ease-out] data-[state=closed]:animate-[fade-out_200ms_ease-in]',
+          'data-[state=open]:animate-[fade-in_200ms_var(--ease-out)] data-[state=closed]:animate-[fade-out_200ms_var(--ease-out)]',
         content:
-          'data-[state=open]:animate-[scale-in_200ms_ease-out] data-[state=closed]:animate-[scale-out_200ms_ease-in]'
+          'data-[state=open]:animate-[scale-in_200ms_var(--ease-out)] data-[state=closed]:animate-[scale-out_200ms_var(--ease-out)]'
       }
     },
     fullscreen: {

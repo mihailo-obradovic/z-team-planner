@@ -1,10 +1,15 @@
 import type { InputConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
+// * Changes: focus stays on the @nuxt/ui 4.4.0 treatment. 4.9 replaced every focus ring with a 3px outline at 25% of the component colour, which the annex's focus rule (2px, contrast-driven, never amber) rules out. Lines marked "4.4 focus (header)" keep the 4.4.0 classes, out-ranking what 4.11.3 adds; their Default is the 4.11.3 string.
+// TODO the held 4.4.0 rings are still the component colour (amber on primary), not the annex's ink and cream — a separate fix.
 export default {
   slots: {
     root: 'relative inline-flex items-center',
     base: [
-      'w-full rounded-md border-0 appearance-none placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:opacity-75',
+      // * Changes: 4.4 focus (header).
+      // * Default: 'w-full rounded-md border-0 appearance-none placeholder:text-dimmed disabled:cursor-not-allowed disabled:opacity-75'
+      'w-full rounded-md border-0 appearance-none placeholder:text-dimmed disabled:cursor-not-allowed disabled:opacity-75 focus:outline-none',
       'transition-colors'
     ],
     leading: 'absolute inset-y-0 start-0 flex items-center',
@@ -27,7 +32,7 @@ export default {
     },
     size: {
       xs: {
-        base: 'px-2 py-1 text-xs gap-1',
+        base: 'px-2 py-1 text-sm/4 gap-1',
         leading: 'ps-2',
         trailing: 'pe-2',
         leadingIcon: 'size-4',
@@ -35,7 +40,7 @@ export default {
         trailingIcon: 'size-4'
       },
       sm: {
-        base: 'px-2.5 py-1.5 text-xs gap-1.5',
+        base: 'px-2.5 py-1.5 text-sm/4 gap-1.5',
         leading: 'ps-2.5',
         trailing: 'pe-2.5',
         leadingIcon: 'size-4',
@@ -44,7 +49,9 @@ export default {
       },
       // * Changes: the control's height comes from the §4 scale rather than padding, so a select lines up with the buttons beside it. py-0 stops the upstream padding adding to the token height.
       md: {
-        base: 'h-(--control-h-default) py-0 px-2.5 py-1.5 text-sm gap-1.5',
+        // * Changes: text-base/5 is upstream's iOS no-zoom size, kept; md:text-sm comes back through upstream's `fixed` compound variant.
+        // * Default: 'px-2.5 py-1.5 text-base/5 gap-1.5'
+        base: 'h-(--control-h-default) py-0 px-2.5 py-1.5 text-base/5 gap-1.5',
         leading: 'ps-2.5',
         trailing: 'pe-2.5',
         leadingIcon: 'size-5',
@@ -52,7 +59,7 @@ export default {
         trailingIcon: 'size-5'
       },
       lg: {
-        base: 'px-3 py-2 text-sm gap-2',
+        base: 'px-3 py-2 text-base/5 gap-2',
         leading: 'ps-3',
         trailing: 'pe-3',
         leadingIcon: 'size-5',
@@ -78,6 +85,8 @@ export default {
       subtle: 'text-highlighted bg-elevated ring-2 ring-inset ring-accented',
       ghost:
         'text-highlighted bg-transparent hover:bg-elevated focus:bg-elevated disabled:bg-transparent dark:disabled:bg-transparent',
+      // * Changes: 4.4 focus (header).
+      // * Default: 'text-highlighted bg-transparent focus:outline-none'
       none: 'text-highlighted bg-transparent'
     },
     color: {
@@ -101,6 +110,9 @@ export default {
     highlight: {
       true: ''
     },
+    fixed: {
+      false: ''
+    },
     type: {
       file: 'file:me-1.5 file:font-medium file:text-muted file:outline-none'
     }
@@ -109,38 +121,80 @@ export default {
     {
       color: 'primary',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-primary/25 focus-visible:outline-3 focus-visible:ring-primary'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary'
     },
     {
       color: 'secondary',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-secondary/25 focus-visible:outline-3 focus-visible:ring-secondary'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary'
     },
     {
       color: 'success',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-success/25 focus-visible:outline-3 focus-visible:ring-success'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success'
     },
     {
       color: 'info',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-info/25 focus-visible:outline-3 focus-visible:ring-info'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-info'
     },
     {
       color: 'warning',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-warning/25 focus-visible:outline-3 focus-visible:ring-warning'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-warning'
     },
     {
       color: 'error',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-error/25 focus-visible:outline-3 focus-visible:ring-error'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-error'
+    },
+    {
+      color: 'primary',
+      variant: ['soft', 'ghost'],
+      class: 'outline-primary/25 focus-visible:outline-3'
+    },
+    {
+      color: 'secondary',
+      variant: ['soft', 'ghost'],
+      class: 'outline-secondary/25 focus-visible:outline-3'
+    },
+    {
+      color: 'success',
+      variant: ['soft', 'ghost'],
+      class: 'outline-success/25 focus-visible:outline-3'
+    },
+    {
+      color: 'info',
+      variant: ['soft', 'ghost'],
+      class: 'outline-info/25 focus-visible:outline-3'
+    },
+    {
+      color: 'warning',
+      variant: ['soft', 'ghost'],
+      class: 'outline-warning/25 focus-visible:outline-3'
+    },
+    {
+      color: 'error',
+      variant: ['soft', 'ghost'],
+      class: 'outline-error/25 focus-visible:outline-3'
     },
     {
       color: 'primary',
@@ -175,8 +229,15 @@ export default {
     {
       color: 'neutral',
       variant: ['outline', 'subtle'],
+      // * Changes: 4.4 focus (header).
+      // * Default: 'outline-inverted/25 focus-visible:outline-3 focus-visible:ring-inverted'
       class:
         'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-inverted'
+    },
+    {
+      color: 'neutral',
+      variant: ['soft', 'ghost'],
+      class: 'outline-inverted/25 focus-visible:outline-3'
     },
     {
       color: 'neutral',
@@ -247,6 +308,26 @@ export default {
       class: {
         trailingIcon: 'animate-spin'
       }
+    },
+    {
+      fixed: false,
+      size: 'xs',
+      class: 'md:text-xs'
+    },
+    {
+      fixed: false,
+      size: 'sm',
+      class: 'md:text-xs'
+    },
+    {
+      fixed: false,
+      size: 'md',
+      class: 'md:text-sm'
+    },
+    {
+      fixed: false,
+      size: 'lg',
+      class: 'md:text-sm'
     }
   ],
   defaultVariants: {
