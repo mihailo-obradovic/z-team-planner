@@ -11,7 +11,7 @@
         :hero-id="heroId"
         usage="synergy"
         :alt="hero.name"
-        class="aspect-square w-full border-2 border-accented bg-accented object-cover transition-shadow select-none hover:ring-2 hover:ring-warning"
+        class="aspect-square w-full border-2 border-accented bg-accented transition-shadow select-none hover:ring-2 hover:ring-warning"
       />
     </button>
 

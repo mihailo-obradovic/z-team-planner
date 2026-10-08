@@ -155,6 +155,23 @@
     }
 }
 
+/* * Annex §11 portrait fade-in (feature 028). Only a `from` frame, so the image ends at its own opacity; a dimmed box (an illusion slot's 40%) dims it from outside. */
+.portrait-fade-in {
+    animation: portrait-fade-in var(--duration-slow) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .portrait-fade-in {
+        animation: none;
+    }
+}
+
+@keyframes portrait-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
 /* * Annex §11 ring (feature 023); its size, stroke and colours are classes on the element. */
 @utility loading-ring {
     animation: loading-ring 1.4s linear infinite;

@@ -42,7 +42,7 @@
               :hero-id="hero.id"
               usage="tile"
               :alt="hero.name"
-              class="aspect-square w-full border-2 border-accented bg-accented object-cover"
+              class="aspect-square w-full border-2 border-accented bg-accented"
             />
 
             <span class="font-heading text-label uppercase">
