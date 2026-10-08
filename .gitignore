@@ -31,10 +31,8 @@ coverage/
 .ruff_cache
 .pytest_cache
 
-# catalyst:begin
 __pycache__/
 .claude/settings.local.json
-# catalyst:end
 .vercel
 # Neon CLI context (`neon set-context`): per-machine, nothing reads it.
 .neon
