@@ -164,6 +164,7 @@ Not role-specific. Signed-in and signed-out visitors differ only in where a new 
 
 - `test/nuxt/open-build.test.ts`: one open build across kinds; Save after switching from cloud to local writes locally (regression, watched failing first); restore from cache, replacement when untouched, foreign uid and `404` fallbacks; chosen vs unchosen sign-out.
 - `test/unit/buildName.test.ts`: suffix from 2, smallest free `n`, trim, case-sensitivity, rename to own name.
+- `test/nuxt/local-build-names.test.ts`: create, save with nothing open, and rename keep local names unique and report the final name.
 - `test/nuxt/build-manager.test.ts`: menu groups without empties, one Rename/Delete per open build, Save visibility, destination tooltip, disabled while auth is `unknown`, discard confirmation.
 - Live browser walk of the Examples against the real API, the Neon dev branch and the Auth emulator, at desktop and phone widths.
 

@@ -4,7 +4,7 @@
     v-model:name="accountSaveName"
     title="Save to your account"
     confirm-label="Save"
-    placeholder="My build"
+    :placeholder="DEFAULT_BUILD_NAME"
     :error="nameError"
     :disabled="nameForm.$invalid"
     :loading="isCreating"
@@ -87,7 +87,10 @@ const { updateSavedSnapshot } = useUnsavedChanges();
 
 const externalErrors = useExternalErrors(useValidationErrors(createError));
 
-const { r$: nameForm } = useBuildNameForm(accountSaveName, { externalErrors });
+const { r$: nameForm } = useBuildNameForm(accountSaveName, {
+  externalErrors,
+  requireName: false
+});
 
 const nameError = computed(() => nameForm.$errors.name?.[0]);
 
@@ -110,7 +113,7 @@ async function handleSave() {
   }
 
   createBuild({
-    name: accountSaveName.value.trim(),
+    name: accountSaveName.value.trim() || DEFAULT_BUILD_NAME,
     data: serializeBuild(plannerState)
   });
 }

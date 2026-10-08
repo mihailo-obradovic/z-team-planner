@@ -12,8 +12,15 @@ export function useLocalBuilds() {
   const localBuilds = useLocalStorageRef<LocalBuild[]>(STORAGE_KEY_BUILDS, []);
 
   const activeBuildName = computed(
-    () => findLocalBuild(openLocalId.value)?.name ?? 'Untitled'
+    () => findLocalBuild(openLocalId.value)?.name ?? DEFAULT_BUILD_NAME
   );
+
+  // * The names a build may not take; `exceptId` leaves a renamed build's own name free.
+  function takenNames(exceptId?: string) {
+    return localBuilds.value
+      .filter((localBuild) => localBuild.id !== exceptId)
+      .map((localBuild) => localBuild.name);
+  }
 
   function settleOnOwnBuild() {
     leaveSharedMode();
@@ -33,28 +40,25 @@ export function useLocalBuilds() {
     return findLocalBuild(openLocalId.value);
   }
 
-  function saveLocalBuild(name?: string) {
+  // * Returns the name the build ended up with.
+  function saveLocalBuild(): string {
     const existing = getActiveBuild();
 
     if (!existing) {
-      saveAsNewLocalBuild(name ?? `Build ${localBuilds.value.length + 1}`);
-
-      return;
+      return saveAsNewLocalBuild(DEFAULT_BUILD_NAME);
     }
 
     existing.data = serializeBuild(state);
-
-    if (name !== undefined) {
-      existing.name = name;
-    }
-
     settleOnOwnBuild();
+
+    return existing.name;
   }
 
-  function saveAsNewLocalBuild(name: string) {
+  // * Returns the final name, suffix included, for the confirmation to report.
+  function saveAsNewLocalBuild(name: string): string {
     const localBuild: LocalBuild = {
       id: crypto.randomUUID(),
-      name,
+      name: freeBuildName(takenNames(), name),
       data: serializeBuild(state)
     };
 
@@ -62,6 +66,8 @@ export function useLocalBuilds() {
     openLocal(localBuild.id);
 
     settleOnOwnBuild();
+
+    return localBuild.name;
   }
 
   async function loadLocalBuild(id: string) {
@@ -109,12 +115,17 @@ export function useLocalBuilds() {
     }
   }
 
-  function renameLocalBuild(id: string, name: string) {
+  // * Returns the final name, or undefined when there is no such build.
+  function renameLocalBuild(id: string, name: string): string | undefined {
     const localBuild = findLocalBuild(id);
 
-    if (localBuild) {
-      localBuild.name = name;
+    if (!localBuild) {
+      return undefined;
     }
+
+    localBuild.name = freeBuildName(takenNames(id), name);
+
+    return localBuild.name;
   }
 
   return {

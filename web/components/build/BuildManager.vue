@@ -136,7 +136,7 @@ function handleSave() {
   }
 
   if (localBuilds.value.length === 0) {
-    openNewBuild('Build 1');
+    openNewBuild(DEFAULT_BUILD_NAME);
 
     return;
   }

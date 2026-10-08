@@ -4,7 +4,7 @@
     v-model:name="newBuildName"
     title="Save as my build"
     confirm-label="Save"
-    placeholder="My build"
+    :placeholder="DEFAULT_BUILD_NAME"
     :error="nameError"
     :disabled="isNameInvalid"
     @confirm="confirmSaveShared"
@@ -15,7 +15,7 @@
     v-model:name="newBuildName"
     title="New build"
     confirm-label="Create"
-    placeholder="My build"
+    :placeholder="DEFAULT_BUILD_NAME"
     :error="nameError"
     :disabled="isNameInvalid"
     @confirm="confirmNewBuild"
@@ -89,9 +89,8 @@ function confirmSaveShared() {
     return;
   }
 
-  const name = newBuildName.value.trim() || 'Imported build';
+  const name = saveAsNewLocalBuild(newBuildName.value);
 
-  saveAsNewLocalBuild(name);
   saveSharedOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Saved as "${name}"`, color: 'success' });
@@ -102,9 +101,8 @@ function confirmNewBuild() {
     return;
   }
 
-  const name = newBuildName.value.trim() || 'New build';
+  const name = saveAsNewLocalBuild(newBuildName.value);
 
-  saveAsNewLocalBuild(name);
   newBuildOpen.value = false;
   newBuildName.value = '';
   toast.add({ title: `Created "${name}"`, color: 'success' });
@@ -136,13 +134,11 @@ function confirmRename() {
     return;
   }
 
-  const name = renameBuildName.value.trim();
-
-  if (!name) {
+  if (!renameBuildName.value.trim()) {
     return;
   }
 
-  renameLocalBuild(activeBuildId.value, name);
+  renameLocalBuild(activeBuildId.value, renameBuildName.value);
   renameOpen.value = false;
   renameBuildName.value = '';
 }
