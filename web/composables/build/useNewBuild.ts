@@ -6,7 +6,7 @@ const BLANK_BUILD: SerializedBuild = { v: 1 };
 
 // * New build: a blank planner under the default name, created at once where new builds go — the account when signed in, this browser otherwise (feature 029).
 export function useNewBuild() {
-  const toast = useToast();
+  const { reportBuild } = useBuildToast();
   const state = usePlannerState();
   const { isSignedIn } = storeToRefs(useAuthStore());
   const { openCloud } = useOpenBuild();
@@ -20,7 +20,7 @@ export function useNewBuild() {
       openCloud(created.id);
       await loadAccountBuild(BLANK_BUILD);
       updateSavedSnapshot(BLANK_BUILD);
-      toast.add({ title: `Created "${created.name}"`, color: 'success' });
+      reportBuild('created', created.name, 'cloud');
     }
   });
 
@@ -35,7 +35,7 @@ export function useNewBuild() {
 
     const name = saveAsNewLocalBuild(DEFAULT_BUILD_NAME);
 
-    toast.add({ title: `Created "${name}"`, color: 'success' });
+    reportBuild('created', name, 'local');
   }
 
   return { startNewBuild, isCreating };

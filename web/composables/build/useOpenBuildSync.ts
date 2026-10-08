@@ -43,9 +43,10 @@ export function useOpenBuildSync() {
     () => isViewingSharedBuild.value || isSetAside.value
   );
 
-  // * Every load and save of the open cloud build moves the saved baseline, so the cache follows it.
-  watch(savedSnapshot, (snapshot) => {
-    if (openCloudId.value && snapshot && !isSetAside.value) {
+  // * Every load and save of the open cloud build moves the saved baseline, so the cache follows it. A newly opened build counts too: a create can leave the baseline's text unchanged.
+  // ! Not while a build picked from the menu is still loading: the baseline then is the previous build's.
+  watch([savedSnapshot, openCloudId], ([snapshot, id]) => {
+    if (id && snapshot && !isSetAside.value && requestedCloudId.value !== id) {
       cacheCloudDocument(JSON.parse(snapshot) as SerializedBuild);
     }
   });

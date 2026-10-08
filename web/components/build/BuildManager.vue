@@ -63,6 +63,7 @@ const props = withDefaults(
 );
 
 const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const { openBuild, openLocalId, openCloudId, draftName } = useOpenBuild();
 const { isSignedIn, isDestinationKnown, status } = storeToRefs(useAuthStore());
@@ -71,7 +72,7 @@ const { signIn } = useAuth();
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
     updateSavedSnapshot(payload.data);
-    toast.add({ title: `Saved "${updated.name}"`, color: 'success' });
+    reportBuild('saved', updated.name, 'cloud');
   }
 });
 
@@ -151,8 +152,7 @@ function handleSave() {
     return;
   }
 
-  saveLocalBuild();
-  toast.add({ title: 'Build saved', color: 'success' });
+  reportBuild('saved', saveLocalBuild(), 'local');
 }
 
 // * An account build with unsaved changes is saved first, so the link never points at a stale version.

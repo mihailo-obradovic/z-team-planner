@@ -126,4 +126,4 @@ Not role-specific.
 
 ## Verification
 
-The Examples table walked live in Chrome: shared-mode open restored flight and episode cut with localStorage untouched; "Save as mine" persisted byte-identical data, stripped the URL param and exited shared mode; reload restored the active build; a stat edit raised the unsaved-changes badge and the beforeunload prompt; garbage and `v:2` params were rejected without error. Format omission, shaping, round trip and the URL codec are pinned by test. oxlint, vue-tsc and vitest pass.
+The Examples table walked live in Chrome: shared-mode open with localStorage untouched; reload restoring the open build; an edit raising the unsaved badge and the beforeunload prompt, in shared-build mode too; **Save a copy** in one tap at 390 px, the URL stripped; **Back to my build** reopening an account build; garbage and `v:2` params rejected. Format, round trip and URL codec are pinned by test, shared-build mode by `shared-mode.test.ts`.

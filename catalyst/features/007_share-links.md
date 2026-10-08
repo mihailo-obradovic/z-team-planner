@@ -148,4 +148,4 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Verification
 
-By test against real PostgreSQL: no owner in the public shape, the three `404`s, the limiter under an injected clock, the skeleton and the failed read's four outcomes. `/b/[id]` is browser-verified (a Pinia Colada query in a page SFC does not activate under `mountSuspended`): live against the dev API and Auth emulator, the read-only page, the 404 after deletion, **Share** patching before copying, and a rendered build kept on refocus. Remaining risk: the limiter is per process and inert in production.
+By test against real PostgreSQL: no owner in the public shape, the three `404`s, the limiter under an injected clock. By `shared-build` and `share-page` tests: the skeleton, the failed read's four outcomes, the header, the planner set aside and restored, **Save a copy**. Live against the dev API and Auth emulator: the 404 after deletion, **Share** patching before copying, **Save a copy** landing on `/` in both destinations. Remaining risk: the limiter is per process and inert in production.

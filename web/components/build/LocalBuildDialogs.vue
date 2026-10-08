@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import BuildNameDialog from '@/components/build/BuildNameDialog.vue';
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const { saveAsNewLocalBuild } = useLocalBuilds();
 
@@ -37,6 +37,6 @@ function confirmSaveAsNew() {
 
   saveAsNewOpen.value = false;
   saveAsNewName.value = '';
-  toast.add({ title: `Created "${name}"`, color: 'success' });
+  reportBuild('created', name, 'local');
 }
 </script>

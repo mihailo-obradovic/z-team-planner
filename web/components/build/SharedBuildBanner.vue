@@ -46,6 +46,8 @@ import {
   useFetchBuild
 } from '@/services/queries/useBuildQueries';
 
+import type { BuildLocation } from '@/composables/build/useBuildToast';
+
 // * Shared-build mode's controls (feature 001): a `?build=` snapshot is on screen and nothing is open, though the build open before is remembered for Back to my build.
 
 const props = defineProps<{
@@ -57,7 +59,7 @@ const props = defineProps<{
 // * Icons only in the mobile bottom bar, as Save is there: the "Shared build" label and Share leave no room for two labelled buttons.
 const showLabels = computed(() => props.labelled && !props.block);
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 const plannerState = usePlannerState();
 
 const { isSignedIn, isDestinationKnown } = storeToRefs(useAuthStore());
@@ -89,7 +91,7 @@ const { mutate: createCloudBuild, isLoading: isCreating } = useCreateBuild({
     openCloud(created.id);
     settleOnCopy();
     updateSavedSnapshot(data);
-    reportCopy(created.name);
+    reportCopy(created.name, 'cloud');
   }
 });
 
@@ -108,7 +110,7 @@ function saveCopy() {
     return;
   }
 
-  reportCopy(saveAsNewLocalBuild(DEFAULT_BUILD_NAME));
+  reportCopy(saveAsNewLocalBuild(DEFAULT_BUILD_NAME), 'local');
 }
 
 function settleOnCopy() {
@@ -116,8 +118,8 @@ function settleOnCopy() {
   clearUrlParam();
 }
 
-function reportCopy(name: string) {
-  toast.add({ title: `Saved a copy as "${name}"`, color: 'success' });
+function reportCopy(name: string, location: BuildLocation) {
+  reportBuild('copied', name, location);
 }
 
 async function backToMyBuild() {

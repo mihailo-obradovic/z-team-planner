@@ -398,3 +398,31 @@ describe('the open build across a sign-out', () => {
     expect(localStorage.getItem('z-team-builds')).toBe(storedBuilds);
   });
 });
+
+describe('the open cloud build’s cache', () => {
+  beforeEach(() => {
+    fetchBuildsSpy.mockReset();
+    fetchBuildSpy.mockReset();
+    fetchBuildsSpy.mockResolvedValue(BUILD_LIST);
+  });
+
+  it('is written for a new build whose document matches the one before', async () => {
+    deferredFetch();
+    await mountRestored({ account: 'u1' });
+
+    const { openLocal, openCloud, openCloudEntry } = useOpenBuild();
+
+    openLocal(LOCAL_BUILD.id);
+    await nextTick();
+
+    // * What a create does: open the new build and baseline the planner on the document sent, here the same text as before.
+    const createdId = nextRestoredId();
+
+    openCloud(createdId);
+    useUnsavedChanges().updateSavedSnapshot();
+    await nextTick();
+
+    // ! The defect this pins: the cache followed only a change in the baseline's text, so this build reloaded with nothing to paint.
+    expect(openCloudEntry.value?.document).not.toBeNull();
+  });
+});

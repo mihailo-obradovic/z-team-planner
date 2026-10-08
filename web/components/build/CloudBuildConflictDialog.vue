@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const { openCloud } = useOpenBuild();
 
@@ -45,7 +45,7 @@ const { mutate: createBuild } = useCreateBuild({
   onSuccess: (created, { data }) => {
     openCloud(created.id);
     updateSavedSnapshot(data);
-    toast.add({ title: `Saved as "${created.name}"`, color: 'success' });
+    reportBuild('created', created.name, 'cloud');
   }
 });
 

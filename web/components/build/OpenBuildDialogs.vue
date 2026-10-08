@@ -49,9 +49,11 @@ import {
   useUpdateBuild
 } from '@/services/queries/useBuildQueries';
 
+import type { BuildLocation } from '@/composables/build/useBuildToast';
+
 // * Rename and Delete for the open build, whichever kind it is (feature 029): one of each, so the menu never offers a second pair for a build that is not open.
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const { openLocalId, openCloudId, closeDeletedBuild } = useOpenBuild();
 const openBuildName = useOpenBuildName();
@@ -74,7 +76,7 @@ const {
 } = useUpdateBuild({
   errorHandling: { suppressToasts: 'validation' },
   onSuccess: (updated) => {
-    finishRename(updated.name);
+    finishRename(updated.name, 'cloud');
   }
 });
 
@@ -91,7 +93,7 @@ const { mutate: deleteCloudBuild, isLoading: isDeleting } = useDeleteBuild({
     // * The local path does this inside `deleteLocalBuild`; a cloud build is only gone once the server says so.
     closeDeletedBuild(name);
     forgetSavedSnapshot();
-    finishDelete(name);
+    finishDelete(name, 'cloud');
   }
 });
 
@@ -113,15 +115,15 @@ function confirmRename() {
     const name = renameLocalBuild(openLocalId.value, renameBuildName.value);
 
     if (name) {
-      finishRename(name);
+      finishRename(name, 'local');
     }
   }
 }
 
-function finishRename(name: string) {
+function finishRename(name: string, location: BuildLocation) {
   renameOpen.value = false;
   renameBuildName.value = '';
-  toast.add({ title: `Renamed to "${name}"`, color: 'success' });
+  reportBuild('renamed', name, location);
 }
 
 function closeDelete() {
@@ -139,12 +141,12 @@ function confirmDelete() {
     const name = openBuildName.value;
 
     deleteLocalBuild(openLocalId.value);
-    finishDelete(name);
+    finishDelete(name, 'local');
   }
 }
 
-function finishDelete(name: string) {
+function finishDelete(name: string, location: BuildLocation) {
   deleteOpen.value = false;
-  toast.add({ title: `Deleted "${name}"`, color: 'neutral' });
+  reportBuild('deleted', name, location);
 }
 </script>

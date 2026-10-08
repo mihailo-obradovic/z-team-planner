@@ -17,7 +17,7 @@ import BuildNameDialog from '@/components/build/BuildNameDialog.vue';
 
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const { openCloud } = useOpenBuild();
 
@@ -32,7 +32,7 @@ const {
     updateSavedSnapshot(data);
     accountSaveOpen.value = false;
     accountSaveName.value = '';
-    toast.add({ title: `Created "${created.name}"`, color: 'success' });
+    reportBuild('created', created.name, 'cloud');
   }
 });
 

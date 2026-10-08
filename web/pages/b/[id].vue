@@ -77,8 +77,10 @@ import HeroCard from '@/components/hero/HeroCard.vue';
 
 import { useCreateBuild } from '@/services/queries/useBuildQueries';
 
+import type { BuildLocation } from '@/composables/build/useBuildToast';
+
 const route = useRoute();
-const toast = useToast();
+const { reportBuild } = useBuildToast();
 
 const id = computed(() => route.params.id as string);
 
@@ -105,7 +107,7 @@ const { mutate: createBuild, isLoading: isSaving } = useCreateBuild({
     // * A `?build=` snapshot the visitor had on `/` is replaced by the copy, not returned to.
     leaveSharedMode();
     updateSavedSnapshot(data);
-    await finishCopy(created.name);
+    await finishCopy(created.name, 'cloud');
   }
 });
 
@@ -153,14 +155,14 @@ function saveCopy() {
   }
 
   // * The planner already holds the shared build, so the local save writes exactly it.
-  void finishCopy(saveAsNewLocalBuild(build.name));
+  void finishCopy(saveAsNewLocalBuild(build.name), 'local');
 }
 
 // * The copy is open and the planner holds it: nothing is left to restore, and `/` shows it.
-async function finishCopy(name: string) {
+async function finishCopy(name: string, location: BuildLocation) {
   isCopied.value = true;
   dropSetAside();
-  toast.add({ title: `Saved a copy as "${name}"`, color: 'success' });
+  reportBuild('copied', name, location);
   await navigateTo('/');
 }
 
