@@ -97,15 +97,12 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     });
   }
 
-  const pairWasteStats = new Set<StatName>();
-
   for (const pairStat of ctx.pairStats) {
     const excess = pairStat.pairTotal - MAX_STAT_VALUE;
 
     if (excess > 0 && pairStat.allocatedInPair > 0) {
       const waste = Math.min(excess, pairStat.allocatedInPair);
 
-      pairWasteStats.add(pairStat.stat);
       lines.push({
         id: `pair-waste-${pairStat.stat}`,
         kind: 'warning',
@@ -114,13 +111,13 @@ export function evaluateAdvisories(ctx: HeroNoteContext): AdvisoryLine[] {
     }
   }
 
-  // * Defers to the pair warning wherever that already quantifies the same waste.
+  // * Shown beside the pair warning, not instead of it: that one counts the waste, this one says 10 is only worth the achievement.
   for (const stat of STAT_NAMES) {
-    if (ctx.rawStats[stat] >= MAX_STAT_VALUE && !pairWasteStats.has(stat)) {
+    if (ctx.rawStats[stat] >= MAX_STAT_VALUE) {
       lines.push({
         id: `stat-capped-${stat}`,
         kind: 'warning',
-        text: `${capitalize(stat)} at 10 only helps the Min Max achievement — wasted once paired.`
+        text: `${capitalize(stat)} at 10 only earns the Min Max achievement — in any call with another hero, at least one point is wasted.`
       });
     }
   }

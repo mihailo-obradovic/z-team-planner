@@ -87,7 +87,7 @@ Waterboy shows this note instead of the standard one when episode setup has him 
 | 1   | W   | Roster sum of allocated Combat (`heroLevelUps[*].combat`) > 4; shown per hero with ≥1 there           | Combat is the least required stat — late missions can fail if it's too high. |
 | 2   | W   | Supernova trained, any allocated `combat`/`mobility` on Flambae                                       | Supernova sets Combat/Mobility to 10 alone — those points are wasted.        |
 | 3   | W   | Per stat per pair: `pairTotal > 10` and `allocatedInPair > 0`; waste = `min(excess, allocatedInPair)` | This pair's {stat} exceeds what a call can use — {waste} points wasted.      |
-| 4   | W   | Raw stat (alloc-only, no power bonus) hits 10; suppressed if #3 fires on that stat                    | A stat at 10 only helps Min Max — wasted once paired.                        |
+| 4   | W   | Raw stat (alloc-only, no power bonus) hits 10; shown alongside #3 on that stat                        | A stat at 10 only earns Min Max — any multi-hero call wastes ≥1 point.       |
 | 5   | W   | Spread Thin trained, Golem's raw stat > 8                                                             | Past 8, Spread Thin alone reaches the cap — further points wasted.           |
 | 6   | W   | Wolf Pack selected                                                                                    | Wolf Pack rarely pays off — XP is usually maxed before it matters.           |
 | 7   | W   | Harder Head selected                                                                                  | Harder Head needs him hurt to pay off — Squeeze In is the stronger pick.     |
@@ -95,7 +95,7 @@ Waterboy shows this note instead of the standard one when episode setup has him 
 | 9   | S   | À la Seconde trained, Coupé/Punch Up pair not yet at four stats @10                                   | With À la Seconde trained, this pair can reach four stats at 10.             |
 | 10  | S   | Spread Thin trained                                                                                   | With Spread Thin trained, he can solo multi-slot calls effectively.          |
 
-Notes: #1 excludes the 4 dispatcher points (forced, not chosen). #3 is allocation-only — silent for Phenomaman+Malevola and monster-form Sonar. #4 defers to #3 on the same stat. #9 argues nothing; it does arithmetic once À la Seconde is already trained.
+Notes: #1 excludes the 4 dispatcher points (forced, not chosen). #3 is allocation-only — silent for Phenomaman+Malevola and monster-form Sonar. #4 never defers to #3: every partner starts at ≥1, so a paired hero at 10 always trips #3 as well. #9 argues nothing; it does arithmetic once À la Seconde is already trained.
 
 ## Examples
 
@@ -104,7 +104,7 @@ Notes: #1 excludes the 4 dispatcher points (forced, not chosen). #3 is allocatio
 | open a hero, nothing allocated             | hero note only                                      |
 | roster allocated Combat = 5                | advisory 1, every hero with ≥1 there                |
 | Golem, Spread Thin trained, raw stat 8 → 9 | no advisory 5 → advisory 5                          |
-| raw stat at 10, advisory 3 also true there | advisory 4 suppressed                               |
+| raw stat at 10, advisory 3 also true there | advisories 3 and 4 both render                      |
 | Waterboy hired ep4 vs. ep8                 | standard note, or ep8 note — never both             |
 | a hero with note + 4 true advisories       | all 5 render; panel height matches a hero with none |
 
@@ -148,7 +148,7 @@ No error states; a predicate that can never be satisfied under the current episo
 
 ## Tests
 
-- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary, #4's deferral to #3 included; Waterboy's two notes mutually exclusive; declaration order regardless of which subset is true.
+- `test/unit/hero-notes.test.ts`: every advisory predicate at its boundary, #4 firing alongside #3 included; Waterboy's two notes mutually exclusive; declaration order regardless of which subset is true.
 - `test/nuxt/hero-detail-dialog.test.ts` (extended): a fixture build renders the note + advisory set in order; panel height matches between zero and several advisories.
 
 ## Verification

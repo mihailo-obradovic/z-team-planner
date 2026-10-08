@@ -138,20 +138,17 @@ describe('advisories 3 and 4 — pair-total waste and the raw-10 cap', () => {
     expect(ten.some((l) => l.id === 'stat-capped-combat')).toBe(true);
   });
 
-  it('suppresses 4 exactly on the stat where 3 already fires, not on others', () => {
+  // * Every partner starts at ≥1 in every stat, so a paired hero at 10 always trips 3 too.
+  it('fires alongside 3 on the same stat rather than deferring to it', () => {
     const lines = evaluateAdvisories(
       context({
-        rawStats: { ...ZERO_STATS, combat: 10, mobility: 10 },
-        pairStats: [
-          { stat: 'combat', pairTotal: 12, allocatedInPair: 2 },
-          { stat: 'mobility', pairTotal: 8, allocatedInPair: 0 }
-        ]
+        rawStats: { ...ZERO_STATS, combat: 10 },
+        pairStats: [{ stat: 'combat', pairTotal: 11, allocatedInPair: 6 }]
       })
     );
 
-    expect(lines.some((l) => l.id === 'stat-capped-combat')).toBe(false);
     expect(lines.some((l) => l.id === 'pair-waste-combat')).toBe(true);
-    expect(lines.some((l) => l.id === 'stat-capped-mobility')).toBe(true);
+    expect(lines.some((l) => l.id === 'stat-capped-combat')).toBe(true);
   });
 });
 
