@@ -1,5 +1,6 @@
 import type { BadgeConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
 export default {
   slots: {
     // * Changes: badges are the annex's tag role — condensed, uppercase, heavily tracked. font-bold is explicit because a vendored config extends the upstream theme rather than replacing it — a deviation must out-rank the default, not omit it. Size stays upstream's.

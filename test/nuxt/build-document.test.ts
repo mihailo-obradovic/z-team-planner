@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime';
 import { defineComponent, h } from 'vue';
 
@@ -33,9 +33,12 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // * `getShareUrl` reads window.location, which happy-dom leaves as about:blank.
-Object.defineProperty(window, 'location', {
-  configurable: true,
-  value: new URL('https://planner.test/')
+// ! In beforeAll, not at module level: @nuxt/test-utils 4 starts Nuxt in its own beforeAll, and a bare URL in place of location before that leaves the router unable to push state.
+beforeAll(() => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: new URL('https://planner.test/')
+  });
 });
 
 // * The persistence concerns are separate composables, so the harness composes the surface these assertions were written against. The assertions themselves are untouched — that is the point of a characterisation test.

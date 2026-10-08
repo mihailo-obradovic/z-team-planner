@@ -9,8 +9,10 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 const ROOT = join(import.meta.dirname, '../..');
 
 type NuxtImageConfig = {
-  image: { screens: Record<string, number> };
-  nitro: { vercel: { config: { images: { minimumCacheTTL: number } } } };
+  image: {
+    screens: Record<string, number>;
+    vercel: { minimumCacheTTL: number };
+  };
 };
 
 type VercelImages = {
@@ -49,7 +51,7 @@ describe('vercel.json images', () => {
 
   it('keeps the edge cache nuxt.config.ts sets', () => {
     expect(vercelImages?.minimumCacheTTL).toBe(
-      nuxtConfig.nitro.vercel.config.images.minimumCacheTTL
+      nuxtConfig.image.vercel.minimumCacheTTL
     );
   });
 

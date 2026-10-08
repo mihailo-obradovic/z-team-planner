@@ -1,4 +1,5 @@
 import { injectHead } from '@unhead/vue';
+import { resolveTags } from '@unhead/vue/utils';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ErrorPageData } from '@/types/errorPage';
@@ -15,9 +16,7 @@ async function titleFor(input: {
   showError(createError(input));
   await nextTick();
 
-  const tags = await head.resolveTags();
-
-  return tags.find((tag) => tag.tag === 'title')?.textContent;
+  return resolveTags(head).find((tag) => tag.tag === 'title')?.textContent;
 }
 
 describe('the error tab title', () => {

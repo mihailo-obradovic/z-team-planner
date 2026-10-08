@@ -1,5 +1,6 @@
 import type { SeparatorConfig } from '../../types/nuxt-ui';
 
+// * Imported from @nuxt/ui 4.11.3.
 export default {
   slots: {
     root: 'flex items-center align-center text-center',
@@ -38,12 +39,12 @@ export default {
       horizontal: {
         root: 'w-full flex-row',
         border: 'w-full',
-        container: 'mx-3 whitespace-nowrap'
+        container: 'whitespace-nowrap'
       },
       vertical: {
         root: 'h-full flex-col',
         border: 'h-full',
-        container: 'my-2'
+        container: ''
       }
     },
     size: {
@@ -52,6 +53,11 @@ export default {
       md: '',
       lg: '',
       xl: ''
+    },
+    position: {
+      start: '',
+      center: '',
+      end: ''
     },
     type: {
       solid: {
@@ -66,6 +72,48 @@ export default {
     }
   },
   compoundVariants: [
+    {
+      orientation: 'horizontal',
+      position: 'start',
+      class: {
+        container: 'me-3'
+      }
+    },
+    {
+      orientation: 'horizontal',
+      position: 'center',
+      class: {
+        container: 'mx-3'
+      }
+    },
+    {
+      orientation: 'horizontal',
+      position: 'end',
+      class: {
+        container: 'ms-3'
+      }
+    },
+    {
+      orientation: 'vertical',
+      position: 'start',
+      class: {
+        container: 'mb-2'
+      }
+    },
+    {
+      orientation: 'vertical',
+      position: 'center',
+      class: {
+        container: 'my-2'
+      }
+    },
+    {
+      orientation: 'vertical',
+      position: 'end',
+      class: {
+        container: 'mt-2'
+      }
+    },
     {
       orientation: 'horizontal',
       size: 'xs',

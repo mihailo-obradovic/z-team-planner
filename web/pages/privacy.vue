@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center p-4 md:p-6">
     <!-- * Justified with automatic hyphenation: at 65ch, justification alone opens rivers on the lines that hold a long storage key. -->
     <article
-      class="flex w-full max-w-[130ch] flex-col gap-4 bg-default p-4 text-justify text-sm hyphens-auto panel"
+      class="flex w-full max-w-[130ch] panel flex-col gap-4 bg-default p-4 text-justify text-sm hyphens-auto"
     >
       <header class="flex flex-col gap-1">
         <h1 class="font-heading text-title text-highlighted uppercase">

@@ -64,6 +64,7 @@ One line per record: type, status, title, link.
 | 012 | infra       | Implemented       | Host on Vercel as one project with two services                                 | [012_infra_vercel-services](decisions/012_infra_vercel-services.md)                           |
 | 013 | tooling     | Implemented       | Version the product itself, starting at 0.1.0                                   | [013_tooling_project-versioning](decisions/013_tooling_project-versioning.md)                 |
 | 014 | incident    | Implemented       | Images and icons went missing on the first Services deployment                  | [014_incident_services-image-config](decisions/014_incident_services-image-config.md)         |
+| 015 | upgrade     | Implemented       | Move the test stack to Vitest 5 and @nuxt/test-utils 4                          | [015_upgrade_test-stack-vitest-5](decisions/015_upgrade_test-stack-vitest-5.md)               |
 
 ## Domain Decision Index
 

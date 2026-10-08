@@ -5,6 +5,7 @@
     "uv.lock",
     "shared/game-data.json",
     ".claude/skills/nuxtjs-seo-skilld/**",
+    ".claude/skills/nuxt-ui/**",
     ".claude/skills/skilld-lock.yaml"
   ],
   "singleQuote": true,

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-92 bg-default panel">
+  <div class="w-full max-w-92 panel bg-default">
     <div class="flex plate items-center justify-between gap-2 px-3">
       <h3 class="truncate font-heading text-title uppercase">
         {{ hero.name }}
