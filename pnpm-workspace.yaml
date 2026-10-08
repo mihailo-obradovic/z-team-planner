@@ -1,10 +1,10 @@
 minimumReleaseAge: 1440
 
-# * Dependencies whose build scripts are deliberately skipped — none is needed (sharp ships prebuilt @img/* binaries). Listing them only silences the install warning; re-check against a fresh install when dependencies move.
-ignoredBuiltDependencies:
-  - '@firebase/util'
-  - '@parcel/watcher'
-  - esbuild
-  - protobufjs
-  - sharp
-  - vue-demi
+# * Dependencies whose build scripts are deliberately skipped — none is needed (sharp ships prebuilt @img/* binaries). Denied explicitly because pnpm 12 fails an install on any build left undecided; re-check against a fresh install when dependencies move.
+allowBuilds:
+  '@firebase/util': false
+  '@parcel/watcher': false
+  esbuild: false
+  protobufjs: false
+  sharp: false
+  vue-demi: false
