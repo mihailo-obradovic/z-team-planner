@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved
+Active
 
 ## Task Weight
 
@@ -123,3 +123,9 @@ Not role-specific.
 - `SynergyHeroPortrait`: `card` below 58rem, `synergy` from 58rem.
 
 ## Verification
+
+2026-10-08. By test (`oxlint`, `oxfmt` clean; 453 passing): `hero-portrait.test.ts` the loading, fade-in, settle, failure and already-held states; `synergy-pairs.test.ts` and `portrait-sizes.test.ts` the 58rem usage switch; `portrait-prefetch.test.ts` the load-and-idle wait, synergy-then-dialog order, URLs equal to the rendered `srcset`, viewport-chosen dialog sites, one run. `vue-tsc` reports only `error-tab-title.test.ts`'s two errors, present on master.
+
+Walked on a worktree dev server in Chrome, cold cache: at 1440px the network log shows the eight `w_224` synergy portraits, then header, panel and rail per hero; the synergy tab and the dialog then show every visible portrait at once. Before the download existed, a cold switch faded the eight in one by one. At 900px synergy reuses the card's `w_216` with no request. Offline, a ribbon portrait shows its alt text; an illusion box computes 0.4 over an image at 1; the reduced-motion rule sets `animation: none`. Remaining risk: the Vercel image path and WebKit are unverified here — a preview deploy and a device check.
+
+2026-10-08, rebased onto master `7e26099` (Nuxt 4.6, `@nuxt/image` 2.1, Vitest 5): 453 passing, `vue-tsc` clean. A headless Chromium walk at 1440px showed the cards' `w_108` before `load`, the synergy `w_224` batch after load and idle, then the dialog's; the synergy tab then showed every portrait at once.
