@@ -144,9 +144,11 @@ describe('BuildManager share', () => {
         setup() {
           signIn();
           // ! Set both ways round: the store outlives a mount, so leaving it alone would carry the previous test's account build into this one and pass vacuously.
-          useAuthStore().setActiveAccountBuildId(
-            withAccountBuild ? ACCOUNT_BUILDS.items[0]!.id : null
-          );
+          if (withAccountBuild) {
+            useOpenBuild().openCloud(ACCOUNT_BUILDS.items[0]!.id);
+          } else {
+            useOpenBuild().closeBuild();
+          }
 
           // ! These two cover the clean path. Share on a *dirty* account build saves first and is
           // ! covered below, so the planner has to be baselined or this exercises that path
@@ -228,14 +230,13 @@ describe('BuildManager dirty state across the two worlds', () => {
       defineComponent({
         setup() {
           signIn();
-          useAuthStore().setActiveAccountBuildId(id);
+          useOpenBuild().openCloud(id);
 
-          // ! Seeded through the state refs, not localStorage: `useLocalStorageRef` reads storage
-          // ! once per key per app, and an earlier mount in this file already claimed both keys.
+          // ! Seeded through the state ref, not localStorage: `useLocalStorageRef` reads storage
+          // ! once per key per app, and an earlier mount in this file already claimed the key.
           // ! A local build has to exist or Save renders unconditionally on `length === 0`, and
           // ! every assertion about Save's absence below would pass vacuously.
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
-          useState<string | null>('z-team-active-build').value = LOCAL_BUILD.id;
 
           resetPlanner();
 
@@ -310,7 +311,7 @@ describe('BuildManager sharing an account build with unsaved changes', () => {
       defineComponent({
         setup() {
           signIn();
-          useAuthStore().setActiveAccountBuildId(id);
+          useOpenBuild().openCloud(id);
           useState<unknown[]>('z-team-builds').value = [LOCAL_BUILD];
           resetPlanner();
 

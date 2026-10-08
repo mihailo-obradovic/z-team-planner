@@ -5,7 +5,6 @@ import type { AuthStatus, AuthUser, SignInAvailability } from '@/types/auth';
 export const useAuthStore = defineStore('auth', () => {
   const status = ref<AuthStatus>('unknown');
   const user = ref<AuthUser | null>(null);
-  const activeAccountBuildId = ref<string | null>(null);
 
   const isSignInUnavailable = ref(false);
 
@@ -20,11 +19,6 @@ export const useAuthStore = defineStore('auth', () => {
   function resetUser() {
     user.value = null;
     status.value = 'anonymous';
-    activeAccountBuildId.value = null;
-  }
-
-  function setActiveAccountBuildId(id: string | null) {
-    activeAccountBuildId.value = id;
   }
 
   function setSignInAvailability(availability: SignInAvailability) {
@@ -34,13 +28,11 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     status: skipHydrate(readonly(status)),
     user: skipHydrate(readonly(user)),
-    activeAccountBuildId: skipHydrate(readonly(activeAccountBuildId)),
     isSignInUnavailable: skipHydrate(readonly(isSignInUnavailable)),
     isSignedIn,
     isResolved,
     setUser,
     resetUser,
-    setActiveAccountBuildId,
     setSignInAvailability
   };
 });

@@ -121,6 +121,9 @@ const { name: title, description } = useSiteConfig();
 const { loadInitialBuild } = useInitialBuild();
 const { setupBeforeUnload } = useUnsavedChanges();
 
+// * A cloud build belongs to the account; once signed out the planner no longer has one open.
+useOpenBuild().watchSignOut();
+
 const storySetupOpen = ref(false);
 
 // * Read once and a plain ref, not query state: only `/`'s initial boot waits, and on localStorage rather than a request (feature 023).

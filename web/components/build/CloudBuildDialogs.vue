@@ -52,9 +52,7 @@ import {
 
 const toast = useToast();
 
-const authStore = useAuthStore();
-const { activeAccountBuildId } = storeToRefs(authStore);
-const { setActiveAccountBuildId } = authStore;
+const { openCloudId, openCloud } = useOpenBuild();
 
 const { data: accountBuilds } = useFetchBuilds();
 
@@ -65,7 +63,7 @@ const {
 } = useCreateBuild({
   errorHandling: { suppressToasts: 'validation' },
   onSuccess: (created, { data }) => {
-    setActiveAccountBuildId(created.id);
+    openCloud(created.id);
     updateSavedSnapshot(data);
     accountSaveOpen.value = false;
     accountSaveName.value = '';
@@ -96,7 +94,7 @@ const nameError = computed(() => nameForm.$errors.name?.[0]);
 const activeBuildLabel = computed(
   () =>
     accountBuilds.value?.items.find(
-      (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
+      (cloudBuild) => cloudBuild.id === openCloudId.value
     )?.name ?? 'this build'
 );
 
@@ -118,8 +116,8 @@ async function handleSave() {
 }
 
 function handleDelete() {
-  if (activeAccountBuildId.value) {
-    deleteBuild(activeAccountBuildId.value);
+  if (openCloudId.value) {
+    deleteBuild(openCloudId.value);
   }
 }
 </script>

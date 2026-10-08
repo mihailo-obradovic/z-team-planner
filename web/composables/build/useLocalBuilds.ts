@@ -1,22 +1,18 @@
 import type { LocalBuild } from '@/types/build';
 
 const STORAGE_KEY_BUILDS = 'z-team-builds';
-const STORAGE_KEY_ACTIVE = 'z-team-active-build';
 
 export function useLocalBuilds() {
   const state = usePlannerState();
   const { leaveSharedMode } = useBuildMode();
   const { clearUrlParam } = useBuildSharing();
   const { updateSavedSnapshot } = useUnsavedChanges();
+  const { openLocalId, openLocal, closeBuild } = useOpenBuild();
 
   const localBuilds = useLocalStorageRef<LocalBuild[]>(STORAGE_KEY_BUILDS, []);
-  const activeBuildId = useLocalStorageRef<string | null>(
-    STORAGE_KEY_ACTIVE,
-    null
-  );
 
   const activeBuildName = computed(
-    () => findLocalBuild(activeBuildId.value)?.name ?? 'Untitled'
+    () => findLocalBuild(openLocalId.value)?.name ?? 'Untitled'
   );
 
   function settleOnOwnBuild() {
@@ -34,7 +30,7 @@ export function useLocalBuilds() {
   }
 
   function getActiveBuild(): LocalBuild | undefined {
-    return findLocalBuild(activeBuildId.value);
+    return findLocalBuild(openLocalId.value);
   }
 
   function saveLocalBuild(name?: string) {
@@ -63,7 +59,7 @@ export function useLocalBuilds() {
     };
 
     localBuilds.value.push(localBuild);
-    activeBuildId.value = localBuild.id;
+    openLocal(localBuild.id);
 
     settleOnOwnBuild();
   }
@@ -75,7 +71,7 @@ export function useLocalBuilds() {
       return;
     }
 
-    activeBuildId.value = id;
+    openLocal(id);
 
     await deserializeBuild(localBuild.data, state);
     settleOnOwnBuild();
@@ -102,8 +98,14 @@ export function useLocalBuilds() {
 
     localBuilds.value.splice(index, 1);
 
-    if (activeBuildId.value === id) {
-      activeBuildId.value = localBuilds.value[0]?.id ?? null;
+    if (openLocalId.value === id) {
+      const next = localBuilds.value[0];
+
+      if (next) {
+        openLocal(next.id);
+      } else {
+        closeBuild();
+      }
     }
   }
 
@@ -117,7 +119,7 @@ export function useLocalBuilds() {
 
   return {
     localBuilds: computed(() => localBuilds.value),
-    activeBuildId: computed(() => activeBuildId.value),
+    activeBuildId: openLocalId,
     activeBuildName,
     getActiveBuild,
     saveLocalBuild,

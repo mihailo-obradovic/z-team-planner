@@ -33,14 +33,14 @@ const props = defineProps<{
   block: boolean;
 }>();
 
-const authStore = useAuthStore();
-const { isSignedIn, activeAccountBuildId } = storeToRefs(authStore);
-const { setActiveAccountBuildId } = authStore;
+const { isSignedIn } = storeToRefs(useAuthStore());
+
+const { openCloudId, openCloud } = useOpenBuild();
 
 const { data: accountBuilds, isPending: accountBuildsPending } =
   useFetchBuilds();
 
-const { data: openedAccountBuild } = useFetchBuild(activeAccountBuildId);
+const { data: openedAccountBuild } = useFetchBuild(openCloudId);
 
 const { localBuilds, activeBuildId, activeBuildName, loadLocalBuild } =
   useLocalBuilds();
@@ -67,7 +67,7 @@ const isMenuOpen = computed({
 
 const activeAccountBuild = computed(() =>
   accountBuilds.value?.items.find(
-    (cloudBuild) => cloudBuild.id === activeAccountBuildId.value
+    (cloudBuild) => cloudBuild.id === openCloudId.value
   )
 );
 
@@ -147,7 +147,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
         label: cloudBuild.name,
         icon: 'i-lucide-cloud',
         type: 'checkbox' as const,
-        checked: cloudBuild.id === activeAccountBuildId.value,
+        checked: cloudBuild.id === openCloudId.value,
         onSelect: () => {
           void openAccountBuild(cloudBuild.id);
         }
@@ -165,7 +165,7 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
     }
   ];
 
-  if (activeAccountBuildId.value) {
+  if (openCloudId.value) {
     accountActions.push({
       label: 'Delete from account...',
       icon: 'i-lucide-cloud-off',
@@ -182,8 +182,8 @@ const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
 });
 
 async function openAccountBuild(id: string) {
-  if (id !== activeAccountBuildId.value) {
-    setActiveAccountBuildId(id);
+  if (id !== openCloudId.value) {
+    openCloud(id);
 
     return;
   }

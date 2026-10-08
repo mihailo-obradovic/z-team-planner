@@ -48,7 +48,7 @@
         <ul class="flex list-disc flex-col gap-1 pl-4 text-start">
           <li>
             <span class="font-semibold">z-team-builds</span> — the builds you
-            saved, and <span class="font-semibold">z-team-active-build</span> —
+            saved, and <span class="font-semibold">z-team-open-build</span> —
             which one is open.
           </li>
 
@@ -151,7 +151,7 @@
 
 <script setup lang="ts">
 // ! Every fact on this page traces to a feature document (feature 010, Inputs). Change the source first, then this page, then the date — the three move together.
-const LAST_UPDATED = '4 September 2026';
+const LAST_UPDATED = '8 October 2026';
 const ISSUES_URL = 'https://github.com/mihailo-obradovic/z-team-planner/issues';
 const BACKUP_DAYS = 30;
 

@@ -181,15 +181,14 @@ export function useUpdateBuild(
 
 export function useDeleteBuild(options: MutationOptions<void, string> = {}) {
   const queryCache = useQueryCache();
-  const authStore = useAuthStore();
-  const { activeAccountBuildId } = storeToRefs(authStore);
+  const { openCloudId, closeBuild } = useOpenBuild();
 
   return useAppMutation<void, string>({
     mutation: (id) => deleteBuild(id),
     ...options,
     onSettled: chainOnSettled(async (_data, error, id) => {
-      if (!error && activeAccountBuildId.value === id) {
-        authStore.setActiveAccountBuildId(null);
+      if (!error && openCloudId.value === id) {
+        closeBuild();
       }
 
       await queryCache.invalidateQueries({ key: BUILDS_ROOT });

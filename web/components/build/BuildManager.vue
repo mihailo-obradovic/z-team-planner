@@ -87,7 +87,7 @@ const props = withDefaults(
 
 const toast = useToast();
 
-const { activeAccountBuildId } = storeToRefs(useAuthStore());
+const { openCloudId } = useOpenBuild();
 
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
@@ -126,9 +126,9 @@ function openSaveShared() {
 }
 
 function handleSave() {
-  if (activeAccountBuildId.value) {
+  if (openCloudId.value) {
     patchBuild({
-      id: activeAccountBuildId.value,
+      id: openCloudId.value,
       payload: { data: serializeBuild(plannerState) }
     });
 
@@ -157,7 +157,7 @@ function useShareFlow() {
   });
 
   async function handleShare() {
-    const accountBuildId = activeAccountBuildId.value;
+    const accountBuildId = openCloudId.value;
 
     if (!accountBuildId) {
       reportShare((await shareBuild()) ? 'copied' : 'failed');

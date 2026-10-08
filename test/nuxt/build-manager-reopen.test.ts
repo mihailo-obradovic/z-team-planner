@@ -72,7 +72,7 @@ describe('BuildManager reopening the account build already open', () => {
             email: null,
             displayName: 'Alice'
           });
-          useAuthStore().setActiveAccountBuildId(BUILD_ID);
+          useOpenBuild().openCloud(BUILD_ID);
 
           return () => h(BuildManager);
         }

@@ -43,28 +43,6 @@ describe('useAuthStore', () => {
     expect(store.user).toEqual(ALICE);
   });
 
-  it('clears the active account build on sign-out', () => {
-    const store = useAuthStore();
-    store.setUser(ALICE);
-    store.setActiveAccountBuildId('build-42');
-
-    store.resetUser();
-
-    // * It identifies a build only that user could open; keeping it across sign-out would leave the planner pointed at something the next visitor cannot load.
-    expect(store.activeAccountBuildId).toBeNull();
-    expect(store.user).toBeNull();
-  });
-
-  it('keeps the active account build across an ordinary update', () => {
-    const store = useAuthStore();
-    store.setUser(ALICE);
-    store.setActiveAccountBuildId('build-42');
-
-    store.setUser({ ...ALICE, displayName: 'Alice B' });
-
-    expect(store.activeAccountBuildId).toBe('build-42');
-  });
-
   it('stays unknown but flags sign-in unavailable when the SDK fails', () => {
     const store = useAuthStore();
 
