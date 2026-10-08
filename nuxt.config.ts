@@ -157,5 +157,19 @@ export default defineNuxtConfig({
     }
   },
 
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@unhead/schema-org/vue',
+        'firebase/app',
+        'firebase/auth',
+        'temporal-polyfill',
+        '@regle/core',
+        '@regle/rules',
+        'zod'
+      ]
+    }
+  },
+
   compatibilityDate: '2026-09-14'
 });
