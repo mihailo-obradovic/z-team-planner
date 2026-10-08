@@ -121,7 +121,8 @@ Not role-specific.
 
 - `test/nuxt/build-persistence.test.ts`: `initialize()` falls back to the open build on a garbage or unknown-version `?build=` param; a valid param enters shared mode without touching local builds.
 - `test/nuxt/build-document.test.ts`: what the format omits, how each group is shaped, the round trip, and the URL codec's alphabet and padding. `test/unit/isSerializedBuild.test.ts`: the client gate.
-- Build CRUD and shared-mode behavior are covered by the live browser walk per the stack's testing rule.
+- `test/nuxt/shared-mode.test.ts`: edits to a snapshot are unsaved; **Save a copy** in one click; **Back to my build** only when a build was open.
+- Build CRUD and the rest of shared-mode behavior are covered by the live browser walk per the stack's testing rule.
 
 ## Verification
 

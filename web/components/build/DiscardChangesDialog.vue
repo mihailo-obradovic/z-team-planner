@@ -21,7 +21,14 @@
 <script setup lang="ts">
 const openBuildName = useOpenBuildName();
 
-const title = computed(() => `Discard changes to "${openBuildName.value}"?`);
+const { isViewingSharedBuild } = useBuildMode();
+
+// * In shared-build mode the edits are to the snapshot on screen, not to the build open before it.
+const title = computed(() =>
+  isViewingSharedBuild.value
+    ? 'Discard changes to this shared build?'
+    : `Discard changes to "${openBuildName.value}"?`
+);
 
 const { discardOpen, confirmDiscard, closeDiscard } = useDiscardGuard();
 const { dialogContent } = useDialogs();

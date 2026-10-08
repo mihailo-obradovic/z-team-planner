@@ -34,7 +34,6 @@ export function useDialogs() {
     () => null
   );
 
-  const saveSharedOpen = useState('build-dialog-save-shared', () => false);
   const saveAsNewOpen = useState('build-dialog-save-as-new', () => false);
   const deleteOpen = useState('build-dialog-delete', () => false);
   const renameOpen = useState('build-dialog-rename', () => false);
@@ -90,7 +89,6 @@ export function useDialogs() {
     rememberOpener,
     buildMenuTier,
     openBuildMenu,
-    saveSharedOpen,
     accountSaveOpen,
     accountSaveName,
     openAccountSave,

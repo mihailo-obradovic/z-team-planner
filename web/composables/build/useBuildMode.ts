@@ -1,6 +1,6 @@
 import type { SerializedBuild } from '@/types/build';
 
-// ! Depends on nothing but `usePlannerState`. `useLocalBuilds` and `useUnsavedChanges` both call this one, so a call back into either would be a cycle that recurses until the stack runs out.
+// ! Depends on nothing but `usePlannerState`. `useLocalBuilds` calls this one, so a call back into it would be a cycle that recurses until the stack runs out.
 export function useBuildMode() {
   const state = usePlannerState();
   const isViewingSharedBuild = useState<boolean>(

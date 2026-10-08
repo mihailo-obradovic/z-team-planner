@@ -2,7 +2,6 @@ import type { PlannerSetAside, SerializedBuild } from '@/types/build';
 
 export function useUnsavedChanges() {
   const state = usePlannerState();
-  const { isViewingSharedBuild } = useBuildMode();
   const savedSnapshot = useState<string>('savedSnapshot', () => '');
 
   // * Read by key, not through `usePlannerSetAside`, which calls this composable.
@@ -15,11 +14,6 @@ export function useUnsavedChanges() {
     // * On a share page the planner shows someone else's build; what is at stake is the visitor's own, set aside.
     if (setAside.value) {
       return setAside.value.wasDirty;
-    }
-
-    // * Someone else's build has nothing of the user's in it to lose.
-    if (isViewingSharedBuild.value) {
-      return false;
     }
 
     return takeSnapshot() !== savedSnapshot.value;

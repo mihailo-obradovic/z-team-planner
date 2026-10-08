@@ -1,38 +1,12 @@
 <template>
   <div class="flex items-center gap-2">
     <div :class="clusterClass">
-      <template v-if="isViewingSharedBuild">
-        <u-badge color="info" variant="solid" size="sm" class="max-md:hidden">
-          Viewing shared build
-        </u-badge>
-
-        <u-tooltip text="Save as mine" :disabled="labelled">
-          <u-button
-            :size="size"
-            variant="subtle"
-            color="neutral"
-            icon="i-lucide-save"
-            :label="labelled ? 'Save as mine' : undefined"
-            :aria-label="labelled ? undefined : 'Save as mine'"
-            :block="block"
-            @click="openSaveShared"
-          />
-        </u-tooltip>
-
-        <u-tooltip text="Back to my build" :disabled="labelled">
-          <u-button
-            v-if="localBuilds.length > 0"
-            :size="size"
-            variant="subtle"
-            color="neutral"
-            icon="i-lucide-undo-2"
-            :label="labelled ? 'Back to my build' : undefined"
-            :aria-label="labelled ? undefined : 'Back to my build'"
-            :block="block"
-            @click="guardDiscard(backToMyBuild)"
-          />
-        </u-tooltip>
-      </template>
+      <SharedBuildBanner
+        v-if="isViewingSharedBuild"
+        :labelled="labelled"
+        :block="block"
+        :size="size"
+      />
 
       <template v-else>
         <!-- * Labelled or not, the tooltip stays: "Save" alone does not say where it writes. -->
@@ -71,6 +45,7 @@
 
 <script setup lang="ts">
 import BuildMenu from '@/components/build/BuildMenu.vue';
+import SharedBuildBanner from '@/components/build/SharedBuildBanner.vue';
 
 import { useUpdateBuild } from '@/services/queries/useBuildQueries';
 
@@ -100,14 +75,13 @@ const { mutate: patchBuild } = useUpdateBuild({
 
 const plannerState = usePlannerState();
 
-const { localBuilds, saveLocalBuild, backToMyBuild } = useLocalBuilds();
+const { saveLocalBuild } = useLocalBuilds();
 
 const { isViewingSharedBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
-const { saveSharedOpen, openSaveAsNew, openAccountSave } = useDialogs();
-const { guardDiscard } = useDiscardGuard();
+const { openSaveAsNew, openAccountSave } = useDialogs();
 
 const { handleShare } = useShareFlow();
 
@@ -129,15 +103,12 @@ const saveAriaLabel = computed(() =>
 const saveLabelled = computed(() => props.labelled && !props.block);
 
 // * The shared-build branch is a row of its own in the action bar; everywhere else the controls sit directly in the bar's own row.
+// * Two parts to Share's one: the label and two icon buttons do not fit in half a phone's width.
 const clusterClass = computed(() =>
   props.block && isViewingSharedBuild.value
-    ? 'flex min-w-0 flex-1 basis-0 items-center gap-2'
+    ? 'flex min-w-0 flex-2 basis-0 items-center gap-2'
     : 'contents'
 );
-
-function openSaveShared() {
-  saveSharedOpen.value = true;
-}
 
 function handleSave() {
   if (openCloudId.value) {
