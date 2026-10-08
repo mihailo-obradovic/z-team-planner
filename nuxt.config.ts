@@ -94,7 +94,9 @@ export default defineNuxtConfig({
   image: {
     quality: 90,
     densities: PORTRAIT_DENSITIES,
-    screens: { ...portraitScreens(), background: 2560 }
+    screens: { ...portraitScreens(), background: 2560 },
+    // ! Unset, the Vercel provider writes a 300s edge cache; the masters change only by deliberate replacement (operations.md).
+    vercel: { minimumCacheTTL: 31536000 }
   },
 
   typescript: {
@@ -144,17 +146,6 @@ export default defineNuxtConfig({
   seo: {
     // ! Its error titles carry the status, Nuxt's `Page not found: <path>` message, or the last path segment; `plugins/error-title.ts` titles the error page instead (feature 009).
     fallbackTitle: false
-  },
-
-  nitro: {
-    vercel: {
-      config: {
-        images: {
-          // ! The image provider has no TTL option and writes 300s itself; this block overrides it.
-          minimumCacheTTL: 31536000
-        }
-      }
-    }
   },
 
   vite: {
