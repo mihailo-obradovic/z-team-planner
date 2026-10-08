@@ -35,15 +35,16 @@
       </template>
 
       <template v-else>
-        <u-tooltip :text="saveLabel" :disabled="saveLabelled">
+        <!-- * Labelled or not, the tooltip stays: "Save" alone does not say where it writes. -->
+        <u-tooltip :text="saveLabel">
           <u-button
-            v-if="hasUnsavedChanges || localBuilds.length === 0"
+            v-if="hasUnsavedChanges || !openBuild"
             :size="size"
             :variant="hasUnsavedChanges ? 'solid' : 'subtle'"
             :color="hasUnsavedChanges ? 'warning' : 'neutral'"
             icon="i-lucide-save"
             :label="saveLabelled ? 'Save' : undefined"
-            :aria-label="saveLabel"
+            :aria-label="saveAriaLabel"
             @click="handleSave"
           />
         </u-tooltip>
@@ -87,7 +88,8 @@ const props = withDefaults(
 
 const toast = useToast();
 
-const { openCloudId } = useOpenBuild();
+const { openBuild, openLocalId, openCloudId, draftName } = useOpenBuild();
+const { isSignedIn } = storeToRefs(useAuthStore());
 
 const { mutate: patchBuild } = useUpdateBuild({
   onSuccess: (updated, { payload }) => {
@@ -104,12 +106,23 @@ const { isViewingSharedBuild } = useBuildMode();
 const { shareBuild } = useBuildSharing();
 const { hasUnsavedChanges, updateSavedSnapshot } = useUnsavedChanges();
 
-const { saveSharedOpen, openNewBuild } = useDialogs();
+const { saveSharedOpen, openSaveAsNew, openAccountSave } = useDialogs();
 
 const { handleShare } = useShareFlow();
 
+// * Where Save writes: the open build's own home, else wherever a new build goes (feature 029).
+const savesToAccount = computed(
+  () => !!openCloudId.value || (!openLocalId.value && isSignedIn.value)
+);
+
 const saveLabel = computed(() =>
-  hasUnsavedChanges.value ? 'Save — unsaved changes' : 'Save'
+  savesToAccount.value ? 'Save to your account' : 'Save to this browser'
+);
+
+const saveAriaLabel = computed(() =>
+  hasUnsavedChanges.value
+    ? `${saveLabel.value} — unsaved changes`
+    : saveLabel.value
 );
 
 const saveLabelled = computed(() => props.labelled && !props.block);
@@ -135,8 +148,12 @@ function handleSave() {
     return;
   }
 
-  if (localBuilds.value.length === 0) {
-    openNewBuild(DEFAULT_BUILD_NAME);
+  if (!openLocalId.value) {
+    if (isSignedIn.value) {
+      openAccountSave(draftName.value);
+    } else {
+      openSaveAsNew(draftName.value);
+    }
 
     return;
   }

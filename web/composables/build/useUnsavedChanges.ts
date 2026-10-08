@@ -22,6 +22,11 @@ export function useUnsavedChanges() {
     savedSnapshot.value = document ? JSON.stringify(document) : takeSnapshot();
   }
 
+  // * Nothing saved stands behind the planner any more — its build was deleted — so all of it is unsaved work.
+  function forgetSavedSnapshot() {
+    savedSnapshot.value = '';
+  }
+
   function setupBeforeUnload() {
     if (import.meta.server) {
       return;
@@ -34,5 +39,10 @@ export function useUnsavedChanges() {
     });
   }
 
-  return { hasUnsavedChanges, updateSavedSnapshot, setupBeforeUnload };
+  return {
+    hasUnsavedChanges,
+    updateSavedSnapshot,
+    forgetSavedSnapshot,
+    setupBeforeUnload
+  };
 }

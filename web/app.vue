@@ -88,6 +88,8 @@
 
       <CloudBuildDialogs />
 
+      <OpenBuildDialogs />
+
       <CloudBuildConflictDialog />
 
       <FirstLoginOffer />
@@ -109,6 +111,7 @@ import LoadingRing from '@/components/shell/LoadingRing.vue';
 import FirstRunBanners from '@/components/shell/FirstRunBanners.vue';
 import LocalBuildDialogs from '@/components/build/LocalBuildDialogs.vue';
 import CloudBuildDialogs from '@/components/build/CloudBuildDialogs.vue';
+import OpenBuildDialogs from '@/components/build/OpenBuildDialogs.vue';
 import CloudBuildConflictDialog from '@/components/build/CloudBuildConflictDialog.vue';
 import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
 import AccountDialogs from '@/components/account/AccountDialogs.vue';

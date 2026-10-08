@@ -16,6 +16,12 @@ export function useOpenBuild() {
     lastLocalId: null
   });
 
+  // * The name Save offers while nothing is open: a just-deleted build's, now free, else the default. Session-only — a reload offers the default.
+  const draftName = useState<string>(
+    'open-build-draft-name',
+    () => DEFAULT_BUILD_NAME
+  );
+
   const openBuild = computed(() => record.value.open);
 
   const openLocalId = computed(() =>
@@ -27,15 +33,23 @@ export function useOpenBuild() {
   );
 
   function openLocal(id: string) {
+    draftName.value = DEFAULT_BUILD_NAME;
     record.value = { open: { kind: 'local', id }, lastLocalId: id };
   }
 
   function openCloud(id: string) {
+    draftName.value = DEFAULT_BUILD_NAME;
     record.value = { ...record.value, open: { kind: 'cloud', id } };
   }
 
   function closeBuild() {
     record.value = { ...record.value, open: null };
+  }
+
+  // * After a delete the planner keeps the deleted build's contents, unsaved, and Save offers its name back.
+  function closeDeletedBuild(name: string) {
+    closeBuild();
+    draftName.value = name;
   }
 
   function closeCloudBuild() {
@@ -60,9 +74,11 @@ export function useOpenBuild() {
     openLocalId,
     openCloudId,
     lastLocalId: computed(() => record.value.lastLocalId),
+    draftName: readonly(draftName),
     openLocal,
     openCloud,
     closeBuild,
+    closeDeletedBuild,
     closeCloudBuild,
     watchSignOut
   };

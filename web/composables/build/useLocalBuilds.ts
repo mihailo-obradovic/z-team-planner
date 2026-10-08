@@ -6,13 +6,14 @@ export function useLocalBuilds() {
   const state = usePlannerState();
   const { leaveSharedMode } = useBuildMode();
   const { clearUrlParam } = useBuildSharing();
-  const { updateSavedSnapshot } = useUnsavedChanges();
-  const { openLocalId, openLocal, closeBuild } = useOpenBuild();
+  const { updateSavedSnapshot, forgetSavedSnapshot } = useUnsavedChanges();
+  const { openLocalId, openLocal, closeDeletedBuild, draftName } =
+    useOpenBuild();
 
   const localBuilds = useLocalStorageRef<LocalBuild[]>(STORAGE_KEY_BUILDS, []);
 
   const activeBuildName = computed(
-    () => findLocalBuild(openLocalId.value)?.name ?? DEFAULT_BUILD_NAME
+    () => findLocalBuild(openLocalId.value)?.name ?? draftName.value
   );
 
   // * The names a build may not take; `exceptId` leaves a renamed build's own name free.
@@ -102,16 +103,11 @@ export function useLocalBuilds() {
       return;
     }
 
-    localBuilds.value.splice(index, 1);
+    const [deleted] = localBuilds.value.splice(index, 1);
 
     if (openLocalId.value === id) {
-      const next = localBuilds.value[0];
-
-      if (next) {
-        openLocal(next.id);
-      } else {
-        closeBuild();
-      }
+      closeDeletedBuild(deleted!.name);
+      forgetSavedSnapshot();
     }
   }
 
