@@ -68,6 +68,7 @@ One line per record: type, status, title, link.
 | 014 | incident    | Implemented       | Images and icons went missing on the first Services deployment                  | [014_incident_services-image-config](decisions/014_incident_services-image-config.md)         |
 | 015 | upgrade     | Implemented       | Move the test stack to Vitest 5 and @nuxt/test-utils 4                          | [015_upgrade_test-stack-vitest-5](decisions/015_upgrade_test-stack-vitest-5.md)               |
 | 016 | tooling     | Implemented       | Hold TypeScript below 7 until vue-tsc runs on it                                | [016_tooling_hold-typescript-below-7](decisions/016_tooling_hold-typescript-below-7.md)       |
+| 017 | performance | Accepted          | Pass Core Web Vitals on a phone — first load, share page, interactions          | [017_performance_mobile-first-load](decisions/017_performance_mobile-first-load.md)           |
 
 ## Domain Decision Index
 
