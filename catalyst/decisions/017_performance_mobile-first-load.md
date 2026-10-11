@@ -26,7 +26,7 @@ Keep every shipped guarantee and move the cost. Three groups, each on its own br
 
 **B — share page.** The `render:html` hook feature 027 already runs for `/b/**` injects a `<link rel="preload" as="fetch">` for `/api/v1/shared/{id}`, so the request leaves with the HTML. Keep-warm is deferred to its own measured decision.
 
-**C — interactions.** The special-power bonus computed returns one shared zero identity and reads allocations only when the power is on. ScrollRegion defers its first measure past the dialog's enter transition and batches reads. Synergy pair cards mount one frame after the tab activates. Each change is traced on its own.
+**C — interactions.** The special-power bonus is one computed per hero that returns a shared zero identity and reads allocations only when the power is on. ScrollRegion batches reads to one per frame and takes its first measure after the surface's `animationend` (or 300 ms), listened for rather than queried, since `getAnimations()` forces the very layout avoided. Mounting the synergy pair cards a frame late was tried and dropped: A's async chunk already puts that mount in the task after the click.
 
 Rejected: dropping or narrowing 023's hold; probing Firebase's IndexedDB; redirect sign-in; `sizes="100vw"` on the background; replacing the Reka indicator; one long branch.
 
@@ -50,3 +50,5 @@ Bar: mobile LCP ≤ 2.5 s on both pages, INP ≤ 200 ms at 4×. Budget: the Java
 Per group: Lighthouse 13.5.0 CLI, mobile and desktop, three runs, median, signed out, test share `eab59a6c`, recorded here and in the map; `nuxt analyze` after A against the budget; a DevTools trace per C change; render count in dev before and after the computed fix.
 
 Group A (2026-10-11, local production build behind a brotli proxy — the project's ignored build step cancels every preview deploy, so production numbers follow the merge): budget 226.0 KB from 315 (CI green). Mobile `/`: LCP 5.39 s (baseline 5.6), FCP 3.0 (3.7), TBT 788 ms (1292), CLS 0.051; `/b/{id}`: LCP 4.71 s (5.5), TBT 304 ms (850). Desktop `/` LCP 1.22 s, `/b/{id}` 1.08 s. The bar is not met on mobile: the LCP element is the first portrait, held by feature 023 until hydration, which is a 793 ms long task after 1.7 s of script evaluation at 4× CPU — a CPU floor, not bytes.
+
+Group C (local build, mobile emulation, 4× CPU, one trace each): a level-up re-renders 1 card of 4 mounted, from 4 (test `hero-card-render-scope`); dialog open's long task 635 → 564 ms, the forced layout during the enter now Reka's presence read, not ScrollRegion's; synergy tab click INP 129 → 143 ms with the late mount, so it was dropped.
