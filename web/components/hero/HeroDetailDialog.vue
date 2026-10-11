@@ -7,17 +7,18 @@
   >
     <!-- * The thumbnail names the hero below `lg`, where the large portrait is not drawn. -->
     <!-- * The roster rail and the radar stay outside the keyed fade: the rail is stable and the radar has its own tween. -->
+    <!-- ! Both portraits fade inside a keyed wrapper: in dev `HeroPortrait`'s leading template comment makes its root a fragment, which leaves without its hooks, so `out-in` never mounts the next one. -->
     <template #title>
       <span class="flex items-center gap-2">
         <Transition name="state-fade" mode="out-in">
-          <HeroPortrait
-            v-if="heroId"
-            :key="heroId"
-            :hero-id="heroId"
-            usage="header"
-            :alt="hero?.name ?? ''"
-            class="size-6 shrink-0"
-          />
+          <span v-if="heroId" :key="heroId" class="shrink-0">
+            <HeroPortrait
+              :hero-id="heroId"
+              usage="header"
+              :alt="hero?.name ?? ''"
+              class="size-6"
+            />
+          </span>
         </Transition>
 
         <!-- * Old and new names overlap in one clipped grid cell; the direction classes come from where the two heroes sit in the visible strip. -->
