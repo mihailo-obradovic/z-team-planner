@@ -29,8 +29,9 @@ mockNuxtImport('useUnsavedChanges', () => () => ({
   hasUnsavedChanges: ref(false)
 }));
 
-// * The shell renders the whole planner and every dialog; none of that is this feature's subject,
-// * and mounting it for real would make these tests a change detector for all of it.
+// * The shell renders the whole planner; none of that is this feature's subject, and mounting it
+// * for real would make these tests a change detector for all of it. The overlays need no stub:
+// * each mounts from its own chunk only once something opens it (decision 017).
 const stubs = {
   NuxtPage: true,
   NuxtImg: true,
@@ -38,13 +39,7 @@ const stubs = {
   BuildManager: true,
   AuthMenu: true,
   StorySetupButton: true,
-  LocalBuildDialogs: true,
-  CloudBuildDialogs: true,
-  CloudBuildConflictDialog: true,
-  FirstLoginOffer: true,
-  FirstRunBanners: true,
-  AccountDialogs: true,
-  StorySetupDrawer: true
+  FirstRunBanners: true
 };
 
 function deferred() {

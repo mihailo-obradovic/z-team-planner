@@ -11,6 +11,7 @@
     "postinstall": "nuxt prepare",
     "game-data:export": "node scripts/export-game-data.ts",
     "lint": "oxlint && node scripts/check-sfc-size.ts",
+    "check:budget": "node scripts/check-bundle-budget.ts",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

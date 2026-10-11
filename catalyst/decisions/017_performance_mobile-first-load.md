@@ -36,7 +36,7 @@ Rejected: dropping or narrowing 023's hold; probing Firebase's IndexedDB; redire
 
 ## Consequences
 
-Bar: mobile LCP ≤ 2.5 s on both pages, INP ≤ 200 ms at 4×. Budget: entry chunk ≤ 200 KB brotli, failed by CI after the web build. A first dialog open on a cold cache now costs one chunk request; a Sign-in click with a cold Firebase chunk awaits the import before the popup, which a blocker may catch — walked on Chromium and WebKit. `/` no longer has an `unknown` auth moment without the marker. Deferred to the Frontier node: keep-warm, a portrait-cropped background, zod/mini, `/b/{id}` CLS 0.079, field data.
+Bar: mobile LCP ≤ 2.5 s on both pages, INP ≤ 200 ms at 4×. Budget: the JavaScript `/` loads before any interaction — the entry module plus every chunk its prerendered HTML module-preloads — ≤ 200 KB brotli, failed by CI after the web build; a build-only placeholder config feeds that build, since the output is measured, never served. A first dialog open on a cold cache now costs one chunk request; a Sign-in click with a cold Firebase chunk awaits the import before the popup, which a blocker may catch — walked on Chromium and WebKit. `/` no longer has an `unknown` auth moment without the marker. Deferred to the Frontier node: keep-warm, a portrait-cropped background, zod/mini, `/b/{id}` CLS 0.079, field data.
 
 ## Contracts Touched
 
