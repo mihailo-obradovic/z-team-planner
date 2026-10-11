@@ -59,11 +59,12 @@
       </template>
     </u-header>
 
-    <!-- ! Explicit width and `x1`: without them the image module snaps to the portrait screens or requests a 5120 that no source has. -->
+    <!-- ! `provider="none"`: the master is already a lossy 2560×1161 WebP, so any re-encode is softer at low quality or larger at high; the committed file is served as it is, at low priority so it stays off the entry script's bandwidth (decision 017). Its 2560 width stays for the same reason: under `object-cover` a portrait phone scales it by height, so a narrower variant would be blurrier. -->
     <NuxtImg
       src="/images/background.webp"
-      width="2560"
+      provider="none"
       densities="x1"
+      fetchpriority="low"
       class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"
       alt=""
     />

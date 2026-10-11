@@ -23,7 +23,7 @@ The terms are the glossary's (`context/glossary.md`, Roster imagery): a **bust**
 | Blonde Blazer                  | PNG                      | Fandom `Blonde_Blazer.png`, 2439×2054    | the Training render: a 2000px square at x=250 with 100px of headroom above the hair, downscaled once to 512                                                                                     |
 | canvas rule                    | none                     | this document                            | no canvas normalisation: every usage fills its box under `object-fit: cover`, so a transparent margin would paint as background                                                                 |
 | usage width                    | `PORTRAIT_WIDTHS[usage]` | `web/config/portraits.ts`                | CSS px per usage: header 24, ribbon 52, rail 90, card 108, tile 120, synergy 224, panel 256 (renders 268; 256 keeps its 2x at the largest master). Applied only by `HeroPortrait`, at x1 and x2 |
-| `image.screens`                | `portraitScreens()`      | `nuxt.config.ts`                         | derived from those widths, plus `background: 2560`. Its first five keys are the module's own `sm`…`2xl`, whose defaults would otherwise survive the merge and widen Vercel's allowed sizes      |
+| `image.screens`                | `portraitScreens()`      | `nuxt.config.ts`                         | derived from those widths. Its first five keys are the module's own `sm`…`2xl`, whose defaults would otherwise survive the merge and widen Vercel's allowed sizes                               |
 | `image.quality`                | `90`                     | `nuxt.config.ts`                         | one value for every portrait                                                                                                                                                                    |
 | `image.vercel.minimumCacheTTL` | `31536000`               | `nuxt.config.ts`                         | one year at the edge; unset, the provider writes 300s                                                                                                                                           |
 
@@ -51,7 +51,7 @@ Non-goals:
 - Lossy files at rest, or versioned filenames. `heroPortraitSrc` keeps building `<hero-id>.webp`; a changed master is reset by cache invalidation.
 - The injured and mustache bust variants. One portrait per hero, Sonar's two forms excepted (feature 012).
 - Presets: a preset's width never reaches the density srcset (`getSizes` reads the element's own), so the component is the declaration. `sizes` strings too: layouts resize on container queries and content, not only on breakpoints.
-- The background wash's own sizing. It gets `width="2560"` only so the tightened `screens` cannot resize it; a fitting width per viewport is its own change.
+- The background wash. Its NuxtImg uses `provider="none"`: the 2560×1161 master is already a lossy WebP, so every re-encode is either softer or larger, and a portrait phone scales it by height under `object-cover`, so a narrower variant would be blurrier. It is served as committed, at a low fetch priority (decision 017, `app.vue`).
 
 ## User / System Behavior
 

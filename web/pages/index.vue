@@ -26,13 +26,15 @@
               @pointerenter.once="preloadDetail"
               @focusin.once="preloadDetail"
             >
+              <!-- * The first pair is in view on every load, so its portraits fetch at high priority (feature 028). -->
               <div
-                v-for="pair in synergyPairColumns"
+                v-for="(pair, index) in synergyPairColumns"
                 :key="pair.topId"
                 class="flex w-full max-w-92 flex-col gap-2"
               >
                 <HeroCard
                   :hero-id="pair.top.id"
+                  :priority="index === 0 ? 'high' : 'auto'"
                   @view-detail="() => handleViewDetail(pair.top.id)"
                 />
 
@@ -48,6 +50,7 @@
 
                 <HeroCard
                   :hero-id="pair.bottom.id"
+                  :priority="index === 0 ? 'high' : 'auto'"
                   @view-detail="() => handleViewDetail(pair.bottom.id)"
                 />
               </div>
