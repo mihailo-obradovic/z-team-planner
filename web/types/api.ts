@@ -1,4 +1,5 @@
-import { z } from 'zod';
+// * Decision 017: the functional `zod/mini` build, so the schemas the shell reaches cost a few kilobytes of the entry rather than the whole method API.
+import * as z from 'zod/mini';
 
 import type { SerializedBuild } from '@/types/build';
 
@@ -22,7 +23,7 @@ export const CloudBuildSummarySchema = z.object({
   updated_at: z.string()
 });
 
-export const CloudBuildSchema = CloudBuildSummarySchema.extend({
+export const CloudBuildSchema = z.extend(CloudBuildSummarySchema, {
   data: SerializedBuildSchema
 });
 
@@ -41,9 +42,9 @@ export const CloudBuildListSchema = z.object({
 export const ImportResultSchema = z.object({
   index: z.number(),
   status: z.enum(['created', 'existing', 'invalid']),
-  id: z.uuid().optional(),
-  name: z.string().optional(),
-  errors: z.array(ErrorDetailSchema).optional()
+  id: z.optional(z.uuid()),
+  name: z.optional(z.string()),
+  errors: z.optional(z.array(ErrorDetailSchema))
 });
 
 export const ImportReportSchema = z.array(ImportResultSchema);

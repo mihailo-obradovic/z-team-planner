@@ -1,3 +1,5 @@
+// * Imported, not auto-imported: the `@regle/nuxt` module's global plugin would put regle in the entry, and only the build dialogs validate a form (decision 017).
+import { useRegle } from '@regle/core';
 import { maxLength, required, withMessage } from '@regle/rules';
 
 export const BUILD_NAME_MAX_LENGTH = 80;

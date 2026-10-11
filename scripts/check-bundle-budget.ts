@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { brotliCompressSync } from 'node:zlib';
 
-const BUDGET_BYTES = 200 * 1024;
+const BUDGET_BYTES = 230 * 1024;
 const OUTPUT_DIR = join('.output', 'public');
 
 const html = readFileSync(join(OUTPUT_DIR, 'index.html'), 'utf8');

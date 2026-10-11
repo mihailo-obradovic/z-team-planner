@@ -66,7 +66,6 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
-    '@regle/nuxt',
     '@nuxtjs/seo'
   ],
 
@@ -168,7 +167,7 @@ export default defineNuxtConfig({
         'temporal-polyfill',
         '@regle/core',
         '@regle/rules',
-        'zod'
+        'zod/mini'
       ]
     }
   },
