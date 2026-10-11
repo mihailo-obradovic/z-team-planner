@@ -48,6 +48,7 @@ Non-goals:
 - The ring is annex §11's: 32px, a 4px stroke, the primary at full strength for the leading arc over the same colour at 25% for the rest, turning once per 1.4s, `linear`.
 - The ground is the app's own: the colour `body` carries in the loaded page, so the mount does not change the ground under the ring.
 - On mount Nuxt removes the template and the page's own skeleton takes over. Nothing in the app tears it down, and nothing waits for it.
+- While the ring turns, the shared read is already in flight: the page's HTML preloads `/shared/{id}` (feature 007, decision 017), so the scripts and the data arrive side by side rather than one after the other.
 - Under `prefers-reduced-motion: reduce` the ring is drawn and does not turn, as the annex has it: its presence is the information.
 - The colours are literals, not the tokens they mirror: the template is inlined ahead of the stylesheet, and on the dev server the stylesheet arrives by script, so at paint time the tokens do not exist. Each literal is annotated with the token it restates, and a change to that token changes the literal.
 
