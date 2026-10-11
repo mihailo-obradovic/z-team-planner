@@ -89,7 +89,7 @@
 
         <div
           v-if="!isSharePage"
-          class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
+          class="relative z-10 shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
         >
           <BuildManager block size="lg" tier="bare" />
         </div>

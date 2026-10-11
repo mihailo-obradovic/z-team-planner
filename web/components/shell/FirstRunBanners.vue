@@ -1,5 +1,6 @@
 <template>
-  <div ref="region" class="shrink-0">
+  <!-- ! Positioned above the fixed background image, as `u-main` is; unpositioned, the image paints over the bars. -->
+  <div ref="region" class="relative z-10 shrink-0">
     <TransitionGroup name="first-run-banner" appear @before-leave="sealLeaving">
       <div
         v-for="notice in pending"
@@ -10,7 +11,7 @@
         <!-- * The clip box: the row's height animates while this hides the body passing through it. -->
         <div class="min-h-0 overflow-hidden">
           <div
-            class="first-run-banner-body flex flex-col gap-2 border-t-2 border-secondary-950 bg-secondary-800 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+            class="first-run-banner-body flex flex-col gap-2 border-t-2 border-secondary-700 bg-secondary-600 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             role="region"
             :aria-label="notice.label"
           >
@@ -28,7 +29,7 @@
               </NuxtLink>
             </p>
 
-            <!-- * Neutral subtle: a secondary solid on this bar is 1.29:1. -->
+            <!-- * Neutral subtle, as every control on the chrome: a secondary solid here is 1.29:1. -->
             <u-button
               class="w-full shrink-0 justify-center sm:w-auto"
               size="md"
