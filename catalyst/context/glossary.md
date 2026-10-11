@@ -87,6 +87,12 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 
 **Overlay** — a menu, dialog, slideover or drawer that sits above the planner and holds focus while open. An overlay the user did not open — one raised by the app on its own, like the first-login offer — never opens over another overlay; it waits until none is open.
 
+## Performance
+
+**Bar** — the threshold a Lighthouse median is judged against and recorded beside it, per page and per device class. Missing it is a recorded fact, never a blocked merge. The current bars live in [decision 017](../decisions/017_performance_mobile-first-load.md).
+
+**Budget** — the byte limit on the JavaScript `/` loads before any interaction, which CI fails the build on. Distinct from a bar: a budget is enforced, a bar is only recorded.
+
 ## Hero notes
 
 **Hero note** — one always-shown line of non-obvious characterization for a hero, rendered in the detail dialog's notes panel. Authored in the repository, never player-written, never persisted. Distinguished from an advisory by being unconditional (Waterboy's episode-8 variant is conditional on episode setup, not on allocation, so it is still a note).
