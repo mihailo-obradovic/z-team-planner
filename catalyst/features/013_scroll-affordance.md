@@ -59,7 +59,7 @@ Non-goals:
 - When nothing is hidden on an edge, that edge carries no rule — including a region that overflows and is scrolled fully to one end.
 - When a region does not overflow at all, it carries no rules on any edge.
 - Borders run the full width or height of the region and content scrolls **under** them; the component owns the padding so nothing is inset.
-- The state re-evaluates when the region resizes, when its content resizes, and on every scroll.
+- The state re-evaluates when the region resizes, when its content resizes, and on every scroll — batched to one read per frame, and the first read waits for the surface the region sits in to finish entering (decision 017): a dialog's enter animation scales the whole tree, and a read during it lays out the half-drawn dialog once per region.
 - `bringIntoView(target)` scrolls the region by the **minimum** leaving `target` fully visible, on whichever axes it actually scrolls, clamped to its range. An already-visible target does not move.
 - The target clears the edge by the region's own computed **gap**, so it does not land under an edge rule. Where the range is too short, the clearance gives up first — never the visibility.
 - Annex §11 governs the rest: smooth at `--duration-slow`, jumping under reduced motion — where it still runs, because it corrects what is visible.
@@ -106,7 +106,7 @@ For `bringIntoView`, a horizontal region 300px wide with `gap: 8px` (the leading
 - **Content shrinking while scrolled to the bottom.** The browser clamps `scrollTop`; the content observer fires and the rules re-evaluate against the clamped position.
 - **Zero-height region** (a collapsed `lg:` branch, a closed dialog). Not scrollable, no borders, no error.
 - **`axis: 'both'`** may draw all four rules at once. Legal; no call site needs it.
-- **A region not laid out yet** — a dialog's first frame. Zeroes measured, the call a no-op; the caller retries after layout.
+- **A region not laid out yet** — a dialog's first frame. The first measure is scheduled after the nearest `[data-state="open"]` ancestor's animations finish (the next frame where there are none); `bringIntoView` called that early measures zeroes, a no-op, and the caller retries after layout.
 - **A target larger than the region.** Its leading edge comes into view.
 
 ## Invariants
