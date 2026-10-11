@@ -10,6 +10,7 @@
       :src="src"
       :width="PORTRAIT_WIDTHS[usage]"
       :loading="PORTRAIT_LOADING[usage]"
+      :fetchpriority="priority"
       densities="x1 x2"
       format="avif"
       :alt="alt"
@@ -40,11 +41,16 @@ const LOAD_STATE_CLASS: Record<LoadState, string> = {
   failed: ''
 };
 
-const props = defineProps<{
-  heroId: HeroId;
-  usage: PortraitUsage;
-  alt: string;
-}>();
+// * `high` only on the overview's first pair, the page's largest contentful paint candidates on desktop (decision 017); everything else competes at the browser's own priority.
+const props = withDefaults(
+  defineProps<{
+    heroId: HeroId;
+    usage: PortraitUsage;
+    alt: string;
+    priority?: 'high' | 'auto';
+  }>(),
+  { priority: 'auto' }
+);
 
 const image = useTemplateRef('image');
 

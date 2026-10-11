@@ -19,7 +19,13 @@
 
       <template #right>
         <!-- ! Withheld by CSS, not `v-if`: the markup has to stay in the prerendered HTML (feature 023). -->
-        <div data-boot-withheld class="flex items-center gap-2">
+        <!-- * A pointer or focus in the cluster is the intent that fetches the drawer's and the build dialogs' chunks before a click (decision 017). -->
+        <div
+          data-boot-withheld
+          class="flex items-center gap-2"
+          @pointerenter.once="preloadHeaderSurfaces"
+          @focusin.once="preloadHeaderSurfaces"
+        >
           <BudgetCounters />
 
           <div class="mx-2 hidden h-7 w-px bg-secondary-400 md:block" />
@@ -53,11 +59,12 @@
       </template>
     </u-header>
 
-    <!-- ! Explicit width and `x1`: without them the image module snaps to the portrait screens or requests a 5120 that no source has. -->
+    <!-- ! `provider="none"`: the master is already a lossy 2560×1161 WebP, so any re-encode is softer at low quality or larger at high; the committed file is served as it is, at low priority so it stays off the entry script's bandwidth (decision 017). Its 2560 width stays for the same reason: under `object-cover` a portrait phone scales it by height, so a narrower variant would be blurrier. -->
     <NuxtImg
       src="/images/background.webp"
-      width="2560"
+      provider="none"
       densities="x1"
+      fetchpriority="low"
       class="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-20"
       alt=""
     />
@@ -82,28 +89,30 @@
 
         <div
           v-if="!isSharePage"
-          class="shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
+          class="relative z-10 shrink-0 border-t-2 border-secondary-950 bg-secondary-800 p-3 md:hidden"
         >
           <BuildManager block size="lg" tier="bare" />
         </div>
       </template>
 
-      <LocalBuildDialogs />
+      <!-- * Each overlay mounts from its own chunk the first time its state opens it and stays mounted from then on (decision 017). -->
+      <LocalBuildDialogs v-if="saveAsNewOpened" />
 
-      <CloudBuildDialogs />
+      <CloudBuildDialogs v-if="accountSaveOpened" />
 
-      <OpenBuildDialogs />
+      <OpenBuildDialogs v-if="openBuildDialogsOpened" />
 
-      <DiscardChangesDialog />
+      <DiscardChangesDialog v-if="discardOpened" />
 
-      <CloudBuildConflictDialog />
+      <CloudBuildConflictDialog v-if="conflictOpened" />
 
-      <FirstLoginOffer />
+      <!-- * Signed-in surfaces: the offer decides for itself whether to open, so it mounts with the session rather than with a flag. -->
+      <FirstLoginOffer v-if="signedInOnce" />
     </ClientOnly>
 
-    <AccountDialogs />
+    <AccountDialogs v-if="signedInOnce" />
 
-    <StorySetupDrawer v-model:open="storySetupOpen" />
+    <StorySetupDrawer v-if="storySetupOpened" v-model:open="storySetupOpen" />
   </u-app>
 </template>
 
@@ -115,16 +124,26 @@ import AuthMenu from '@/components/account/AuthMenu.vue';
 import StorySetupButton from '@/components/shell/StorySetupButton.vue';
 import LoadingRing from '@/components/shell/LoadingRing.vue';
 import FirstRunBanners from '@/components/shell/FirstRunBanners.vue';
-import LocalBuildDialogs from '@/components/build/LocalBuildDialogs.vue';
-import CloudBuildDialogs from '@/components/build/CloudBuildDialogs.vue';
-import OpenBuildDialogs from '@/components/build/OpenBuildDialogs.vue';
-import DiscardChangesDialog from '@/components/build/DiscardChangesDialog.vue';
-import CloudBuildConflictDialog from '@/components/build/CloudBuildConflictDialog.vue';
-import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
-import AccountDialogs from '@/components/account/AccountDialogs.vue';
-import StorySetupDrawer from '@/components/shell/StorySetupDrawer.vue';
 
 import { MAIN_CONTENT_ID } from '@/types/header';
+
+// * Own chunks, fetched on first use or by the idle preload (decision 017).
+const LocalBuildDialogs = defineAsyncComponent(
+  surfaceLoaders.localBuildDialogs
+);
+const CloudBuildDialogs = defineAsyncComponent(
+  surfaceLoaders.cloudBuildDialogs
+);
+const OpenBuildDialogs = defineAsyncComponent(surfaceLoaders.openBuildDialogs);
+const DiscardChangesDialog = defineAsyncComponent(
+  surfaceLoaders.discardChangesDialog
+);
+const CloudBuildConflictDialog = defineAsyncComponent(
+  surfaceLoaders.cloudBuildConflictDialog
+);
+const FirstLoginOffer = defineAsyncComponent(surfaceLoaders.firstLoginOffer);
+const AccountDialogs = defineAsyncComponent(surfaceLoaders.accountDialogs);
+const StorySetupDrawer = defineAsyncComponent(surfaceLoaders.storySetupDrawer);
 
 const { name: title, description } = useSiteConfig();
 
@@ -136,6 +155,22 @@ useOpenBuildSync();
 
 const storySetupOpen = ref(false);
 
+const { saveAsNewOpen, accountSaveOpen, renameOpen, deleteOpen, conflictOpen } =
+  useDialogs();
+const { discardOpen } = useDiscardGuard();
+const { isSignedIn } = storeToRefs(useAuthStore());
+const { preload } = useLazySurfaces();
+
+const saveAsNewOpened = useOpenedOnce(saveAsNewOpen);
+const accountSaveOpened = useOpenedOnce(accountSaveOpen);
+const openBuildDialogsOpened = useOpenedOnce(
+  () => renameOpen.value || deleteOpen.value
+);
+const discardOpened = useOpenedOnce(discardOpen);
+const conflictOpened = useOpenedOnce(conflictOpen);
+const signedInOnce = useOpenedOnce(isSignedIn);
+const storySetupOpened = useOpenedOnce(storySetupOpen);
+
 // * Read once and a plain ref, not query state: only `/`'s initial boot waits, and on localStorage rather than a request (feature 023).
 const route = useRoute();
 
@@ -145,6 +180,16 @@ const isSharePage = computed(() => route.path.startsWith('/b/'));
 
 function handleOpen() {
   storySetupOpen.value = true;
+}
+
+function preloadHeaderSurfaces() {
+  preload(
+    'storySetupDrawer',
+    'localBuildDialogs',
+    'cloudBuildDialogs',
+    'openBuildDialogs',
+    'discardChangesDialog'
+  );
 }
 
 onMounted(async () => {

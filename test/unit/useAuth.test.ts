@@ -3,17 +3,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const signInWithPopup = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 const signOut = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 
-vi.mock('firebase/auth', () => ({
-  GoogleAuthProvider: class {},
-  signInWithPopup: (...args: unknown[]) => signInWithPopup(...args),
-  signOut: (...args: unknown[]) => signOut(...args)
+// * The SDK arrives through the one dynamic loader (decision 017), so that is what is mocked.
+vi.mock('@/utils/firebaseSdk', () => ({
+  loadFirebaseSdk: async () => ({
+    auth: {
+      GoogleAuthProvider: class {},
+      signInWithPopup: (...args: unknown[]) => signInWithPopup(...args),
+      signOut: (...args: unknown[]) => signOut(...args)
+    }
+  })
 }));
 
 const toasts: { title?: string; color?: string }[] = [];
 let firebaseAuth: object | null = { name: 'test' };
 
 // * Stubbed rather than mounted: the Firebase client plugin cannot initialise in a test environment (no project config), so a component mount would only ever exercise the sign-in-unavailable path. This is where the popup outcomes are provable.
-vi.stubGlobal('useNuxtApp', () => ({ $firebaseAuth: firebaseAuth }));
+vi.stubGlobal('useNuxtApp', () => ({
+  $firebaseAuth: async () => firebaseAuth
+}));
 const chooseSignOut = vi.fn<() => void>();
 
 vi.stubGlobal('useAuthStore', () => ({ chooseSignOut }));

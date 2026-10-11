@@ -16,13 +16,14 @@ What is served — masters, widths, format, cache — stays feature 021's. The t
 
 ## Inputs
 
-| Input            | Type                      | Source                    | Constraints                                                                                                  |
-| ---------------- | ------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| usage loading    | `PORTRAIT_LOADING[usage]` | `web/config/portraits.ts` | `eager` for `card` only, the landing tab's first pairs; `lazy` for every other usage                         |
-| tab width        | CSS px                    | the planner's tab wrapper | the same `@container` the synergy card reflows on (feature 014); picks the synergy portrait's usage at 58rem |
-| page load + idle | browser events            | the planner page `/`      | the background download's start; never before the window's `load`                                            |
-| shown hero form  | shared state              | feature 012               | Sonar's portrait follows the form shown now; only that form is downloaded ahead                              |
-| reduced motion   | media query               | the visitor's OS          | `prefers-reduced-motion: reduce` drops the fade-in                                                           |
+| Input            | Type                      | Source                      | Constraints                                                                                                  |
+| ---------------- | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| usage loading    | `PORTRAIT_LOADING[usage]` | `web/config/portraits.ts`   | `eager` for `card` only, the landing tab's first pairs; `lazy` for every other usage                         |
+| fetch priority   | `priority` prop           | `HeroCard` → `HeroPortrait` | `high` on the overview's first pair only, the desktop LCP candidates (decision 017); `auto` everywhere else  |
+| tab width        | CSS px                    | the planner's tab wrapper   | the same `@container` the synergy card reflows on (feature 014); picks the synergy portrait's usage at 58rem |
+| page load + idle | browser events            | the planner page `/`        | the background download's start; never before the window's `load`                                            |
+| shown hero form  | shared state              | feature 012                 | Sonar's portrait follows the form shown now; only that form is downloaded ahead                              |
+| reduced motion   | media query               | the visitor's OS            | `prefers-reduced-motion: reduce` drops the fade-in                                                           |
 
 ## Outputs And Side Effects
 
@@ -54,6 +55,7 @@ Non-goals:
 - **Under reduced motion** a loaded portrait shows at once; only the motion is dropped, never the content.
 - **On failure**, the box shows the hero's name as the browser's alt text. No retry.
 - **Background download.** On `/`, once the window has loaded and the browser is next idle, one low-priority batch requests, in order: the synergy tab's portraits at the width the current tab would render, then the dialog's portraits for every hero in its roster at the sites the viewport shows — the header always, the panel from `md`, the rail from `lg` and the ribbon below it. Each request is the variant the browser would pick for that site at the device's pixel ratio, so a later render is a cache hit. It runs once per page load.
+- **First pair first.** The overview's first pair carries `fetchpriority="high"`: on desktop one of its portraits is the largest contentful paint, so it is requested ahead of the other eager cards rather than in document order. No other portrait sets a priority.
 - **Synergy width.** Below a 58rem tab the synergy portrait renders at 108px and declares `card`, the variant the overview already loaded; from 58rem it declares `synergy`. A hidden tab measures 0 and declares `card`. Crossing the threshold, the first showing of a wide tab included, upgrades the portrait in place: the browser keeps the smaller variant on screen until the larger has loaded, with no fade-in.
 
 ## Roles And Access
@@ -62,18 +64,19 @@ Not role-specific.
 
 ## Examples
 
-| Input                                                | Expected Output                                                       | Notes                                 |
-| ---------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------- |
-| cold load of `/`, wait 2 s, open the synergy tab     | every synergy portrait shows at once, no fade-in                      | downloaded in the background          |
-| same, switching before the background batch finishes | portraits already in show at once; the rest fade in as each lands     | no group wait                         |
-| tab wrapper at 900px, open the synergy tab           | portraits request `w=108`/`w=216`, both cache hits from the overview  | below 58rem                           |
-| a portrait still loading (throttled network)         | the box shows, no alt text inside it                                  | `alt` still in the accessibility tree |
-| it finishes loading                                  | 250 ms opacity fade over the box                                      |                                       |
-| same under `prefers-reduced-motion: reduce`          | appears at once                                                       |                                       |
-| open the dialog on a hero, close, open it again      | first open: no fade-in if the batch ran; second open: never a fade-in | already loaded                        |
-| a portrait request fails                             | the box shows the hero's name                                         | browser alt rendering                 |
-| an illusion slot's portrait loads                    | fades to 40%, not 100%                                                | ends at the site's own opacity        |
-| cold load of `/b/{id}`                               | no background requests for synergy or dialog portraits                | planner page only                     |
+| Input                                                | Expected Output                                                          | Notes                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------- |
+| cold load of `/`, wait 2 s, open the synergy tab     | every synergy portrait shows at once, no fade-in                         | downloaded in the background          |
+| same, switching before the background batch finishes | portraits already in show at once; the rest fade in as each lands        | no group wait                         |
+| tab wrapper at 900px, open the synergy tab           | portraits request `w=108`/`w=216`, both cache hits from the overview     | below 58rem                           |
+| a portrait still loading (throttled network)         | the box shows, no alt text inside it                                     | `alt` still in the accessibility tree |
+| the served `/` HTML                                  | the first pair's two `<img>` carry `fetchpriority="high"`; no other does | decision 017                          |
+| it finishes loading                                  | 250 ms opacity fade over the box                                         |                                       |
+| same under `prefers-reduced-motion: reduce`          | appears at once                                                          |                                       |
+| open the dialog on a hero, close, open it again      | first open: no fade-in if the batch ran; second open: never a fade-in    | already loaded                        |
+| a portrait request fails                             | the box shows the hero's name                                            | browser alt rendering                 |
+| an illusion slot's portrait loads                    | fades to 40%, not 100%                                                   | ends at the site's own opacity        |
+| cold load of `/b/{id}`                               | no background requests for synergy or dialog portraits                   | planner page only                     |
 
 ## Business Rules
 

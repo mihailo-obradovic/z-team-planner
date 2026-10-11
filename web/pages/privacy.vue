@@ -56,6 +56,12 @@
           </li>
 
           <li>
+            <span class="font-semibold">z-team-session</span> — that you signed
+            in here, so the next visit can restore your session before asking;
+            signing out clears it. It holds nothing about you.
+          </li>
+
+          <li>
             <span class="font-semibold">z-team-import-offer-seen</span> — that
             you answered the one-time offer to copy local builds into an
             account.
@@ -154,7 +160,7 @@
 
 <script setup lang="ts">
 // ! Every fact on this page traces to a feature document (feature 010, Inputs). Change the source first, then this page, then the date — the three move together.
-const LAST_UPDATED = '8 October 2026';
+const LAST_UPDATED = '11 October 2026';
 const ISSUES_URL = 'https://github.com/mihailo-obradovic/z-team-planner/issues';
 const BACKUP_DAYS = 30;
 

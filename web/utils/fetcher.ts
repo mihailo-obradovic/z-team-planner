@@ -53,8 +53,13 @@ async function buildHeaders(
     [REQUEST_ID_HEADER]: generateRequestId()
   };
 
+  // * Signed out there is no token to send, and no reason to load the SDK for the lookup (decision 017); the store, not the SDK, is what the gate reads — the same gate every user-scoped query has (feature 006).
+  if (!useAuthStore().isSignedIn) {
+    return headers;
+  }
+
   const { $firebaseAuth } = useNuxtApp();
-  const user = $firebaseAuth?.currentUser;
+  const user = (await $firebaseAuth())?.currentUser;
 
   if (user) {
     // * The SDK's own signature is a boolean, so the union converts here and nowhere else.

@@ -88,6 +88,7 @@
           <HeroPortrait
             :hero-id="heroId"
             usage="card"
+            :priority="priority"
             :alt="hero.name"
             class="aspect-square w-full border-2 border-accented bg-accented transition-shadow select-none hover:ring-2 hover:ring-warning"
           />
@@ -167,8 +168,10 @@ const props = withDefaults(
     heroId: HeroId;
     // * The share page's form: values as text, controls absent, information kept (feature 007; composition rules, Read-only regions).
     readonly?: boolean;
+    // * The portrait's fetch priority: `high` for the first pair on the overview (feature 028).
+    priority?: 'high' | 'auto';
   }>(),
-  { readonly: false }
+  { readonly: false, priority: 'auto' }
 );
 
 const emit = defineEmits<{

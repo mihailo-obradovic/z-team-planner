@@ -41,6 +41,22 @@ jobs:
       - name: Test
         run: pnpm run test
 
+      # * The budget is measured on a real production build (decision 017). The public runtime values below are build-time placeholders:
+      # * this output is measured, never served — the `ready` hook in `nuxt.config.ts` refuses a production build without them.
+      - name: Build
+        run: pnpm run build
+        env:
+          NUXT_PUBLIC_API_BASE_URL: /api/v1
+          NUXT_PUBLIC_FIREBASE_API_KEY: ci-build-only
+          NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-build-only.firebaseapp.com
+          NUXT_PUBLIC_FIREBASE_PROJECT_ID: ci-build-only
+          NUXT_PUBLIC_FIREBASE_APP_ID: ci-build-only
+          NUXT_SITE_URL: https://z-team-planner.vercel.app
+          NUXT_SITE_ENV: ci
+
+      - name: Bundle budget
+        run: pnpm run check:budget
+
   api:
     runs-on: ubuntu-latest
     timeout-minutes: 15

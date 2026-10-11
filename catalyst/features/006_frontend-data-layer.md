@@ -48,7 +48,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- The client plugin initialises Firebase from public runtime config and subscribes `onAuthStateChanged`; the store starts `unknown` and every user-scoped query is `enabled` only at `signed-in`. The server never calls the API; nothing is forwarded.
+- The client plugin initialises Firebase from public runtime config and subscribes `onAuthStateChanged` — on mount when the session marker is present, otherwise on the first Sign in click or token request, the store resolving `anonymous` meanwhile (feature 004, decision 017); the store starts `unknown` and every user-scoped query is `enabled` only at `signed-in`. The server never calls the API; nothing is forwarded. The fetcher attaches a token only at `signed-in`, so a signed-out request never loads the SDK.
 - Every request goes through `fetcher`: `Accept: application/json`, base URL from runtime config, `credentials: 'omit'`, a generated `X-Request-ID`, and `Authorization: Bearer <getIdToken()>` when signed in. On `401` it forces `getIdToken(true)` and retries **once** via `makeRequest`, never recursively. Separately, a `GET` that failed in transit or answered `500`/`502`/`503`/`504` is retried once by ofetch; a mutating verb and an aborted request never are, and Pinia Colada adds no retry of its own.
 - A query keeps its previous data visible across a key change rather than flashing empty, and every failure — query or mutation — goes through the one central policy instead of a try-catch at the call site.
 - A mutation may opt out of the toast for a status it handles itself; that is the only sanctioned way to bypass the policy, and features 007 and 008 are its callers.
@@ -81,9 +81,9 @@ Not role-specific; visibility follows the auth store (feature 004).
 - **Client defaults are stated in `colada.options.ts`**, not inherited: `staleTime` 5 s and no refetch on window focus, so data refreshes on mount, on reconnect and on invalidation, never over what is on screen. Pinia Colada's own default refetches on focus; a save over another device's edit is caught by the `412` dialog instead (feature 008).
 - **Protocol headers never reach a component**: an `ETag` or an `Idempotency-Key` is the query layer's business, read from the cache or generated inside the mutation (feature 008).
 - **Zod** schemas live in `@/types/api.ts` with types inferred from them; `SerializedBuild` keeps its hand-written type (feature 001) and the schema for `data` is `z.custom<SerializedBuild>` guarded by `v === 1` — the server already validated it. Request payload types stay hand-written.
-- **Regle** is the form library, and a form's rules mirror the server's so the client rejects what the server would; a server `422` flows back onto the field through `externalErrors` (feature 008).
+- **Regle** is the form library, `useRegle` imported from `@regle/core` rather than auto-imported (decision 017), and a form's rules mirror the server's so the client rejects what the server would; a server `422` flows back onto the field through `externalErrors` (feature 008).
 - **Client state**: `useAuthStore` only, setup syntax, readonly state, actions the sole mutation path; it never fetches — the plugin and query hooks call its actions. Planner state stays in `useState`.
-- **Dependencies added** (Dependency Change Rule, approved with this document): `pinia`, `@pinia/nuxt`, `@pinia/colada`, `@pinia/colada-nuxt`, `zod`, `firebase`, `@regle/core`, `@regle/rules`, `@regle/nuxt` — nine, recorded in `architecture.md` against this feature. Not added: `@vueuse/core`.
+- **Dependencies added** (Dependency Change Rule, approved with this document): `pinia`, `@pinia/nuxt`, `@pinia/colada`, `@pinia/colada-nuxt`, `zod`, `firebase`, `@regle/core`, `@regle/rules`, `@regle/nuxt` — nine, recorded in `architecture.md` against this feature; `@regle/nuxt` left again under decision 017, its only plugin having put regle in the entry bundle. Not added: `@vueuse/core`.
 - No `useFetch` / `useAsyncData` and no Nitro API routes: the app has no server-side data path, and hero data is an imported constant (feature 002).
 
 ## Edge Cases

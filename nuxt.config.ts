@@ -66,7 +66,6 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
-    '@regle/nuxt',
     '@nuxtjs/seo'
   ],
 
@@ -74,13 +73,15 @@ export default defineNuxtConfig({
     colorMode: false
   },
 
+  // * `true` preloads one face per family, the weight nearest 400 in the first subset: the body text, which is right for Barlow and wrong for Barlow Condensed (it would pick 600, which the first paint never sets). The title's 800 and the labels' 700 wait for the module's per-weight `preload` object, which @nuxt/fonts 0.14 does not have yet (decision 017).
   fonts: {
     families: [
       {
         name: 'Barlow',
         provider: 'google',
         weights: [400, 500, 600, 700],
-        styles: ['normal']
+        styles: ['normal'],
+        preload: true
       },
       {
         name: 'Barlow Condensed',
@@ -94,9 +95,16 @@ export default defineNuxtConfig({
   image: {
     quality: 90,
     densities: PORTRAIT_DENSITIES,
-    screens: { ...portraitScreens(), background: 2560 },
+    screens: portraitScreens(),
+    // * Registers the built-in pass-through provider the background wash names (decision 017): a built-in provider exists only when its key is configured.
+    none: {},
     // ! Unset, the Vercel provider writes a 300s edge cache; the masters change only by deliberate replacement (operations.md).
     vercel: { minimumCacheTTL: 31536000 }
+  },
+
+  // * Decision 017: every icon the app names ships in the client bundle, so no `/api/_nuxt_icon` request follows a paint. Nuxt UI adds its own defaults to the same bundle; the scan covers `.ts` too, since the hero stat and power icons are named in composables and utils.
+  icon: {
+    clientBundle: { scan: { globInclude: ['**/*.{vue,ts}'] } }
   },
 
   typescript: {
@@ -159,7 +167,7 @@ export default defineNuxtConfig({
         'temporal-polyfill',
         '@regle/core',
         '@regle/rules',
-        'zod'
+        'zod/mini'
       ]
     }
   },

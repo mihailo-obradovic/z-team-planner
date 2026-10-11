@@ -1,7 +1,7 @@
-import type { z } from 'zod';
+import type * as z from 'zod/mini';
 
 // * A mismatch is a developer error, not a user's: the Zod issues go to the console, and the user gets a generic message rather than a validation dump.
-export function parseResponse<TSchema extends z.ZodType>(
+export function parseResponse<TSchema extends z.ZodMiniType>(
   schema: TSchema,
   payload: unknown
 ): z.infer<TSchema> {
