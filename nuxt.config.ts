@@ -103,6 +103,11 @@ export default defineNuxtConfig({
     vercel: { minimumCacheTTL: 31536000 }
   },
 
+  // * Decision 017: every icon the app names ships in the client bundle, so no `/api/_nuxt_icon` request follows a paint. Nuxt UI adds its own defaults to the same bundle; the scan covers `.ts` too, since the hero stat and power icons are named in composables and utils.
+  icon: {
+    clientBundle: { scan: { globInclude: ['**/*.{vue,ts}'] } }
+  },
+
   typescript: {
     tsConfig: {
       include: ['../test/unit/**/*'],
