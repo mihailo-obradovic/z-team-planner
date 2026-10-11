@@ -137,6 +137,11 @@ describe('shared and me services', () => {
     const build = await fetchSharedBuild(BUILD.id);
 
     expect(build.name).toBe('Main');
+    // * The credentials mode the share page's fetch preload can express (decision 017): anything else and the browser sends the read a second time.
+    expect(fetcherMock).toHaveBeenCalledWith(
+      `/shared/${BUILD.id}`,
+      expect.objectContaining({ credentials: 'same-origin' })
+    );
     // * The public read never carries the owner.
     expect('owner_id' in build).toBe(false);
   });

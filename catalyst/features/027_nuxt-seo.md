@@ -100,7 +100,7 @@ Not role-specific.
 - `nuxt.config.ts`: `site`, `sitemap`, `robots`, `ogImage` config blocks, `seo.fallbackTitle: false` (its error titles carry the status or the requested path; feature 009's `plugins/error-title.ts` titles the error page instead, and every other route sets its own title), and the `ready` hook (build guard extended to require `NUXT_SITE_URL`/`NUXT_SITE_ENV`).
 - `web/app.vue`: `useHead`'s `titleTemplate: '%s'` (overrides SEO Utils' site-name suffix, which duplicates every title) and `useSeoMeta`'s site-wide `ogImage` (an object carrying the 1200×630 size, type and alt); `og:title` and `og:description` are inferred per page by SEO Utils, with `seo.automaticTwitterTags: false` so it adds no `twitter:card`, so `/privacy` previews with its own title and description.
 - `web/pages/index.vue`: `useSchemaOrg([defineSoftwareApp({ '@type': 'WebApplication', ... })])`.
-- `server/plugins/b-share-preview.ts` — the project's one piece of Nitro server code. Hooks `render:html`, path-gated to `/b/`, pushes fixed title and `og:*` tag strings, image dimensions included. Reads `site.url`/`site.name` via `getSiteConfig(event)` (the server-side counterpart to `useSiteConfig()`, auto-imported by `nuxt-site-config`).
+- `server/plugins/b-share-preview.ts` — the project's one piece of Nitro server code. Hooks `render:html`, path-gated to `/b/`, pushes fixed title and `og:*` tag strings, image dimensions included, and — for a well-formed id, where an API is configured — the fetch preload of `/shared/{id}` (feature 007, decision 017). Reads `site.url`/`site.name` via `getSiteConfig(event)` (the server-side counterpart to `useSiteConfig()`, auto-imported by `nuxt-site-config`).
 
 ## Dependencies
 

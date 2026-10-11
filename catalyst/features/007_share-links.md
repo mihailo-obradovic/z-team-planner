@@ -52,7 +52,7 @@ Non-goals:
 - **Share** on an open account build copies `https://<web>/b/{id}`. Anything else — a local build, or nothing open — has no server id, so it copies the `?build=` snapshot.
 - **Share** on an account build with unsaved changes saves it first, then copies, since the link resolves to the stored document. A failed save copies nothing and reports through the central policy (a `412` opens feature 008's conflict dialog); the toast names the save.
 - Every load of the link — opening or reloading it — shows the owner's **current** document, with no new link. An open page never reads again: returning to the tab or from `/privacy` shows what was loaded.
-- A skeleton shows while pending, then the **read-only form**: hero cards with their `readonly` prop, never an `inert` wrapper (which hides the build from a screen reader).
+- The read leaves with the HTML: the share page's response carries a `<link rel="preload" as="fetch">` for `/shared/{id}` when the id is well-formed, so the app finds the answer waiting instead of asking after its scripts have run (decision 017). A skeleton shows while pending, then the **read-only form**: hero cards with their `readonly` prop, never an `inert` wrapper (which hides the build from a screen reader).
 - **Save a copy** creates an account build signed in (`POST /builds`), a local one signed out, under the shared name (suffixed if taken, 029), and lands on `/` with the copy open — so it cannot be made twice. Loading, it takes no further clicks; failing, it stays on the page, ready again, and toasts through the central policy (a `409` names the limit).
 - The header here shows only the title, the read-only budget counters and the sign-in menu — no Save, build menu, **Share** or **Story setup**, which would act on a build that is not open.
 - Leaving without a copy returns the planner exactly as it was (feature 029); a copy over unsaved changes asks 029's discard confirmation.
@@ -68,29 +68,30 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 ## Examples
 
-| Input                                         | Expected Output                                    | Notes                           |
-| --------------------------------------------- | -------------------------------------------------- | ------------------------------- |
-| `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route       |
-| `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed    |
-| `GET /shared/not-a-uuid`                      | `404 not_found`, the same body                     | never a `422` naming the id     |
-| `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                 |
-| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** | cards readable, no controls     |
-| open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast      |
-| open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any      |
-| the read answers `503`, or no answer          | the error page: `503`, "Something went wrong"      | no toast                        |
-| a build on screen, a later read answers `503` | the build stays; no page, no toast                 | nothing to lose by keeping it   |
-| owner deletes or edits it, refocus            | the build stays, silently; reload shows the change | no background read              |
-| **Save a copy** signed in                     | `POST /builds`; `/` with the copy open             | may come back suffixed (005)    |
-| **Save a copy** signed out                    | a local build; `/` with the copy open              | suffixed if taken (029)         |
-| **Save a copy** answers `409`                 | stays on the page; the limit toast                 | button ready again              |
-| **Save a copy** clicked twice quickly         | one `POST`                                         | loading state                   |
-| open the page                                 | header: title, counters, sign-in only              | no build controls               |
-| edits on `/`, open a link, go Back            | `/` with the edits still unsaved                   | planner set aside, restored     |
-| **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                            |
-| **Share** on an account build, unsaved edits  | `PATCH` first, then `/b/{id}` copied               | link matches what is on screen  |
-| that save answers `412`                       | conflict dialog; clipboard untouched               | a stale link is worse than none |
-| **Share** with no account build open          | clipboard holds `?build=`                          | snapshot (001, 029)             |
-| the owner opens their own link                | read-only planner                                  | no edit path on this page       |
+| Input                                         | Expected Output                                    | Notes                             |
+| --------------------------------------------- | -------------------------------------------------- | --------------------------------- |
+| `GET /shared/{id}` signed out                 | `200`, no owner field                              | the only token-less route         |
+| `GET /shared/{id}` after the owner deleted it | `404 not_found`                                    | same answer as never-existed      |
+| `GET /shared/not-a-uuid`                      | `404 not_found`, the same body                     | never a `422` naming the id       |
+| `GET /shared/{id}` 61st in a minute, one IP   | `429 rate_limited`                                 | stopgap limiter                   |
+| open `/b/<valid id>`                          | skeleton, then read-only planner + **Save a copy** | cards readable, no controls       |
+| open `/b/<valid id>`, network panel           | one `GET /shared/{id}`, started before any script  | the preload, consumed by the read |
+| open `/b/<deleted id>`                        | the 404 page                                       | `createError`, not a toast        |
+| open `/b/<malformed id>`                      | the 404 page                                       | a dead share link like any        |
+| the read answers `503`, or no answer          | the error page: `503`, "Something went wrong"      | no toast                          |
+| a build on screen, a later read answers `503` | the build stays; no page, no toast                 | nothing to lose by keeping it     |
+| owner deletes or edits it, refocus            | the build stays, silently; reload shows the change | no background read                |
+| **Save a copy** signed in                     | `POST /builds`; `/` with the copy open             | may come back suffixed (005)      |
+| **Save a copy** signed out                    | a local build; `/` with the copy open              | suffixed if taken (029)           |
+| **Save a copy** answers `409`                 | stays on the page; the limit toast                 | button ready again                |
+| **Save a copy** clicked twice quickly         | one `POST`                                         | loading state                     |
+| open the page                                 | header: title, counters, sign-in only              | no build controls                 |
+| edits on `/`, open a link, go Back            | `/` with the edits still unsaved                   | planner set aside, restored       |
+| **Share** on an account build                 | clipboard holds `/b/{id}`                          | live                              |
+| **Share** on an account build, unsaved edits  | `PATCH` first, then `/b/{id}` copied               | link matches what is on screen    |
+| that save answers `412`                       | conflict dialog; clipboard untouched               | a stale link is worse than none   |
+| **Share** with no account build open          | clipboard holds `?build=`                          | snapshot (001, 029)               |
+| the owner opens their own link                | read-only planner                                  | no edit path on this page         |
 
 ## Business Rules
 
