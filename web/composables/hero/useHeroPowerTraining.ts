@@ -1,6 +1,5 @@
 import {
   EP4_HIRE_OPTIONS,
-  HEROES,
   HERO_POWERS,
   HERO_STARTING_STATS,
   MAX_POWER_TRAININGS,
@@ -15,6 +14,7 @@ import type {
   HeroStats,
   StatName
 } from '@/types/hero';
+import type { ComputedRef } from 'vue';
 
 const ZERO_STATS: HeroStats = Object.fromEntries(
   STAT_NAMES.map((stat) => [stat, 0])
@@ -225,20 +225,26 @@ export function useHeroPowerTraining(
     );
   }
 
-  const allSpecialPowerBonuses = computed(() => {
-    const result: Partial<Record<HeroId, HeroStats>> = {};
-
-    for (const { id } of HEROES) {
-      result[id] = Object.fromEntries(
-        STAT_NAMES.map((stat) => [stat, getSpecialPowerBonus(id, stat)])
-      ) as HeroStats;
-    }
-
-    return result;
-  });
+  // * One computed per hero, made on first ask (decision 017). A hero with no special power, or with it off, returns the shared `ZERO_STATS` identity without reading an allocation, so a level-up elsewhere invalidates nothing here and the card keeps its render to itself. Only a hero whose power is on depends on his own allocations and trainables.
+  const specialPowerBonusStats = new Map<HeroId, ComputedRef<HeroStats>>();
 
   function getSpecialPowerBonusStats(id: HeroId): HeroStats {
-    return allSpecialPowerBonuses.value[id] ?? ZERO_STATS;
+    let bonuses = specialPowerBonusStats.get(id);
+
+    if (!bonuses) {
+      bonuses = computed(() => {
+        if (!specialPowerMechanics(id) || getSpecialPowerState(id) === 0) {
+          return ZERO_STATS;
+        }
+
+        return Object.fromEntries(
+          STAT_NAMES.map((stat) => [stat, getSpecialPowerBonus(id, stat)])
+        ) as HeroStats;
+      });
+      specialPowerBonusStats.set(id, bonuses);
+    }
+
+    return bonuses.value;
   }
 
   // * A hero's displayed value per stat — the one every surface renders: form-resolved, then clamped so it never passes MAX_STAT_VALUE (feature 012).
