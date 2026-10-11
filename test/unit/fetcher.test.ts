@@ -17,7 +17,11 @@ let currentUser: { getIdToken: typeof getIdToken } | null = null;
 
 vi.stubGlobal('$fetch', fetchMock);
 vi.stubGlobal('useRuntimeConfig', () => runtimeConfig);
-vi.stubGlobal('useNuxtApp', () => ({ $firebaseAuth: { currentUser } }));
+vi.stubGlobal('useNuxtApp', () => ({
+  $firebaseAuth: async () => ({ currentUser })
+}));
+// * The fetcher gates on the store before it touches the SDK (decision 017); the stub keeps the two in step the way the subscription does.
+vi.stubGlobal('useAuthStore', () => ({ isSignedIn: currentUser !== null }));
 vi.stubGlobal('crypto', globalThis.crypto);
 
 const { fetcher } = await import('@/utils/fetcher');

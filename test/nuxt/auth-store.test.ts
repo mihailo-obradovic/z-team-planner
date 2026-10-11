@@ -43,6 +43,20 @@ describe('useAuthStore', () => {
     expect(store.user).toEqual(ALICE);
   });
 
+  // * Decision 017: the marker is how the next load knows whether to load the SDK at all, so it has to follow the status exactly and hold no identity.
+  it('writes the session marker at signed-in and clears it at anonymous', () => {
+    const store = useAuthStore();
+
+    store.setUser(ALICE);
+
+    expect(localStorage.getItem('z-team-session')).toBe('1');
+    expect(localStorage.getItem('z-team-session')).not.toContain(ALICE.uid);
+
+    store.resetUser();
+
+    expect(localStorage.getItem('z-team-session')).toBeNull();
+  });
+
   it('stays unknown but flags sign-in unavailable when the SDK fails', () => {
     const store = useAuthStore();
 

@@ -1,3 +1,5 @@
+import { loadFirebaseSdk } from '@/utils/firebaseSdk';
+
 import type { WatchSource } from 'vue';
 
 const IDLE_FALLBACK_MS = 200;
@@ -58,8 +60,13 @@ export function useLazySurfaces() {
     }
   }
 
+  // * The Firebase SDK rides along: a Sign in click then finds it cached and opens the popup without a wait (decision 017). Pointless where no API exists to sign in to.
   function preloadAll() {
     preload(...(Object.keys(surfaceLoaders) as SurfaceName[]));
+
+    if (useRuntimeConfig().public.apiBaseUrl) {
+      void loadFirebaseSdk();
+    }
   }
 
   function scheduleWhenIdle() {

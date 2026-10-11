@@ -48,7 +48,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- On load the header renders a reserved slot; the store starts `unknown` and resolves to `anonymous` or `signed-in` once the Firebase SDK reports, so the prerendered page never shows a wrong button. With no API base URL configured it never resolves, so the control is not rendered rather than holding a slot forever.
+- On load the header renders a reserved slot; the store starts `unknown`, so the prerendered page never shows a wrong button. A `z-team-session` localStorage marker, written at `signed-in` and cleared at `anonymous`, says whether a session may exist: with it the Firebase SDK loads and reports `signed-in` or `anonymous`; without it the store resolves `anonymous` after mount and the SDK is loaded only when **Sign in** is clicked, so an anonymous visit never downloads it (decision 017). With no API base URL configured it never resolves, so the control is not rendered rather than holding a slot forever.
 - Anonymous: the slot shows **Sign in**; the build manager keeps a hint — "Sign in to keep your builds stored securely" — beside its local controls. Nothing is gated.
 - Signing in opens Google's popup; on success the store flips to `signed-in`, the first request carrying the token upserts the `users` row, and the header shows the display name with a menu: **My builds**, **Sign out**, **Delete account**.
 - First sign-in on a browser holding local builds the account does not already hold: the offer lists those with checkboxes (all selected), **Keep selected** / **Not now**. Kept builds are sent to feature 005's import endpoint; local copies are untouched either way. The offer is **answered** once per browser (a localStorage flag) — dismissed, or kept with the import accepted. A failed import leaves it open and unspent. A sign-in with every local build **already kept** (feature 008) shows nothing and answers nothing. The offer never opens over another **overlay** (`context/glossary.md`): ready while one is open, it waits and opens once none is.
@@ -74,7 +74,9 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 
 | Input                                                   | Expected Output                                                      | Notes                                      |
 | ------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------ |
-| load `/` signed out                                     | header slot empty until the SDK reports, then **Sign in**            | no layout shift                            |
+| load `/` signed out, no marker                          | header slot empty until mount, then **Sign in**; no Firebase request | no layout shift; the SDK is never loaded   |
+| load `/` with the marker, session still valid           | header slot empty until the SDK reports, then the name               | the marker only says to ask the SDK        |
+| load `/` with the marker, session gone                  | the SDK reports anonymous; **Sign in**; the marker is cleared        | a stale marker costs one SDK load          |
 | sign in with a Google account never seen before         | `users` row created; header shows the name                           | upsert on first request                    |
 | sign in again from another device                       | same row, `last_seen_at` updated, builds listed                      | keyed on `firebase_uid`                    |
 | request with no `Authorization` header to `GET /me`     | `401`, `WWW-Authenticate: Bearer`                                    |                                            |
@@ -104,7 +106,8 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 - Google account with no display name → `display_name` falls back to the email's local part.
 - A user's Google email changes → the row updates on the next sign-in (the key is the uid, not the email).
 - Deletion while a share link is open in another tab → that tab's next request answers 404; the viewer sees "Build not found", which never says the build existed (feature 009).
-- Sign-in popup blocked by the browser → toast explaining it, no redirect fallback.
+- Sign-in popup blocked by the browser → toast explaining it, no redirect fallback. On a cold cache the click first awaits the SDK chunk (idle-preloaded after the reveal, so rarely cold), and a blocker may use that gap; it is reported the same way.
+- The marker removed by hand while the SDK still holds a session → the page shows **Sign in**; the click loads the SDK, which restores the session before the popup opens, and the popup may simply be closed.
 
 ## Invariants
 

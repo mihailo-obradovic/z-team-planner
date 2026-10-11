@@ -1,5 +1,7 @@
 import { skipHydrate } from 'pinia';
 
+import { forgetSession, rememberSession } from '@/utils/sessionMarker';
+
 import type { AuthStatus, AuthUser, SignInAvailability } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -19,10 +21,12 @@ export const useAuthStore = defineStore('auth', () => {
     () => isResolved.value || isSignInUnavailable.value
   );
 
+  // * The session marker follows the status (decision 017): written here and cleared below, so the next load knows before the SDK whether to load it at all.
   function setUser(next: AuthUser) {
     user.value = next;
     status.value = 'signed-in';
     isSignOutChosen.value = false;
+    rememberSession();
   }
 
   function chooseSignOut() {
@@ -32,6 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
   function resetUser() {
     user.value = null;
     status.value = 'anonymous';
+    forgetSession();
   }
 
   function setSignInAvailability(availability: SignInAvailability) {

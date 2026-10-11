@@ -48,7 +48,7 @@ Non-goals:
 
 ## User / System Behavior
 
-- The client plugin initialises Firebase from public runtime config and subscribes `onAuthStateChanged`; the store starts `unknown` and every user-scoped query is `enabled` only at `signed-in`. The server never calls the API; nothing is forwarded.
+- The client plugin initialises Firebase from public runtime config and subscribes `onAuthStateChanged` — on mount when the session marker is present, otherwise on the first Sign in click or token request, the store resolving `anonymous` meanwhile (feature 004, decision 017); the store starts `unknown` and every user-scoped query is `enabled` only at `signed-in`. The server never calls the API; nothing is forwarded. The fetcher attaches a token only at `signed-in`, so a signed-out request never loads the SDK.
 - Every request goes through `fetcher`: `Accept: application/json`, base URL from runtime config, `credentials: 'omit'`, a generated `X-Request-ID`, and `Authorization: Bearer <getIdToken()>` when signed in. On `401` it forces `getIdToken(true)` and retries **once** via `makeRequest`, never recursively. Separately, a `GET` that failed in transit or answered `500`/`502`/`503`/`504` is retried once by ofetch; a mutating verb and an aborted request never are, and Pinia Colada adds no retry of its own.
 - A query keeps its previous data visible across a key change rather than flashing empty, and every failure — query or mutation — goes through the one central policy instead of a try-catch at the call site.
 - A mutation may opt out of the toast for a status it handles itself; that is the only sanctioned way to bypass the policy, and features 007 and 008 are its callers.
