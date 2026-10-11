@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { UDropdownMenu } from '#components';
 import FirstLoginOffer from '@/components/account/FirstLoginOffer.vue';
 import { clearUserScopedCache } from '@/services/queries/clearUserScopedCache';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -388,6 +389,44 @@ describe('FirstLoginOffer', () => {
     expect(importBuildsSpy).not.toHaveBeenCalled();
 
     second.unmount();
+  });
+
+  it('waits for an open overlay to close before it opens', async () => {
+    const menuOpen = ref(true);
+
+    // ! The defect this pins: the offer's reads settled while the build menu was open, and the offer opened over it.
+    // ! It took Reka's top layer, so the menu still painted above it while every tap went through to the offer.
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          store = useAuthStore();
+          store.resetUser();
+          clearUserScopedCache();
+          localBuilds.value = [localBuild('a', 'Main squad')];
+
+          return () => [
+            h(UDropdownMenu, {
+              open: menuOpen.value,
+              'onUpdate:open': (open: boolean) => (menuOpen.value = open),
+              items: [{ label: 'Tank line' }]
+            }),
+            h(FirstLoginOffer)
+          ];
+        }
+      }),
+      { global: { stubs: STUBS }, attachTo: document.body }
+    );
+
+    await signIn();
+
+    expect(fetchBuildsSpy).toHaveBeenCalled();
+    expect(page.text()).not.toContain('Main squad');
+
+    menuOpen.value = false;
+
+    await vi.waitFor(() => expect(page.text()).toContain('Main squad'));
+
+    page.unmount();
   });
 
   it('survives an import that fails, and is spent once one succeeds', async () => {
