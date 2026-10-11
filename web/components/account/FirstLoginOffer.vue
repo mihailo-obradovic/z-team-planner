@@ -71,8 +71,11 @@ const { mutate: importBuilds, isLoading: isImporting } = useImportBuilds({
 
 const { localBuilds } = useLocalBuilds();
 
+const isOverlayOpen = useOverlayOpen();
+
 const isOpen = ref(false);
 const isOfferPending = ref(false);
+const isOfferReady = ref(false);
 const selected = ref<string[]>([]);
 
 const { alreadyKeptIds, status: alreadyKeptStatus } = useAlreadyKept(
@@ -172,6 +175,7 @@ function handleKeep() {
 watch(isSignedIn, (signedIn, wasSignedIn) => {
   if (!signedIn) {
     isOfferPending.value = false;
+    isOfferReady.value = false;
 
     return;
   }
@@ -192,6 +196,22 @@ watch([isOfferPending, alreadyKeptStatus], ([pending, status]) => {
   isOfferPending.value = false;
 
   if (status === 'failed' || candidates.value.length === 0) {
+    return;
+  }
+
+  isOfferReady.value = true;
+});
+
+// ! The one overlay nobody asked for never opens over one the user did. Opened over the build menu it became Reka's top layer, so the menu still painted above it while every tap went through to the offer.
+watch([isOfferReady, isOverlayOpen], ([ready, overlayOpen]) => {
+  if (!ready || overlayOpen) {
+    return;
+  }
+
+  isOfferReady.value = false;
+
+  // * Read now, not when the answer came: the local builds may have changed while the offer waited.
+  if (candidates.value.length === 0) {
     return;
   }
 

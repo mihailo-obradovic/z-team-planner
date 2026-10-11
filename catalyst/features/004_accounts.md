@@ -51,7 +51,7 @@ Non-goals:
 - On load the header renders a reserved slot; the store starts `unknown` and resolves to `anonymous` or `signed-in` once the Firebase SDK reports, so the prerendered page never shows a wrong button. With no API base URL configured it never resolves, so the control is not rendered rather than holding a slot forever.
 - Anonymous: the slot shows **Sign in**; the build manager keeps a hint — "Sign in to keep your builds stored securely" — beside its local controls. Nothing is gated.
 - Signing in opens Google's popup; on success the store flips to `signed-in`, the first request carrying the token upserts the `users` row, and the header shows the display name with a menu: **My builds**, **Sign out**, **Delete account**.
-- First sign-in on a browser holding local builds the account does not already hold: the offer lists those with checkboxes (all selected), **Keep selected** / **Not now**. Kept builds are sent to feature 005's import endpoint; local copies are untouched either way. The offer is **answered** once per browser (a localStorage flag) — dismissed, or kept with the import accepted. A failed import leaves it open and unspent. A sign-in with every local build **already kept** (feature 008) shows nothing and answers nothing.
+- First sign-in on a browser holding local builds the account does not already hold: the offer lists those with checkboxes (all selected), **Keep selected** / **Not now**. Kept builds are sent to feature 005's import endpoint; local copies are untouched either way. The offer is **answered** once per browser (a localStorage flag) — dismissed, or kept with the import accepted. A failed import leaves it open and unspent. A sign-in with every local build **already kept** (feature 008) shows nothing and answers nothing. The offer never opens over another **overlay** (`context/glossary.md`): ready while one is open, it waits and opens once none is.
 - Sign-out clears the store and the token; local builds remain and the page stays usable.
 - Delete account: the confirm dialog names the account build count; on confirm the API deletes everything, the client signs out, and a toast confirms. Share links to those builds answer 404 from then on.
 - A request that answers `401` is retried once after a forced token refresh; a second `401` signs the user out locally with a toast.
@@ -86,6 +86,7 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 | **Keep selected**, the import fails                     | dialog stays open; offer returns on the next sign-in                 | answered, not merely attempted             |
 | first sign-in with 0 local builds                       | no offer                                                             |                                            |
 | first sign-in, both local builds already kept           | no offer                                                             | not answered: a new build is offered later |
+| offer ready while the build menu is open                | no offer until the menu closes, then the offer                       | never stacked over a user-opened overlay   |
 | `FIREBASE_AUTH_EMULATOR_HOST` set, `APP_ENV=production` | API refuses to start                                                 | emulator tokens are unsigned               |
 | Firebase unreachable, valid token in hand               | API keeps validating offline until `exp`; sign-in fails with a toast | no outage-time data loss                   |
 
@@ -138,9 +139,12 @@ Walkthrough — anonymous sees the app plus a Sign in button and the hint. A use
 - `tests/auth/test_get_current_user.py`: the six `401` cases, a valid token, the emulator guard at startup.
 - `tests/routes/test_me.py`: upsert on first request, `GET /me` shape, `DELETE /me` cascade and Firebase-first ordering, `503` when Firebase is unreachable — against a real Postgres (testcontainers) and the Firebase emulator.
 - `test/nuxt/auth.test.ts`: tri-state store transitions, the 401-refresh-retry-then-sign-out path, the first-login offer answered once, and a failed import leaving it unspent.
+- `test/nuxt/first-login-offer.test.ts`: the offer waiting for an open build menu to close.
 
 ## Verification
 
 By test: the six `401` cases and the emulator guard; `/me`'s shape and scoped `build_count`; `DELETE /me`'s cascade, its `503` with nothing deleted, and Firebase-before-row ordering; the popup outcomes; the store and the `401` refresh-retry.
 
 In a browser against the API, the Neon dev branch and the Auth emulator: the header resolved with no reflow; a new account created its row with `google_sub` captured; the offer kept 2 of 4 local builds, left all 4 local, never returned, and stayed unspent after an offline failure; **Delete account** named the count, took the builds and the Firebase user, and turned a live share link into a `404`. Not walked live: a Firebase outage, or a real Google consent screen.
+
+The overlay rule: its test failed on the pre-fix code (the offer opened over the open menu) and passes after; live, the body mark Reka leaves stayed set across the menu-to-dialog handoff, so a waiting offer cannot slip in between. The offer's own sign-in path was not walked live.

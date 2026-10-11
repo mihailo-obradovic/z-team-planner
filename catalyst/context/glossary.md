@@ -85,6 +85,8 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 
 **Common symbol** — an icon whose meaning is assumed known (copy, save, share, close) and which therefore carries a label for assistive technology but no hint.
 
+**Overlay** — a menu, dialog, slideover or drawer that sits above the planner and holds focus while open. An overlay the user did not open — one raised by the app on its own, like the first-login offer — never opens over another overlay; it waits until none is open.
+
 ## Hero notes
 
 **Hero note** — one always-shown line of non-obvious characterization for a hero, rendered in the detail dialog's notes panel. Authored in the repository, never player-written, never persisted. Distinguished from an advisory by being unconditional (Waterboy's episode-8 variant is conditional on episode setup, not on allocation, so it is still a note).
