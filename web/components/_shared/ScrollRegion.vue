@@ -3,7 +3,7 @@
     :is="as"
     ref="region"
     :class="['border transition-colors', OVERFLOW_CLASS[axis], edgeClasses]"
-    @scroll.passive="measure"
+    @scroll.passive="scheduleMeasure"
   >
     <slot />
   </component>
@@ -45,6 +45,9 @@ const EDGE_CLASS: Record<keyof HiddenEdges, { hidden: string; clear: string }> =
     }
   };
 
+// * Longer than the longest enter in `motion.css` (the modal's 200 ms); a surface with no animation pays this once, before its first edge rule.
+const ENTER_CEILING_MS = 300;
+
 const NO_EDGES: HiddenEdges = {
   top: false,
   bottom: false,
@@ -60,7 +63,7 @@ const { as = 'div', axis = 'vertical' } = defineProps<{
 
 const region = useTemplateRef<HTMLElement>('region');
 
-const { edgeClasses, measure } = useHiddenEdges();
+const { edgeClasses, scheduleMeasure } = useHiddenEdges();
 
 const { bringIntoView } = useBringIntoView();
 
@@ -104,6 +107,36 @@ function useHiddenEdges() {
 
   let resizeObserver: ResizeObserver | undefined;
   let mutationObserver: MutationObserver | undefined;
+  let frame: number | undefined;
+
+  // * Reads are batched to one per frame (decision 017): a scroll, a resize and the observer's first report of every child all arrive in a burst, and each read forces a layout of the surface the region sits in.
+  function scheduleMeasure() {
+    if (frame !== undefined) {
+      return;
+    }
+
+    frame = requestAnimationFrame(() => {
+      frame = undefined;
+      measure();
+    });
+  }
+
+  // * The first measure waits for the surface the region sits in to finish entering (decision 017; feature 013, "a region not laid out yet"): a dialog's enter animation scales the whole tree, and a read during it lays out the half-drawn dialog. Listened for, never queried — `getAnimations()` would itself force the layout being avoided — with a ceiling for a surface that has no animation to end.
+  function entered(element: HTMLElement): Promise<void> {
+    const surface = element.closest<HTMLElement>('[data-state="open"]');
+
+    return new Promise((resolve) => {
+      const ceiling = setTimeout(done, ENTER_CEILING_MS);
+
+      surface?.addEventListener('animationend', done, { once: true });
+
+      function done() {
+        clearTimeout(ceiling);
+        surface?.removeEventListener('animationend', done);
+        resolve();
+      }
+    });
+  }
 
   function measure() {
     const element = region.value;
@@ -139,7 +172,7 @@ function useHiddenEdges() {
       resizeObserver.observe(observed);
     }
 
-    measure();
+    scheduleMeasure();
   }
 
   onMounted(() => {
@@ -149,20 +182,24 @@ function useHiddenEdges() {
       return;
     }
 
-    resizeObserver = new ResizeObserver(measure);
+    resizeObserver = new ResizeObserver(scheduleMeasure);
     // * A new child isn't observed yet.
     mutationObserver = new MutationObserver(observe);
     mutationObserver.observe(element, { childList: true });
 
-    observe();
+    void entered(element).then(observe);
   });
 
   onBeforeUnmount(() => {
     resizeObserver?.disconnect();
     mutationObserver?.disconnect();
+
+    if (frame !== undefined) {
+      cancelAnimationFrame(frame);
+    }
   });
 
-  return { edgeClasses, measure };
+  return { edgeClasses, scheduleMeasure };
 }
 
 function useBringIntoView() {
