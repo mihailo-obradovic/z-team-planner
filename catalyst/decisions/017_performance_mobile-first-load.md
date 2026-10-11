@@ -48,3 +48,5 @@ Bar: mobile LCP ≤ 2.5 s on both pages, INP ≤ 200 ms at 4×. Budget: the Java
 ## Verification
 
 Per group: Lighthouse 13.5.0 CLI, mobile and desktop, three runs, median, signed out, test share `eab59a6c`, recorded here and in the map; `nuxt analyze` after A against the budget; a DevTools trace per C change; render count in dev before and after the computed fix.
+
+Group A (2026-10-11, local production build behind a brotli proxy — the project's ignored build step cancels every preview deploy, so production numbers follow the merge): budget 226.0 KB from 315 (CI green). Mobile `/`: LCP 5.39 s (baseline 5.6), FCP 3.0 (3.7), TBT 788 ms (1292), CLS 0.051; `/b/{id}`: LCP 4.71 s (5.5), TBT 304 ms (850). Desktop `/` LCP 1.22 s, `/b/{id}` 1.08 s. The bar is not met on mobile: the LCP element is the first portrait, held by feature 023 until hydration, which is a 793 ms long task after 1.7 s of script evaluation at 4× CPU — a CPU floor, not bytes.
