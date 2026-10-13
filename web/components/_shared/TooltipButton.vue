@@ -11,6 +11,7 @@
   >
     <IconButton
       :label="label ?? text"
+      :description="label === undefined || label === text ? undefined : text"
       :icon="icon"
       :color="color"
       :size="size"
@@ -26,7 +27,7 @@
 const props = withDefaults(
   defineProps<{
     text: string;
-    // * The accessible name when it should differ from the hint — the read-only chips say the state, not the description.
+    // * The accessible name when it should differ from the hint, which then becomes the description: a power chip is named by its power, a read-only one by its power and state (feature 018).
     label?: string;
     icon: string;
     color?: 'primary' | 'secondary' | 'neutral';

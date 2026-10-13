@@ -1,7 +1,9 @@
 <template>
-  <!-- * No `click` emit: declaring one would fire twice, while an undeclared `@click` falls through to the native button. -->
+  <!-- * No `click` emit: declaring one would fire twice, while an undeclared `@click` reaches the native button through `attrs`. -->
+  <!-- ! `attrs` are bound by hand and first, so the description wins over the `aria-describedby` a tooltip trigger falls through: Reka sets it only while the tooltip is open, and its `undefined` would erase ours the rest of the time. -->
   <!-- * `readonly` keeps the glyph and its colour but renders a span with `role="img"`: information, not a control (composition rules, Read-only regions). -->
   <u-button
+    v-bind="attrs"
     :as="readonly ? 'span' : undefined"
     :role="readonly ? 'img' : undefined"
     :icon="swapKey === undefined ? icon : undefined"
@@ -10,6 +12,7 @@
     :disabled="readonly ? undefined : disabled"
     :active="active"
     :aria-label="label"
+    :aria-describedby="description ? descriptionId : attrs['aria-describedby']"
     :aria-pressed="
       readonly || indicator || active === undefined ? undefined : active
     "
@@ -28,10 +31,16 @@
     </template>
 
     <slot v-if="swapKey === undefined" />
+
+    <span v-if="description" :id="descriptionId" class="sr-only">{{
+      description
+    }}</span>
   </u-button>
 </template>
 
 <script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+
 withDefaults(
   defineProps<{
     icon?: string;
@@ -45,7 +54,12 @@ withDefaults(
     // * Changing it swaps the glyph out-in; absent, the glyph is static.
     swapKey?: string | number;
     readonly?: boolean;
+    // * Read after the name; always in the DOM, unlike a tooltip, which a touch screen reader never opens (feature 018).
+    description?: string;
   }>(),
   { size: 'xs' }
 );
+
+const attrs = useAttrs();
+const descriptionId = useId();
 </script>

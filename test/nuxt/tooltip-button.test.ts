@@ -91,6 +91,37 @@ describe('TooltipButton confirmations', () => {
     expect(document.body.querySelector('[role="tooltip"]')).toBeNull();
   });
 
+  it('is named by its label and described by its hint', async () => {
+    mounted = await mountSuspended(
+      chip({
+        text: 'Comet: a description',
+        label: 'Comet',
+        icon: 'i-lucide-swords'
+      }),
+      { attachTo: document.body }
+    );
+
+    const button = mounted.get('button');
+    const describedBy = button.attributes('aria-describedby');
+
+    expect(button.attributes('aria-label')).toBe('Comet');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy!)?.textContent?.trim()).toBe(
+      'Comet: a description'
+    );
+  });
+
+  it('gets no description when its name is the hint', async () => {
+    mounted = await mountSuspended(
+      chip({ text: 'Reset training', icon: 'i-lucide-rotate-ccw' })
+    );
+
+    const button = mounted.get('button');
+
+    expect(button.attributes('aria-label')).toBe('Reset training');
+    expect(button.attributes('aria-describedby')).toBeUndefined();
+  });
+
   it('replaces rather than stacking when a second chip is tapped', async () => {
     mode = 'no-hover';
 

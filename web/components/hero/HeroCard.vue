@@ -12,7 +12,7 @@
             <span v-if="flightShown" class="flex">
               <TooltipButton
                 :text="flightTooltip"
-                :label="readonly ? flightLabel : undefined"
+                :label="readonly ? flightLabel : flightName"
                 icon="i-lucide-plane"
                 :color="flightColor"
                 :active="flightActive"
@@ -222,9 +222,10 @@ const flightVisuallyActive = computed(() => {
 
 const showControls = computed(() => canLevelUp.value && !props.readonly);
 
+const flightName = computed(() => flightInfo.value?.name ?? 'Flight');
+
 const flightLabel = computed(
-  () =>
-    `${flightInfo.value?.name ?? 'Flight'}, ${flightActive.value ? 'trained' : 'untrained'}`
+  () => `${flightName.value}, ${flightActive.value ? 'trained' : 'untrained'}`
 );
 
 const flightTooltip = computed(() => {

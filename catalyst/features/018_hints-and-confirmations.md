@@ -88,14 +88,14 @@ All in `no-hover` mode. Chip states are feature 012's.
 
 What a screen reader is given on focus, in either mode:
 
-| Chip and state                         | Name             | Pressed           | Description                               |
-| -------------------------------------- | ---------------- | ----------------- | ----------------------------------------- |
-| upgrade chip                           | "Comet"          | true once trained | "Comet: <its description>"                |
-| flight chip, the power has no name     | "Flight"         | false             | the flight description                    |
-| Sonar's form chip, bat form            | "Mega Bat Form"  | true              | "Mega Bat Form"; "Hybrid Form" when false |
-| En Pointe on Mobility                  | "En Pointe"      | true              | "En Pointe: +1 Mobility (active)"         |
-| upgrade chip disabled by a full budget | "Comet"          | false             | the hint, read on a disabled button       |
-| read-only chip (feature 007)           | "Comet, trained" | none              | the hint                                  |
+| Chip and state                         | Name             | Pressed           | Description                              |
+| -------------------------------------- | ---------------- | ----------------- | ---------------------------------------- |
+| upgrade chip                           | "Comet"          | true once trained | "Comet: <its description>"               |
+| flight chip, the power has no name     | "Flight"         | false             | the flight description                   |
+| Sonar's form chip, bat form            | "Mega Bat Form"  | true              | "Hybrid Form" when false; none when true |
+| En Pointe on Mobility                  | "En Pointe"      | true              | "En Pointe: +1 Mobility (active)"        |
+| upgrade chip disabled by a full budget | "Comet"          | false             | the hint, read on a disabled button      |
+| read-only chip (feature 007)           | "Comet, trained" | none              | the hint                                 |
 
 ## Business Rules
 
@@ -104,7 +104,7 @@ What a screen reader is given on focus, in either mode:
 - Wording: binary chips say "<Name> <past participle>" — revealed, trained — or "<Name> on" for Supernova; Sonar's form says the resulting form's name. Cycling chips say "<Name>: <resulting state>". No exclamation marks; the annex's plain reading voice.
 - A line is shown **iff** the chip's resulting state is active (binary) or a non-off cycle position (cycling). Never on deactivation.
 - The line is rendered with the tooltip's styling and placement so nothing new is designed; the confirmation and the hint are never on screen together, because they belong to different modes.
-- Names: the power's own name; flight falls back to "Flight"; Sonar's form chip is "Mega Bat Form", pressed while in it. A read-only chip has no pressed state, so its name carries the state instead (feature 007).
+- Names: the power's own name; flight falls back to "Flight"; Sonar's form chip is "Mega Bat Form", pressed while in it. A hint that only repeats the name is left out. A read-only chip has no pressed state, so its name carries the state instead (feature 007).
 - `--duration-linger` is 1500ms, added to annex §11 as a named token. The hold is not motion and needs no reduced-motion guard; the fade is an opacity change at the baseline, which needs none either (§14.4).
 
 ## Edge Cases
@@ -148,9 +148,11 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 ## Tests
 
 - `test/unit/confirmationText.test.ts`: every row of the Examples table as a pure function of chip kind, previous and resulting state, including the flight fallback, the singular slot, and `null` for every deactivation.
-- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`. The same file: the button's name is the given label, never the hint, and its description is the hint. `test/nuxt/tooltip-button-device-flip.test.ts`: the mode going `no-hover` and back raises no prop warning — the tooltip remounts per mode, since Reka fixes at setup whether `open` is passive.
+- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`. The same file: a label names the button and the hint describes it. `test/nuxt/chip-names.test.ts`: the screen-reader table on real cards. `test/nuxt/tooltip-button-device-flip.test.ts`: the mode going `no-hover` and back raises no prop warning — the tooltip remounts per mode, since Reka fixes at setup whether `open` is passive.
 - The linger timing and the fade are verified on the live walk, not asserted in jsdom.
 
 ## Verification
 
-`test/unit/confirmationText.test.ts`, `test/nuxt/tooltip-button.test.ts` and `test/nuxt/input-mode.test.ts` pass, alongside the whole suite, `pnpm typecheck`, `pnpm lint` and `pnpm format:check`. The user tested manually against a dev server, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit.
+The tests above and `test/nuxt/input-mode.test.ts` pass with the whole suite, typecheck, lint and format check. The user tested manually against a dev server, confirming tapped power chips show the confirmation line and behave as designed. A systematic pass through every Examples row on a real device, iOS included, was not performed and stays a residual risk — no local WebKit.
+
+Chip names (2026-10-13): `chip-names.test.ts` and the label case in `tooltip-button.test.ts` failed before the change. Checked live in Chrome with axe, a focus-opened tooltip included; not yet heard through a screen reader.
