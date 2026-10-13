@@ -1,5 +1,15 @@
 import { PORTRAIT_DENSITIES, portraitScreens } from './web/config/portraits';
 
+// * Decision 018: every route's static security headers. A `<meta>` CSP cannot carry `frame-ancestors`, so it is a header; same-origin-allow-popups, because plain same-origin breaks the sign-in popup.
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "frame-ancestors 'none'",
+  'X-Frame-Options': 'DENY',
+  'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+} as const;
+
 export default defineNuxtConfig({
   srcDir: 'web/',
 
@@ -66,6 +76,27 @@ export default defineNuxtConfig({
           `Missing required public runtime config: ${missing.join(', ')}. See .env.example.`
         );
       }
+    },
+
+    // ! nuxt-security hashes public assets before @nuxt/fonts has written its files, so the preloaded font would carry the hash of an empty file and be blocked. Fonts are not scripts, so the CSP loses nothing without their hashes (decision 018). `nitro:config`, not `ready`: Nitro has copied its virtual modules by then. Delete once nuxt-security hashes after the fonts are written (Post-release: nuxt-security upstream report).
+    'nitro:config'(nitroConfig) {
+      const sriHashes = nitroConfig.virtual?.['#sri-hashes'];
+      if (!nitroConfig.virtual || typeof sriHashes !== 'function') {
+        return;
+      }
+
+      nitroConfig.virtual['#sri-hashes'] = async () => {
+        const source = String(await sriHashes());
+        const hashes: Record<string, string> = JSON.parse(
+          source.slice(source.indexOf('{'))
+        );
+        const scriptHashes = Object.fromEntries(
+          Object.entries(hashes).filter(
+            ([path]) => !path.startsWith('/_fonts/')
+          )
+        );
+        return `export default ${JSON.stringify(scriptHashes)}`;
+      };
     }
   },
 
@@ -75,8 +106,74 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@pinia/nuxt',
     '@pinia/colada-nuxt',
-    '@nuxtjs/seo'
+    '@nuxtjs/seo',
+    'nuxt-security'
   ],
+
+  // * Decision 018: the module owns the CSP; every other header it knows is either `SECURITY_HEADERS` or off, and its middleware is off. Prerendered pages get hashes and SRI, `/b/**` a nonce per request.
+  security: {
+    nonce: true,
+    sri: true,
+    removeLoggers: false,
+    hidePoweredBy: false,
+    rateLimiter: false,
+    requestSizeLimiter: false,
+    xssValidator: false,
+    corsHandler: false,
+    allowedMethodsRestricter: false,
+    // ! The `routeRules` values again: on `/b/**`'s function response the module sets these itself, and a `false` would strip the `routeRules` header rather than leave it.
+    headers: {
+      xFrameOptions: SECURITY_HEADERS['X-Frame-Options'],
+      crossOriginOpenerPolicy: SECURITY_HEADERS['Cross-Origin-Opener-Policy'],
+      strictTransportSecurity: { maxAge: 31536000, includeSubdomains: true },
+      xContentTypeOptions: SECURITY_HEADERS['X-Content-Type-Options'],
+      referrerPolicy: SECURITY_HEADERS['Referrer-Policy'],
+      crossOriginResourcePolicy: false,
+      crossOriginEmbedderPolicy: false,
+      originAgentCluster: false,
+      xDNSPrefetchControl: false,
+      xDownloadOptions: false,
+      xPermittedCrossDomainPolicies: false,
+      xXSSProtection: false,
+      permissionsPolicy: false,
+      contentSecurityPolicy: {
+        'default-src': ["'self'"],
+        'base-uri': ["'none'"],
+        'object-src': ["'none'"],
+        'form-action': ["'self'"],
+        // * Only `/b/**`'s per-request header carries it; a `<meta>` CSP drops it, so the prerendered pages rely on the `routeRules` header.
+        'frame-ancestors': ["'none'"],
+        // * 'strict-dynamic' lets gapi in through Firebase's own trusted script; the host and 'unsafe-inline' are fallbacks only browsers without it read.
+        'script-src': [
+          "'self'",
+          "'strict-dynamic'",
+          "'unsafe-inline'",
+          "'nonce-{{nonce}}'",
+          'https://apis.google.com'
+        ],
+        'script-src-attr': ["'none'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", 'data:'],
+        'font-src': ["'self'"],
+        'connect-src': [
+          "'self'",
+          'https://identitytoolkit.googleapis.com',
+          'https://securetoken.googleapis.com',
+          'https://www.googleapis.com'
+        ],
+        'frame-src': [
+          'https://z-team-planner.firebaseapp.com',
+          'https://accounts.google.com'
+        ],
+        'upgrade-insecure-requests': true
+      }
+    }
+  },
+
+  // * Dev keeps HMR and the auth emulator on :9099 out of the policy.
+  $development: {
+    security: { enabled: false }
+  },
 
   ui: {
     colorMode: false
@@ -132,6 +229,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/**': { headers: SECURITY_HEADERS },
     '/': { prerender: true },
     '/privacy': { prerender: true },
 
