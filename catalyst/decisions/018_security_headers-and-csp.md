@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Implemented
 
 ## Type
 
@@ -60,4 +60,9 @@ Local production build with real Firebase settings, headless Chromium:
 - All six headers arrive on all three pages, `/b/{id}`'s function response included. The Vercel build's `config.json` carries them on `/(.*)`.
 - The budget is 226.4 KB, and the CI set passes.
 
-After deploying: the maintainer's real Google sign-in on production, and the map's Lighthouse protocol on `/` and `/b/{id}` with no High best-practices finding except Trusted Types.
+Production (2deb7f7):
+
+- The maintainer completed a real Google sign-in.
+- All six headers arrive on `/` and `/b/{id}`, and there are no CSP violations.
+- The map's Lighthouse protocol shows no High best-practices finding except Trusted Types; the only HSTS finding is the accepted Medium for no `preload`.
+- Mobile LCP is 4.94 s on `/` and 5.07 s on `/b/{id}`, within their ceilings.

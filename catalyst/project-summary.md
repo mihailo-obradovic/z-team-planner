@@ -69,7 +69,7 @@ One line per record: type, status, title, link.
 | 015 | upgrade     | Implemented       | Move the test stack to Vitest 5 and @nuxt/test-utils 4                          | [015_upgrade_test-stack-vitest-5](decisions/015_upgrade_test-stack-vitest-5.md)               |
 | 016 | tooling     | Implemented       | Hold TypeScript below 7 until vue-tsc runs on it                                | [016_tooling_hold-typescript-below-7](decisions/016_tooling_hold-typescript-below-7.md)       |
 | 017 | performance | Implemented       | Pass Core Web Vitals on a phone — first load, share page, interactions          | [017_performance_mobile-first-load](decisions/017_performance_mobile-first-load.md)           |
-| 018 | security    | Accepted          | Security headers and an enforcing Content Security Policy                       | [018_security_headers-and-csp](decisions/018_security_headers-and-csp.md)                     |
+| 018 | security    | Implemented       | Security headers and an enforcing Content Security Policy                       | [018_security_headers-and-csp](decisions/018_security_headers-and-csp.md)                     |
 
 ## Domain Decision Index
 
