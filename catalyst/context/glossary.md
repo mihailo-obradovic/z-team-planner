@@ -93,6 +93,8 @@ Viewing one's own **cloud build** is not shared-build mode, even though both arr
 
 **Budget** — the byte limit on the JavaScript `/` loads before any interaction, which CI fails the build on. Distinct from a bar: a budget is enforced, a bar is only recorded.
 
+**Warm-up request** — a request sent to the API on a schedule, only to keep its function from going cold; the job sending them is the warm-up schedule ([operations.md](../operations.md)). It never touches the database. Not a ping or a check-in: those name the backup's report to its missed-run alert, which flows the other way.
+
 ## Hero notes
 
 **Hero note** — one always-shown line of non-obvious characterization for a hero, rendered in the detail dialog's notes panel. Authored in the repository, never player-written, never persisted. Distinguished from an advisory by being unconditional (Waterboy's episode-8 variant is conditional on episode setup, not on allocation, so it is still a note).
