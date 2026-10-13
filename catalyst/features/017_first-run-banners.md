@@ -138,6 +138,6 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Verification
 
-Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass.
+Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass. A first visit's layout-shift recording on a production build reads 0.0002 at 412 and 1350 wide, the one entry after input.
 
 Remaining risk: at 320 the two banners take roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Shortening the copy is the lever if it annoys.
