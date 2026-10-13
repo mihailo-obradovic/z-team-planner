@@ -131,6 +131,36 @@ The API is stateless — recovery is "start it again". The data drill is the Neo
 - `uvicorn --reload` is development only.
 - `FIREBASE_AUTH_EMULATOR_HOST` set while `APP_ENV` is not `development` stops the process at startup. That is the guard working, not a bug.
 
+## API warm-up schedule (cron-job.org)
+
+A **warm-up request** is a `GET /healthz` sent from outside to keep the API function alive. The **warm-up schedule** is the cron-job.org job that sends one every 3 minutes, around the clock. Vercel reclaims an idle Python instance after 5 to 7 minutes (one probe per gap, 11 October 2026), and the next request then waits ~4.4 s before the app exists. Only ~0.6 s of that is our imports; the rest is the platform starting the sandbox, so trimming imports cannot replace the schedule. That wait was most of a share link's ~7–8 s first render on a phone after quiet time.
+
+Only the function is kept warm. `/healthz` touches nothing, so Neon still suspends after 5 minutes and the first query after quiet pays its ~0.75–1.5 s wake. Keeping a 0.25 CU compute awake around the clock needs ~182 CU-hours a month against the free plan's 100, which would suspend the database for the rest of the month (Neon section).
+
+The job is configured by hand in the maintainer's cron-job.org account, and these settings are its source of truth: URL `https://z-team-planner.vercel.app/healthz`, method `GET`, crontab `*/3 * * * *`, no headers or authentication, responses not saved, email on failure and on the job being disabled.
+
+### Operate
+
+```bash
+curl -sS -o /dev/null -w '%{time_starttransfer}\n' https://z-team-planner.vercel.app/healthz
+                                            # ~0.2–0.5 s warm; ~5 s means the schedule is not reaching it
+vercel logs <deployment-url>                # a GET /healthz every 3 minutes, each a few ms
+```
+
+The job's run history and response times are on the cron-job.org dashboard. Active CPU and invocations are on the Vercel project's Usage page.
+
+### Recovery
+
+Nothing to restore. A job that was deleted or disabled is recreated from the settings above. Pausing it is always safe: the only effect is that the first request after quiet is cold again.
+
+### Quirks
+
+- **The Hobby plan is the limit to watch, not the request count.** About 14.4k warm-up requests a month is ~1.4% of Hobby's 1M invocations, and a warm one costs milliseconds of active CPU. If Vercel started reclaiming instances in under 3 minutes, every request would pay a cold boot instead, and 14.4k of those would approach the 4 active-CPU hours. Stop rule: when the schedule's share of active CPU passes 25% of the allowance, pause the job and decide again. First Usage check and a re-run of the cold probe are due 20 October 2026.
+- **Never point it at `/readyz`.** That runs a query, keeps Neon awake, and spends the CU-hours above.
+- **It is not the missed-run alert.** "Ping" and "check-in" are the backup's healthchecks.io words; nothing watches the warm-up schedule from outside except cron-job.org's own failure email, and a deleted job sends none. The symptom is a ~5 s `/healthz` after a quiet spell.
+- **Why cron-job.org.** Vercel Cron on Hobby runs at most once a day, anywhere in the hour. GitHub Actions schedules start hours late here (Backups) and stop after 60 quiet days. UptimeRobot's free floor of 5 minutes sits at the edge of the instance lifetime. healthchecks.io only receives requests.
+- **Lighthouse does not see it.** Lab runs hit a warm API anyway, so the `/b/{id}` bar in decision 017 is unchanged. The gain is a real visitor's first request after quiet time.
+
 ## Releases
 
 The product's own version, which is unrelated to the `Catalyst version` stamp. Root `VERSION` holds the number, and `package.json` and `pyproject.toml` carry copies. `CHANGELOG.md` holds the release notes. A release is a deliberate act by the maintainer and never follows from a merge alone. Decision 013 holds the why.
