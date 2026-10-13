@@ -1,7 +1,7 @@
 <template>
   <section class="panel bg-default">
     <div class="flex plate items-center px-3">
-      <h2 class="font-heading text-title uppercase">The math</h2>
+      <h3 class="font-heading text-title uppercase">The math</h3>
     </div>
 
     <!-- * `w-96` applies only at the widest tier, where the panel doesn't fill its row. -->
@@ -42,9 +42,9 @@
 
       <!-- * Every row always renders, a dash when empty, so the panel's height never changes. -->
       <div class="flex flex-col gap-1">
-        <h3 class="font-heading text-label text-muted uppercase">
+        <h4 class="font-heading text-label text-muted uppercase">
           Success calculation
-        </h3>
+        </h4>
 
         <dl class="flex flex-col gap-1">
           <div class="flex h-8 items-center justify-between gap-6">
@@ -98,9 +98,9 @@
           </div>
 
           <div class="pt-1">
-            <h3 class="font-heading text-label text-muted uppercase">
+            <h4 class="font-heading text-label text-muted uppercase">
               Special conditions
-            </h3>
+            </h4>
           </div>
 
           <div class="flex h-8 items-center justify-between gap-6">

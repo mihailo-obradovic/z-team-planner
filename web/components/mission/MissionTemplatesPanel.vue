@@ -1,7 +1,7 @@
 <template>
   <section class="panel bg-default">
     <div class="flex plate items-center px-3">
-      <h2 class="font-heading text-title uppercase">Mission templates</h2>
+      <h3 class="font-heading text-title uppercase">Mission templates</h3>
     </div>
 
     <div class="flex flex-col gap-2 p-3">

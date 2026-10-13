@@ -1,7 +1,7 @@
 <template>
   <section class="h-fit panel bg-default">
     <div class="flex plate items-center px-3">
-      <h2 class="font-heading text-title uppercase">Your team</h2>
+      <h3 class="font-heading text-title uppercase">Your team</h3>
     </div>
 
     <!-- * `min-w-0` without `flex-wrap` keeps the four slots in one row, shrinking only when they don't fit. -->

@@ -19,6 +19,9 @@
           :ref="observeTabWrapper"
           class="@container flex min-h-full tab-fade flex-col gap-4 p-4"
         >
+          <!-- * Each panel opens one level under the page's h1, so the cards' h3 and the mission panels' h3 never skip a level. The tab already says it on screen. -->
+          <h2 class="sr-only">{{ item.label }}</h2>
+
           <template v-if="item.value === 'overview'">
             <!-- * A pointer or focus over the roster is the intent that fetches the dialog's chunk before the click (decision 017). -->
             <div

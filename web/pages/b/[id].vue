@@ -29,9 +29,10 @@
           Shared build
         </span>
 
-        <span class="text-lg font-semibold text-highlighted">{{
-          sharedBuild.name
-        }}</span>
+        <!-- * The build's name heads the cards below it, so their h3 sits one level under it. -->
+        <h2 class="text-lg font-semibold text-highlighted">
+          {{ sharedBuild.name }}
+        </h2>
       </div>
 
       <u-button
