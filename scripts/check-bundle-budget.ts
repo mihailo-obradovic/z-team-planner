@@ -8,7 +8,10 @@ const OUTPUT_DIR = join('.output', 'public');
 
 const html = readFileSync(join(OUTPUT_DIR, 'index.html'), 'utf8');
 
-const entry = /<script type="module" src="(\/_nuxt\/[^"]+)"/.exec(html)?.[1];
+// * Attributes in any order: SRI (decision 018) writes `integrity` before `src` and `href`.
+const entry = /<script[^>]*\btype="module"[^>]*\bsrc="(\/_nuxt\/[^"]+)"/.exec(
+  html
+)?.[1];
 
 if (!entry) {
   console.error('No entry module script found in the prerendered /.');
@@ -16,7 +19,9 @@ if (!entry) {
 }
 
 const preloaded = [
-  ...html.matchAll(/rel="modulepreload"[^>]*href="(\/_nuxt\/[^"]+)"/g)
+  ...html.matchAll(
+    /<link(?=[^>]*\brel="modulepreload")[^>]*\bhref="(\/_nuxt\/[^"]+)"/g
+  )
 ].map((match) => match[1] as string);
 
 const scripts = [...new Set([entry, ...preloaded])];

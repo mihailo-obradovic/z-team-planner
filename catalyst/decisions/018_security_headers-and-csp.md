@@ -18,10 +18,10 @@ Lighthouse's best-practices checks report no CSP, no Cross-Origin-Opener-Policy,
 
 ## Decision
 
-Two owners, one header each:
+Every header has one source of values:
 
 - **Nuxt `routeRules` headers on every route** carry the static set: `X-Frame-Options: DENY` and `Content-Security-Policy: frame-ancestors 'none'`, `Cross-Origin-Opener-Policy: same-origin-allow-popups`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`. Plain `same-origin` breaks the sign-in popup. HSTS has no `preload`, because the site still lives on `vercel.app`.
-- **`nuxt-security` owns only the CSP**, in production builds. Prerendered pages get sha256 hashes for their inline scripts and SRI hashes for their external ones. `/b/**` gets a fresh nonce per request. The policy uses `'strict-dynamic'`, so gapi, which Firebase's own trusted script inserts, loads without a host allowlist. Every other header and middleware the module ships is turned off. A small hook removes `integrity` from font preload links, because the module hashes `@nuxt/fonts`' files before they are written and would block the preloaded face.
+- **`nuxt-security` owns the CSP**, in production builds. Prerendered pages get sha256 hashes for their inline scripts and SRI hashes for their external ones. `/b/**` gets a fresh nonce per request. The policy uses `'strict-dynamic'`, so gapi, which Firebase's own trusted script inserts, loads without a host allowlist. Its middleware is off. Its headers are either the `routeRules` values or off. On `/b/**`'s function response it sets headers itself, and a header turned off there strips the `routeRules` one. A `nitro:config` hook drops `/_fonts/` from its SRI hashes, because the module hashes `@nuxt/fonts`' files before they are written and would block the preloaded face.
 
 Enforced from the first deploy. A `<meta>` CSP cannot be Report-Only, and there is no free report collector.
 
@@ -53,14 +53,11 @@ Rejected:
 
 ## Verification
 
-Before merging, on a local production build with real Firebase settings:
+Local production build with real Firebase settings, headless Chromium:
 
-- `/`, `/privacy` and `/b/{id}` hydrate with no CSP violation.
-- Sign-in opens the Google popup.
-- The headers are present and the fonts load.
-- The budget script passes, and so does the CI set.
+- `/`, `/privacy` and `/b/{id}` hydrate with no CSP violation and no failed font.
+- Sign-in opens Google's popup through Firebase's handler; gapi and the auth iframe load.
+- All six headers arrive on all three pages, `/b/{id}`'s function response included. The Vercel build's `config.json` carries them on `/(.*)`.
+- The budget is 226.4 KB, and the CI set passes.
 
-After deploying:
-
-- The maintainer completes a real Google sign-in on production.
-- The map's Lighthouse protocol on `/` and `/b/{id}` shows no High best-practices finding except Trusted Types.
+After deploying: the maintainer's real Google sign-in on production, and the map's Lighthouse protocol on `/` and `/b/{id}` with no High best-practices finding except Trusted Types.
