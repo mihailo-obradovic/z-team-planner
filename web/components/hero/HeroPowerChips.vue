@@ -14,6 +14,7 @@
     <span v-if="heroId === 'sonar'" key="sonar-form" class="flex">
       <TooltipButton
         :text="sonarFormTooltip"
+        :label="readonly ? undefined : 'Mega Bat Form'"
         :icon="sonarFormIcon"
         :swap-key="sonarFormIcon"
         :color="monsterForm ? 'primary' : 'neutral'"
@@ -27,7 +28,7 @@
     <span key="starting" class="flex">
       <TooltipButton
         :text="startingTooltip"
-        :label="readonly ? startingLabel : undefined"
+        :label="readonly ? startingLabel : startingName"
         :icon="POWER_ICONS[0]"
         :color="powerStates.startingRevealed ? 'primary' : 'neutral'"
         :active="powerStates.startingRevealed"
@@ -44,7 +45,7 @@
     >
       <TooltipButton
         :text="powerTooltip(power)"
-        :label="readonly ? upgradeLabel(power, index) : undefined"
+        :label="readonly ? upgradeLabel(power, index) : power.name"
         :icon="POWER_ICONS[index + 1]!"
         :color="trainablePowerActive(index) ? 'primary' : 'neutral'"
         :active="trainablePowerActive(index)"
@@ -58,6 +59,7 @@
     <span v-if="specialPower?.revealed" :key="specialPower.kind" class="flex">
       <TooltipButton
         :text="specialPower.chipTooltip"
+        :label="readonly ? undefined : specialPower.name"
         :icon="specialPower.icon"
         :swap-key="specialPower.swapKey"
         :color="specialPower.active ? 'primary' : 'neutral'"
@@ -135,9 +137,13 @@ function monsterFormConfirmation(): string | null {
 
 const startingTooltip = computed(() => powerTooltip(powers.value?.[0]));
 
+const startingName = computed(
+  () => powers.value?.[0]?.name ?? 'Starting power'
+);
+
 const startingLabel = computed(
   () =>
-    `${powers.value?.[0]?.name ?? 'Starting power'}, ${powerStates.value.startingRevealed ? 'revealed' : 'hidden'}`
+    `${startingName.value}, ${powerStates.value.startingRevealed ? 'revealed' : 'hidden'}`
 );
 
 function upgradeLabel(power: HeroPowerDefinition, index: number): string {
