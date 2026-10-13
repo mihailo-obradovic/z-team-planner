@@ -52,7 +52,7 @@ Non-goals:
 ## User / System Behavior
 
 - On a first visit, both banners are present, in one column at the bottom of the app shell: the spoiler warning above, the storage notice below it. They sit in the layout rather than over it — nothing is covered, and the page's scroll area shrinks by their height.
-- **They arrive by sliding up** from below the shell's edge and fading in, the region's height expanding over the same `--duration-slow` and `ease-out`, so the scrolling main is squeezed in one motion.
+- **They arrive by sliding up** from below the shell's edge and fading in, over `--duration-slow` and `ease-out`. The region takes its full height in the first frame and only the banners themselves travel, so the scrolling main shrinks once, behind the arriving banners, and nothing on the page shifts.
 - Each banner carries its copy and one confirm button. Confirming removes that banner and persists its key; the other banner stays. When one remains, it takes the bottom of the shell on its own.
 - **They leave by sliding down** and fading, the height collapsing over the same duration and `ease-in` — a height that snapped shut would jolt the remaining banner.
 - **A leaving banner is sealed while it leaves**: `inert` and `aria-hidden` for its exit, so neither keyboard nor assistive technology reaches a notice just dismissed. Focus moves to the remaining banner's confirm button, or is released when none is left.
@@ -67,19 +67,19 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 
 ## Examples
 
-| Input                                             | Expected Output                                        | Notes                                |
-| ------------------------------------------------- | ------------------------------------------------------ | ------------------------------------ |
-| first load, empty `localStorage`                  | both slide up, spoiler above, the region growing       | one confirm button each; 250ms       |
-| confirm the spoiler banner                        | it slides down, its key written, the notice not jolted | focus lands on the notice's button   |
-| confirm the last banner                           | it leaves, the region collapses, focus released        | nothing left to focus                |
-| tab to a banner mid-exit                          | it is not reachable                                    | `inert` and `aria-hidden`            |
-| confirm the same banner twice                     | the key is written once                                | a leaving banner is never live       |
-| reload with only the notice key set               | the spoiler banner alone, at the bottom                | the column collapses                 |
-| reload with both keys set                         | no banners, no flash, nothing animates                 | returning visitor                    |
-| `localStorage` unreadable (private mode, blocked) | both banners show                                      | a warning fails visible, not silent  |
-| `localStorage` unwritable                         | it goes for this session; it returns next load         | the write is lost, never the session |
-| `prefers-reduced-motion: reduce`                  | banners appear and disappear instantly                 | annex §14.4; focus unchanged         |
-| 320px viewport                                    | copy wraps, the button stays reachable                 | annex §13; the build bar is clear    |
+| Input                                             | Expected Output                                         | Notes                                           |
+| ------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------- |
+| first load, empty `localStorage`                  | both slide up into their full-height row, spoiler above | one confirm button each; 250ms; no layout shift |
+| confirm the spoiler banner                        | it slides down, its key written, the notice not jolted  | focus lands on the notice's button              |
+| confirm the last banner                           | it leaves, the region collapses, focus released         | nothing left to focus                           |
+| tab to a banner mid-exit                          | it is not reachable                                     | `inert` and `aria-hidden`                       |
+| confirm the same banner twice                     | the key is written once                                 | a leaving banner is never live                  |
+| reload with only the notice key set               | the spoiler banner alone, at the bottom                 | the column collapses                            |
+| reload with both keys set                         | no banners, no flash, nothing animates                  | returning visitor                               |
+| `localStorage` unreadable (private mode, blocked) | both banners show                                       | a warning fails visible, not silent             |
+| `localStorage` unwritable                         | it goes for this session; it returns next load          | the write is lost, never the session            |
+| `prefers-reduced-motion: reduce`                  | banners appear and disappear instantly                  | annex §14.4; focus unchanged                    |
+| 320px viewport                                    | copy wraps, the button stays reachable                  | annex §13; the build bar is clear               |
 
 ## Business Rules
 
@@ -108,6 +108,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 - Neither key ever appears in a serialized build, a share link, or an account payload.
 - The spoiler banner's copy contains no hero name and no episode outcome.
 - The banner region never overlaps app chrome: shown or hidden, the header, the mobile build bar, and the page's own scroll area stay intact.
+- The arrival moves nothing but the banners: no layout shift is recorded while they come in. The exit may resize the region, since it always follows the confirm press.
 
 ## Error Handling
 
@@ -117,7 +118,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 ## Entry Points
 
 - `web/components/shell/FirstRunBanners.vue` — the region and both banners, and the `first-run-banner` transition name.
-- `web/assets/css/motion.css` — the arrival: the row's height, the body's travel, and their reduced-motion guard.
+- `web/assets/css/motion.css` — the body's travel on arrival, the row's height on exit, and their reduced-motion guard.
 - `web/app.vue` — where the region mounts, inside `<ClientOnly>`, below `<u-main>` and above the mobile build bar.
 
 ## Dependencies
@@ -133,10 +134,10 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 ## Tests
 
 - `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; the storage notice alone links to `/privacy`; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`; focus moves to the remaining banner's confirm button, and is released when none remains; confirming twice writes the key once. The `inert`/`aria-hidden` seal is **not** asserted in a component test — happy-dom runs no CSS transition, so the leaving element is gone by the next tick and the assertion would pass while proving nothing. It is verified on the live walk.
-- Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout; plus the enter and exit at both widths, and a reduced-motion pass.
+- Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout; plus the enter and exit at both widths, a reduced-motion pass, and a layout-shift recording of a first visit to `/` on a production build (no shift while the banners arrive).
 
 ## Verification
 
-Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass.
+Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass. A first visit's layout-shift recording on a production build reads 0.0002 at 412 and 1350 wide, the one entry after input.
 
 Remaining risk: at 320 the two banners take roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Shortening the copy is the lever if it annoys.

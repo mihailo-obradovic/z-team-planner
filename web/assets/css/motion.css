@@ -197,7 +197,7 @@
     }
 }
 
-/* * First-run banners (feature 017): row height and body share one duration so main and banner settle together. */
+/* * First-run banners (feature 017): on exit, row height and body share one duration so main and the remaining banner settle together. */
 .first-run-banner {
     grid-template-rows: 1fr;
     transition: grid-template-rows var(--duration-slow) ease-out;
@@ -209,7 +209,7 @@
         opacity var(--duration-slow) ease-out;
 }
 
-.first-run-banner-enter-from,
+/* ! Exit only: a row growing on arrival moves its own top edge every frame, which is layout shift. The exit follows the confirm press, so it never counts. */
 .first-run-banner-leave-to {
     grid-template-rows: 0fr;
 }
