@@ -52,7 +52,7 @@ Non-goals:
 ## User / System Behavior
 
 - On a first visit, both banners are present, in one column at the bottom of the app shell: the spoiler warning above, the storage notice below it. They sit in the layout rather than over it — nothing is covered, and the page's scroll area shrinks by their height.
-- **They arrive by sliding up** from below the shell's edge and fading in, over `--duration-slow` and `ease-out`. The region takes its full height in the first frame and only the banners themselves travel, so the scrolling main shrinks once, behind the arriving banners, and nothing on the page shifts.
+- **They arrive by sliding up** from below the shell's edge, opaque, over `--duration-slow` and `ease-out`; only the exit fades. The region takes its full height in the first frame and only the banners themselves travel, so the scrolling main shrinks once, behind the arriving banners, and nothing on the page shifts.
 - Each banner carries its copy and one confirm button. Confirming removes that banner and persists its key; the other banner stays. When one remains, it takes the bottom of the shell on its own.
 - **They leave by sliding down** and fading, the height collapsing over the same duration and `ease-in` — a height that snapped shut would jolt the remaining banner.
 - **A leaving banner is sealed while it leaves**: `inert` and `aria-hidden` for its exit, so neither keyboard nor assistive technology reaches a notice just dismissed. Focus moves to the remaining banner's confirm button, or is released when none is left.
@@ -109,6 +109,7 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 - The spoiler banner's copy contains no hero name and no episode outcome.
 - The banner region never overlaps app chrome: shown or hidden, the header, the mobile build bar, and the page's own scroll area stay intact.
 - The arrival moves nothing but the banners: no layout shift is recorded while they come in. The exit may resize the region, since it always follows the confirm press.
+- The arrival never makes a banner the page's largest contentful paint: a banner that faded in would be painted anew at full size, and on a phone its copy outsizes everything the reveal shows.
 
 ## Error Handling
 
@@ -134,10 +135,10 @@ Not role-specific. Both banners are identical signed in and signed out, and neit
 ## Tests
 
 - `test/nuxt/first-run-banners.test.ts`: both banners render with empty storage, spoiler first; the storage notice alone links to `/privacy`; confirming one writes its key and leaves the other; neither renders when both keys are set; unreadable storage renders both; the spoiler copy contains no hero name from `HEROES`; focus moves to the remaining banner's confirm button, and is released when none remains; confirming twice writes the key once. The `inert`/`aria-hidden` seal is **not** asserted in a component test — happy-dom runs no CSS transition, so the leaving element is gone by the next tick and the assertion would pass while proving nothing. It is verified on the live walk.
-- Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout; plus the enter and exit at both widths, a reduced-motion pass, and a layout-shift recording of a first visit to `/` on a production build (no shift while the banners arrive).
+- Live browser walk at 320px and desktop, per the Examples table: both banners, one acknowledged, both acknowledged, and the mobile build bar reachable throughout; plus the enter and exit at both widths, a reduced-motion pass, and a layout-shift recording of a first visit to `/` on a production build (no shift while the banners arrive), and a mobile Lighthouse run whose LCP element is not a banner.
 
 ## Verification
 
-Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass. A first visit's layout-shift recording on a production build reads 0.0002 at 412 and 1350 wide, the one entry after input.
+Every case under Tests passes; suite, lint, format and typecheck clean. Walked at 1280 and 320, the Examples table row by row — including the seal and the focus move sampled mid-exit, the build bar reachable with both banners up, and a reduced-motion pass. A first visit's layout-shift recording on a production build reads 0.0002 at 412 and 1350 wide, the one entry after input, and a mobile Lighthouse run names a hero portrait, not a banner, as its LCP element.
 
 Remaining risk: at 320 the two banners take roughly half the viewport on a first run, leaving about one hero card visible until one is acknowledged. Shortening the copy is the lever if it annoys.

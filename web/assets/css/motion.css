@@ -214,7 +214,11 @@
     grid-template-rows: 0fr;
 }
 
-.first-run-banner-enter-from .first-run-banner-body,
+/* ! No fade on arrival: text that fades in counts as a fresh full-size paint, which makes the spoiler copy the phone's LCP element. Rising opaque from below the clip, it first paints hidden and never qualifies. */
+.first-run-banner-enter-from .first-run-banner-body {
+    transform: translateY(100%);
+}
+
 .first-run-banner-leave-to .first-run-banner-body {
     transform: translateY(100%);
     opacity: 0;
