@@ -41,9 +41,11 @@ export default defineNuxtConfig({
       // ! Nuxt's client build strips `onServerPrefetch`, yet Vue numbers `useId` past a component that has one (app.vue's query). Stripped, prerendered and hydrated ids diverge and every client-set `aria-controls` dangles. Delete once Nuxt stops stripping it (Post-release: Nuxt upstream report).
       const clientTreeShake =
         nuxt.options.optimization.treeShake.composables.client;
-      clientTreeShake.vue = clientTreeShake.vue?.filter(
-        (name) => name !== 'onServerPrefetch'
-      );
+      if (clientTreeShake.vue) {
+        clientTreeShake.vue = clientTreeShake.vue.filter(
+          (name) => name !== 'onServerPrefetch'
+        );
+      }
 
       if (nuxt.options._prepare || nuxt.options.dev || nuxt.options.test) {
         return;
