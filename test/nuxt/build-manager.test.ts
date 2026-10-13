@@ -554,7 +554,11 @@ describe('BuildManager menu and Save (feature 029)', () => {
       .findAllComponents({ name: 'UButton' })
       .find((button) => button.props('label') === LOCAL_BUILD.name);
 
-    expect(select?.props('icon')).toBe('i-lucide-monitor');
+    const icons = select
+      ?.findAllComponents({ name: 'UIcon' })
+      .map((icon) => icon.props('name'));
+
+    expect(icons).toContain('i-lucide-monitor');
   });
 
   it('leaves nothing open after deleting the open build, and Save offers its name back', async () => {

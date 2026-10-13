@@ -9,13 +9,23 @@
       :size="size"
       variant="solid"
       color="secondary"
-      :icon="locationIcon"
       trailing-icon="i-lucide-chevron-down"
       :block="block"
       :class="block ? undefined : 'w-40'"
       :label="openBuildName"
-      :ui="{ label: 'truncate' }"
-    />
+      :ui="triggerUi"
+    >
+      <!-- * The cell stays when there is no icon, so the name holds the middle column signed in or out. -->
+      <template #leading="{ ui }">
+        <span class="flex justify-self-start">
+          <u-icon
+            v-if="locationIcon"
+            :name="locationIcon"
+            :class="ui.leadingIcon()"
+          />
+        </span>
+      </template>
+    </u-button>
   </u-dropdown-menu>
 </template>
 
@@ -89,6 +99,16 @@ const locationIcon = computed(() => {
 
   return openLocalId.value ? DEVICE_ICONS[deviceClass.value] : undefined;
 });
+
+// * The name sits on the button's true midpoint: both side tracks are at least an icon wide, filled or not (annex §13). The gap narrows to give the name back what the empty track costs; the padding stays, since a narrower one would tip the action bar's even split with Share.
+const triggerUi = computed(() => ({
+  base:
+    props.size === 'lg'
+      ? 'grid grid-cols-[minmax(1.25rem,1fr)_minmax(0,auto)_minmax(1.25rem,1fr)] gap-1'
+      : 'grid grid-cols-[minmax(1rem,1fr)_minmax(0,auto)_minmax(1rem,1fr)] gap-1',
+  label: 'truncate text-center',
+  trailingIcon: 'justify-self-end'
+}));
 
 const buildMenuItems = computed<DropdownMenuItem[][]>(() => {
   // * Checkbox items, so the open build is `aria-checked` rather than marked by an icon only; the library draws the check as the trailing indicator.
