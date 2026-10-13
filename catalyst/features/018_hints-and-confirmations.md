@@ -16,6 +16,8 @@ This feature settles the rule rather than patching the sites. Hover is a propert
 
 The deliberate trade: no popovers, no tap-to-reveal, no second interaction model for touch. Discovery stays with the dialog; the confirmation is the one addition.
 
+A screen reader gets the same split by other means. A chip's **name** is its power's name alone, its on/off state is the button's pressed state, and the hint is its **description**, always present rather than only while a tooltip is open — a VoiceOver user on a phone never opens one.
+
 ## Inputs
 
 | Input           | Type                              | Source                                             | Constraints                                                                   |
@@ -30,6 +32,7 @@ The deliberate trade: no popovers, no tap-to-reveal, no second interaction model
 | -------------------- | -------- | --------------------------------------------------------------------------------------------- |
 | confirmation line    | rendered | tooltip-styled text anchored to the tapped chip, held for `--duration-linger`, then fades out |
 | hint                 | rendered | the existing hover tooltip, unchanged, shown only in `hover` mode                             |
+| name, description    | ARIA     | the power's name; the hint, in a hidden element linked by `aria-describedby`                  |
 
 No persisted state, no store field, no route or API involvement. The store changes the chips already make are untouched.
 
@@ -40,6 +43,7 @@ In scope:
 - One composable exposing the input mode as a reactive named union.
 - Confirmations on every card chip that changes state: Sonar's form, the starting power, the two upgrade powers, the special powers (Supernova, En Pointe, Spread Thin), and flight.
 - The wording table below, owned here.
+- Every card chip's accessible name and description, in both modes.
 - The `--duration-linger` token in the design-system annex §11, and the hint / confirmation / common-symbol rule in §13 and §14.2.
 
 Non-goals:
@@ -82,6 +86,17 @@ All in `no-hover` mode. Chip states are feature 012's.
 | same taps in `hover` mode                     | nothing beyond today     | the hovered tooltip already shows the new state                  |
 | tap chip A, then chip B within the linger     | B's line only            | A's is replaced, not stacked                                     |
 
+What a screen reader is given on focus, in either mode:
+
+| Chip and state                         | Name             | Pressed           | Description                               |
+| -------------------------------------- | ---------------- | ----------------- | ----------------------------------------- |
+| upgrade chip                           | "Comet"          | true once trained | "Comet: <its description>"                |
+| flight chip, the power has no name     | "Flight"         | false             | the flight description                    |
+| Sonar's form chip, bat form            | "Mega Bat Form"  | true              | "Mega Bat Form"; "Hybrid Form" when false |
+| En Pointe on Mobility                  | "En Pointe"      | true              | "En Pointe: +1 Mobility (active)"         |
+| upgrade chip disabled by a full budget | "Comet"          | false             | the hint, read on a disabled button       |
+| read-only chip (feature 007)           | "Comet, trained" | none              | the hint                                  |
+
 ## Business Rules
 
 - Input mode is decided by `(hover: hover) and (pointer: fine)` and nothing else — never a width tier, never a user-agent string. An iPad with a trackpad is `hover`; a touch laptop in a wide window is `no-hover` while it is being touched, per the browser's own report.
@@ -89,6 +104,7 @@ All in `no-hover` mode. Chip states are feature 012's.
 - Wording: binary chips say "<Name> <past participle>" — revealed, trained — or "<Name> on" for Supernova; Sonar's form says the resulting form's name. Cycling chips say "<Name>: <resulting state>". No exclamation marks; the annex's plain reading voice.
 - A line is shown **iff** the chip's resulting state is active (binary) or a non-off cycle position (cycling). Never on deactivation.
 - The line is rendered with the tooltip's styling and placement so nothing new is designed; the confirmation and the hint are never on screen together, because they belong to different modes.
+- Names: the power's own name; flight falls back to "Flight"; Sonar's form chip is "Mega Bat Form", pressed while in it. A read-only chip has no pressed state, so its name carries the state instead (feature 007).
 - `--duration-linger` is 1500ms, added to annex §11 as a named token. The hold is not motion and needs no reduced-motion guard; the fade is an opacity change at the baseline, which needs none either (§14.4).
 
 ## Edge Cases
@@ -105,6 +121,7 @@ All in `no-hover` mode. Chip states are feature 012's.
 - A confirmation never changes what a tap does; the store transition is identical in both modes.
 - Deactivation never produces a line.
 - Common symbols carry an accessible label and nothing else.
+- A chip's accessible name never contains its hint, and a pressable chip's name never changes when it is pressed.
 
 ## Error Handling
 
@@ -113,7 +130,8 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 ## Entry Points
 
 - `web/composables/ui/useInputMode.ts`: the reactive mode.
-- `web/components/_shared/TooltipButton.vue`: the single wrapper under every card chip; gains the mode switch and the confirmation rendering.
+- `web/components/_shared/TooltipButton.vue`: the single wrapper under every card chip; gains the mode switch and the confirmation rendering, and hands the hint to `IconButton` as its description.
+- `web/components/_shared/IconButton.vue`: renders the description element and points `aria-describedby` at it.
 - `web/components/hero/HeroPowerChips.vue`, `web/components/hero/HeroCard.vue` (flight): supply the confirmation text per chip from the resulting state.
 - `web/utils/confirmationText.ts`: the pure wording function, unit-tested.
 - `catalyst/annexes/design-system.md` §11 (`--duration-linger`), §13 and §14.2 (the hint / confirmation / common-symbol rule).
@@ -130,7 +148,7 @@ No failure mode reaches the user. A confirmation that fails to render leaves the
 ## Tests
 
 - `test/unit/confirmationText.test.ts`: every row of the Examples table as a pure function of chip kind, previous and resulting state, including the flight fallback, the singular slot, and `null` for every deactivation.
-- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`. `test/nuxt/tooltip-button-device-flip.test.ts`: the mode going `no-hover` and back raises no prop warning — the tooltip remounts per mode, since Reka fixes at setup whether `open` is passive.
+- `test/nuxt/tooltip-button.test.ts`: in `no-hover` mode a click emits and renders the given confirmation; in `hover` mode a click emits and renders none; a disabled chip emits nothing; a second click replaces the text; the mode composable defaults to `hover` without `matchMedia`. The same file: the button's name is the given label, never the hint, and its description is the hint. `test/nuxt/tooltip-button-device-flip.test.ts`: the mode going `no-hover` and back raises no prop warning — the tooltip remounts per mode, since Reka fixes at setup whether `open` is passive.
 - The linger timing and the fade are verified on the live walk, not asserted in jsdom.
 
 ## Verification
