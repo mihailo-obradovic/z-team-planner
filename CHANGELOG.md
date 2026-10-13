@@ -27,6 +27,7 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 - Screen readers now hear which build is loaded in the build menu, and after renaming, deleting or saving a build from that menu the keyboard focus returns to the menu button instead of the top of the page.
 - The planner page has a proper page heading, the error page a main landmark, and the stat buttons read "Remove one combat point" rather than "Remove a combat point".
 - The planner's tabs tell screen readers which panel each one opens again. Every tab pointed at a panel that did not exist, which accessibility checkers flagged as a critical error.
+- A build you save to your account appears in the build menu at once, even after you have signed out and back in. Before, the menu kept the list from before you signed in and showed new saves only after a reload.
 
 ## [0.1.1] - 2026-10-05
 

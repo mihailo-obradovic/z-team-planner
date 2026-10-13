@@ -13,7 +13,19 @@ export function clearUserScopedCache(pinia?: Pinia): void {
   for (const key of USER_SCOPED_ROOTS) {
     for (const entry of queryCache.getEntries({ key })) {
       queryCache.cancel(entry);
-      queryCache.remove(entry);
+
+      // ! A mounted query holds its entry and never looks it up again, so removing an active one orphans it: it keeps the outgoing user's data, and later invalidations miss it.
+      if (entry.active) {
+        queryCache.setEntryState(entry, {
+          status: 'pending',
+          data: undefined,
+          error: null
+        });
+        entry.placeholderData = undefined;
+        queryCache.invalidate(entry);
+      } else {
+        queryCache.remove(entry);
+      }
     }
   }
 }

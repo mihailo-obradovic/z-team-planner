@@ -1,8 +1,8 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime';
-import { useQueryCache } from '@pinia/colada';
+import { useQuery, useQueryCache } from '@pinia/colada';
 import { getActivePinia } from 'pinia';
-import { defineComponent, h } from 'vue';
-import { describe, expect, it } from 'vitest';
+import { defineComponent, h, nextTick } from 'vue';
+import { describe, expect, it, vi } from 'vitest';
 
 import { clearUserScopedCache } from '@/services/queries/clearUserScopedCache';
 import { meQueryKeys } from '@/services/queries/useMeQueries';
@@ -50,5 +50,47 @@ describe('clearUserScopedCache', () => {
     // ! went on listing the last account's builds, visible to the next person on the browser.
     expect(cache!.getEntries({ key: ['builds'] })).toHaveLength(0);
     expect(cache!.getEntries({ key: meQueryKeys.fetchMe })).toHaveLength(0);
+  });
+
+  it('empties a mounted list in place, so a save after the next sign-in still reaches it', async () => {
+    let pinia: Pinia | undefined;
+    let cache: ReturnType<typeof useQueryCache> | undefined;
+    const server = { items: [{ id: 'b1', name: 'Cloud build' }], total: 1 };
+
+    const page = await mountSuspended(
+      defineComponent({
+        setup() {
+          pinia = getActivePinia();
+          cache = useQueryCache();
+          const { data } = useQuery({
+            key: ['builds', 'fetch'],
+            query: async () => structuredClone(server)
+          });
+
+          return () =>
+            h(
+              'ul',
+              (data.value?.items ?? []).map((item) => h('li', item.name))
+            );
+        }
+      })
+    );
+
+    await vi.waitFor(() => expect(page.text()).toBe('Cloud build'));
+
+    clearUserScopedCache(pinia);
+    await nextTick();
+
+    // * The outgoing account's list leaves the screen at once, as eviction requires.
+    expect(page.text()).toBe('');
+
+    server.items.push({ id: 'b2', name: 'Saved later' });
+    server.total = 2;
+    await cache!.invalidateQueries({ key: ['builds'] });
+
+    // ! The defect this pins: removing an entry a mounted query still holds orphans it — the query
+    // ! keeps the removed object, a later invalidation finds nothing in the cache to refetch, and
+    // ! the build menu went on listing the builds from before the save until a reload.
+    await vi.waitFor(() => expect(page.text()).toBe('Cloud buildSaved later'));
   });
 });
