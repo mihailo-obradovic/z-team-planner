@@ -186,7 +186,7 @@ git push && git push origin vX.Y.Z
 curl -sS https://z-team-planner.vercel.app/healthz     # {"status":"ok","version":"X.Y.Z"}
 ```
 
-Below `1.0.0`, MINOR marks a new user-facing capability and PATCH marks fixes and polish.
+From `1.0.0`, MAJOR is the game's season (`1.x` plans Dispatch's first season), MINOR a smaller game update or a new capability a player can see, and PATCH fixes, polish, security updates and corrections to transcribed game data. A break of saved builds, share links or `/api/v1` would also be a MAJOR. Decision 020 holds the why.
 
 ### Recovery
 
