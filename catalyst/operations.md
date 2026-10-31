@@ -319,6 +319,8 @@ gh api repos/{owner}/{repo} --jq '.security_and_analysis'          # secret scan
 gh api repos/{owner}/{repo}/vulnerability-alerts -i | head -1      # 204 = alerts on, 404 = off
 gh api repos/{owner}/{repo}/dependabot/alerts --jq 'length'        # open advisories, both lockfiles
 gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts            # turn alerts back on
+pnpm audit                                                          # the web lockfile, locally
+uv export --no-hashes --format requirements-txt -q > /tmp/req.txt && uvx pip-audit -r /tmp/req.txt   # the API lockfile
 ```
 
 Enabling needs a token with `repo`; the settings pages are **Settings → Code security**.
@@ -334,6 +336,12 @@ Nothing to restore — re-enable and the scans re-run over current history. A fo
 - **Alerts read empty for a few minutes after enabling**, before the first scan finishes. Reading the count straight after the `PUT` reports zero and means nothing.
 - The endpoint pages at 100. `--paginate` or a count taken from one page will under-report a backlog this size.
 - Dependabot **security updates** (the PR-opening half) stay off on purpose: Renovate opens those PRs, and both bots on one lockfile means duplicate PRs racing each other.
+- **Renovate files a security PR for a direct dependency, not for a transitive one.** A transitive fix only lands through lock file maintenance, so while that waits on its schedule, the open alert count climbs and no PR appears. On 2026-10-31 it stood at 19, against one PR (nuxt).
+- **Known advisories, accepted on 2026-10-31.** `pnpm audit` keeps reporting these eight, and none is reachable in what ships. Re-check them at each Renovate review, and whenever firebase or nitropack moves.
+  - `@grpc/grpc-js` 1.9.x, two advisories, arriving through firebase's firestore. The app imports only `firebase/app` and `firebase/auth`, so no gRPC code is in the bundle. Firebase 13 still pins `~1.9`, so there is no fixed version to move to.
+  - `happy-dom` 20.x, two advisories. Tests only. Fixed by happy-dom 21, a major, and gone once that is taken.
+  - `deepmerge` 4.3.1, in nitropack's build-time resolver. No fixed version is released.
+  - `esbuild` (Windows dev server only), `minimatch` and `glob` (nitropack's build tooling). Never shipped, and waiting on upstream.
 
 ## Firebase Authentication
 
