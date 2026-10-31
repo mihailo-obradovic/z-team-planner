@@ -6,6 +6,12 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-31
+
+### Overview
+
+The planner is now stable. Version numbers follow the game from here: 1.x plans Dispatch's first season, and a 2.0 would arrive with a second season. Since 0.1.1 the build menu was rebuilt around one open build at a time, which always says where it lives and asks before unsaved changes are thrown away. Shared builds are protected once you edit them and save as a copy in one click. An accessibility pass gave screen readers the shared-build page, the power chips' names and a heading for every tab, and raised hard-to-read text to the contrast floor.
+
 ### Changed
 
 - Every message about a build now names it and says where it lives: "Saved", "Created", "Saved a copy as", "Renamed to" or "Deleted", followed by "In your account" or "In this browser".
@@ -30,6 +36,11 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 - Screen readers now hear a power chip by its power's name, such as "Comet", and whether it is on, followed by what the power does. Before, every chip's name was its whole description, read in full at every stop. Sonar's form chip is always "Mega Bat Form", on while he is in it.
 - Each of the planner's tabs now opens with a heading screen readers can jump to, named after the tab, so the hero names and the mission panels sit one level under it instead of skipping one. On a shared build's page, the build's name is that heading.
 - A build you save to your account appears in the build menu at once, even after you have signed out and back in. Before, the menu kept the list from before you signed in and showed new saves only after a reload.
+
+### Security
+
+- Security headers and the shared-build page's rules now also apply to addresses typed with different capitals or with `./` in them.
+- Sign-in checks run on a patched version of the library that verifies your sign-in token.
 
 ## [0.1.1] - 2026-10-05
 
