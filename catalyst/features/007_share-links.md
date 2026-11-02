@@ -106,6 +106,7 @@ Anonymous and signed-in callers get the identical read, ownership invisible eith
 
 - A `?build=` receiver who signs in gets no import offer for that snapshot — it is not one of their local builds. They use **Save a copy** like any viewer.
 - A viewer already on the page keeps what is rendered when the owner deletes or edits the build; the next load shows the change.
+- `/B/{id}` reaches the same page, because the router ignores case, but the robots rule, `robots.txt` and the share preview match `/b/` exactly. A server middleware sends it to `/b/{id}` with a 301.
 
 ## Invariants
 
