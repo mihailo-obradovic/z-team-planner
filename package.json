@@ -33,7 +33,7 @@
     "@pinia/nuxt": "^1.0.3",
     "@regle/core": "^1.29.5",
     "@regle/rules": "^1.29.5",
-    "firebase": "^12.19.0",
+    "firebase": "^13.1.0",
     "nuxt": "^4.6.3",
     "nuxt-security": "2.7.0",
     "pinia": "^4.1.0",
