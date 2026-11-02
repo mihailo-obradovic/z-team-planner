@@ -1,6 +1,6 @@
 import type { HeaderConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3.
+// * Imported from @nuxt/ui 4.12.0.
 export default {
   slots: {
     // * Changes: the header is teal chrome, not translucent paper — a solid secondary-600 band with a 2px ink-dark rule and cream text. z comes from the §8 scale instead of a raw 50.

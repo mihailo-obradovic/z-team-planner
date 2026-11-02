@@ -1,9 +1,9 @@
 import type { SeparatorConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3.
+// * Imported from @nuxt/ui 4.12.0.
 export default {
   slots: {
-    root: 'flex items-center align-center text-center',
+    root: 'flex items-center text-center',
     border: '',
     container: 'font-medium text-default flex',
     icon: 'shrink-0 size-5',
