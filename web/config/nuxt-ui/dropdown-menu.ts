@@ -1,6 +1,6 @@
 import type { DropdownMenuConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3.
+// * Imported from @nuxt/ui 4.12.0.
 export default {
   slots: {
     // * Changes: a floating menu is still a panel (annex §6) — the hairline ring and generic shadow give way to the panel treatment.

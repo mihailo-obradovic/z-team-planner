@@ -1,7 +1,7 @@
 import type { CheckboxConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3. The `rounded-*` classes stay: they resolve flat on their own, because Nuxt UI derives Tailwind's radius steps from `--ui-radius`, which the design system pins at 0 (annex §5).
-// * Changes: focus stays on the @nuxt/ui 4.4.0 treatment. 4.9 replaced every focus ring with a 3px outline at 25% of the component colour, which the annex's focus rule (2px, contrast-driven, never amber) rules out. Lines marked "4.4 focus (header)" keep the 4.4.0 classes, out-ranking what 4.11.3 adds; their Default is the 4.11.3 string.
+// * Imported from @nuxt/ui 4.12.0. The `rounded-*` classes stay: they resolve flat on their own, because Nuxt UI derives Tailwind's radius steps from `--ui-radius`, which the design system pins at 0 (annex §5).
+// * Changes: focus stays on the @nuxt/ui 4.4.0 treatment. 4.9 replaced every focus ring with a 3px outline at 25% of the component colour, which the annex's focus rule (2px, contrast-driven, never amber) rules out. Lines marked "4.4 focus (header)" keep the 4.4.0 classes, out-ranking what 4.12.0 adds; their Default is the 4.12.0 string.
 // TODO the held 4.4.0 rings are still the component colour (amber on primary), not the annex's ink and cream — a separate fix.
 export default {
   slots: {
@@ -48,7 +48,7 @@ export default {
       },
       card: {
         root: [
-          'border border-default rounded-lg hover:not-has-disabled:not-has-focus-visible:not-has-data-[state=checked]:bg-elevated/50',
+          'border border-default rounded-lg hover:not-has-disabled:not-has-aria-disabled:not-has-focus-visible:not-has-data-[state=checked]:bg-elevated/50',
           'transition-colors'
         ]
       }
@@ -131,7 +131,7 @@ export default {
       variant: 'card',
       highlight: false,
       class: {
-        root: 'hover:not-has-disabled:not-has-focus-visible:not-has-data-[state=checked]:border-accented'
+        root: 'hover:not-has-disabled:not-has-aria-disabled:not-has-focus-visible:not-has-data-[state=checked]:border-accented'
       }
     },
     {
@@ -440,7 +440,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-primary not-has-disabled:has-data-[state=checked]:border-primary'
+        root: 'not-has-disabled:not-has-aria-disabled:border-primary not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-primary'
       }
     },
     {
@@ -448,7 +448,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-secondary not-has-disabled:has-data-[state=checked]:border-secondary'
+        root: 'not-has-disabled:not-has-aria-disabled:border-secondary not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-secondary'
       }
     },
     {
@@ -456,7 +456,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-success not-has-disabled:has-data-[state=checked]:border-success'
+        root: 'not-has-disabled:not-has-aria-disabled:border-success not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-success'
       }
     },
     {
@@ -464,7 +464,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-info not-has-disabled:has-data-[state=checked]:border-info'
+        root: 'not-has-disabled:not-has-aria-disabled:border-info not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-info'
       }
     },
     {
@@ -472,7 +472,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-warning not-has-disabled:has-data-[state=checked]:border-warning'
+        root: 'not-has-disabled:not-has-aria-disabled:border-warning not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-warning'
       }
     },
     {
@@ -480,7 +480,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-error not-has-disabled:has-data-[state=checked]:border-error'
+        root: 'not-has-disabled:not-has-aria-disabled:border-error not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-error'
       }
     },
     {
@@ -488,7 +488,7 @@ export default {
       indicator: 'hidden',
       highlight: true,
       class: {
-        root: 'not-has-disabled:border-inverted not-has-disabled:has-data-[state=checked]:border-inverted'
+        root: 'not-has-disabled:not-has-aria-disabled:border-inverted not-has-disabled:not-has-aria-disabled:has-data-[state=checked]:border-inverted'
       }
     },
     {

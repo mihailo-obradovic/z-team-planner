@@ -1,6 +1,6 @@
 import type { SlideoverConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3.
+// * Imported from @nuxt/ui 4.12.0.
 export default {
   slots: {
     // * Changes: the scrim is dark (annex §7). bg-elevated is tan here, so upstream's default washes the page out instead of dimming it — the same correction header.ts makes for UHeader's own slideover.
@@ -33,15 +33,15 @@ export default {
         content: ''
       },
       right: {
-        // * Changes: the mockup's drawer is 462px, which is between Tailwind's md (28rem) and lg (32rem). max-w-lg is the nearer step and the two episode selects need the width; a raw 462px would be off-scale (annex §3).
-        // * Default: 'max-w-md'
-        content: 'max-w-lg'
+        // * Changes: the mockup's drawer is 462px, which is between Tailwind's md (28rem) and lg (32rem). max-w-lg is the nearer step and the two episode selects need the width; a raw 462px would be off-scale (annex §3). Upstream's `sm:` prefix is kept so this out-ranks its default from 640px up.
+        // * Default: 'sm:max-w-md'
+        content: 'sm:max-w-lg'
       },
       bottom: {
         content: ''
       },
       left: {
-        content: 'max-w-md'
+        content: 'sm:max-w-md'
       }
     },
     inset: {

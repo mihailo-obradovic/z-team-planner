@@ -1,6 +1,6 @@
 import type { FormFieldConfig } from '../../types/nuxt-ui';
 
-// * Imported from @nuxt/ui 4.11.3.
+// * Imported from @nuxt/ui 4.12.0.
 export default {
   slots: {
     root: '',
