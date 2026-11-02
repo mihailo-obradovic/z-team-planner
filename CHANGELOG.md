@@ -6,6 +6,10 @@ Each release gives its version and date, a short **Overview**, then **Added**, *
 
 ## [Unreleased]
 
+### Fixed
+
+- A shared-build link typed as `/B/…` now goes to `/b/…`, so search engines leave it out and a link preview shows the shared-build card.
+
 ## [1.0.0] - 2026-10-31
 
 ### Overview
@@ -39,7 +43,7 @@ The planner is now stable. Version numbers follow the game from here: 1.x plans 
 
 ### Security
 
-- Security headers and the shared-build page's rules now also apply to addresses typed with different capitals or with `./` in them.
+- Security headers now also apply to addresses typed with different capitals or with `./` in them, and a shared build opened that way is still never rendered on the server.
 - Sign-in checks run on a patched version of the library that verifies your sign-in token.
 
 ## [0.1.1] - 2026-10-05
