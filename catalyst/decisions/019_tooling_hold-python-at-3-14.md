@@ -20,7 +20,9 @@ The grouping makes this easy to miss. The bump sat among twenty library updates 
 
 ## Decision
 
-A `packageRules` entry in `renovate.json` caps `python` at `<3.15`, with its reason in the rule's `description`. It covers every place Renovate reads the version: `.python-version`, `requires-python`, and the lockfile header. Patch releases of 3.14 still arrive.
+A `packageRules` entry in `renovate.json` caps `python` at `<3.15`, with its reason in the rule's `description`. It covers every place Renovate reads the version: `.python-version`, `requires-python`, and the lockfile header.
+
+A second rule sets `rangeStrategy: replace` for `requires-python`, so Renovate stops raising its floor to each new patch (`>=3.14` → `>=3.14.10`). Vercel decides which 3.14 patch the API runs, and a floor above it fails the deploy the same way 3.15 would. The floor moves only together with `.python-version`, by hand.
 
 Rejected: leaving it to review. The same bump will return every week inside the grouped PR, and nothing in that PR says the deploy target cannot run it.
 
@@ -30,7 +32,7 @@ Rejected: leaving it to review. The same bump will return every week inside the 
 
 ## Consequences
 
-Renovate stops proposing Python 3.15, and the grouped PR no longer carries an undeployable change.
+Renovate stops proposing Python 3.15 or a higher patch floor, and the grouped PR no longer carries an undeployable change.
 
 Revisit trigger: Vercel's Python runtime lists 3.15. Then remove the rule and move `.python-version`, `requires-python` and `uv.lock` together in one reviewed change.
 
@@ -42,4 +44,4 @@ Revisit trigger: Vercel's Python runtime lists 3.15. Then remove the rule and mo
 
 ## Verification
 
-`renovate.json` validates against its schema with `npx --yes --package renovate -- renovate-config-validator`. The rule is the only change to the file.
+`renovate.json` validates against its schema with `npx --yes --package renovate -- renovate-config-validator`. The two rules are the only Python changes to the file.

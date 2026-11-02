@@ -16,6 +16,18 @@
       "description": "Vercel's Python runtime stops at 3.14; hold until it lists 3.15 (decision 019).",
       "matchPackageNames": ["python"],
       "allowedVersions": "<3.15"
+    },
+    {
+      "description": "mise.toml pins Node to its major and mise installs the newest 24.x itself; only a new major should change the file.",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["node"],
+      "rangeStrategy": "replace"
+    },
+    {
+      "description": "Vercel decides which 3.14 patch runs, so a raised requires-python floor can fail the deploy while CI passes (decision 019).",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["requires-python"],
+      "rangeStrategy": "replace"
     }
   ]
 }
