@@ -71,7 +71,7 @@ One line per record: type, status, title, link.
 | 017 | performance | Implemented       | Pass Core Web Vitals on a phone — first load, share page, interactions          | [017_performance_mobile-first-load](decisions/017_performance_mobile-first-load.md)           |
 | 018 | security    | Implemented       | Security headers and an enforcing Content Security Policy                       | [018_security_headers-and-csp](decisions/018_security_headers-and-csp.md)                     |
 | 019 | tooling     | Implemented       | Hold Python at 3.14 until Vercel runs 3.15                                      | [019_tooling_hold-python-at-3-14](decisions/019_tooling_hold-python-at-3-14.md)               |
-| 020 | tooling     | Accepted          | From 1.0.0, the major version is the game's season                              | [020_tooling_version-numbers-from-1-0-0](decisions/020_tooling_version-numbers-from-1-0-0.md) |
+| 020 | tooling     | Implemented       | From 1.0.0, the major version is the game's season                              | [020_tooling_version-numbers-from-1-0-0](decisions/020_tooling_version-numbers-from-1-0-0.md) |
 
 ## Domain Decision Index
 
