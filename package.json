@@ -34,7 +34,7 @@
     "@regle/core": "^1.29.5",
     "@regle/rules": "^1.29.5",
     "firebase": "^13.1.0",
-    "nuxt": "^4.6.3",
+    "nuxt": "^4.6.4",
     "nuxt-security": "2.7.0",
     "pinia": "^4.1.0",
     "tailwindcss": "^4.3.3",
