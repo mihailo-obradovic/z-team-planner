@@ -13,3 +13,11 @@ allowBuilds:
 permissions:
   '@unhead/vue':
     skills: true
+
+# * Security overrides: each forces a patched copy past a parent's pin that has no fixed release yet (operations.md, GitHub security scanning). Drop a line once its parent ships a range that reaches the fix.
+overrides:
+  '@firebase/firestore>@grpc/grpc-js': 1.13.6
+  editorconfig>minimatch: 11.0.8
+  fontless>esbuild: 0.28.2
+  js-beautify>glob: 14.0.6
+  readdir-glob>minimatch: 11.0.8

@@ -337,10 +337,8 @@ Nothing to restore — re-enable and the scans re-run over current history. A fo
 - The endpoint pages at 100. `--paginate` or a count taken from one page will under-report a backlog this size.
 - Dependabot **security updates** (the PR-opening half) stay off on purpose: Renovate opens those PRs, and both bots on one lockfile means duplicate PRs racing each other.
 - **Renovate files a security PR for a direct dependency, not for a transitive one.** A transitive fix only lands through lock file maintenance, so while that waits on its schedule, the open alert count climbs and no PR appears. On 2026-10-31 it stood at 19, against one PR (nuxt).
-- **Known advisories, accepted on 2026-10-31.** `pnpm audit` keeps reporting these six, and none is reachable in what ships. Re-check them at each Renovate review, and whenever firebase or nitropack moves.
-  - `@grpc/grpc-js` 1.9.x, two advisories, arriving through firebase's firestore. The app imports only `firebase/app` and `firebase/auth`, so no gRPC code is in the bundle. Firebase 13 still pins `~1.9`, so there is no fixed version to move to.
-  - `deepmerge` 4.3.1, in nitropack's build-time resolver. No fixed version is released.
-  - `esbuild` (Windows dev server only), `minimatch` and `glob` (nitropack's build tooling). Never shipped, and waiting on upstream.
+- **Security overrides, set on 2026-11-14.** `overrides` in `pnpm-workspace.yaml` force a patched copy past a parent's pin when the parent has no fixed release. Firestore's `@grpc/grpc-js` goes to 1.13.6 against firebase 13's `~1.9`. The `minimatch` under editorconfig and readdir-glob, `glob` under js-beautify, and `esbuild` under fontless go to their next major. Firestore is never imported, and the rest is test or build tooling. At each Renovate review, drop a line once its parent's own range reaches the fix. Re-run the tests and the build whenever a forced version moves.
+- **Known advisory, accepted on 2026-10-31.** `deepmerge` 4.3.1 sits in nitropack's build-time resolver and has no fixed version released, so `pnpm audit` keeps reporting it. It is never shipped. Re-check it whenever nitropack moves.
 
 ## Firebase Authentication
 
