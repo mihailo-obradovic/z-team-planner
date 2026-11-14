@@ -15,7 +15,7 @@ from app.core.config import (
 )
 
 try:
-    from testcontainers.postgres import PostgresContainer
+    from testcontainers.community.postgres import PostgresContainer
 except ImportError:  # pragma: no cover
     PostgresContainer = None  # pyright: ignore[reportAssignmentType]
 
