@@ -8,3 +8,8 @@ allowBuilds:
   protobufjs: false
   sharp: false
   vue-demi: false
+
+# * Lets pnpm link @unhead/vue's bundled agent skill into .claude/skills/ (gitignored there). It runs no code, but agents read it as instructions, so re-read the linked SKILL.md whenever @unhead/vue moves.
+permissions:
+  '@unhead/vue':
+    skills: true
