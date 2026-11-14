@@ -1,6 +1,6 @@
 # z-team-planner
 
-Catalyst version: 2.3.2
+Catalyst version: 2.4.0
 
 ## Project Purpose
 
