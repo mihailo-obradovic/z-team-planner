@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx import Response
+from httpx2 import Response
 
 from app.auth import CurrentUser, get_current_user
 from app.main import API_V1_PREFIX, create_app
